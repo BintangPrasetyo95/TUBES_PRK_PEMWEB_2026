@@ -1,13 +1,7 @@
--- Active: 1776135014811@@localhost@3306@mysql
--- database/schema.sql
--- Skema tabel + seeder data awal KebunKu.
--- Diisi oleh: seluruh anggota (koordinasi lewat ketua kelompok).
-
 CREATE DATABASE IF NOT EXISTS kebunku;
 USE kebunku;
 
--- TODO: tabel lahan
--- Kolom minimal: id, nama, lokasi, luas, jenis_tanah, created_at
+-- tabel lahan
 CREATE TABLE lahan (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama VARCHAR(100) NOT NULL,
@@ -16,9 +10,7 @@ CREATE TABLE lahan (
     jenis_tanah ENUM('Aluvial', 'Andosol', 'Latosol', 'Grumosol', 'Regosol', 'Lainnya') DEFAULT 'Lainnya',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
--- TODO: tabel siklus
--- Kolom minimal: id, lahan_id (FK), nama_tanaman, tanggal_tanam,
---                tanggal_panen_estimasi, status, created_at
+-- tabel siklus           
 CREATE TABLE siklus (
     id INT AUTO_INCREMENT PRIMARY KEY,
     lahan_id INT NOT NULL,
@@ -29,8 +21,7 @@ CREATE TABLE siklus (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (lahan_id) REFERENCES lahan(id) ON DELETE RESTRICT
 );
--- TODO: tabel inventaris
--- Kolom minimal: id, nama, kategori, stok, satuan, harga_satuan, created_at
+-- tabel inventaris
 CREATE TABLE inventaris (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama VARCHAR(100) NOT NULL,
@@ -51,9 +42,7 @@ CREATE TABLE transaksi_inventaris (
     FOREIGN KEY (inventaris_id) REFERENCES inventaris(id) ON DELETE CASCADE,
     FOREIGN KEY (siklus_id) REFERENCES siklus(id) ON DELETE SET NULL
 );
--- TODO: tabel pekerja
--- Kolom minimal: id, nama, no_telepon, jabatan, gaji_pokok,
---                tanggal_bergabung, created_at
+-- tabel pekerja
 CREATE TABLE pekerja (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nama VARCHAR(100) NOT NULL,
@@ -73,9 +62,7 @@ CREATE TABLE presensi_pekerja (
     FOREIGN KEY (pekerja_id) REFERENCES pekerja(id) ON DELETE CASCADE,
     FOREIGN KEY (siklus_id) REFERENCES siklus(id) ON DELETE CASCADE
 );
--- TODO: tabel panen
--- Kolom minimal: id, siklus_id (FK), tanggal_panen, jumlah_kg,
---                kualitas, catatan, created_at
+-- tabel panen
 CREATE TABLE panen (
     id INT AUTO_INCREMENT PRIMARY KEY,
     siklus_id INT NOT NULL,
@@ -86,7 +73,7 @@ CREATE TABLE panen (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (siklus_id) REFERENCES siklus(id) ON DELETE CASCADE
 );
--- TODO: seeder data awal (INSERT INTO ...)
+-- seeder data awal
 INSERT INTO lahan (nama, lokasi, luas, jenis_tanah) VALUES
 ('Blok A Utara', 'Sektor 1', 1.50, 'Aluvial'),
 ('Blok B Selatan', 'Sektor 2', 2.00, 'Andosol');

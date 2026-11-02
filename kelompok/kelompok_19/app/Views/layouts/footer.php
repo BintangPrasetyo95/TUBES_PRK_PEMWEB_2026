@@ -6,7 +6,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- TODO: Include JS file spesifik halaman di sini (misal: lahan.js, siklus.js, dll.) -->
 </body>
 </html>

@@ -1,3 +1,4 @@
+
 <?php
 // app/Models/SiklusModel.php
 // Tugas: Query SQL murni (PDO) untuk tabel siklus.
@@ -14,8 +15,87 @@ class SiklusModel
     }
 
     // TODO: method read() -> SELECT * FROM siklus
+    public function read()
+    {
+        $query = "SELECT s.*, 
+                         l.nama AS nama_lahan,
+                         l.lokasi AS lokasi_lahan
+                  FROM " . $this->table_name . " s
+                  INNER JOIN lahan l ON s.lahan_id = l.id
+                  ORDER BY s.id DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // TODO: method readSingle($id) -> SELECT * FROM siklus WHERE id = ?
+    public function readSingle($id)
+    {
+        $query = "SELECT s.*, 
+                         l.nama AS nama_lahan,
+                         l.lokasi AS lokasi_lahan
+                  FROM " . $this->table_name . " s
+                  INNER JOIN lahan l ON s.lahan_id = l.id
+                  WHERE s.id = ?";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     // TODO: method create($data) -> INSERT INTO siklus (...)
+    public function create($data)
+    {
+        $query = "INSERT INTO " . $this->table_name . "
+                  (lahan_id, nama_tanaman, tanggal_tanam,
+                   tanggal_panen_estimasi, status)
+                  VALUES (?, ?, ?, ?, ?)";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            $data['lahan_id'],
+            $data['nama_tanaman'],
+            $data['tanggal_tanam'],
+            $data['tanggal_panen_estimasi'] ?? null,
+            $data['status'] ?? 'Aktif'
+        ]);
+    }
+
     // TODO: method update($id, $data) -> UPDATE siklus SET ... WHERE id = ?
+    public function update($id, $data)
+    {
+        $query = "UPDATE " . $this->table_name . "
+                  SET lahan_id = ?,
+                      nama_tanaman = ?,
+                      tanggal_tanam = ?,
+                      tanggal_panen_estimasi = ?,
+                      status = ?
+                  WHERE id = ?";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            $data['lahan_id'],
+            $data['nama_tanaman'],
+            $data['tanggal_tanam'],
+            $data['tanggal_panen_estimasi'] ?? null,
+            $data['status'],
+            $id
+        ]);
+    }
+
     // TODO: method delete($id) -> DELETE FROM siklus WHERE id = ?
+    public function delete($id)
+    {
+        $query = "DELETE FROM " . $this->table_name . "
+                  WHERE id = ?";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([$id]);
+    }
 }

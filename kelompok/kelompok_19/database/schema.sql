@@ -1,3 +1,4 @@
+-- Active: 1776135014811@@localhost@3306@kebunku
 CREATE DATABASE IF NOT EXISTS kebunku;
 USE kebunku;
 
@@ -98,3 +99,4 @@ INSERT INTO presensi_pekerja (pekerja_id, siklus_id, tanggal, upah_harian) VALUE
 
 INSERT INTO panen (siklus_id, tanggal_panen, jumlah_kg, kualitas, catatan) VALUES
 (2, '2026-11-01', 45.50, 'A', 'Panen cabai awal');
+

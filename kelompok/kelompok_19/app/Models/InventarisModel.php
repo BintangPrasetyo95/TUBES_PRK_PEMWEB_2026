@@ -11,7 +11,7 @@ class InventarisModel
         $this->conn = $db;
     }
 
-    // TODO: method read() -> SELECT * FROM inventaris
+    // method read() -> SELECT * FROM inventaris
     public function read()
     {
         $query = "SELECT * FROM " . $this->table_name . " ORDER BY id DESC";
@@ -19,7 +19,7 @@ class InventarisModel
         $stmt->execute();
         return $stmt;
     }
-    // TODO: method readSingle($id) -> SELECT * FROM inventaris WHERE id = ?
+    // method readSingle($id) -> SELECT * FROM inventaris WHERE id = ?
     public function readSingle($id)
     {
         $query = "SELECT * FROM " . $this->table_name . " WHERE id = :id LIMIT 1";
@@ -28,7 +28,7 @@ class InventarisModel
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    // TODO: method create($data) -> INSERT INTO inventaris (...)
+    // method create($data) -> INSERT INTO inventaris (...)
     public function create($data)
     {
         $query = "INSERT INTO " . $this->table_name . " 
@@ -45,7 +45,7 @@ class InventarisModel
 
         return $stmt->execute();
     }
-    // TODO: method update($id, $data) -> UPDATE inventaris SET ... WHERE id = ?
+    // method update($id, $data) -> UPDATE inventaris SET ... WHERE id = ?
     public function update($id, $data)
     {
         $query = "UPDATE " . $this->table_name . " 
@@ -63,7 +63,7 @@ class InventarisModel
 
         return $stmt->execute();
     }
-    // TODO: method delete($id) -> DELETE FROM inventaris WHERE id = ?
+    // method delete($id) -> DELETE FROM inventaris WHERE id = ?
     public function delete($id)
     {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";

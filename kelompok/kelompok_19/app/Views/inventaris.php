@@ -1,7 +1,7 @@
 <?php
 // app/Views/inventaris.php
 // Tugas: CRUD Inventaris (tabel + form modal) & Log Transaksi.
-// Diisi oleh: Valerie
+// Diisi oleh: Valerie.
 
 $title = "Manajemen Inventaris";
 require_once __DIR__ . "/layouts/header.php";

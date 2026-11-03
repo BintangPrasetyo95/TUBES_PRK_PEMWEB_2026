@@ -1,9 +1,12 @@
 <?php
 // app/Config/Database.php
 // Tugas: Koneksi PDO ke database MySQL + helper kirim response JSON.
-// Diisi oleh: anggota yang mengerjakan konfigurasi database.
+// Diisi oleh: Faqih.
 
 namespace App\Config;
+
+use PDO;
+use PDOException;
 
 class Database
 {
@@ -13,15 +16,13 @@ class Database
     private $password = "";
     private $conn = null;
 
-    // TODO: Sesuaikan kredensial database dengan environment masing-masing anggota.
-
     public function getConnection()
     {
         $this->conn = null;
 
         try {
             $this->conn = new PDO(
-                "mysql:host=" . $this->host . ";dbname=" . $this->db_name,
+                "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=utf8mb4",
                 $this->username,
                 $this->password
             );
@@ -33,7 +34,6 @@ class Database
         return $this->conn;
     }
 
-    // TODO: Helper static untuk response JSON agar konsisten di semua controller.
     public static function response($data, $status = 200)
     {
         http_response_code($status);

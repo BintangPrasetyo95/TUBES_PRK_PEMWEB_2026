@@ -1,7 +1,7 @@
 <?php
 // app/Models/PekerjaModel.php
 // Tugas: Query SQL murni (PDO) untuk tabel pekerja.
-// Diisi oleh: anggota yang mengerjakan fitur Pekerja.
+// Diisi oleh: Devi.
 
 class PekerjaModel
 {

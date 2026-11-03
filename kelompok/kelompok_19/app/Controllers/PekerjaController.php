@@ -1,7 +1,7 @@
 <?php
 // app/Controllers/PekerjaController.php
 // Tugas: Menerima request, memanggil Model Pekerja, mengembalikan JSON atau halaman web.
-// Diisi oleh: anggota yang mengerjakan fitur Pekerja.
+// Diisi oleh: Devi.
 
 require_once __DIR__ . "/../Config/Database.php";
 require_once __DIR__ . "/../Models/PekerjaModel.php";

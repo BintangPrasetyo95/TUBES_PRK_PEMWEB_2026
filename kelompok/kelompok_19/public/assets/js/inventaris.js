@@ -1,5 +1,6 @@
 // public/assets/js/inventaris.js
 // Tugas: AJAX Fetch CRUD Inventaris ke /api/inventaris
+// Diisi oleh: Valerie.
 
 const API_INVENTARIS = "/api/inventaris";
 const API_SIKLUS = "/api/siklus"; // untuk dropdown form transaksi

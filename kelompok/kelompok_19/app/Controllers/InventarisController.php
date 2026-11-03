@@ -1,6 +1,7 @@
 <?php
 // app/Controllers/InventarisController.php
 // Tugas: Menerima request, memanggil Model Inventaris, mengembalikan JSON atau halaman web.
+// Diisi oleh: Valerie.
 
 require_once __DIR__ . "/../Config/Database.php";
 require_once __DIR__ . "/../Models/InventarisModel.php";

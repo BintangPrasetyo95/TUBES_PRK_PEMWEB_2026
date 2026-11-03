@@ -17,6 +17,7 @@ class PekerjaController
         $this->model = new PekerjaModel($db);
     }
 
+    // TODO: method index() - ambil semua data pekerja
     public function index()
     {
         header('Content-Type: application/json');
@@ -29,6 +30,20 @@ class PekerjaController
         ]);
     }
 
+    // TODO: method show($id) - ambil satu pekerja berdasarkan id
+    public function show($id)
+    {
+        header('Content-Type: application/json');
+        $data = $this->model->readSingle($id);
+        if ($data) {
+            echo json_encode(['status' => 'success', 'data' => $data]);
+        } else {
+            http_response_code(404);
+            echo json_encode(['status' => 'error', 'message' => 'Data pekerja tidak ditemukan']);
+        }
+    }
+
+    // TODO: method create() - tambah data pekerja baru
     public function create()
     {
         header('Content-Type: application/json');
@@ -42,6 +57,7 @@ class PekerjaController
         }
     }
 
+    // TODO: method update($id) - ubah data pekerja
     public function update($id)
     {
         header('Content-Type: application/json');
@@ -55,6 +71,7 @@ class PekerjaController
         }
     }
 
+    // TODO: method delete($id) - hapus data pekerja
     public function delete($id)
     {
         header('Content-Type: application/json');
@@ -65,10 +82,4 @@ class PekerjaController
             echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus data pekerja']);
         }
     }
-
-    // TODO: method index() - ambil semua data pekerja
-    // TODO: method show($id) - ambil satu pekerja berdasarkan id
-    // TODO: method create() - tambah data pekerja baru
-    // TODO: method update($id) - ubah data pekerja
-    // TODO: method delete($id) - hapus data pekerja
 }

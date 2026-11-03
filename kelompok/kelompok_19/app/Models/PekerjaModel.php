@@ -13,6 +13,7 @@ class PekerjaModel
         $this->conn = $db;
     }
 
+    // TODO: method read() -> SELECT * FROM pekerja
     public function read()
     {
         $query = "SELECT * FROM " . $this->table_name . " ORDER BY id DESC";
@@ -21,6 +22,17 @@ class PekerjaModel
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // TODO: method readSingle($id) -> SELECT * FROM pekerja WHERE id = ?
+    public function readSingle($id)
+    {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE id = :id LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // TODO: method create($data) -> INSERT INTO pekerja (...)
     public function create($data)
     {
         $query = "INSERT INTO " . $this->table_name . " (nama, peran, upah_harian, status) 
@@ -36,6 +48,7 @@ class PekerjaModel
         return $stmt->execute();
     }
 
+    // TODO: method update($id, $data) -> UPDATE pekerja SET ... WHERE id = ?
     public function update($id, $data)
     {
         $query = "UPDATE " . $this->table_name . " 
@@ -52,6 +65,7 @@ class PekerjaModel
         return $stmt->execute();
     }
 
+    // TODO: method delete($id) -> DELETE FROM pekerja WHERE id = ?
     public function delete($id)
     {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
@@ -69,10 +83,3 @@ class PekerjaModel
         return $row['total_upah'] ?? 0;
     }
 }
-
-
-    // TODO: method read() -> SELECT * FROM pekerja
-    // TODO: method readSingle($id) -> SELECT * FROM pekerja WHERE id = ?
-    // TODO: method create($data) -> INSERT INTO pekerja (...)
-    // TODO: method update($id, $data) -> UPDATE pekerja SET ... WHERE id = ?
-    // TODO: method delete($id) -> DELETE FROM pekerja WHERE id = ?

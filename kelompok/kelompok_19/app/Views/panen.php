@@ -7,9 +7,9 @@ $title = "Manajemen Panen";
 require_once __DIR__ . "/layouts/header.php";
 require_once __DIR__ . "/layouts/sidebar.php";
 ?>
-            <!-- Aturan cetak: sembunyikan tombol, filter, dan modal saat window.print() -->
+            <!-- Aturan cetak: sembunyikan tombol, filter, dan dialog saat window.print() -->
             <style media="print">
-                .no-print, .modal, nav, aside, .sidebar, #sidebar-wrapper { display: none !important; }
+                .no-print, dialog, nav, aside, .sidebar, #sidebar-wrapper { display: none !important; }
             </style>
 
             <div class="container-fluid p-4">
@@ -17,9 +17,7 @@ require_once __DIR__ . "/layouts/sidebar.php";
                     <h1>Data Panen</h1>
                     <div class="no-print">
                         <button type="button" class="btn btn-outline-secondary" id="btnCetak">Cetak PDF</button>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPanen" onclick="resetFormPanen()">
-                            Tambah Hasil Panen
-                        </button>
+                        <button type="button" class="btn btn-primary" id="btnTambah">Tambah Hasil Panen</button>
                     </div>
                 </div>
 
@@ -109,54 +107,47 @@ require_once __DIR__ . "/layouts/sidebar.php";
                 </div>
             </div>
 
-            <!-- Modal Form Panen -->
-            <div class="modal fade" id="modalPanen" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalPanenTitle">Tambah Hasil Panen</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <form id="formPanen">
-                            <input type="hidden" name="id" id="panenId">
-                            <div class="modal-body">
-                                <div class="alert alert-danger d-none" id="panenError" role="alert"></div>
-                                <div class="mb-3">
-                                    <label class="form-label">Siklus</label>
-                                    <select class="form-select" name="siklus_id" id="panenSiklusId" required>
-                                        <option value="">Pilih Siklus...</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Tanggal Panen</label>
-                                    <input type="date" class="form-control" name="tanggal_panen" id="panenTanggalPanen" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Jumlah (kg)</label>
-                                    <input type="number" class="form-control" name="jumlah_kg" id="panenJumlahKg" required min="0.01" step="0.01">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Kualitas</label>
-                                    <select class="form-select" name="kualitas" id="panenKualitas" required>
-                                        <option value="A">Grade A (Premium)</option>
-                                        <option value="B">Grade B (Standar)</option>
-                                        <option value="C">Grade C (Kurang)</option>
-                                        <option value="Reject">Reject</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Catatan</label>
-                                    <textarea class="form-control" name="catatan" id="panenCatatan" rows="3"></textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-primary" id="btnSimpan">Simpan</button>
-                            </div>
-                        </form>
+            <!-- Modal Form Panen (native dialog) -->
+            <dialog id="modalPanen">
+                <form id="formPanen">
+                    <h2 id="modalPanenTitle">Tambah Hasil Panen</h2>
+                    <input type="hidden" name="id" id="panenId">
+                    <p id="panenError" role="alert" hidden></p>
+
+                    <div class="mb-3">
+                        <label for="panenSiklusId">Siklus</label>
+                        <select name="siklus_id" id="panenSiklusId" required>
+                            <option value="">Pilih Siklus...</option>
+                        </select>
                     </div>
-                </div>
-            </div>
+                    <div class="mb-3">
+                        <label for="panenTanggalPanen">Tanggal Panen</label>
+                        <input type="date" name="tanggal_panen" id="panenTanggalPanen" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="panenJumlahKg">Jumlah (kg)</label>
+                        <input type="number" name="jumlah_kg" id="panenJumlahKg" required min="0.01" step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="panenKualitas">Kualitas</label>
+                        <select name="kualitas" id="panenKualitas" required>
+                            <option value="A">Grade A (Premium)</option>
+                            <option value="B">Grade B (Standar)</option>
+                            <option value="C">Grade C (Kurang)</option>
+                            <option value="Reject">Reject</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="panenCatatan">Catatan</label>
+                        <textarea name="catatan" id="panenCatatan" rows="3"></textarea>
+                    </div>
+
+                    <div>
+                        <button type="button" id="btnBatal">Batal</button>
+                        <button type="submit" id="btnSimpan">Simpan</button>
+                    </div>
+                </form>
+            </dialog>
 
             <script src="/assets/js/panen.js"></script>
 <?php

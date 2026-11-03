@@ -54,19 +54,10 @@ function urlDenganFilter(path = "") {
     return API_PANEN + path + (qs ? "?" + qs : "");
 }
 
-function modalPanen() {
-    return bootstrap.Modal.getOrCreateInstance(el("modalPanen"));
-}
-
 function tampilError(pesan) {
     const box = el("panenError");
-    if (!pesan) {
-        box.classList.add("d-none");
-        box.textContent = "";
-        return;
-    }
-    box.textContent = pesan;
-    box.classList.remove("d-none");
+    box.textContent = pesan || "";
+    box.hidden = !pesan;
 }
 
 // ---------- Render ----------
@@ -149,7 +140,7 @@ async function loadSiklusOptions() {
     }
 }
 
-// ---------- Form / Modal ----------
+// ---------- Form / Modal (dialog native) ----------
 function resetFormPanen() {
     el("formPanen").reset();
     el("panenId").value = "";
@@ -172,7 +163,7 @@ async function editData(id) {
         el("panenCatatan").value = d.catatan || "";
         el("modalPanenTitle").textContent = "Edit Hasil Panen";
         tampilError("");
-        modalPanen().show();
+        el("modalPanen").showModal();
     } catch (err) {
         alert(err.message);
     }
@@ -196,7 +187,7 @@ async function simpanData(event) {
             method: id ? "PUT" : "POST",
             body: JSON.stringify(payload),
         });
-        modalPanen().hide();
+        el("modalPanen").close();
         await loadData();
     } catch (err) {
         tampilError(err.message);
@@ -228,6 +219,13 @@ document.addEventListener("DOMContentLoaded", () => {
         loadData();
     });
     el("btnCetak").addEventListener("click", () => window.print());
+
+    // Tombol Tambah & Batal untuk dialog native
+    el("btnTambah").addEventListener("click", () => {
+        resetFormPanen();
+        el("modalPanen").showModal();
+    });
+    el("btnBatal").addEventListener("click", () => el("modalPanen").close());
 
     // Event delegation untuk tombol Edit/Hapus di tabel
     el("tabelPanenBody").addEventListener("click", (e) => {

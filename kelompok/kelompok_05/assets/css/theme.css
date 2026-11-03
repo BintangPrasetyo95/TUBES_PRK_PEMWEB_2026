@@ -7,18 +7,91 @@
   --c-text: #1b2430;
   --c-muted: #5b6676;
   --c-border: #d9dee6;
+
   --c-ok: #1f7a4d;
   --c-warn: #b7791f;
   --c-bad: #b3261e;
+  --c-info: #2563a8;
+
   --radius: 8px;
   --space: 1rem;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+
 * { box-sizing: border-box; }
 body { margin: 0; font-family: var(--font); background: var(--c-bg); color: var(--c-text); line-height: 1.6; }
-.container { max-width: 960px; margin: 0 auto; padding: calc(var(--space) * 2) var(--space); }
-.card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: calc(var(--space) * 1.5); }
-.badge { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .8rem; color: #fff; }
+h1, h2, h3 { color: var(--c-primary-dark); line-height: 1.25; margin-top: 0; }
+a { color: var(--c-primary); }
+img { max-width: 100%; }
+
+.container { max-width: 1000px; margin: 0 auto; padding: calc(var(--space) * 1.5) var(--space); }
+.card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius); padding: calc(var(--space) * 1.5); margin-bottom: var(--space); }
+.muted { color: var(--c-muted); }
+.grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+/* Navigasi */
+.navbar { background: var(--c-primary); color: #fff; }
+.navbar-inner { max-width: 1000px; margin: 0 auto; padding: .6rem var(--space); display: flex; align-items: center; gap: var(--space); flex-wrap: wrap; }
+.brand { color: #fff; font-weight: 700; font-size: 1.2rem; text-decoration: none; letter-spacing: .05em; }
+.navbar-menu { display: flex; align-items: center; gap: .25rem 1rem; flex-wrap: wrap; margin-left: auto; }
+.navbar-menu a { color: #fff; text-decoration: none; padding: .25rem .5rem; border-radius: var(--radius); }
+.navbar-menu a:hover, .navbar-menu a.aktif { background: var(--c-primary-dark); }
+.navbar-menu a.nav-dev { outline: 1px dashed var(--c-accent); }
+.nav-user { font-size: .9rem; }
+.nav-toggle { display: none; margin-left: auto; background: transparent; color: #fff; border: 1px solid #fff; border-radius: var(--radius); font-size: 1.2rem; padding: .1rem .6rem; cursor: pointer; }
+
+/* Tombol */
+.btn, button.btn { display: inline-block; background: var(--c-accent); color: #fff; border: 0; border-radius: var(--radius); padding: .55rem 1.1rem; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+.btn:hover { filter: brightness(.92); }
+.btn-primary { background: var(--c-primary); }
+.btn-danger { background: var(--c-bad); }
+.btn-small { padding: .2rem .7rem; font-size: .9rem; }
+.navbar-menu a.btn { color: #fff; }
+
+/* Form */
+.form-group { margin-bottom: var(--space); }
+label { display: block; font-weight: 600; margin-bottom: .25rem; }
+input[type=text], input[type=email], input[type=password], input[type=date], input[type=number], select, textarea {
+  width: 100%; padding: .55rem .7rem; border: 1px solid var(--c-border); border-radius: var(--radius); font: inherit; background: var(--c-surface); color: var(--c-text);
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--c-accent); outline-offset: 1px; }
+.field-error { color: var(--c-bad); font-size: .9rem; margin-top: .25rem; }
+.has-error input, .has-error select, .has-error textarea { border-color: var(--c-bad); }
+
+/* Pesan */
+.alert { padding: .75rem 1rem; border-radius: var(--radius); margin-bottom: var(--space); border: 1px solid transparent; }
+.alert-success { background: #e6f4ec; color: var(--c-ok); border-color: var(--c-ok); }
+.alert-error { background: #fbeae9; color: var(--c-bad); border-color: var(--c-bad); }
+.alert-info { background: #e8f0fa; color: var(--c-info); border-color: var(--c-info); }
+
+/* Tabel */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: var(--c-surface); }
+th, td { text-align: left; padding: .6rem .75rem; border-bottom: 1px solid var(--c-border); vertical-align: top; }
+th { background: var(--c-bg); color: var(--c-primary-dark); }
+
+/* Lencana status */
+.badge { display: inline-block; padding: .1rem .6rem; border-radius: 999px; font-size: .8rem; color: #fff; white-space: nowrap; }
 .badge-ok { background: var(--c-ok); }
 .badge-warn { background: var(--c-warn); }
 .badge-bad { background: var(--c-bad); }
+.badge-info { background: var(--c-info); }
+.badge-muted { background: var(--c-muted); }
+
+/* Progress kelengkapan */
+.progress { background: var(--c-border); border-radius: 999px; overflow: hidden; height: .8rem; }
+.progress > span { display: block; height: 100%; background: var(--c-ok); }
+
+.site-footer { color: var(--c-muted); border-top: 1px solid var(--c-border); margin-top: calc(var(--space) * 2); }
+
+@media (max-width: 720px) {
+  .nav-toggle { display: inline-block; }
+  .navbar-menu { display: none; width: 100%; flex-direction: column; align-items: flex-start; margin-left: 0; }
+  .navbar-menu.terbuka { display: flex; }
+}
+
+@media print {
+  .navbar, .site-footer, .no-print { display: none !important; }
+  body { background: #fff; }
+  .card { border: 0; padding: 0; }
+}

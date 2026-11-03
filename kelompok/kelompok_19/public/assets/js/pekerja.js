@@ -1,6 +1,6 @@
 // public/assets/js/pekerja.js
 // Tugas: AJAX Fetch CRUD Pekerja ke /api/pekerja
-// Diisi oleh: anggota yang mengerjakan fitur Pekerja.
+// Diisi oleh: Devi.
 
 const API_PEKERJA = "/api/pekerja";
 

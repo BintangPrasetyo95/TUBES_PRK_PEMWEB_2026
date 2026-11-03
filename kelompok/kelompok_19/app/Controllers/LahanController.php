@@ -1,7 +1,7 @@
 <?php
 // app/Controllers/LahanController.php
 // Tugas: Menerima request, memanggil Model Lahan, mengembalikan JSON atau halaman web.
-// Diisi oleh: anggota yang mengerjakan fitur Lahan.
+// Diisi oleh: Faqih.
 
 require_once __DIR__ . "/../Config/Database.php";
 require_once __DIR__ . "/../Models/LahanModel.php";

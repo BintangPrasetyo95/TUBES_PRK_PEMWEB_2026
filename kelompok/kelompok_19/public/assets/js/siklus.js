@@ -1,7 +1,7 @@
 
 // public/assets/js/siklus.js
 // Tugas: AJAX Fetch CRUD Siklus ke /api/siklus
-// Diisi oleh: anggota yang mengerjakan fitur Siklus.
+// Diisi oleh: Hengky.
 
 const API_SIKLUS = "/api/siklus";
 

@@ -1,5 +1,7 @@
 <?php
 // app/Models/InventarisModel.php
+// Tugas: Query SQL murni (PDO) untuk tabel inventaris.
+// Diisi oleh: Valerie.
 
 class InventarisModel
 {

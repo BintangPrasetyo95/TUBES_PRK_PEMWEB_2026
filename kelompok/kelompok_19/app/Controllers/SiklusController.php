@@ -2,7 +2,7 @@
 <?php
 // app/Controllers/SiklusController.php
 // Tugas: Menerima request, memanggil Model Siklus, mengembalikan JSON atau halaman web.
-// Diisi oleh: anggota yang mengerjakan fitur Siklus.
+// Diisi oleh: Hengky.
 
 require_once __DIR__ . "/../Config/Database.php";
 require_once __DIR__ . "/../Models/SiklusModel.php";

@@ -1,7 +1,7 @@
 <?php
 // app/Models/PanenModel.php
 // Tugas: Query SQL murni (PDO) untuk tabel panen.
-// Diisi oleh: anggota yang mengerjakan fitur Panen.
+// Diisi oleh: Putri.
 
 class PanenModel
 {

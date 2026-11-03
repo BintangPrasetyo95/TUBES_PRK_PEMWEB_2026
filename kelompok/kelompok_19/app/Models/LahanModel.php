@@ -1,7 +1,7 @@
 <?php
 // app/Models/LahanModel.php
 // Tugas: Query SQL murni (PDO) untuk tabel lahan.
-// Diisi oleh: anggota yang mengerjakan fitur Lahan.
+// Diisi oleh: Faqih.
 
 class LahanModel
 {

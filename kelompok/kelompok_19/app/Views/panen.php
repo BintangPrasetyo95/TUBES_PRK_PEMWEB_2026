@@ -1,7 +1,7 @@
 <?php
 // app/Views/panen.php
 // Tugas: CRUD Panen (tabel + form modal).
-// Diisi oleh: anggota yang mengerjakan fitur Panen.
+// Diisi oleh: Putri.
 
 $title = "Manajemen Panen";
 require_once __DIR__ . "/layouts/header.php";

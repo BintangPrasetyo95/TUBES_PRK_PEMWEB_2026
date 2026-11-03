@@ -1,7 +1,7 @@
 <?php
 // app/Views/lahan.php
 // Tugas: CRUD Lahan (tabel + form modal).
-// Diisi oleh: anggota yang mengerjakan fitur Lahan.
+// Diisi oleh: Faqih.
 
 $title = "Manajemen Lahan";
 require_once __DIR__ . "/layouts/header.php";

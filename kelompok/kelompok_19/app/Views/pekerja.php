@@ -1,7 +1,7 @@
 <?php
 // app/Views/pekerja.php
 // Tugas: CRUD Pekerja (tabel + form modal).
-// Diisi oleh: anggota yang mengerjakan fitur Pekerja.
+// Diisi oleh: Devi.
 
 $title = "Manajemen Pekerja";
 require_once __DIR__ . "/layouts/header.php";

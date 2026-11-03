@@ -2,7 +2,7 @@
 <?php
 // app/Views/siklus.php
 // Tugas: CRUD Siklus (tabel + form modal).
-// Diisi oleh: anggota yang mengerjakan fitur Siklus.
+// Diisi oleh: Hengky.
 
 $title = "Manajemen Siklus Tanam";
 require_once __DIR__ . "/layouts/header.php";

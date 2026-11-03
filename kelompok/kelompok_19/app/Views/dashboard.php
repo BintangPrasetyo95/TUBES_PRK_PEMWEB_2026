@@ -1,7 +1,7 @@
 <?php
 // app/Views/dashboard.php
 // Tugas: Tampilan utama + cuaca (API pihak ketiga).
-// Diisi oleh: anggota yang mengerjakan Dashboard.
+// Diisi oleh: Faqih.
 
 $title = "Dashboard";
 require_once __DIR__ . "/layouts/header.php";

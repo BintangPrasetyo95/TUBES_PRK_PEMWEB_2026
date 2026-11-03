@@ -1,6 +1,6 @@
 // public/assets/js/panen.js
 // Tugas: AJAX Fetch CRUD Panen ke /api/panen
-// Diisi oleh: anggota yang mengerjakan fitur Panen.
+// Diisi oleh: Putri.
 
 const API_PANEN = "/api/panen";
 

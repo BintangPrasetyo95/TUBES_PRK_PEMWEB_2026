@@ -1,6 +1,6 @@
 // public/assets/js/lahan.js
 // Tugas: AJAX Fetch CRUD Lahan ke /api/lahan
-// Diisi oleh: anggota yang mengerjakan fitur Lahan.
+// Diisi oleh: Faqih.
 
 const API_LAHAN = "/api/lahan";
 

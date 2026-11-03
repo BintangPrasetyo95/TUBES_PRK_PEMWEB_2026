@@ -2,7 +2,7 @@
 <?php
 // app/Models/SiklusModel.php
 // Tugas: Query SQL murni (PDO) untuk tabel siklus.
-// Diisi oleh: anggota yang mengerjakan fitur Siklus.
+// Diisi oleh: Hengky.
 
 class SiklusModel
 {

@@ -38,9 +38,52 @@ if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+$csrf_token = $_SESSION['csrf_token'];
+
+// Refresh data keranjang dari database agar harga dan stok selalu mutakhir.
+if (!empty($_SESSION['cart'])) {
+    $stmt_refresh_cart = $conn->prepare("SELECT id, sku, name, price, stock FROM products WHERE id = ?");
+    foreach ($_SESSION['cart'] as $cart_id => &$cart_item) {
+        $cart_product_id = (int)$cart_id;
+        $stmt_refresh_cart->bind_param("i", $cart_product_id);
+        $stmt_refresh_cart->execute();
+        $fresh_item = $stmt_refresh_cart->get_result()->fetch_assoc();
+
+        if (!$fresh_item || (int)$fresh_item['stock'] <= 0) {
+            unset($_SESSION['cart'][$cart_id]);
+            $_SESSION['flash_error'] = 'Sebagian produk di keranjang sudah tidak tersedia.';
+            continue;
+        }
+
+        $cart_item['sku'] = $fresh_item['sku'];
+        $cart_item['name'] = $fresh_item['name'];
+        $cart_item['price'] = (float)$fresh_item['price'];
+        $cart_item['stock'] = (int)$fresh_item['stock'];
+        if ($cart_item['qty'] > $cart_item['stock']) {
+            $cart_item['qty'] = $cart_item['stock'];
+            $_SESSION['flash_error'] = 'Jumlah keranjang disesuaikan dengan stok terbaru.';
+        }
+    }
+    unset($cart_item);
+    $stmt_refresh_cart->close();
+}
+
 $pesan_sukses = $_SESSION['flash_success'] ?? '';
 $pesan_error = $_SESSION['flash_error'] ?? '';
 unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $submitted_token = $_POST['csrf_token'] ?? '';
+    if (!is_string($submitted_token) || !hash_equals($csrf_token, $submitted_token)) {
+        $_SESSION['flash_error'] = 'Sesi formulir tidak valid. Silakan coba lagi.';
+        header("Location: index.php");
+        exit;
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'tambah') {
     $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
@@ -125,17 +168,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         exit;
     }
 
-    $customer_name = !empty($_POST['customer_name']) ? trim($_POST['customer_name']) : 'Pelanggan Umum';
-    $paid_amount = isset($_POST['nominal_bayar']) ? (float)$_POST['nominal_bayar'] : 0.0;
+    $customer_name = trim((string)($_POST['customer_name'] ?? ''));
+    $customer_name = $customer_name !== '' ? $customer_name : 'Pelanggan Umum';
+    $paid_amount_input = trim((string)($_POST['nominal_bayar'] ?? ''));
     $user_id = $_SESSION['user_id'] ?? null;
 
+    if (mb_strlen($customer_name) > 100) {
+        $_SESSION['flash_error'] = 'Nama pelanggan maksimal 100 karakter.';
+        header("Location: index.php");
+        exit;
+    }
+
+    if ($paid_amount_input === '' || !ctype_digit($paid_amount_input)) {
+        $_SESSION['flash_error'] = 'Nominal pembayaran harus berupa angka bulat yang valid.';
+        header("Location: index.php");
+        exit;
+    }
+
+    $paid_amount = (float)$paid_amount_input;
     $total_amount = 0;
     foreach ($_SESSION['cart'] as $item) {
         $total_amount += $item['price'] * $item['qty'];
     }
 
     // Validasi nominal pembayaran tidak boleh kurang dari total belanja
-    if ($paid_amount < $total_amount) {
+    if ($paid_amount < 0 || $paid_amount < $total_amount) {
         $kurang = $total_amount - $paid_amount;
         $_SESSION['flash_error'] = "Nominal pembayaran kurang Rp " . number_format($kurang, 0, ',', '.') . "!";
         header("Location: index.php");
@@ -521,6 +578,7 @@ $total_bayar = $total_subtotal;
                                                 Rp <?= number_format($item['price'], 0, ',', '.'); ?>
                                             </div>
                                             <form method="POST" action="index.php" class="m-0">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
                                                 <input type="hidden" name="action" value="tambah">
                                                 <input type="hidden" name="product_id" value="<?= $item['id']; ?>">
                                                 <button type="submit" class="btn-add-cart" <?= $item['stock'] <= 0 ? 'disabled' : ''; ?>>
@@ -549,6 +607,7 @@ $total_bayar = $total_subtotal;
                                 <span class="badge bg-secondary"><?= count($_SESSION['cart']); ?> Item</span>
                                 <?php if (!empty($_SESSION['cart'])): ?>
                                     <form method="POST" action="index.php" class="m-0" onsubmit="return confirm('Kosongkan semua item di keranjang?');">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
                                         <input type="hidden" name="action" value="kosongkan">
                                         <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 11px;">
                                             <i class="bi bi-trash me-1"></i>Kosongkan
@@ -578,6 +637,7 @@ $total_bayar = $total_subtotal;
                                         </div>
                                         <div class="ms-2 d-flex align-items-center gap-1">
                                             <form method="POST" action="index.php" class="d-flex align-items-center gap-1 m-0">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
                                                 <input type="hidden" name="action" value="update">
                                                 <input type="hidden" name="product_id" value="<?= $id; ?>">
                                                 <input type="number" name="qty" value="<?= (int)$cart_item['qty']; ?>" min="1" max="<?= (int)$cart_item['stock']; ?>" class="form-control form-control-sm text-center px-1" style="width: 55px; height: 30px;">
@@ -586,6 +646,7 @@ $total_bayar = $total_subtotal;
                                                 </button>
                                             </form>
                                             <form method="POST" action="index.php" class="m-0">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
                                                 <input type="hidden" name="action" value="hapus">
                                                 <input type="hidden" name="product_id" value="<?= $id; ?>">
                                                 <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="height: 30px;" title="Hapus item">
@@ -613,6 +674,7 @@ $total_bayar = $total_subtotal;
                         </div>
 
                         <form method="POST" action="index.php" id="form-transaksi">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
                             <input type="hidden" name="action" value="checkout">
                             <input type="hidden" name="total_bayar" id="input-total-bayar" value="<?= (int)$total_bayar; ?>">
 

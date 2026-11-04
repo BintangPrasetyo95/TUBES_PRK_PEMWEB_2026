@@ -81,6 +81,7 @@ Tujuan pengembangan FEBMart adalah:
 - Menyimpan transaksi dan detail transaksi.
 - Memotong stok barang secara otomatis setelah transaksi berhasil.
 - Memvalidasi input transaksi dan melindungi aksi kasir dengan CSRF token.
+- Menampilkan pesan error jika tabel transaksi gagal disiapkan.
 
 ### D. Riwayat Transaksi, Laporan & Cetak Struk
 - Menampilkan riwayat transaksi.

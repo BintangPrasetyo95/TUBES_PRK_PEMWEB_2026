@@ -8,8 +8,9 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once __DIR__ . '/../config/database.php';
 
-// Inisialisasi tabel transaksi jika belum ada
-$conn->query("
+// Inisialisasi tabel transaksi jika belum ada.
+$schema_queries = [
+    'transactions' => "
     CREATE TABLE IF NOT EXISTS `transactions` (
         `id` INT AUTO_INCREMENT PRIMARY KEY,
         `invoice_number` VARCHAR(50) NOT NULL UNIQUE,
@@ -22,9 +23,8 @@ $conn->query("
         KEY `idx_transactions_user_id` (`user_id`),
         KEY `idx_transactions_created_at` (`created_at`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-");
-
-$conn->query("
+    ",
+    'transaction_details' => "
     CREATE TABLE IF NOT EXISTS `transaction_details` (
         `id` INT AUTO_INCREMENT PRIMARY KEY,
         `transaction_id` INT NOT NULL,
@@ -38,7 +38,16 @@ $conn->query("
         CONSTRAINT `fk_transaction_details_trans`
             FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-");
+    "
+];
+
+foreach ($schema_queries as $table_name => $schema_query) {
+    if (!$conn->query($schema_query)) {
+        error_log("Gagal menyiapkan tabel {$table_name}: " . $conn->error);
+        http_response_code(500);
+        exit('Sistem transaksi belum siap. Hubungi administrator.');
+    }
+}
 
 if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
     $_SESSION['cart'] = [];

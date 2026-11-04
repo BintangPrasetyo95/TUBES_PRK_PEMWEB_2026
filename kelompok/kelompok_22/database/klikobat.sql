@@ -108,3 +108,55 @@ INSERT INTO `obat` (`id_obat`, `nama_obat`, `id_kategori`, `stok`, `indikasi`, `
  'Mengurangi gejala kelebihan asam lambung, gastritis, tukak lambung, dan tukak usus dua belas jari.',
  'Dewasa: 1-2 sendok takar (5-10 ml), 3-4 kali sehari di antara waktu makan dan sebelum tidur.',
  'Tidak dianjurkan digunakan terus-menerus lebih dari 2 minggu kecuali atas petunjuk dokter.');
+
+ -- Seed Data: 20 Obat (Bagian 2: Obat 11 - 20)
+INSERT INTO `obat` (`id_obat`, `nama_obat`, `id_kategori`, `stok`, `indikasi`, `aturan_pakai`, `peringatan`) VALUES
+(11, 'New Diatabs Attapulgite (Strip 4 Tablet)', 3, 35,
+ 'Pengobatan simtomatik pada diare non-spesifik dengan cara menyerap racun dan bakteri penyebab diare di saluran cerna.',
+ 'Dewasa: 2 tablet setiap selesai buang air besar. Maksimal 12 tablet dalam 24 jam.',
+ 'Jangan diberikan pada pasien konstipasi (sembelit). Tetap cukupi kebutuhan cairan tubuh (oralit) selama diare.'),
+
+(12, 'Oralit 200 Garam Elektrolit (Sachet)', 3, 60,
+ 'Mencegah dan mengobati dehidrasi akibat diare atau muntah-muntah dengan menggantikan cairan dan elektrolit tubuh.',
+ 'Larutkan 1 sachet ke dalam 200 ml air matang hangat. Minum setiap kali selesai buang air besar.',
+ 'Larutan yang sudah dibuat tidak boleh digunakan lagi setelah lewat dari 24 jam.'),
+
+(13, 'Vitamin C IPI 50 mg (Botol 45 Tablet)', 4, 22,
+ 'Membantu memenuhi kebutuhan Vitamin C harian, menjaga daya tahan tubuh, serta membantu pemulihan pasca sakit.',
+ 'Dewasa: 1-2 tablet hisap sehari sesudah makan.',
+ 'Simpan di tempat kering di bawah suhu 30 derajat Celsius dan terhindar dari sinar matahari langsung.'),
+
+(14, 'Imboost Force (Strip 10 Kaplet)', 4, 4,
+ 'Suplemen imunomodulator (Echinacea & Zinc) untuk membantu memelihara daya tahan tubuh dan mempercepat penyembuhan.',
+ 'Dewasa: 1 kaplet, 3 kali sehari sesudah makan.',
+ 'Tidak boleh digunakan oleh penderita penyakit autoimun, sklerosis multipel, tuberkulosis, dan AIDS. Maksimal konsumsi 8 minggu.'),
+
+(15, 'Sangobion Kapsul Penambah Darah (Strip 10 Kapsul)', 4, 28,
+ 'Suplemen zat besi, vitamin, dan mineral untuk mengatasi anemia (kurang darah) serta membantu pembentukan sel darah merah.',
+ 'Dewasa: 1 kapsul sehari pada waktu atau sesudah makan.',
+ 'Dapat menyebabkan feses berwarna hitam yang merupakan hal normal akibat kandungan zat besi.'),
+
+(16, 'Neurobion Forte (Strip 10 Tablet)', 4, 0,
+ 'Suplemen vitamin neurotropik (B1, B6, B12) untuk menjaga kesehatan fungsi saraf serta mengatasi kesemutan dan kebas.',
+ 'Dewasa: 1 tablet sehari sesudah makan, ditelan utuh dengan air putih.',
+ 'Tidak dianjurkan untuk anak-anak karena tingginya dosis vitamin B di dalam tablet.'),
+
+(17, 'Betadine Antiseptic Solution 15 ml', 5, 19,
+ 'Cairan antiseptik Povidone-Iodine 10% untuk membunuh kuman penyebab infeksi pada luka gores, luka bakar ringan, dan luka lecet.',
+ 'Bersihkan luka terlebih dahulu, lalu oleskan Betadine secukupnya 1-2 kali sehari pada area yang luka.',
+ 'Hanya untuk pemakaian luar. Hentikan pemakaian jika timbul kemerahan, iritasi, atau pembengkakan pada kulit.'),
+
+(18, 'Hansaplast Kain Elastis (Amplop 10 Lembar)', 5, 40,
+ 'Plester penutup luka berbahan kain lentur yang mengikuti pergerakan kulit untuk melindungi luka dari kotoran dan bakteri.',
+ 'Bersihkan dan keringkan kulit di sekitar luka, lalu tempelkan plester tanpa diregangkan. Ganti plester setiap hari.',
+ 'Hanya untuk sekali pakai. Jangan gunakan pada luka terbuka yang mengalami perdarahan hebat.'),
+
+(19, 'Rivanol Kompres Luka 100 ml', 5, 3,
+ 'Cairan antiseptik Etakridina Laktat 0,1% untuk membersihkan luka dan mengompres luka bernanah atau borok.',
+ 'Tuangkan pada kapas atau kasa steril, lalu usapkan atau kompreskan pada bagian luka.',
+ 'Hanya untuk penggunaan luar. Jauhkan dari jangkauan anak-anak dan simpan di tempat sejuk.'),
+
+(20, 'Bioplacenton Gel 15 gr', 5, 14,
+ 'Mengobati luka bakar ringan, luka terinfeksi, dan membantu mempercepat regenerasi jaringan kulit baru.',
+ 'Oleskan tipis-tipis pada area luka 4-6 kali sehari sesuai kebutuhan.',
+ 'Obat keras terbatas. Hindari kontak langsung dengan mata dan jangan digunakan oleh pasien yang alergi terhadap Neomycin.');

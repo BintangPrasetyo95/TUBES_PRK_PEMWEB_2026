@@ -680,15 +680,23 @@ $total_bayar = $total_subtotal;
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="font-size: 13px; color: #29245c;">Nama Pelanggan</label>
-                                <input type="text" name="customer_name" class="form-control form-control-sm" placeholder="Nama Pelanggan (opsional)" value="Pelanggan Umum" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
+                                <input type="text" name="customer_name" class="form-control form-control-sm" placeholder="Nama Pelanggan (opsional)" value="Pelanggan Umum" maxlength="100" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold" style="font-size: 13px; color: #29245c;">Nominal Pembayaran (Cash) <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light fw-bold" style="font-size: 13px;">Rp</span>
-                                    <input type="number" name="nominal_bayar" id="nominal-bayar" class="form-control" placeholder="0" min="0" step="1" required <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
+                                    <input type="number" name="nominal_bayar" id="nominal-bayar" class="form-control" placeholder="0" min="<?= (int)$total_bayar; ?>" step="1" required <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
                                 </div>
+                                <?php if (!empty($_SESSION['cart'])): ?>
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)$total_bayar; ?>">Uang Pas</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)($total_bayar + 10000); ?>">+10.000</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)($total_bayar + 20000); ?>">+20.000</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)($total_bayar + 50000); ?>">+50.000</button>
+                                    </div>
+                                <?php endif; ?>
                             </div>
 
                             <div class="mb-3">
@@ -721,6 +729,7 @@ $total_bayar = $total_subtotal;
         const displayKembalian = document.getElementById('display-kembalian');
         const totalBayar = <?= (int)$total_bayar; ?>;
         const btnSubmit = document.getElementById('btn-submit-transaksi');
+        const quickPaymentButtons = document.querySelectorAll('.quick-payment');
 
         function hitungKembalian() {
             if (!inputBayar || !displayKembalian) return;
@@ -748,6 +757,13 @@ $total_bayar = $total_subtotal;
             inputBayar.addEventListener('input', hitungKembalian);
             hitungKembalian();
         }
+
+        quickPaymentButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                inputBayar.value = button.dataset.amount;
+                hitungKembalian();
+            });
+        });
     </script>
 </body>
 </html>

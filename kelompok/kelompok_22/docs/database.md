@@ -26,3 +26,29 @@ erDiagram
         varchar_50 username "NOT NULL, UNIQUE"
         varchar_255 password "NOT NULL (Bcrypt)"
     }
+
+## 2. Spesifikasi Tabel (Kamus Data)
+
+### a. Tabel `kategori`
+| Kolom | Tipe Data | Constraint | Keterangan |
+|---|---|---|---|
+| `id_kategori` | `INT(11)` | `PRIMARY KEY`, `AUTO_INCREMENT` | ID unik kategori obat |
+| `nama_kategori` | `VARCHAR(100)` | `NOT NULL`, `UNIQUE` | Nama kategori obat |
+
+### b. Tabel `obat`
+| Kolom | Tipe Data | Constraint | Keterangan |
+|---|---|---|---|
+| `id_obat` | `INT(11)` | `PRIMARY KEY`, `AUTO_INCREMENT` | ID unik obat |
+| `nama_obat` | `VARCHAR(150)` | `NOT NULL` | Nama obat dan sediaan |
+| `id_kategori` | `INT(11)` | `FOREIGN KEY` (`ON DELETE RESTRICT`) | Relasi ke `kategori.id_kategori` |
+| `stok` | `INT(11)` | `NOT NULL`, `DEFAULT 0` | Stok (`0`: Habis, `1-10`: Menipis, `>10`: Tersedia) |
+| `indikasi` | `TEXT` | `NOT NULL` | Deskripsi kegunaan obat |
+| `aturan_pakai` | `TEXT` | `NOT NULL` | Dosis dan aturan konsumsi |
+| `peringatan` | `TEXT` | `NOT NULL` | Peringatan dan kontraindikasi |
+
+### c. Tabel `admin`
+| Kolom | Tipe Data | Constraint | Keterangan |
+|---|---|---|---|
+| `id_admin` | `INT(11)` | `PRIMARY KEY`, `AUTO_INCREMENT` | ID unik administrator |
+| `username` | `VARCHAR(50)` | `NOT NULL`, `UNIQUE` | Username login admin |
+| `password` | `VARCHAR(255)` | `NOT NULL` | Bcrypt hash (`password_hash`) |

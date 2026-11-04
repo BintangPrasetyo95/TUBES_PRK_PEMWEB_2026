@@ -160,3 +160,7 @@ INSERT INTO `obat` (`id_obat`, `nama_obat`, `id_kategori`, `stok`, `indikasi`, `
  'Mengobati luka bakar ringan, luka terinfeksi, dan membantu mempercepat regenerasi jaringan kulit baru.',
  'Oleskan tipis-tipis pada area luka 4-6 kali sehari sesuai kebutuhan.',
  'Obat keras terbatas. Hindari kontak langsung dengan mata dan jangan digunakan oleh pasien yang alergi terhadap Neomycin.');
+
+-- 6. Seed Data: 1 Akun Admin Default (Username: admin | Password: password)
+INSERT INTO `admin` (`id_admin`, `username`, `password`) VALUES
+(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');

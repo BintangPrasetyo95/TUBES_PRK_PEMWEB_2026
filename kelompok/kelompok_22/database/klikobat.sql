@@ -48,3 +48,11 @@ CREATE TABLE `admin` (
   PRIMARY KEY (`id_admin`),
   UNIQUE KEY `uk_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4. Seed Data: 5 Kategori Obat
+INSERT INTO `kategori` (`id_kategori`, `nama_kategori`) VALUES
+(1, 'Pereda Nyeri & Demam'),
+(2, 'Obat Batuk, Pilek & Flu'),
+(3, 'Saluran Pencernaan'),
+(4, 'Vitamin & Suplemen'),
+(5, 'Antiseptik & Perawatan Luka');

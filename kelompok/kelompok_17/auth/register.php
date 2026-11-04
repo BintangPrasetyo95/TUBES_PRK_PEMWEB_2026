@@ -5,17 +5,28 @@ require_once '../config/database.php';
 $pesan = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nama_lengkap = htmlspecialchars($_POST['nama_lengkap']);
-    $npm = htmlspecialchars($_POST['npm']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT); 
-    $role = 'mahasiswa';
+    // 1. Ambil input menggunakan isset() dan trim()
+    $nama_lengkap_input = isset($_POST['nama_lengkap']) ? trim($_POST['nama_lengkap']) : '';
+    $npm_input = isset($_POST['npm']) ? trim($_POST['npm']) : '';
+    $password_input = isset($_POST['password']) ? $_POST['password'] : '';
 
-    try {
-        $stmt = $pdo->prepare("INSERT INTO users (nama_lengkap, npm, password, role) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$nama_lengkap, $npm, $password, $role]);
-        $pesan = "<p class='text-green-500 mb-4'>Registrasi berhasil! Silakan login.</p>";
-    } catch (PDOException $e) {
-        $pesan = "<p class='text-red-500 mb-4'>Error: NPM sudah terdaftar atau terjadi kesalahan.</p>";
+    // 2. Validasi input kosong (Server-side validation)
+    if (empty($nama_lengkap_input) || empty($npm_input) || empty($password_input)) {
+        $pesan = "<p class='text-red-500 mb-4'>Semua kolom (Nama, NPM, dan Password) wajib diisi!</p>";
+    } else {
+        // 3. Sanitasi dan Enkripsi jika data sudah lengkap
+        $nama_lengkap = htmlspecialchars($nama_lengkap_input);
+        $npm = htmlspecialchars($npm_input);
+        $password = password_hash($password_input, PASSWORD_DEFAULT); 
+        $role = 'mahasiswa';
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO users (nama_lengkap, npm, password, role) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$nama_lengkap, $npm, $password, $role]);
+            $pesan = "<p class='text-green-500 mb-4'>Registrasi berhasil! Silakan login.</p>";
+        } catch (PDOException $e) {
+            $pesan = "<p class='text-red-500 mb-4'>Error: NPM sudah terdaftar atau terjadi kesalahan.</p>";
+        }
     }
 }
 ?>
@@ -24,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Register - KabarSi</title>
+    <title>Register - KabarSih</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">

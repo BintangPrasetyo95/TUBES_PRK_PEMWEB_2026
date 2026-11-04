@@ -50,6 +50,10 @@ if (empty($_SESSION['csrf_token'])) {
 
 $csrf_token = $_SESSION['csrf_token'];
 
+$pesan_sukses = $_SESSION['flash_success'] ?? '';
+$pesan_error = $_SESSION['flash_error'] ?? '';
+unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+
 // Refresh data keranjang dari database agar harga dan stok selalu mutakhir.
 if (!empty($_SESSION['cart'])) {
     $stmt_refresh_cart = $conn->prepare("SELECT id, sku, name, price, stock FROM products WHERE id = ?");
@@ -61,7 +65,7 @@ if (!empty($_SESSION['cart'])) {
 
         if (!$fresh_item || (int)$fresh_item['stock'] <= 0) {
             unset($_SESSION['cart'][$cart_id]);
-            $_SESSION['flash_error'] = 'Sebagian produk di keranjang sudah tidak tersedia.';
+            $pesan_error = 'Sebagian produk di keranjang sudah tidak tersedia.';
             continue;
         }
 
@@ -69,18 +73,15 @@ if (!empty($_SESSION['cart'])) {
         $cart_item['name'] = $fresh_item['name'];
         $cart_item['price'] = (float)$fresh_item['price'];
         $cart_item['stock'] = (int)$fresh_item['stock'];
+        $cart_item['qty'] = max(1, (int)$cart_item['qty']);
         if ($cart_item['qty'] > $cart_item['stock']) {
             $cart_item['qty'] = $cart_item['stock'];
-            $_SESSION['flash_error'] = 'Jumlah keranjang disesuaikan dengan stok terbaru.';
+            $pesan_error = 'Jumlah keranjang disesuaikan dengan stok terbaru.';
         }
     }
     unset($cart_item);
     $stmt_refresh_cart->close();
 }
-
-$pesan_sukses = $_SESSION['flash_success'] ?? '';
-$pesan_error = $_SESSION['flash_error'] ?? '';
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submitted_token = $_POST['csrf_token'] ?? '';

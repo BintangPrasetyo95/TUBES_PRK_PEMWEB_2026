@@ -20,3 +20,22 @@ CREATE TABLE `kategori` (
   PRIMARY KEY (`id_kategori`),
   UNIQUE KEY `uk_nama_kategori` (`nama_kategori`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 2. Struktur Tabel obat
+CREATE TABLE `obat` (
+  `id_obat` INT(11) NOT NULL AUTO_INCREMENT,
+  `nama_obat` VARCHAR(150) NOT NULL,
+  `id_kategori` INT(11) NOT NULL,
+  `stok` INT(11) NOT NULL DEFAULT 0,
+  `indikasi` TEXT NOT NULL,
+  `aturan_pakai` TEXT NOT NULL,
+  `peringatan` TEXT NOT NULL,
+  PRIMARY KEY (`id_obat`),
+  KEY `idx_id_kategori` (`id_kategori`),
+  KEY `idx_nama_obat` (`nama_obat`),
+  CONSTRAINT `fk_obat_kategori`
+    FOREIGN KEY (`id_kategori`)
+    REFERENCES `kategori` (`id_kategori`)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

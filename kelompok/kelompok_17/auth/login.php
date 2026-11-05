@@ -5,26 +5,36 @@ require_once '../config/database.php';
 $pesan = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $npm = trim($_POST['npm']);
-    $password = $_POST['password'];
+    // 1. Validasi input di sisi server (Mencegah input kosong)
+    $npm = isset($_POST['npm']) ? trim($_POST['npm']) : '';
+    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE npm = ?");
-    $stmt->execute([$npm]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['id_user'] = $user['id_user'];
-        $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
-        $_SESSION['role'] = $user['role'];
-
-        if ($user['role'] == 'admin') {
-            header("Location: ../admin/index.php");
-        } else {
-            header("Location: ../index.php");
-        }
-        exit();
+    if (empty($npm) || empty($password)) {
+        $pesan = "<p class='text-red-500 mb-4'>NPM dan Password wajib diisi!</p>";
     } else {
-        $pesan = "<p class='text-red-500 mb-4'>NPM atau Password salah!</p>";
+        // 2. Tidak memakai SELECT * (Sebutkan nama kolom secara spesifik)
+        $stmt = $pdo->prepare("SELECT id_user, nama_lengkap, password, role FROM users WHERE npm = ?");
+        $stmt->execute([$npm]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            
+            // 3. Panggil session_regenerate_id(true) untuk mencegah Session Fixation
+            session_regenerate_id(true);
+
+            $_SESSION['id_user'] = $user['id_user'];
+            $_SESSION['nama_lengkap'] = $user['nama_lengkap'];
+            $_SESSION['role'] = $user['role'];
+
+            if ($user['role'] == 'admin') {
+                header("Location: ../admin/index.php");
+            } else {
+                header("Location: ../index.php");
+            }
+            exit();
+        } else {
+            $pesan = "<p class='text-red-500 mb-4'>NPM atau Password salah!</p>";
+        }
     }
 }
 ?>
@@ -33,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Login - KabarSi</title>
+    <title>Login - KabarSih</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">

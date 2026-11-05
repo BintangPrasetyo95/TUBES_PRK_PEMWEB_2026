@@ -46,9 +46,13 @@ function db(): PDO
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (PDOException $e) {
-            http_response_code(500);
             $detail = config('dev_mode', false) ? ' Detail: ' . $e->getMessage() : '';
-            exit('Tidak dapat terhubung ke database. Pastikan MySQL di XAMPP menyala dan database/schema.sql sudah diimpor.' . $detail);
+            $pesan = 'Tidak dapat terhubung ke database. Pastikan MySQL di XAMPP menyala dan database/schema.sql sudah diimpor.' . $detail;
+            if (defined('API_MODE')) {
+                api_error($pesan, 500); // endpoint API selalu membalas JSON
+            }
+            http_response_code(500);
+            exit($pesan);
         }
     }
     return $pdo;

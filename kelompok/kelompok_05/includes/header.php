@@ -12,6 +12,8 @@ $judul_halaman = isset($page_title)
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+    <meta name="base-url" content="<?= e(base_url()) ?>">
     <title><?= e($judul_halaman) ?></title>
     <link rel="stylesheet" href="<?= e(base_url('assets/css/theme.css')) ?>">
 <?php foreach ((array) ($extra_css ?? []) as $css_tambahan): ?>

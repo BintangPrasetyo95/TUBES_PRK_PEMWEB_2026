@@ -97,7 +97,19 @@ kbd { display: inline-grid; min-width: 18px; height: 19px; place-items: center; 
 .medicine-dosage { margin-top: 14px; padding: 10px 12px; border-left: 3px solid var(--primary); border-radius: 0 6px 6px 0; background: var(--bg-soft); color: var(--text-secondary); font-size: 9px; line-height: 1.75; }
 .medicine-dosage strong { display: block; margin-bottom: 2px; color: var(--text-primary); font-size: 9px; }
 .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 13px; border-top: 1px solid #EDF0ED; }
-.stock-number { color: var(--text-muted); font-size: 9px; }.stock-number strong { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stock-number { color: var(--text-muted); font-size: 9px; font-variant-numeric: tabular-nums; }.stock-number strong { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.medicine-dosage { font-variant-numeric: tabular-nums; }
+
+.detail-dialog { width: min(560px, calc(100% - 32px)); max-height: min(80vh, 720px); padding: 0; overflow: auto; border: 1px solid var(--border-color); border-radius: var(--radius-lg); background: white; color: var(--text-primary); box-shadow: 0 24px 80px rgba(17, 28, 24, .2); }
+.detail-dialog::backdrop { background: rgba(17, 28, 24, .38); backdrop-filter: blur(3px); }
+.detail-dialog-content { position: relative; padding: 30px; }
+.detail-dialog-close { position: absolute; top: 18px; right: 18px; width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--border-color); border-radius: 9px; background: white; color: var(--text-secondary); cursor: pointer; transition: background var(--transition), color var(--transition); }
+.detail-dialog-close:hover { background: var(--bg-soft); color: var(--primary); }
+.detail-dialog-close svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; }
+.detail-dialog h2 { max-width: calc(100% - 35px); margin: 8px 0 22px; font-size: 23px; line-height: 1.35; letter-spacing: -.04em; }
+.detail-dialog dl { margin: 0; }
+.detail-dialog dt { margin-top: 17px; font-size: 11px; font-weight: 700; }
+.detail-dialog dd { margin: 5px 0 0; color: var(--text-secondary); font-size: 11px; line-height: 1.8; }
 .btn-detail { display: inline-flex; align-items: center; gap: 7px; padding: 5px 0 5px 8px; border: 0; background: transparent; color: var(--primary); font-size: 9px; font-weight: 700; cursor: pointer; }
 .btn-detail svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--transition); }
 .btn-detail:hover svg { transform: translateX(3px); }

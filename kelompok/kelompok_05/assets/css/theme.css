@@ -90,8 +90,28 @@ th { background: var(--c-bg); color: var(--c-primary-dark); }
   .navbar-menu.terbuka { display: flex; }
 }
 
+/* ---- Komponen AJAX (dipakai ui.js dan fitur) ---- */
+.toolbar { display: flex; gap: var(--space); flex-wrap: wrap; align-items: center; margin-bottom: var(--space); }
+.toolbar input[type=text] { flex: 1; min-width: 180px; }
+
+/* Keadaan tampilan: loading, error, kosong */
+.state { padding: calc(var(--space) * 1.5); text-align: center; color: var(--c-muted); }
+.state-error { color: var(--c-bad); }
+.spinner { display: inline-block; width: 1rem; height: 1rem; margin-right: .5rem; vertical-align: middle; border: 2px solid var(--c-border); border-top-color: var(--c-primary); border-radius: 50%; animation: putar .8s linear infinite; }
+@keyframes putar { to { transform: rotate(360deg); } }
+
+/* Modal: tampil saat diberi kelas .active */
+.modal { display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: var(--space); background: rgba(20, 38, 63, .55); }
+.modal.active { display: flex; }
+.modal-dialog { width: 100%; max-width: 520px; max-height: 90vh; margin: 0; overflow: auto; }
+
+/* Toast */
+.toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 200; display: flex; flex-direction: column; gap: .5rem; max-width: min(360px, 90vw); }
+.toast { margin: 0; box-shadow: 0 2px 8px rgba(0, 0, 0, .18); }
+.btn[disabled] { opacity: .6; cursor: not-allowed; }
+
 @media print {
-  .navbar, .site-footer, .no-print { display: none !important; }
+  .navbar, .site-footer, .no-print, .toast-container, .modal { display: none !important; }
   body { background: #fff; }
   .card { border: 0; padding: 0; }
 }

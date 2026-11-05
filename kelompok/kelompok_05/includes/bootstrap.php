@@ -10,6 +10,8 @@ require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/audit.php';
+require_once __DIR__ . '/api.php';
+require_once __DIR__ . '/validasi.php';
 
 if (config('dev_mode', false)) {
     ini_set('display_errors', '1');

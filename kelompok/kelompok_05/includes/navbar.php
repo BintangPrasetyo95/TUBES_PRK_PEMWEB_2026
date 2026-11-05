@@ -29,6 +29,7 @@ $nav_role = $nav_user['role'] ?? 'tamu';
             <?= link_if_exists('modules/pustaka/index.php', 'Pustaka') ?>
 <?php if (config('dev_mode', false)): ?>
             <?= link_if_exists('modules/contoh/contoh_pemeriksaan.php', 'Contoh Pola', 'nav-dev') ?>
+            <?= link_if_exists('modules/contoh/contoh_ajax.php', 'Contoh AJAX', 'nav-dev') ?>
 <?php endif; ?>
             <span class="nav-user"><?= e($nav_user['nama']) ?> <span class="badge badge-info"><?= e($nav_role) ?></span></span>
             <?= link_if_exists(logout_url(), 'Keluar') ?>

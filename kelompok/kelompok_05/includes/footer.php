@@ -9,7 +9,11 @@
         <small>CEKHAK adalah alat bantu pemeriksaan kelengkapan administratif. Hasilnya bukan pendapat hukum final dan tidak menjamin dokumen sah atau diterima instansi tertentu.</small>
     </div>
 </footer>
+<div class="toast-container" id="toast-container" aria-live="polite"></div>
 <script src="<?= e(base_url('assets/js/app.js')) ?>"></script>
+<script src="<?= e(base_url('assets/js/api.js')) ?>"></script>
+<script src="<?= e(base_url('assets/js/ui.js')) ?>"></script>
+<script src="<?= e(base_url('assets/js/validate.js')) ?>"></script>
 <?php foreach ((array) ($extra_js ?? []) as $js_tambahan): ?>
 <script src="<?= e(base_url($js_tambahan)) ?>"></script>
 <?php endforeach; ?>

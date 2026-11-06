@@ -17,6 +17,11 @@ if (!$count_result) {
     throw new RuntimeException("Gagal menghitung riwayat transaksi: " . $conn->error);
 }
 $total_transactions = (int)$count_result->fetch_assoc()['total'];
+$revenue_result = $conn->query("SELECT COALESCE(SUM(total), 0) AS revenue FROM transactions");
+if (!$revenue_result) {
+    throw new RuntimeException("Gagal menghitung omzet riwayat transaksi: " . $conn->error);
+}
+$total_revenue = (float)$revenue_result->fetch_assoc()['revenue'];
 $total_pages = max(1, (int)ceil($total_transactions / $per_page));
 $page = min($page, $total_pages);
 $offset = ($page - 1) * $per_page;
@@ -101,7 +106,10 @@ function rupiah(float|string $amount): string
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
             <div>
                 <h4 class="mb-1">Daftar Penjualan</h4>
-                <p class="text-muted mb-0">Total <?= number_format($total_transactions); ?> transaksi tercatat.</p>
+                <p class="text-muted mb-0">
+                    Total <?= number_format($total_transactions); ?> transaksi tercatat
+                    dengan omzet <?= rupiah($total_revenue); ?>.
+                </p>
             </div>
             <a class="btn btn-primary" href="../laporan/index.php"><i class="bi bi-bar-chart-line me-1"></i>Laporan Penjualan</a>
         </div>

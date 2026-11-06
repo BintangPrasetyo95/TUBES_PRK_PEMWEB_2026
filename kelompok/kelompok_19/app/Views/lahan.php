@@ -30,6 +30,7 @@ require_once __DIR__ . "/layouts/sidebar.php";
                             </thead>
                             <tbody>
                                 <!-- TODO: Isi data via JS fetch ke API -->
+                                <tr id="placeholderLahan"><td colspan="6" class="text-center">Memuat data...</td></tr>
                             </tbody>
                         </table>
                     </div>

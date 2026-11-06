@@ -1,0 +1,159 @@
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #eff6ff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --bg-body: #f8fafc;
+    --bg-white: #ffffff;
+    --border: #e2e8f0;
+    --radius: 8px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    color: var(--text-main) !important;
+    background-color: var(--bg-body) !important;
+    line-height: 1.6;
+}
+
+/* Custom Style Judul & Badge Header */
+h2.text-primary {
+    color: var(--primary) !important;
+    font-size: 1.5rem;
+}
+
+.badge.bg-primary {
+    background-color: var(--primary) !important;
+    border-radius: var(--radius) !important;
+    font-weight: 500;
+}
+
+.card {
+    background: var(--bg-white) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: none !important;
+    margin-bottom: 24px;
+}
+
+.card-body {
+    padding: 20px !important;
+}
+
+/* Transformasi Tabel Bootstrap Menjadi Data-Table */
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 12px;
+}
+
+.table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 0 !important;
+}
+
+.table thead.table-dark {
+    background-color: #f1f5f9 !important;
+    color: var(--text-main) !important;
+}
+
+.table thead.table-dark th {
+    background-color: #f1f5f9 !important;
+    color: var(--text-main) !important;
+    font-weight: 600 !important;
+    padding: 12px 14px !important;
+    border-bottom: 2px solid var(--border) !important;
+}
+
+.table tbody td {
+    padding: 12px 14px !important;
+    border-bottom: 1px solid var(--border) !important;
+    color: var(--text-main) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: var(--bg-white) !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8fafc !important;
+}
+
+/* Styling Badge Status & Nomor Antrian */
+.badge.border-secondary {
+    background-color: var(--primary-light) !important;
+    color: var(--primary) !important;
+    border: 1px solid var(--border) !important;
+    padding: 4px 10px !important;
+    border-radius: 12px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+}
+
+.badge.bg-warning {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+}
+
+.badge.bg-info {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+}
+
+.badge.bg-success {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+}
+
+/* Styling Tombol */
+.btn-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+    border-radius: var(--radius) !important;
+    font-weight: 600 !important;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+
+.btn-success {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    border-radius: var(--radius) !important;
+    font-weight: 600 !important;
+}
+
+.btn-success:hover {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+}
+
+/* Alert */
+.alert {
+    border-radius: var(--radius) !important;
+    font-size: 0.9rem !important;
+    border: 1px solid var(--border) !important;
+}
+
+.alert-success {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border-color: #bbf7d0 !important;
+}
+
+.alert-danger {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border-color: #fecaca !important;
+}

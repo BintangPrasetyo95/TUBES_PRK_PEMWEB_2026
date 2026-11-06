@@ -27,7 +27,8 @@ $page = min($page, $total_pages);
 $offset = ($page - 1) * $per_page;
 
 $stmt = $conn->prepare("
-    SELECT t.id, t.invoice_number, t.transaction_date, t.total, t.payment_method,
+    SELECT t.id, t.invoice_number, t.transaction_date, t.subtotal, t.total,
+           t.amount_paid, t.change_amount, t.payment_method,
            u.name AS cashier_name,
            (SELECT COUNT(*) FROM transaction_details td WHERE td.transaction_id = t.id) AS item_count
     FROM transactions t
@@ -154,6 +155,10 @@ function rupiah(float|string $amount): string
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                         </div>
                         <div class="modal-body">
+                            <div class="row g-2 small mb-3">
+                                <div class="col-sm-6"><span class="text-muted">Tanggal:</span> <?= h(date('d/m/Y H:i', strtotime($transaction['transaction_date']))); ?></div>
+                                <div class="col-sm-6"><span class="text-muted">Kasir:</span> <?= h($transaction['cashier_name']); ?></div>
+                            </div>
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered mb-3">
                                     <thead><tr><th>Nama Produk</th><th>Harga</th><th>Qty</th><th>Subtotal</th></tr></thead>
@@ -169,7 +174,12 @@ function rupiah(float|string $amount): string
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="text-end fw-bold">Total: <?= rupiah($transaction['total']); ?></div>
+                            <div class="ms-auto" style="max-width:260px">
+                                <div class="d-flex justify-content-between"><span>Subtotal</span><span><?= rupiah($transaction['subtotal']); ?></span></div>
+                                <div class="d-flex justify-content-between fw-bold"><span>Total</span><span><?= rupiah($transaction['total']); ?></span></div>
+                                <div class="d-flex justify-content-between"><span>Dibayar</span><span><?= rupiah($transaction['amount_paid']); ?></span></div>
+                                <div class="d-flex justify-content-between"><span>Kembalian</span><span><?= rupiah($transaction['change_amount']); ?></span></div>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <a class="btn btn-primary" href="struk.php?id=<?= $transaction_id; ?>" target="_blank" rel="noopener"><i class="bi bi-receipt me-1"></i>Buka Struk</a>

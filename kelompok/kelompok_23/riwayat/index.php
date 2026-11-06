@@ -92,6 +92,11 @@ function rupiah(float|string $amount): string
         .table { font-size:13px; }
         .table thead th { padding:14px 12px; color:#fff; background:#29245c; white-space:nowrap; }
         .table tbody td { padding:13px 12px; vertical-align:middle; }
+        .table tbody tr:nth-child(even) { background:#faf9fd; }
+        .table tbody tr:hover { background:#f0eef9; }
+        .table thead th:first-child, .table tbody td:first-child { width:56px; text-align:center; }
+        .table tbody td:last-child { min-width:155px; }
+        .invoice-number { color:#29245c; font-weight:700; }
         .btn-back { display:inline-block; margin-top:20px; padding:10px 16px; border:1px solid #ddd; border-radius:7px; color:#5142a5; background:#f5f4fb; font-weight:bold; text-decoration:none; }
         @media(max-width:768px) { body { padding:12px; } .header-section,.content-section { padding:22px; } }
     </style>
@@ -125,7 +130,7 @@ function rupiah(float|string $amount): string
                         <?php $transaction_id = (int)$transaction['id']; ?>
                         <tr>
                             <td><?= $offset + $index + 1; ?></td>
-                            <td class="fw-semibold"><?= h($transaction['invoice_number']); ?></td>
+                            <td class="invoice-number"><?= h($transaction['invoice_number']); ?></td>
                             <td><?= h(date('d/m/Y H:i', strtotime($transaction['transaction_date']))); ?></td>
                             <td><?= h($transaction['cashier_name']); ?></td>
                             <td><?= (int)$transaction['item_count']; ?></td>

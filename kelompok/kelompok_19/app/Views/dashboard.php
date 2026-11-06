@@ -53,7 +53,46 @@ require_once __DIR__ . "/layouts/sidebar.php";
                         Memuat data cuaca...
                     </div>
                 </div>
-            </div>
+                </div>
+
+                <script>
+                    // TODO: Ringkasan statistik (jumlah lahan, siklus aktif, total panen, dll.)
+                    async function loadStats() {
+                        const endpoints = [
+                            { url: "/api/lahan", id: "stat-lahan" },
+                            { url: "/api/siklus", id: "stat-siklus" },
+                            { url: "/api/inventaris", id: "stat-inventaris" },
+                            { url: "/api/panen", id: "stat-panen" }
+                        ];
+                        for (const ep of endpoints) {
+                            try {
+                                const res = await fetch(ep.url);
+                                const data = await res.json();
+                                document.getElementById(ep.id).textContent = Array.isArray(data) ? data.length : 0;
+                            } catch (e) {
+                                console.error("Gagal memuat statistik " + ep.id + ":", e);
+                            }
+                        }
+                    }
+
+                    // TODO: Widget cuaca dari API pihak ketiga
+                    async function loadWeather() {
+                        try {
+                            const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-6.2&longitude=106.8&current_weather=true");
+                            const data = await res.json();
+                            if (data.current_weather) {
+                                document.getElementById("weather-widget").innerHTML =
+                                    "<strong>" + data.current_weather.temperature + "&deg;C</strong> - " +
+                                    data.current_weather.windspeed + " km/h";
+                            }
+                        } catch (e) {
+                            console.error("Gagal memuat data cuaca:", e);
+                        }
+                    }
+
+                    loadStats();
+                    loadWeather();
+                </script>
 <?php
 require_once __DIR__ . "/layouts/footer.php";
 ?>

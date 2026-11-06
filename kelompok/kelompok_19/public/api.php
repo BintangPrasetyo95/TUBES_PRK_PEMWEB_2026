@@ -51,22 +51,22 @@ switch ($method) {
     case 'GET':
         if ($id) {
             // TODO: $controller->show($id);
-            \App\Config\Database::response(['message' => "GET $resource/$id - belum diimplementasikan"]);
+            $controller->show($id);
         } else {
             // TODO: $controller->index();
-            \App\Config\Database::response(['message' => "GET $resource - belum diimplementasikan"]);
+            $controller->index();
         }
         break;
 
     case 'POST':
         // TODO: $controller->create();
-        \App\Config\Database::response(['message' => "POST $resource - belum diimplementasikan"], 201);
+        $controller->create();
         break;
 
     case 'PUT':
         if ($id) {
             // TODO: $controller->update($id);
-            \App\Config\Database::response(['message' => "PUT $resource/$id - belum diimplementasikan"]);
+            $controller->update($id);
         } else {
             http_response_code(400);
             \App\Config\Database::response(['error' => 'ID diperlukan untuk update']);
@@ -76,7 +76,7 @@ switch ($method) {
     case 'DELETE':
         if ($id) {
             // TODO: $controller->delete($id);
-            \App\Config\Database::response(['message' => "DELETE $resource/$id - belum diimplementasikan"]);
+            $controller->delete($id);
         } else {
             http_response_code(400);
             \App\Config\Database::response(['error' => 'ID diperlukan untuk delete']);

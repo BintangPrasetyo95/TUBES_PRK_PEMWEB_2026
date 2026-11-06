@@ -13,6 +13,10 @@ $routes = [
 ];
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$basePath = ""; // isi dengan nama subfolder, contoh: "/kelompok_19", kosongkan jika di root
+if ($basePath !== "" && strpos($path, $basePath) === 0) {
+    $path = substr($path, strlen($basePath));
+}
 $view = $routes[$path] ?? null;
 
 if ($view === null) {

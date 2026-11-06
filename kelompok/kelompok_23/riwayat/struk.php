@@ -78,9 +78,10 @@ $details_stmt->close();
         .receipt-totals .row-line { display:flex; justify-content:space-between; gap:12px; margin:5px 0; }
         .receipt-footer { padding-top:16px; font-size:12px; text-align:center; }
         @media print {
-            @page { margin:10mm; }
+            @page { size:80mm auto; margin:4mm; }
             body { padding:0; background:#fff; }
-            .receipt { max-width:none; padding:0; box-shadow:none; }
+            .receipt { width:100%; max-width:none; padding:0; box-shadow:none; }
+            .receipt-header, .receipt-meta, .receipt-items, .receipt-totals, .receipt-footer { break-inside:avoid; }
             .no-print { display:none !important; }
         }
     </style>

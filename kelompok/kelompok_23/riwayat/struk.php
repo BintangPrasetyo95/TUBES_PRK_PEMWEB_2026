@@ -118,11 +118,16 @@ $details_stmt->close();
     <footer class="receipt-footer">
         <div>Terima kasih telah berbelanja di FEBMart.</div>
         <div class="no-print d-flex justify-content-center gap-2 mt-4">
-            <button type="button" class="btn btn-primary btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i>Cetak Struk</button>
+            <button type="button" class="btn btn-primary btn-sm" id="print-receipt"><i class="bi bi-printer me-1"></i>Cetak Struk</button>
             <a href="index.php" class="btn btn-outline-secondary btn-sm">Kembali</a>
         </div>
     </footer>
 </main>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<script>
+document.getElementById('print-receipt').addEventListener('click', function () {
+    window.print();
+});
+</script>
 </body>
 </html>

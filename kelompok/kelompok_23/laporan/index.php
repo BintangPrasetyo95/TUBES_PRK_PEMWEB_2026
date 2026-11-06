@@ -76,12 +76,13 @@ if ($error === '') {
 
     $transactions_stmt = $conn->prepare("
         SELECT t.id, t.invoice_number, t.transaction_date, t.total, t.payment_method,
-               u.name AS cashier_name, COALESCE(SUM(td.quantity), 0) AS items_sold
+               u.name AS cashier_name,
+               (SELECT COALESCE(SUM(td.quantity), 0)
+                FROM transaction_details td
+                WHERE td.transaction_id = t.id) AS items_sold
         FROM transactions t
         INNER JOIN users u ON u.id = t.user_id
-        LEFT JOIN transaction_details td ON td.transaction_id = t.id
         WHERE t.transaction_date >= ? AND t.transaction_date < ?
-        GROUP BY t.id, t.invoice_number, t.transaction_date, t.total, t.payment_method, u.name
         ORDER BY t.transaction_date DESC, t.id DESC
     ");
     if (!$transactions_stmt) {

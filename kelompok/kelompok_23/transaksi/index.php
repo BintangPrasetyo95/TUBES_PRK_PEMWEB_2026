@@ -405,6 +405,10 @@ $total_bayar = $total_subtotal;
         <div class="brand"><i class="bi bi-cart3"></i>FEBMart</div>
         <h2><i class="bi bi-cash-register me-2"></i>Transaksi Kasir</h2>
         <p>Kelola transaksi penjualan FEBMart melalui halaman kasir.</p>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <a href="../riwayat/index.php" class="btn btn-sm btn-light"><i class="bi bi-clock-history me-1"></i>Riwayat Transaksi</a>
+            <a href="../laporan/index.php" class="btn btn-sm btn-outline-light"><i class="bi bi-bar-chart-line me-1"></i>Laporan Penjualan</a>
+        </div>
     </header>
 
     <section class="content-section">

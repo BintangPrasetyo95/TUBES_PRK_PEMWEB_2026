@@ -59,6 +59,9 @@ if ($error === '') {
     $summary_stmt->execute();
     $summary = array_merge($summary, $summary_stmt->get_result()->fetch_assoc());
     $summary_stmt->close();
+    $summary['average_transaction'] = (int)$summary['transaction_count'] > 0
+        ? (float)$summary['revenue'] / (int)$summary['transaction_count']
+        : 0;
 
     $items_stmt = $conn->prepare("
         SELECT COALESCE(SUM(td.quantity), 0) AS items_sold
@@ -158,9 +161,10 @@ if ($error === '') {
         <?php else: ?>
             <p class="text-muted mb-3">Periode <?= h($start_date->format('d/m/Y')); ?> – <?= h($end_date->format('d/m/Y')); ?></p>
             <div class="row g-3 mb-4">
-                <div class="col-md-4"><div class="summary-card"><div class="label"><i class="bi bi-cash-stack me-1"></i>Total Omzet</div><div class="value"><?= rupiah($summary['revenue']); ?></div></div></div>
-                <div class="col-md-4"><div class="summary-card"><div class="label"><i class="bi bi-receipt me-1"></i>Jumlah Transaksi</div><div class="value"><?= number_format((int)$summary['transaction_count']); ?></div></div></div>
-                <div class="col-md-4"><div class="summary-card"><div class="label"><i class="bi bi-box-seam me-1"></i>Barang Terjual</div><div class="value"><?= number_format((int)$summary['items_sold']); ?></div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="summary-card"><div class="label"><i class="bi bi-cash-stack me-1"></i>Total Omzet</div><div class="value"><?= rupiah($summary['revenue']); ?></div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="summary-card"><div class="label"><i class="bi bi-receipt me-1"></i>Jumlah Transaksi</div><div class="value"><?= number_format((int)$summary['transaction_count']); ?></div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="summary-card"><div class="label"><i class="bi bi-box-seam me-1"></i>Barang Terjual</div><div class="value"><?= number_format((int)$summary['items_sold']); ?></div></div></div>
+                <div class="col-md-6 col-xl-3"><div class="summary-card"><div class="label"><i class="bi bi-calculator me-1"></i>Rata-rata Transaksi</div><div class="value"><?= rupiah($summary['average_transaction']); ?></div></div></div>
             </div>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle">

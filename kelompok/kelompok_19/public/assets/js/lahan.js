@@ -52,8 +52,7 @@ function simpanData(event) {
     })
         .then(res => res.json())
         .then(() => {
-            const modal = bootstrap.Modal.getInstance(document.getElementById("modalLahan"));
-            if (modal) modal.hide();
+            tutupModal(document.getElementById("modalLahan"));
             loadData();
             resetFormLahan();
         })
@@ -71,7 +70,7 @@ function editData(id) {
             document.getElementById("lahanLuas").value = item.luas;
             document.getElementById("lahanJenisTanah").value = item.jenis_tanah;
             document.getElementById("modalLahanTitle").textContent = "Edit Lahan";
-            new bootstrap.Modal(document.getElementById("modalLahan")).show();
+            bukaModal(document.getElementById("modalLahan"));
         })
         .catch(err => console.error("Gagal mengambil data lahan:", err));
 }

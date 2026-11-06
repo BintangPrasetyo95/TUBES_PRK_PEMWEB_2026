@@ -197,12 +197,7 @@ async function simpanData(event) {
 
         alert(result.message);
 
-        const modalElement = document.getElementById("modalSiklus");
-        const modal = bootstrap.Modal.getInstance(modalElement);
-
-        if (modal) {
-            modal.hide();
-        }
+        tutupModal(document.getElementById("modalSiklus"));
 
         resetFormSiklus();
         await loadData();
@@ -240,10 +235,7 @@ async function editData(id) {
 
         document.getElementById("modalSiklusTitle").textContent = "Edit Siklus";
 
-        const modalElement = document.getElementById("modalSiklus");
-        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
-
-        modal.show();
+        bukaModal(document.getElementById("modalSiklus"));
 
     } catch (error) {
         console.error("Error editData:", error);

@@ -140,6 +140,9 @@ if ($error === '') {
             <div class="col-sm-2">
                 <button class="btn btn-primary w-100" type="submit"><i class="bi bi-funnel me-1"></i>Filter</button>
             </div>
+            <div class="col-sm-2 col-lg-auto">
+                <a class="btn btn-outline-secondary w-100" href="index.php"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</a>
+            </div>
             <div class="col-lg-auto ms-lg-auto">
                 <?php if ($error === ''): ?>
                     <a class="btn btn-success" href="export.php?tanggal_mulai=<?= rawurlencode($start_input); ?>&amp;tanggal_akhir=<?= rawurlencode($end_input); ?>">

@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
         exit;
     }
 
-    
+
     $user_id = (int)$_SESSION['user_id'];
 
     if ($user_id <= 0) {
@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
         exit;
     }
 
-    
+
     $stmt_user = $conn->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1");
     $stmt_user->bind_param("i", $user_id);
     $stmt_user->execute();
@@ -216,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
     $conn->begin_transaction();
 
     try {
-        
+
         $stmt_check_stock = $conn->prepare(
             "SELECT id, name, stock FROM products WHERE id = ? FOR UPDATE"
         );
@@ -248,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
             }
         }
 
-        
+
 
 
 
@@ -277,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
 
         $transaction_id = $conn->insert_id;
 
-        
+
 
 
 
@@ -312,15 +312,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
 
         $conn->commit();
         $_SESSION['cart'] = [];
-<<<<<<< HEAD
         $_SESSION['flash_success'] =
             "Transaksi $invoice_number berhasil diproses. Stok berhasil dipotong. Kembalian: Rp " .
             number_format($change_amount, 0, ',', '.');
     } catch (Throwable $e) {
-=======
-        $_SESSION['flash_success'] = "Transaksi $invoice_number berhasil diproses! Stok berhasil dipotong. Kembalian: Rp " . number_format($change_amount, 0, ',', '.') . " <a href='struk.php?invoice=$invoice_number' target='_blank' class='btn btn-sm btn-dark ms-2 fw-bold text-white'><i class='bi bi-printer me-1'></i>Cetak Struk</a>";
-    } catch (Exception $e) {
->>>>>>> upstream/main
         $conn->rollback();
         error_log("Checkout FEBMart: " . $e->getMessage());
         $_SESSION['flash_error'] = "Transaksi dibatalkan: " . $e->getMessage();
@@ -365,35 +360,10 @@ foreach ($_SESSION['cart'] as $cart_item) {
 $total_bayar = $total_subtotal;
 ?>
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaksi Kasir | FEBMart</title>
-</head>
-<body>
-
-<<<<<<< HEAD
 <?php
 $pageTitle = 'Transaksi Kasir';
 require_once __DIR__ . '/../includes/header.php';
 ?>
-=======
-        <section class="content-section">
-            <?php if ($pesan_sukses): ?>
-                <div class="alert alert-success alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2" role="alert">
-                    <div><i class="bi bi-check-circle me-1"></i><?= $pesan_sukses; ?></div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-            <?php if ($pesan_error): ?>
-                <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
-                    <i class="bi bi-exclamation-triangle me-1"></i><?= htmlspecialchars($pesan_error); ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
->>>>>>> upstream/main
 
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
@@ -531,120 +501,6 @@ require_once __DIR__ . '/../includes/header.php';
                         </div>
                     </div>
                 </div>
-<<<<<<< HEAD
-=======
-
-                <div class="col-lg-5">
-                    <div class="section-card">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <h3 class="section-title mb-0">Keranjang Belanja</h3>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-secondary"><?= count($_SESSION['cart']); ?> Item</span>
-                                <?php if (!empty($_SESSION['cart'])): ?>
-                                    <form method="POST" action="index.php" class="m-0" onsubmit="return confirm('Kosongkan semua item di keranjang?');">
-                                        <input type="hidden" name="action" value="kosongkan">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 11px;">
-                                            <i class="bi bi-trash me-1"></i>Kosongkan
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <p class="section-description">Daftar barang yang dipilih untuk transaksi.</p>
-                        <?php if (empty($_SESSION['cart'])): ?>
-                            <div class="empty-state mb-4">
-                                <i class="bi bi-cart"></i>
-                                <div>Keranjang masih kosong.</div>
-                                <small>Tambahkan produk dari katalog.</small>
-                            </div>
-                        <?php else: ?>
-                            <div class="cart-items-container mb-3" style="max-height: 320px; overflow-y: auto;">
-                                <?php foreach ($_SESSION['cart'] as $id => $cart_item): ?>
-                                    <div class="d-flex justify-content-between align-items-center p-2 mb-2 border rounded bg-light">
-                                        <div style="min-width: 0; flex: 1;">
-                                            <div class="fw-bold text-truncate" style="font-size: 13px; color: #29245c;">
-                                                <?= htmlspecialchars($cart_item['name']); ?>
-                                            </div>
-                                            <div class="text-muted" style="font-size: 11px;">
-                                                <?= htmlspecialchars($cart_item['sku']); ?> | Rp <?= number_format($cart_item['price'], 0, ',', '.'); ?> × <?= $cart_item['qty']; ?> = <strong class="text-dark">Rp <?= number_format($cart_item['price'] * $cart_item['qty'], 0, ',', '.'); ?></strong>
-                                            </div>
-                                        </div>
-                                        <div class="ms-2 d-flex align-items-center gap-1">
-                                            <form method="POST" action="index.php" class="d-flex align-items-center gap-1 m-0">
-                                                <input type="hidden" name="action" value="update">
-                                                <input type="hidden" name="product_id" value="<?= $id; ?>">
-                                                <input type="number" name="qty" value="<?= (int)$cart_item['qty']; ?>" min="1" max="<?= (int)$cart_item['stock']; ?>" class="form-control form-control-sm text-center px-1" style="width: 55px; height: 30px;">
-                                                <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="height: 30px;" title="Update Jumlah">
-                                                    <i class="bi bi-arrow-repeat"></i>
-                                                </button>
-                                            </form>
-                                            <form method="POST" action="index.php" class="m-0">
-                                                <input type="hidden" name="action" value="hapus">
-                                                <input type="hidden" name="product_id" value="<?= $id; ?>">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="height: 30px;" title="Hapus item">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                        <div class="summary-box">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="summary-label">Total Item / Kuantitas</span>
-                                <strong style="font-size: 13px; color: #29245c;"><?= count($_SESSION['cart']); ?> jenis (<?= $total_qty; ?> pcs)</strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                                <span class="summary-label">Subtotal</span>
-                                <strong style="font-size: 14px; color: #29245c;">Rp <?= number_format($total_subtotal, 0, ',', '.'); ?></strong>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="summary-label fw-bold" style="color: #29245c;">Total Bayar</div>
-                                <div class="summary-value" id="display-total">Rp <?= number_format($total_bayar, 0, ',', '.'); ?></div>
-                            </div>
-                        </div>
-
-                        <form method="POST" action="index.php" id="form-transaksi">
-                            <input type="hidden" name="action" value="checkout">
-                            <input type="hidden" name="total_bayar" id="input-total-bayar" value="<?= (int)$total_bayar; ?>">
-
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="font-size: 13px; color: #29245c;">Nama Pelanggan</label>
-                                <input type="text" name="customer_name" class="form-control form-control-sm" placeholder="Nama Pelanggan (opsional)" value="Pelanggan Umum" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="font-size: 13px; color: #29245c;">Nominal Pembayaran (Cash) <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light fw-bold" style="font-size: 13px;">Rp</span>
-                                    <input type="number" name="nominal_bayar" id="nominal-bayar" class="form-control" placeholder="0" min="0" step="1" required <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
-                                </div>
-                                <div class="mt-2 d-flex flex-wrap gap-1">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 11px;" onclick="setNominal(<?= (int)$total_bayar; ?>)" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>Uang Pas</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 11px;" onclick="setNominal(10000)" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>10.000</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 11px;" onclick="setNominal(20000)" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>20.000</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 11px;" onclick="setNominal(50000)" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>50.000</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 11px;" onclick="setNominal(100000)" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>100.000</button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 11px;" onclick="setNominal(0)" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>Reset</button>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-bold" style="font-size: 13px; color: #29245c;">Kembalian</label>
-                                <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-center">
-                                    <span class="text-muted" style="font-size: 13px;">Uang Kembali:</span>
-                                    <span class="fw-bold text-success" id="display-kembalian" style="font-size: 16px;">Rp 0</span>
-                                </div>
-                            </div>
-
-                            <button type="submit" id="btn-submit-transaksi" class="btn w-100 py-2 fw-bold" style="background: #29245c; color: white; border-radius: 8px;" <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
-                                <i class="bi bi-check-circle me-1"></i>Selesaikan Transaksi
-                            </button>
-                        </form>
-                    </div>
-                </div>
->>>>>>> upstream/main
             </div>
 
             <!-- KERANJANG -->
@@ -699,7 +555,7 @@ require_once __DIR__ . '/../includes/header.php';
                                             <?= htmlspecialchars($cart_item['sku']); ?>
                                             <br>
                                             Rp <?= number_format((float)$cart_item['price'], 0, ',', '.'); ?>
-                                            × <?= (int)$cart_item['qty']; ?>
+                                            Ã— <?= (int)$cart_item['qty']; ?>
                                         </small>
 
                                         <div class="d-flex justify-content-between align-items-center mt-2">
@@ -922,20 +778,5 @@ document.querySelectorAll('.quick-payment').forEach(button => {
 });
 </script>
 
-<<<<<<< HEAD
-=======
-        function setNominal(amount) {
-            if (!inputBayar) return;
-            inputBayar.value = amount > 0 ? amount : '';
-            hitungKembalian();
-            inputBayar.focus();
-        }
-
-        if (inputBayar) {
-            inputBayar.addEventListener('input', hitungKembalian);
-            hitungKembalian();
-        }
-    </script>
->>>>>>> upstream/main
 </body>
 </html>

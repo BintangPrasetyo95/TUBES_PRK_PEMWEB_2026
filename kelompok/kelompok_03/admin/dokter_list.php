@@ -1,8 +1,8 @@
-
 <?php
+require_once '../includes/header.php';
+require_once '../config/koneksi.php';
 
-require_once __DIR__ . '/../includes/cek_login.php';
-
+// Validasi role admin 
 if ($_SESSION['role'] !== 'admin') {
     http_response_code(403);
     exit('Akses ditolak. Hanya admin yang dapat mengakses halaman ini.');
@@ -19,87 +19,91 @@ try {
     $dokterList = [];
     $error = 'Gagal memuat data dokter.';
 }
-
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Dokter - Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-dark bg-primary">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1">Sistem Antrian Klinik - Admin</span>
-            <div class="text-white">
-                <?= htmlspecialchars($_SESSION['nama']) ?> | 
-                <a href="../auth/logout.php" class="text-white">Logout</a>
-            </div>
-        </div>
-    </nav>
 
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Kelola Dokter</h2>
-            <a href="dokter_form.php" class="btn btn-primary">Tambah Dokter</a>
-        </div>
+<!-- Breadcrumb Navigasi -->
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-2 small">
+        <li class="breadcrumb-item"><a href="admin.php" class="text-decoration-none">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Kelola Dokter</li>
+    </ol>
+</nav>
 
-        <?php if ($success): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= htmlspecialchars($success) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <?= htmlspecialchars($error) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
-
-        <div class="card">
-            <div class="card-body">
-                <?php if (empty($dokterList)): ?>
-                    <p class="text-muted">Belum ada data dokter.</p>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Nama</th>
-                                    <th>Spesialis</th>
-                                    <th>Kuota/Hari</th>
-                                    <th>Hari Praktik</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($dokterList as $dokter): ?>
-                                    <tr>
-                                        <td><?= htmlspecialchars($dokter['nama']) ?></td>
-                                        <td><?= htmlspecialchars($dokter['spesialis']) ?></td>
-                                        <td><?= htmlspecialchars($dokter['kuota_per_hari']) ?></td>
-                                        <td><?= htmlspecialchars($dokter['hari_praktik']) ?></td>
-                                        <td>
-                                            <a href="dokter_form.php?id=<?= $dokter['id'] ?>" 
-                                               class="btn btn-sm btn-warning">Edit</a>
-                                            <a href="dokter_hapus.php?id=<?= $dokter['id'] ?>" 
-                                               class="btn btn-sm btn-danger"
-                                               onclick="return confirm('Yakin ingin menghapus dokter ini?')">Hapus</a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-primary fw-bold mb-1">Kelola Dokter</h2>
+        <p class="text-muted small mb-0">Kelola daftar dokter praktik, spesialisasi, kuota harian, dan hari praktik.</p>
     </div>
+    <a href="dokter_form.php" class="btn btn-primary px-3 shadow-sm">
+        + Tambah Dokter
+    </a>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<!-- Alert Notifikasi Sesuai Tema -->
+<?php if ($success): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= htmlspecialchars($success) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<?php if ($error): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= htmlspecialchars($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<!-- Container Card Tabel -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <?php if (empty($dokterList)): ?>
+            <p class="text-muted p-4 text-center mb-0">Belum ada data dokter.</p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Nama</th>
+                            <th>Spesialis</th>
+                            <th>Kuota/Hari</th>
+                            <th>Hari Praktik</th>
+                            <th class="text-center" style="width: 160px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($dokterList as $dokter): ?>
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark"><?= htmlspecialchars($dokter['nama']) ?></td>
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        <?= htmlspecialchars($dokter['spesialis']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold"><?= htmlspecialchars($dokter['kuota_per_hari']) ?></span> Pasien
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        <?= htmlspecialchars(str_replace(',', ', ', $dokter['hari_praktik'])) ?>
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="dokter_form.php?id=<?= $dokter['id'] ?>" 
+                                       class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                    <a href="dokter_hapus.php?id=<?= $dokter['id'] ?>" 
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Yakin ingin menghapus dokter ini?')">Hapus</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php 
+require_once '../includes/footer.php'; 
+?>

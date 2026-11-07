@@ -1,7 +1,6 @@
-
 </main>
 
-<footer class="bg-white border-top mt-5 py-3">
+<footer class="bg-white border-top mt-auto py-3">
     <div class="container text-center">
 
         <small class="text-muted">

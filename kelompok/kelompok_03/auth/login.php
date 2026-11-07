@@ -4,7 +4,7 @@
 require_once __DIR__ . '/../includes/init.php';
 
 if (isset($_SESSION['user_id'])) {
-    $redirect = $_SESSION['role'] === 'admin' ? '../admin/dokter_list.php' : '../pasien/daftar_dokter.php';
+    $redirect = $_SESSION['role'] === 'admin' ? '../admin/admin.php' : '../pasien/daftar_dokter.php';
     header("Location: $redirect");
     exit;
 }
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['role'] = $user['role'];
 
-                $redirect = $user['role'] === 'admin' ? '../admin/dokter_list.php' : '../pasien/daftar_dokter.php';
+                $redirect = $user['role'] === 'admin' ? '../admin/admin.php' : '../pasien/daftar_dokter.php';
                 header("Location: $redirect");
                 exit;
             } else {

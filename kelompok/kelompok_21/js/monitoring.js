@@ -1,4 +1,4 @@
-
+// Modul 3: Monitoring Pengumpulan Tugas (Dwi Septy). Berdiri sendiri, tidak memakai fungsi app.js.
 (function () {
     const API = 'api/monitoring.php';
     const root = document.getElementById('mon-root');
@@ -28,7 +28,15 @@
         return json.data;
     }
 
-    function pesan(teks) { alert(teks); }
+    let timerPesan;
+    function pesan(teks, jenis = 'error') {
+        const el = $('mon-pesan');
+        el.className = 'message ' + (jenis === 'success' ? 'success' : 'error');
+        el.textContent = teks;
+        el.hidden = false;
+        clearTimeout(timerPesan);
+        timerPesan = setTimeout(() => { el.hidden = true; }, 4000);
+    }
 
     async function muatPenugasan() {
         const data = await panggil(`${API}?aksi=penugasan`);
@@ -37,7 +45,7 @@
             ? data.map((p) => `<option value="${p.id_penugasan}">${esc(p.nama_kelas)} · ${esc(p.nama_mapel)} (${esc(p.tahun_ajaran)} ${esc(p.semester)})</option>`).join('')
             : '<option value="">Tidak ada penugasan</option>';
         if (data.length) await muatTugas();
-        else $('mon-body').innerHTML = '<tr><td colspan="5">Anda belum punya penugasan mengajar.</td></tr>';
+        else $('mon-body').innerHTML = '<tr><td colspan="5" class="empty">Anda belum punya penugasan mengajar.</td></tr>';
     }
 
     async function muatTugas() {
@@ -49,7 +57,7 @@
             : '<option value="">Belum ada tugas</option>';
         if (data.length) await muatDaftar();
         else {
-            $('mon-body').innerHTML = '<tr><td colspan="5">Belum ada tugas pada penugasan ini.</td></tr>';
+            $('mon-body').innerHTML = '<tr><td colspan="5" class="empty">Belum ada tugas pada penugasan ini.</td></tr>';
             $('mon-ringkasan').textContent = '0 tugas';
         }
     }
@@ -65,12 +73,12 @@
             <tr data-id="${s.id_siswa}">
                 <td>${esc(s.nama_siswa)}<br><small>${esc(s.nisn)}</small></td>
                 <td><input type="datetime-local" value="${keInput(s.waktu_pengumpulan)}" ${bisaUbah ? '' : 'disabled'}></td>
-                <td><span class="mon-badge ${kelasBadge(s.status)}">${esc(s.status)}</span></td>
+                <td><span class="pill ${kelasBadge(s.status)}">${esc(s.status)}</span></td>
                 <td>${s.indeks === null ? '-' : s.indeks}</td>
-                <td>
-                    ${bisaUbah ? '<button type="button" data-aksi="simpan">Simpan</button> <button type="button" data-aksi="kosong">Kosongkan</button> ' : ''}
+                <td><div class="actions">
+                    ${bisaUbah ? '<button type="button" data-aksi="simpan">Simpan</button><button type="button" class="danger" data-aksi="kosong">Kosongkan</button>' : ''}
                     <button type="button" data-aksi="riwayat">Riwayat</button>
-                </td>
+                </div></td>
             </tr>`).join('');
     }
 
@@ -81,6 +89,7 @@
             body: JSON.stringify({ id_penilaian: Number($('mon-tugas').value), id_siswa: idSiswa, waktu_pengumpulan: waktu }),
         });
         await muatDaftar();
+        pesan('Pengumpulan tersimpan.', 'success');
     }
 
     async function lihatRiwayat(idSiswa, nama) {
@@ -95,6 +104,7 @@
     $('mon-penugasan').addEventListener('change', () => muatTugas().catch((e) => pesan(e.message)));
     $('mon-tugas').addEventListener('change', () => muatDaftar().catch((e) => pesan(e.message)));
     $('mon-tutup').addEventListener('click', () => $('mon-dialog').close());
+    $('mon-x').addEventListener('click', () => $('mon-dialog').close());
     $('mon-body').addEventListener('click', (ev) => {
         const tombol = ev.target.closest('button[data-aksi]');
         if (!tombol) return;
@@ -108,6 +118,6 @@
     });
 
     muatPenugasan().catch((e) => {
-        $('mon-body').innerHTML = `<tr><td colspan="5">${esc(e.message)}</td></tr>`;
+        $('mon-body').innerHTML = `<tr><td colspan="5" class="empty">${esc(e.message)}</td></tr>`;
     });
 })();

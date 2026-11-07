@@ -1,9 +1,29 @@
 <?php
 session_start();
+require_once '../config/database.php'; // Panggil koneksi database
+
 // Cegah akses kalau belum login
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit;
+}
+
+try {
+    // 1. Hitung total petisi warga
+    $stmtPetisi = $pdo->query("SELECT COUNT(*) FROM petisi");
+    $totalPetisi = $stmtPetisi->fetchColumn();
+
+    // 2. Hitung total aspirasi masuk
+    $stmtAspirasi = $pdo->query("SELECT COUNT(*) FROM aspirasi");
+    $totalAspirasi = $stmtAspirasi->fetchColumn();
+
+    // 3. Hitung laporan hoaks yang butuh di-review (status pending)
+    $stmtHoaks = $pdo->prepare("SELECT COUNT(*) FROM lapor_hoaks WHERE status = :status");
+    $stmtHoaks->execute([':status' => 'pending']);
+    $totalHoaksPending = $stmtHoaks->fetchColumn();
+
+} catch (PDOException $e) {
+    die("Gagal mengambil data statistik: " . $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -20,11 +40,11 @@ if (!isset($_SESSION['admin_id'])) {
         <h1 class="text-2xl font-bold mb-8 text-blue-400 border-b border-gray-700 pb-4">CiviLens Admin</h1>
         <nav class="space-y-4">
             <a href="dashboard.php" class="block py-2 px-4 bg-gray-800 rounded hover:bg-gray-700 transition">Dashboard Overview</a>
-            <a href="#" class="block py-2 px-4 rounded hover:bg-gray-700 transition">Kelola Lapor Hoaks</a>
-            <a href="#" class="block py-2 px-4 rounded hover:bg-gray-700 transition">Kelola Aspirasi</a>
+            <a href="kelola_hoaks.php" class="block py-2 px-4 rounded hover:bg-gray-700 transition">Kelola Lapor Hoaks</a>
+            <a href="kelola_aspirasi.php" class="block py-2 px-4 rounded hover:bg-gray-700 transition">Kelola Aspirasi</a>
         </nav>
         
-        <!-- Tombol Logout di Bawah -->
+        <!-- Tombol Logout -->
         <div class="absolute bottom-5 w-52">
             <a href="logout.php" class="block w-full text-center py-2 px-4 bg-red-600 rounded hover:bg-red-700 transition font-medium">Logout</a>
         </div>
@@ -39,19 +59,19 @@ if (!isset($_SESSION['admin_id'])) {
             </div>
         </header>
 
-        <!-- Dummy Stat Cards -->
+        <!-- Stat Cards Dinamis -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
                 <h3 class="text-gray-500 text-sm font-semibold uppercase tracking-wider">Petisi Warga</h3>
-                <p class="text-3xl font-bold text-gray-800 mt-2">12</p>
+                <p class="text-3xl font-bold text-gray-800 mt-2"><?= $totalPetisi ?></p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
                 <h3 class="text-gray-500 text-sm font-semibold uppercase tracking-wider">Aspirasi Masuk</h3>
-                <p class="text-3xl font-bold text-gray-800 mt-2">45</p>
+                <p class="text-3xl font-bold text-gray-800 mt-2"><?= $totalAspirasi ?></p>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-red-500">
                 <h3 class="text-gray-500 text-sm font-semibold uppercase tracking-wider">Laporan Hoaks (Pending)</h3>
-                <p class="text-3xl font-bold text-gray-800 mt-2">8</p>
+                <p class="text-3xl font-bold text-gray-800 mt-2"><?= $totalHoaksPending ?></p>
             </div>
         </div>
     </main>

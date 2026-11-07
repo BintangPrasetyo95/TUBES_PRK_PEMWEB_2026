@@ -127,7 +127,7 @@ require_once __DIR__ . '/../includes/header.php';
                                                 <a href="hapus.php?id=<?= (int)$data['id']; ?>"
                                                     class="btn btn-danger btn-sm"
                                                     data-confirm="Yakin ingin menghapus kategori ini?"
-                                                >   
+                                                >
                                                     <i class="bi bi-trash"></i> Hapus
                                                 </a>
 

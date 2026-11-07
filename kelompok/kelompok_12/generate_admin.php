@@ -3,20 +3,21 @@
 require_once 'config/database.php';
 
 $username = 'admin';
-$password_plain = 'admin123'; // Password yang ingin digunakan
+$password_plain = 'admin123'; // Password baru yang mau kamu pakai
 
 // Hash password dengan algoritma BCRYPT bawaan PHP
 $password_hashed = password_hash($password_plain, PASSWORD_DEFAULT);
 
 try {
-    $stmt = $pdo->prepare("INSERT INTO admins (username, password) VALUES (:username, :password)");
+    // Gunakan UPDATE untuk menimpa password admin yang sudah ada
+    $stmt = $pdo->prepare("UPDATE admins SET password = :password WHERE username = :username");
     $stmt->execute([
-        ':username' => $username,
-        ':password' => $password_hashed
+        ':password' => $password_hashed,
+        ':username' => $username
     ]);
-    echo "Akun admin berhasil dibuat!<br>";
-    echo "Username: <b>$username</b><br>";
-    echo "Password: <b>$password_plain</b>";
+
+    echo "Password akun <b>$username</b> berhasil di-update!<br>";
+    echo "Sekarang kamu bisa login dengan password: <b>$password_plain</b>";
 } catch (PDOException $e) {
-    echo "Gagal membuat admin (mungkin username sudah ada): " . $e->getMessage();
+    echo "Gagal meng-update password: " . $e->getMessage();
 }

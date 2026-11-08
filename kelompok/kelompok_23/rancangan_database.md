@@ -69,3 +69,37 @@ id pengguna jika id tersebut diperbarui.
 
 Tabel users tidak memiliki relasi langsung dengan categories atau products.
 Hubungan pengguna dengan penjualan dicatat melalui tabel transactions.
+
+## Aturan Relasi Detail Transaksi
+
+### Transaksi dan Detail Barang
+
+Kolom transaction_details.transaction_id mengacu pada transactions.id.
+Satu transaksi dapat memiliki beberapa detail barang.
+
+Relasi ini menggunakan ON DELETE CASCADE.
+Jika transaksi dihapus, seluruh detail barang pada transaksi tersebut
+ikut terhapus. Penghapusan transaksi perlu diperhatikan karena
+menghilangkan riwayat penjualan.
+
+ON UPDATE CASCADE membuat transaction_id pada detail mengikuti
+perubahan id transaksi.
+
+### Produk dan Detail Barang
+
+Kolom transaction_details.product_id mengacu pada products.id.
+Satu produk dapat muncul dalam banyak detail transaksi.
+
+Relasi ini menggunakan ON DELETE SET NULL.
+Jika produk dihapus, product_id pada detail transaksi menjadi NULL.
+Baris detail transaksi tetap tersimpan.
+
+Kolom product_name, quantity, unit_price, dan subtotal menyimpan
+rincian pembelian saat transaksi berlangsung. Data tersebut tetap
+tersedia meskipun produk asal sudah dihapus.
+
+ON UPDATE CASCADE membuat product_id pada detail mengikuti
+perubahan id produk.
+
+Penghapusan transaksi tidak otomatis mengembalikan stok produk.
+Pengembalian stok membutuhkan proses tersendiri pada aplikasi.

@@ -1,10 +1,4 @@
 <?php
-/**
- * helpers.php
- * Kumpulan fungsi bantuan sederhana untuk proyek DynaQuiz (Kelompok 14)
- * Dibuat oleh: Farel
- */
-
 // 1. Fungsi untuk mencegah XSS (Cross Site Scripting)
 // Dipakai di semua tampilan output variabel ke HTML
 function e($teks) {

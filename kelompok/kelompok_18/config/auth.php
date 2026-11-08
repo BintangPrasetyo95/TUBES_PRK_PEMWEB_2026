@@ -17,6 +17,63 @@ function startAppSession(): void
         'path' => '/',
     ]);
     session_start();
+
+    $now = time();
+    $hasIdentity = isset($_SESSION['user_id']) || isset($_SESSION['username']) || isset($_SESSION['role']);
+    if ($hasIdentity) {
+        $validIdentity = isset($_SESSION['user_id'], $_SESSION['username'], $_SESSION['role'], $_SESSION['auth_created_at'], $_SESSION['auth_last_activity'])
+            && is_int($_SESSION['user_id'])
+            && $_SESSION['user_id'] > 0
+            && is_string($_SESSION['username'])
+            && $_SESSION['username'] !== ''
+            && in_array($_SESSION['role'], ['admin', 'guru'], true)
+            && is_int($_SESSION['auth_created_at'])
+            && is_int($_SESSION['auth_last_activity'])
+            && $_SESSION['auth_last_activity'] <= $now
+            && $_SESSION['auth_created_at'] <= $now
+            && $now - $_SESSION['auth_last_activity'] <= 1800
+            && $now - $_SESSION['auth_created_at'] <= 28800;
+
+        if (!$validIdentity) {
+            $_SESSION = [];
+            session_regenerate_id(true);
+        } else {
+            $_SESSION['auth_last_activity'] = $now;
+        }
+    }
+
+    if (!isset($_SESSION['_csrf_token']) || !is_string($_SESSION['_csrf_token'])) {
+        $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+    }
+}
+
+/** Return the session's CSRF token, creating it if necessary. */
+function csrfToken(): string
+{
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        throw new LogicException('Panggil startAppSession() sebelum csrfToken().');
+    }
+
+    if (!isset($_SESSION['_csrf_token']) || !is_string($_SESSION['_csrf_token'])) {
+        $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['_csrf_token'];
+}
+
+/** Verify a submitted CSRF token using a timing-safe comparison. */
+function verifyCsrfToken(mixed $submittedToken): bool
+{
+    return is_string($submittedToken)
+        && isset($_SESSION['_csrf_token'])
+        && is_string($_SESSION['_csrf_token'])
+        && hash_equals($_SESSION['_csrf_token'], $submittedToken);
+}
+
+/** Escape a value for safe insertion into HTML text or quoted attributes. */
+function h(string $value): string
+{
+    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
 /** Return the authenticated identity, or null when no valid identity is stored. */

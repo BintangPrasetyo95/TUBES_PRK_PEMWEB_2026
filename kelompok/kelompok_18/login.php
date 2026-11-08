@@ -13,6 +13,10 @@ $error = '';
 $username = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+        http_response_code(403);
+        $error = 'Permintaan tidak valid. Muat ulang halaman lalu coba kembali.';
+    } else {
     $usernameInput = $_POST['username'] ?? null;
     $passwordInput = $_POST['password'] ?? null;
     $username = is_string($usernameInput) ? trim($usernameInput) : '';
@@ -48,17 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = (int) $user['id'];
             $_SESSION['username'] = (string) $user['username'];
             $_SESSION['role'] = (string) $user['role'];
+            $_SESSION['auth_created_at'] = time();
+            $_SESSION['auth_last_activity'] = time();
 
             redirectToDashboard();
         }
 
         $error = 'Username atau password tidak valid, atau akun tidak aktif.';
     }
-}
-
-function escapeHtml(string $value): string
-{
-    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
 }
 ?>
 <!doctype html>
@@ -75,14 +77,15 @@ function escapeHtml(string $value): string
         <p class="mt-2 text-sm text-slate-600">Gunakan akun admin atau guru.</p>
 
         <?php if ($error !== ''): ?>
-            <p class="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert"><?= escapeHtml($error) ?></p>
+            <p class="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert"><?= h($error) ?></p>
         <?php endif; ?>
 
         <form method="post" action="login.php" class="mt-6 space-y-5" autocomplete="on">
+            <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
             <div>
                 <label for="username" class="mb-1 block text-sm font-medium text-slate-700">Username</label>
                 <input id="username" name="username" type="text" required maxlength="100" autocomplete="username"
-                       value="<?= escapeHtml($username) ?>"
+                       value="<?= h($username) ?>"
                        class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200">
             </div>
             <div>

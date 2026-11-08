@@ -11,6 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Metode tidak diizinkan.');
 }
 
+if (!verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+    http_response_code(403);
+    exit('Permintaan tidak valid.');
+}
+
 $_SESSION = [];
 
 if (ini_get('session.use_cookies')) {

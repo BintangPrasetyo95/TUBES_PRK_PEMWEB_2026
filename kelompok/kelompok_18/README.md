@@ -36,6 +36,9 @@ membaca session, jalankan `startAppSession()`.
 - `redirectToDashboard()` mengarahkan pengguna yang login sesuai role.
 - `appUrl('path')` membentuk URL relatif terhadap root proyek, termasuk saat
   aplikasi dipasang dalam subfolder.
+- `csrfToken()` menghasilkan token form; `verifyCsrfToken($value)` memeriksa
+  token yang diterima. Gunakan pada setiap POST yang mengubah data.
+- `h($value)` meng-escape string untuk HTML dan atribut HTML.
 
 Contoh di awal halaman khusus admin:
 
@@ -48,6 +51,7 @@ $user = currentUser();
 
 ## Logout
 
-Kirim form dengan metode POST ke `logout.php`. Endpoint menghapus data session
-dan cookie session, kemudian mengalihkan ke `login.php`. Token CSRF untuk form
-logout akan ditambahkan pada fase keamanan.
+Kirim form dengan metode POST ke `logout.php`, sertakan hidden field
+`_csrf_token` berisi `csrfToken()`. Endpoint memverifikasi token, menghapus data
+session dan cookie session, kemudian mengalihkan ke `login.php`. Session login
+berakhir setelah 30 menit tidak aktif atau 8 jam sejak autentikasi.

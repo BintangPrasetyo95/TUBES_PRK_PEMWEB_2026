@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -123,12 +124,45 @@ require_once __DIR__ . '/includes/helper.php';
 
         <?php showFlash(); ?>
 
+        <!-- POIN 11: ALERT NOTIFIKASI STOK MENIPIS -->
+        <?php if ($errorStokMenipis === '' && !empty($produkStokMenipis)): ?>
+
+            <?php
+                $jumlahStokHabis = 0;
+
+                foreach ($produkStokMenipis as $produkStok) {
+                    if ((int) $produkStok['stock'] === 0) {
+                        $jumlahStokHabis++;
+                    }
+                }
+
+                $jumlahStokMenipis = count($produkStokMenipis) - $jumlahStokHabis;
+            ?>
+
+            <div class="alert alert-warning mb-4" role="alert">
+
+                <strong>Perhatian stok barang.</strong>
+
+                Terdapat <?= $jumlahStokMenipis; ?> jenis produk
+                dengan stok menipis dan
+                <?= $jumlahStokHabis; ?> jenis produk yang habis.
+
+                <a href="#judul-stok" class="alert-link">
+                    Lihat daftar produk.
+                </a>
+
+            </div>
+
+        <?php endif; ?>
+        <!-- AKHIR POIN 11 -->
+
         <section class="mb-4" aria-labelledby="judul-ringkasan">
             <h4 id="judul-ringkasan" class="fw-bold mb-3">
                 Ringkasan Toko
             </h4>
 
             <div class="row g-3">
+
                 <div class="col-12 col-md-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
@@ -151,6 +185,7 @@ require_once __DIR__ . '/includes/helper.php';
                                     ); ?>
                                 </p>
                             <?php endif; ?>
+
                         </div>
                     </div>
                 </div>
@@ -177,6 +212,7 @@ require_once __DIR__ . '/includes/helper.php';
                                     ); ?>
                                 </p>
                             <?php endif; ?>
+
                         </div>
                     </div>
                 </div>
@@ -203,15 +239,19 @@ require_once __DIR__ . '/includes/helper.php';
                                     ); ?>
                                 </p>
                             <?php endif; ?>
+
                         </div>
                     </div>
                 </div>
+
             </div>
         </section>
 
         <section class="mb-4" aria-labelledby="judul-stok">
+
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
+
                     <h4 id="judul-stok" class="fw-bold mb-2">
                         Monitoring Stok
                     </h4>
@@ -221,6 +261,7 @@ require_once __DIR__ . '/includes/helper.php';
                     </p>
 
                     <?php if ($errorStokMenipis !== ''): ?>
+
                         <p class="text-danger mb-0" role="alert">
                             <?= htmlspecialchars(
                                 $errorStokMenipis,
@@ -228,14 +269,20 @@ require_once __DIR__ . '/includes/helper.php';
                                 'UTF-8'
                             ); ?>
                         </p>
+
                     <?php elseif (empty($produkStokMenipis)): ?>
+
                         <p class="text-muted mb-0">
                             Tidak ada produk dengan stok mencapai
                             atau di bawah batas minimum.
                         </p>
+
                     <?php else: ?>
+
                         <div class="table-responsive">
+
                             <table class="table table-hover align-middle mb-0">
+
                                 <thead>
                                     <tr>
                                         <th scope="col">No.</th>
@@ -250,7 +297,9 @@ require_once __DIR__ . '/includes/helper.php';
                                 </thead>
 
                                 <tbody>
+
                                     <?php foreach ($produkStokMenipis as $index => $produk): ?>
+
                                         <tr>
                                             <td><?= $index + 1; ?></td>
 
@@ -279,24 +328,37 @@ require_once __DIR__ . '/includes/helper.php';
                                             </td>
 
                                             <td>
+
                                                 <?php if ((int) $produk['stock'] === 0): ?>
+
                                                     <span class="badge bg-danger">
                                                         Habis
                                                     </span>
+
                                                 <?php else: ?>
+
                                                     <span class="badge bg-warning text-dark">
                                                         Menipis
                                                     </span>
+
                                                 <?php endif; ?>
+
                                             </td>
                                         </tr>
+
                                     <?php endforeach; ?>
+
                                 </tbody>
+
                             </table>
+
                         </div>
+
                     <?php endif; ?>
+
                 </div>
             </div>
+
         </section>
 
         <div class="card border-0 shadow-sm">
@@ -314,6 +376,7 @@ require_once __DIR__ . '/includes/helper.php';
                 <hr>
 
                 <div class="row">
+
                     <div class="col-md-6 mb-3">
                         <small class="text-muted">Username</small>
                         <p class="fw-semibold">
@@ -327,6 +390,7 @@ require_once __DIR__ . '/includes/helper.php';
                             <?= htmlspecialchars($_SESSION['role'] ?? '-'); ?>
                         </p>
                     </div>
+
                 </div>
 
             </div>

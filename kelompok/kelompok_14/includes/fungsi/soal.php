@@ -245,3 +245,127 @@ function editSoal($soalId, $kuisId, $pengajarId, $data) {
         return ['berhasil' => false, 'pesan' => 'Gagal mengubah soal.'];
     }
 }
+
+// Hapus 1 soal dan rapikan kembali nomor urutan soal yang tersisa
+function hapusSoal($soalId, $kuisId, $pengajarId) {
+    global $pdo;
+
+    $kuis = ambilKuisById($kuisId, $pengajarId);
+    if (!$kuis) {
+        return ['berhasil' => false, 'pesan' => 'Kuis tidak ditemukan.'];
+    }
+
+    if ($kuis['status'] == 'menunggu' || $kuis['status'] == 'terbit') {
+        return ['berhasil' => false, 'pesan' => 'Tidak bisa menghapus soal saat kuis sedang menunggu atau sudah terbit.'];
+    }
+
+    $soal = ambilSoalById($soalId, $kuisId);
+    if (!$soal) {
+        return ['berhasil' => false, 'pesan' => 'Soal tidak ditemukan.'];
+    }
+
+    $pdo->beginTransaction();
+
+    try {
+        if ($kuis['status'] == 'ditolak' || $kuis['status'] == 'ditarik') {
+            ubahStatusKuis($kuisId, $kuis['status'], 'draft', $pengajarId, null);
+        }
+
+        // Hapus soal (opsi_jawaban otomatis ikut terhapus karena ON DELETE CASCADE)
+        $stmtHapus = $pdo->prepare("DELETE FROM soal WHERE id = ? AND kuis_id = ?");
+        $stmtHapus->execute([$soalId, $kuisId]);
+
+        // Ambil sisa soal untuk dirapikan nomor urutannya
+        $stmtSisa = $pdo->prepare("SELECT id FROM soal WHERE kuis_id = ? ORDER BY urutan ASC");
+        $stmtSisa->execute([$kuisId]);
+        $daftarSisa = $stmtSisa->fetchAll(PDO::FETCH_ASSOC);
+
+        // Geser urutan +1000 dulu supaya tidak bentrok dengan UNIQUE(kuis_id, urutan)
+        $stmtGeser = $pdo->prepare("UPDATE soal SET urutan = urutan + 1000 WHERE kuis_id = ?");
+        $stmtGeser->execute([$kuisId]);
+
+        // Tulis urutan baru mulai dari 1
+        $stmtUrut = $pdo->prepare("UPDATE soal SET urutan = ? WHERE id = ?");
+        $nomor = 1;
+        foreach ($daftarSisa as $baris) {
+            $stmtUrut->execute([$nomor, $baris['id']]);
+            $nomor++;
+        }
+
+        $pdo->commit();
+        return ['berhasil' => true];
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return ['berhasil' => false, 'pesan' => 'Gagal menghapus soal.'];
+    }
+}
+
+// Geser urutan soal ke atas ('naik') atau ke bawah ('turun')
+function geserUrutanSoal($soalId, $kuisId, $pengajarId, $arah) {
+    global $pdo;
+
+    $kuis = ambilKuisById($kuisId, $pengajarId);
+    if (!$kuis) {
+        return ['berhasil' => false, 'pesan' => 'Kuis tidak ditemukan.'];
+    }
+
+    if ($kuis['status'] == 'menunggu' || $kuis['status'] == 'terbit') {
+        return ['berhasil' => false, 'pesan' => 'Urutan soal tidak bisa diubah saat kuis sedang menunggu atau terbit.'];
+    }
+
+    // Ambil semua soal diurutkan dari urutan terkecil
+    $stmt = $pdo->prepare("SELECT id, urutan FROM soal WHERE kuis_id = ? ORDER BY urutan ASC");
+    $stmt->execute([$kuisId]);
+    $daftarSoal = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Cari posisi soal yang mau digeser
+    $posisi = -1;
+    foreach ($daftarSoal as $index => $item) {
+        if ($item['id'] == $soalId) {
+            $posisi = $index;
+            break;
+        }
+    }
+
+    if ($posisi == -1) {
+        return ['berhasil' => false, 'pesan' => 'Soal tidak ditemukan.'];
+    }
+
+    // Tentukan posisi tujuan tukar
+    $posisiTukar = -1;
+    if ($arah == 'naik' && $posisi > 0) {
+        $posisiTukar = $posisi - 1;
+    } else if ($arah == 'turun' && $posisi < count($daftarSoal) - 1) {
+        $posisiTukar = $posisi + 1;
+    } else {
+        // Sudah paling atas atau paling bawah, tidak perlu ditukar
+        return ['berhasil' => true];
+    }
+
+    $soalA = $daftarSoal[$posisi];
+    $soalB = $daftarSoal[$posisiTukar];
+
+    $pdo->beginTransaction();
+
+    try {
+        if ($kuis['status'] == 'ditolak' || $kuis['status'] == 'ditarik') {
+            ubahStatusKuis($kuisId, $kuis['status'], 'draft', $pengajarId, null);
+        }
+
+        // Langkah 1: pindahkan soalA ke urutan sementara (+1000) agar tidak bentrok unique
+        $stmtTemp = $pdo->prepare("UPDATE soal SET urutan = ? WHERE id = ?");
+        $stmtTemp->execute([$soalA['urutan'] + 1000, $soalA['id']]);
+
+        // Langkah 2: pindahkan soalB ke urutan soalA
+        $stmtTemp->execute([$soalA['urutan'], $soalB['id']]);
+
+        // Langkah 3: pindahkan soalA ke urutan soalB
+        $stmtTemp->execute([$soalB['urutan'], $soalA['id']]);
+
+        $pdo->commit();
+        return ['berhasil' => true];
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return ['berhasil' => false, 'pesan' => 'Gagal mengubah urutan soal.'];
+    }
+}

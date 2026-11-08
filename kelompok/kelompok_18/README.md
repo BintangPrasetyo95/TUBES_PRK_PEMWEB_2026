@@ -1,75 +1,57 @@
-# 📍 SISTEM INFORMASI PRESENSI "ATTENDARA" (KELOMPOK 18)
+# ATTENDARA
 
-Selamat datang di repositori internal pengerjaan Tugas Besar Praktikum Pemrograman Web 2026. Dokumen ini adalah panduan kerja, pembagian tugas, dan standardisasi kode untuk seluruh anggota Kelompok 18.
+## Konfigurasi koneksi database
 
----
+`config/database.php` membuat koneksi PDO ke database MySQL `attendara`. Atur
+variabel lingkungan berikut pada proses PHP/web server:
 
-## 🛠️ TEKNOLOGI UTAMA
-*   **Backend:** PHP Native (PDO Connection)
-*   **Database:** MySQL / MariaDB (Laragon / XAMPP)
-*   **Frontend:** Tailwind CSS v4 via CDN Jalur Cepat
-*   **API Perangkat:** JavaScript Geolocation API
+- `ATTENDARA_DB_HOST` (opsional, default `127.0.0.1`)
+- `ATTENDARA_DB_NAME` (opsional, default `attendara`)
+- `ATTENDARA_DB_USER` (opsional untuk host lokal; default `root`, wajib untuk host lain)
+- `ATTENDARA_DB_PASSWORD` (opsional; gunakan nilai kosong bila tanpa password)
 
----
+Contoh nilai kredensial hanya boleh disimpan pada konfigurasi lokal server yang
+tidak masuk repository. Impor skema yang sudah ada dari `database/attendara.sql`;
+file koneksi tidak membuat atau mengubah tabel.
 
-## 👥 PEMBAGIAN TUGAS (ROLE & RESPONSIBILITY)
+## Login
 
-Untuk menjaga efisiensi pengerjaan 5 Modul Utama, berikut adalah pembagian peran resmi tim Kelompok 18:
+Buka `login.php`. Form mengirim field `username` dan `password` melalui POST.
+Login memeriksa `users.username`, `users.password_hash`, `users.is_active`, dan
+`users.role`; akun aktif dengan password valid diarahkan ke `admin/dashboard.php`
+atau `guru/dashboard.php`. Halaman tujuan tersebut disediakan oleh bagian UI/
+backend terkait.
 
-### 👨‍💻 ANGGOTA 1: Database Administrator & Backend Core
-*   **Tanggung Jawab Utama:** 
-    *   Merancang skema, relasi tabel, dan mengelola file SQL (`database/db_attendara.sql`).
-    *   Membuat file koneksi basis data menggunakan standar keamanan PDO PHP (`config/database.php`).
-    *   Menyusun fungsi matematika inti untuk Rumus Haversine (hitung jarak meter) dan fungsi kedaluwarsa waktu di file *helper*.
+## Kontrak helper autentikasi
 
-### 🎨 Kadek: UI/UX Designer & Frontend Engineer
-*   **Tanggung Jawab Utama:**
-    *   Menyusun kerangka komponen visual global web seperti `header.php`, `footer.php`, dan `sidebar.php`.
-    *   Mengintegrasikan link CDN Tailwind v4 secara konsisten di seluruh halaman.
-    *   Melakukan *slicing* halaman agar tampilan responsif di perangkat mobile maupun laptop.
+Sertakan helper dengan `require_once __DIR__ . '/../config/auth.php'` dari
+halaman dalam folder `admin/` atau `guru/`. Sebelum memanggil helper yang
+membaca session, jalankan `startAppSession()`.
 
-### 🔐 ANGGOTA 3: Auth & Admin Module Specialist (Modul 1)
-*   **Tanggung Jawab Utama:**
-    *   Membangun sistem autentikasi masuk/keluar (*Login/Logout*) berbasis hak akses multi-role (Admin, Dosen, Siswa).
-    *   Mengamankan variabel global sesi (`session_start()`).
-    *   Membuat halaman manajemen data master (CRUD data siswa, dosen, kelas, serta penentuan koordinat kelas) khusus hak akses Admin.
+- `currentUser()` mengembalikan array `id`, `username`, dan `role`, atau `null`.
+- `isLoggedIn()` mengembalikan status autentikasi.
+- `requireLogin()` mengalihkan pengguna yang belum login ke `login.php`.
+- `requireRole('admin')` atau `requireRole('guru')` mewajibkan role tersebut;
+  role lain menerima HTTP 403.
+- `redirectToDashboard()` mengarahkan pengguna yang login sesuai role.
+- `appUrl('path')` membentuk URL relatif terhadap root proyek, termasuk saat
+  aplikasi dipasang dalam subfolder.
+- `csrfToken()` menghasilkan token form; `verifyCsrfToken($value)` memeriksa
+  token yang diterima. Gunakan pada setiap POST yang mengubah data.
+- `h($value)` meng-escape string untuk HTML dan atribut HTML.
 
-### 🔑 ANGGOTA 4: Generator Token Dinamis Specialist (Modul 2)
-*   **Tanggung Jawab Utama:**
-    *   Membangun modul dashboard khusus dosen pengajar.
-    *   Membuat logika tombol pengacak token 6 digit acak yang terikat dengan waktu pembuatan (*timestamp* saat itu).
-    *   Membuat mekanisme penampilan token secara real-time di layar proyektor kelas.
+Contoh di awal halaman khusus admin:
 
-### 📍 ANGGOTA 5: Geolocation & Data Visualization Specialist (Modul 3 & 4)
-*   **Tanggung Jawab Utama:**
-    *   Mengintegrasikan skrip pengambilan koordinat GPS perangkat siswa via JavaScript Geolocation API.
-    *   Mengirimkan paket data koordinat siswa + kode token lewat AJAX ke backend PHP pemroses.
-    *   Membangun halaman rekapitulasi kehadiran (grafik Chart.js) serta fitur ekspor laporan resmi (PDF/Excel).
+```php
+require_once __DIR__ . '/../config/auth.php';
+startAppSession();
+requireRole('admin');
+$user = currentUser();
+```
 
----
+## Logout
 
-## 🛡️ TUGAS KHUSUS KETUA KELOMPOK (TECH LEAD)
-Sebagai Ketua Kelompok, tugas utama lu adalah menjaga keteraturan sistem:
-1.  **Gatekeeper Branch Staging:** Memastikan tidak ada anggota yang merusak struktur kode di branch `staging`.
-2.  **Code Review:** Memeriksa kualitas kode, kebersihan penulisan, keamanan password, dan potensi konflik (tabrakan file) sebelum melakukan proses penggabungan kode (*Merge*).
-3.  **Final Pull Request:** Melakukan koordinasi akhir untuk memicu pengiriman proyek dari branch `staging` kelompok ke branch `main` repositori laboratorium utama.
-
----
-
-## 🔀 ALUR KERJA GIT KELOMPOK 18 (SOP TIM)
-
-Wajib dipatuhi oleh seluruh anggota kelompok demi menghindari konflik kode eror massal:
-
-1.  **Isolasi Folder Kerja:** Semua perubahan, pembuatan file baru, atau penulisan kode **HANYA BOLEH** dilakukan di dalam ruang isolasi kita: `kelompok/kelompok_18/`. Jangan sekali-kali mengedit file di luar folder tersebut.
-2.  **Unduh Pembaruan Sebelum Bekerja:** Sebelum kalian mulai menulis kode baru setiap harinya, biasakan jalankan perintah ini di terminal untuk menyamakan kode dengan server terbaru:
-    ```bash
-    git checkout staging
-    git pull origin staging
-    ```
-3.  **Kirim Perubahan Kode:** Jika fitur/modul tugas kalian sudah selesai diketik dan dites lancar di komputer masing-masing, jalankan rangkaian perintah ini:
-    ```bash
-    git add .
-    git commit -m "feat(kelompok_18): penjelasan singkat fitur yang lu selesaikan"
-    git push origin staging
-    ```
-4.  **Konfirmasi Grup:** Beritahu Ketua Kelompok di grup WhatsApp setelah kalian melakukan *push* agar ketua bisa memeriksa perubahan kode kalian sebelum diintegrasikan secara penuh.
+Kirim form dengan metode POST ke `logout.php`, sertakan hidden field
+`_csrf_token` berisi `csrfToken()`. Endpoint memverifikasi token, menghapus data
+session dan cookie session, kemudian mengalihkan ke `login.php`. Session login
+berakhir setelah 30 menit tidak aktif atau 8 jam sejak autentikasi.

@@ -2,18 +2,25 @@
 
 declare(strict_types=1);
 
-// Supply credentials through the PHP process environment; never place them in
-// frontend code or commit them to the repository.
+// Prefer credentials from the PHP process environment. The root fallback below
+// is limited to a loopback host for local Laragon development.
 $dbHost = getenv('ATTENDARA_DB_HOST') ?: '127.0.0.1';
 $dbName = getenv('ATTENDARA_DB_NAME') ?: 'attendara';
 $dbUser = getenv('ATTENDARA_DB_USER');
 $dbPassword = getenv('ATTENDARA_DB_PASSWORD');
 $dbCharset = 'utf8mb4';
+$localHosts = ['127.0.0.1', 'localhost', '::1'];
+$isLocalDatabase = in_array(strtolower($dbHost), $localHosts, true);
 
 if ($dbUser === false || $dbUser === '') {
-    error_log('ATTENDARA database configuration is missing ATTENDARA_DB_USER.');
-    http_response_code(500);
-    exit('Konfigurasi database belum lengkap.');
+    if ($isLocalDatabase) {
+        // Laragon's default local MySQL account; remote hosts still require an explicit user.
+        $dbUser = 'root';
+    } else {
+        error_log('ATTENDARA database configuration is missing ATTENDARA_DB_USER.');
+        http_response_code(500);
+        exit('Konfigurasi database belum lengkap.');
+    }
 }
 
 if ($dbPassword === false) {

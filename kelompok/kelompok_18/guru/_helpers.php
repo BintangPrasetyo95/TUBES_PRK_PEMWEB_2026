@@ -160,6 +160,159 @@ function guruClassSchedules(int $assignmentId): array
     return $schedules;
 }
 
+/** Create or resume today's ongoing session for a teacher-owned schedule. */
+function guruStartSession(int $classId, int $scheduleId): int
+{
+    $profile = guruProfile();
+    $semester = guruActiveSemester();
+    if ($profile === null || $semester === null) {
+        throw new DomainException('Profil Guru atau semester aktif tidak tersedia.');
+    }
+
+    $pdo = guruDb();
+    $pdo->beginTransaction();
+    try {
+        $assignmentQuery = $pdo->prepare(
+            'SELECT pg.id
+             FROM penugasan_guru pg
+             INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
+             INNER JOIN semester sem ON sem.id = pg.semester_id AND sem.status = :active_status
+             WHERE pg.guru_id = :guru_id AND pg.kelas_id = :class_id
+               AND pg.semester_id = :semester_id
+             LIMIT 1 FOR UPDATE'
+        );
+        $assignmentQuery->execute([
+            'active_status' => 'aktif',
+            'guru_id' => $profile['id'],
+            'class_id' => $classId,
+            'semester_id' => $semester['id'],
+        ]);
+        $assignmentId = $assignmentQuery->fetchColumn();
+        if ($assignmentId === false) {
+            throw new DomainException('Kelas tidak ditemukan.');
+        }
+
+        $scheduleQuery = $pdo->prepare(
+            'SELECT id
+             FROM jadwal_mengajar
+             WHERE id = :schedule_id AND penugasan_guru_id = :assignment_id
+               AND (berlaku_mulai IS NULL OR berlaku_mulai <= CURRENT_DATE())
+               AND (berlaku_sampai IS NULL OR berlaku_sampai >= CURRENT_DATE())
+             LIMIT 1'
+        );
+        $scheduleQuery->execute(['schedule_id' => $scheduleId, 'assignment_id' => $assignmentId]);
+        if ($scheduleQuery->fetchColumn() === false) {
+            throw new DomainException('Jadwal tidak tersedia untuk kelas ini.');
+        }
+
+        $ongoingQuery = $pdo->prepare(
+            "SELECT id FROM sesi_pembelajaran
+             WHERE penugasan_guru_id = :assignment_id AND status = :status
+             ORDER BY id DESC LIMIT 1 FOR UPDATE"
+        );
+        $ongoingQuery->execute(['assignment_id' => $assignmentId, 'status' => 'berlangsung']);
+        $ongoingSessionId = $ongoingQuery->fetchColumn();
+        if ($ongoingSessionId !== false) {
+            $pdo->commit();
+            return (int) $ongoingSessionId;
+        }
+
+        $insert = $pdo->prepare(
+            "INSERT INTO sesi_pembelajaran
+                (penugasan_guru_id, jadwal_mengajar_id, tanggal, waktu_mulai, status)
+             VALUES (:assignment_id, :schedule_id, CURRENT_DATE(), CURRENT_TIMESTAMP(), :status)"
+        );
+        $insert->execute([
+            'assignment_id' => $assignmentId,
+            'schedule_id' => $scheduleId,
+            'status' => 'berlangsung',
+        ]);
+        $sessionId = (int) $pdo->lastInsertId();
+        $pdo->commit();
+
+        return $sessionId;
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+}
+
+/** Fetch a session only when it belongs to the authenticated teacher. */
+function guruOwnedSession(int $sessionId): ?array
+{
+    $statement = guruDb()->prepare(
+        'SELECT sp.id, sp.penugasan_guru_id AS assignment_id, sp.jadwal_mengajar_id AS schedule_id,
+                sp.tanggal, sp.waktu_mulai, sp.waktu_selesai, sp.status,
+                k.id AS class_id, k.kode AS class_code, k.nama AS class_name,
+                sem.id AS semester_id, sem.nama AS semester, sem.status AS semester_status,
+                jm.hari AS day_number, jm.jam_mulai AS scheduled_start, jm.jam_selesai AS scheduled_end
+         FROM sesi_pembelajaran sp
+         INNER JOIN penugasan_guru pg ON pg.id = sp.penugasan_guru_id
+         INNER JOIN guru g ON g.id = pg.guru_id
+         INNER JOIN kelas k ON k.id = pg.kelas_id
+         INNER JOIN semester sem ON sem.id = pg.semester_id
+         LEFT JOIN jadwal_mengajar jm ON jm.id = sp.jadwal_mengajar_id
+         WHERE sp.id = :session_id AND g.user_id = :user_id
+         LIMIT 1'
+    );
+    $statement->execute(['session_id' => $sessionId, 'user_id' => currentUser()['id']]);
+    $session = $statement->fetch();
+
+    if (!is_array($session)) {
+        return null;
+    }
+
+    $session['day_label'] = $session['day_number'] === null ? null : 'Hari ' . $session['day_number'];
+    return $session;
+}
+
+/** Change an owned, ongoing session to a terminal state. */
+function guruEndSession(int $sessionId, string $status): void
+{
+    if (!in_array($status, ['selesai', 'dibatalkan'], true)) {
+        throw new InvalidArgumentException('Status sesi tidak valid.');
+    }
+
+    $pdo = guruDb();
+    $pdo->beginTransaction();
+    try {
+        $statement = $pdo->prepare(
+            "SELECT sp.id
+             FROM sesi_pembelajaran sp
+             INNER JOIN penugasan_guru pg ON pg.id = sp.penugasan_guru_id
+             INNER JOIN guru g ON g.id = pg.guru_id
+             INNER JOIN semester sem ON sem.id = pg.semester_id
+             WHERE sp.id = :session_id AND g.user_id = :user_id
+               AND sem.status = :active_semester AND sp.status = :ongoing_status
+             LIMIT 1 FOR UPDATE"
+        );
+        $statement->execute([
+            'session_id' => $sessionId,
+            'user_id' => currentUser()['id'],
+            'active_semester' => 'aktif',
+            'ongoing_status' => 'berlangsung',
+        ]);
+        if ($statement->fetchColumn() === false) {
+            throw new DomainException('Sesi tidak ditemukan atau tidak dapat diubah.');
+        }
+
+        $update = $pdo->prepare(
+            'UPDATE sesi_pembelajaran
+             SET status = :status, waktu_selesai = CURRENT_TIMESTAMP()
+             WHERE id = :session_id AND status = :ongoing_status'
+        );
+        $update->execute(['status' => $status, 'session_id' => $sessionId, 'ongoing_status' => 'berlangsung']);
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+}
+
 /** Return a generic response for backend data loading failures. */
 function guruReportBackendError(Throwable $exception): never
 {

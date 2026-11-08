@@ -30,6 +30,58 @@ require_once __DIR__ . '/includes/helper.php';
 
         <?php showFlash(); ?>
 
+        <section class="mb-4" aria-labelledby="judul-ringkasan">
+    <h4 id="judul-ringkasan" class="fw-bold mb-3">
+        Ringkasan Toko
+    </h4>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="text-muted fs-6">Total Produk</h5>
+                    <p class="fs-3 fw-bold mb-1">&mdash;</p>
+                    <small class="text-muted">Jumlah jenis produk</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="text-muted fs-6">Transaksi Hari Ini</h5>
+                    <p class="fs-3 fw-bold mb-1">&mdash;</p>
+                    <small class="text-muted">Jumlah transaksi penjualan</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="text-muted fs-6">Omzet Hari Ini</h5>
+                    <p class="fs-3 fw-bold mb-1">&mdash;</p>
+                    <small class="text-muted">Total nilai penjualan</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4" aria-labelledby="judul-stok">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h4 id="judul-stok" class="fw-bold mb-2">
+                Monitoring Stok
+            </h4>
+            <p class="text-muted mb-0">
+                Daftar produk dengan stok mencapai atau di bawah
+                batas minimum akan ditampilkan di bagian ini.
+            </p>
+        </div>
+    </div>
+</section>
+
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
 

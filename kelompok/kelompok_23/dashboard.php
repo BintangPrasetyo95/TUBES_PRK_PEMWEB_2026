@@ -55,6 +55,30 @@ try {
     $errorTransaksiHariIni = 'Jumlah transaksi belum dapat dimuat.';
 }
 
+$omzetHariIni = null;
+$errorOmzetHariIni = '';
+
+try {
+    $hasilOmzet = $conn->query(
+        "SELECT COALESCE(SUM(total), 0) AS total_omzet
+         FROM transactions
+         WHERE transaction_date >= CURDATE()
+           AND transaction_date < CURDATE() + INTERVAL 1 DAY"
+    );
+
+    if ($hasilOmzet === false) {
+        throw new RuntimeException($conn->error);
+    }
+
+    $dataOmzet = $hasilOmzet->fetch_assoc();
+    $omzetHariIni = $dataOmzet['total_omzet'];
+
+    $hasilOmzet->free();
+} catch (Exception $e) {
+    error_log('Query omzet hari ini gagal: ' . $e->getMessage());
+    $errorOmzetHariIni = 'Omzet hari ini belum dapat dimuat.';
+}
+
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/includes/helper.php';
 ?>
@@ -138,8 +162,24 @@ require_once __DIR__ . '/includes/helper.php';
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <h5 class="text-muted fs-6">Omzet Hari Ini</h5>
-                            <p class="fs-3 fw-bold mb-1">&mdash;</p>
+
+                            <p class="fs-3 fw-bold mb-1">
+                                <?= $omzetHariIni !== null
+                                    ? formatRupiah($omzetHariIni)
+                                    : '&mdash;'; ?>
+                            </p>
+
                             <small class="text-muted">Total nilai penjualan</small>
+
+                            <?php if ($errorOmzetHariIni !== ''): ?>
+                                <p class="text-danger small mt-2 mb-0" role="alert">
+                                    <?= htmlspecialchars(
+                                        $errorOmzetHariIni,
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

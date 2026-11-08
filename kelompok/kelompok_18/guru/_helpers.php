@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
 
+final class GuruTapCooldownException extends RuntimeException
+{
+}
+
 /** Return the PDO connection created by the shared application config. */
 function guruDb(): PDO
 {
@@ -316,6 +320,148 @@ function guruSessionAttendance(int $sessionId): array
     ]);
 
     return $statement->fetchAll();
+}
+
+/** Apply the per-student tap cooldown for this authenticated teacher session. */
+function guruTapAttendance(int $sessionId, int $studentId): array
+{
+    if (!isset($_SESSION['_guru_tap_last']) || !is_array($_SESSION['_guru_tap_last'])) {
+        $_SESSION['_guru_tap_last'] = [];
+    }
+    $userId = (int) currentUser()['id'];
+    $tapKey = $userId . ':' . $sessionId . ':' . $studentId;
+    $now = microtime(true);
+    $lastTap = $_SESSION['_guru_tap_last'][$tapKey] ?? null;
+    if ((is_float($lastTap) || is_int($lastTap)) && ($now - $lastTap) < 2.0) {
+        throw new GuruTapCooldownException('Tunggu 2 detik sebelum mengirim tap lagi untuk siswa ini.');
+    }
+
+    $pdo = guruDb();
+    $pdo->beginTransaction();
+    try {
+        $sessionQuery = $pdo->prepare(
+            'SELECT pg.kelas_id, pg.semester_id
+             FROM sesi_pembelajaran sp
+             INNER JOIN penugasan_guru pg ON pg.id = sp.penugasan_guru_id
+             INNER JOIN guru g ON g.id = pg.guru_id
+             INNER JOIN semester sem ON sem.id = pg.semester_id
+             WHERE sp.id = :session_id AND g.user_id = :user_id
+               AND sem.status = :active_semester AND sp.status = :ongoing_status
+             LIMIT 1 FOR UPDATE'
+        );
+        $sessionQuery->execute([
+            'session_id' => $sessionId,
+            'user_id' => $userId,
+            'active_semester' => 'aktif',
+            'ongoing_status' => 'berlangsung',
+        ]);
+        $session = $sessionQuery->fetch();
+        if (!is_array($session)) {
+            throw new DomainException('Sesi tidak ditemukan atau tidak sedang berlangsung.');
+        }
+
+        $studentQuery = $pdo->prepare(
+            'SELECT sis.id
+             FROM anggota_kelas ak
+             INNER JOIN siswa sis ON sis.id = ak.siswa_id AND sis.is_active = 1
+             WHERE ak.siswa_id = :student_id AND ak.kelas_id = :class_id
+               AND ak.semester_id = :semester_id
+             LIMIT 1'
+        );
+        $studentQuery->execute([
+            'student_id' => $studentId,
+            'class_id' => $session['kelas_id'],
+            'semester_id' => $session['semester_id'],
+        ]);
+        if ($studentQuery->fetchColumn() === false) {
+            throw new DomainException('Siswa tidak terdaftar pada kelas sesi ini.');
+        }
+
+        $existing = $pdo->prepare(
+            'SELECT id FROM absensi WHERE sesi_pembelajaran_id = :session_id AND siswa_id = :student_id LIMIT 1'
+        );
+        $existing->execute(['session_id' => $sessionId, 'student_id' => $studentId]);
+        $attendanceId = $existing->fetchColumn();
+        if ($attendanceId === false) {
+            $save = $pdo->prepare(
+                'INSERT INTO absensi
+                    (sesi_pembelajaran_id, siswa_id, status, dicatat_oleh_user_id, waktu_dicatat)
+                 VALUES (:session_id, :student_id, :status, :user_id, CURRENT_TIMESTAMP())'
+            );
+            $save->execute([
+                'session_id' => $sessionId, 'student_id' => $studentId,
+                'status' => 'hadir', 'user_id' => $userId,
+            ]);
+        } else {
+            $save = $pdo->prepare(
+                'UPDATE absensi
+                 SET status = :status, dicatat_oleh_user_id = :user_id,
+                     waktu_dicatat = CURRENT_TIMESTAMP(), catatan = NULL
+                 WHERE id = :attendance_id'
+            );
+            $save->execute(['status' => 'hadir', 'user_id' => $userId, 'attendance_id' => $attendanceId]);
+        }
+        $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+
+    $_SESSION['_guru_tap_last'][$tapKey] = $now;
+    return [
+        'time' => date('H:i:s'),
+        'tap_count' => guruTapCount($sessionId),
+    ];
+}
+
+/** Return the number of unique students tapped during the current login session. */
+function guruTapCount(int $sessionId): int
+{
+    $prefix = (int) currentUser()['id'] . ':' . $sessionId . ':';
+    $tappedStudents = [];
+    foreach ($_SESSION['_guru_tap_last'] ?? [] as $key => $_timestamp) {
+        if (is_string($key) && str_starts_with($key, $prefix)) {
+            $tappedStudents[substr($key, strlen($prefix))] = true;
+        }
+    }
+
+    return count($tappedStudents);
+}
+
+/** Return student IDs tapped by this teacher in the current login session. */
+function guruTappedStudentIds(int $sessionId): array
+{
+    $prefix = (int) currentUser()['id'] . ':' . $sessionId . ':';
+    $studentIds = [];
+    foreach ($_SESSION['_guru_tap_last'] ?? [] as $key => $_timestamp) {
+        if (is_string($key) && str_starts_with($key, $prefix)) {
+            $studentId = filter_var(substr($key, strlen($prefix)), FILTER_VALIDATE_INT);
+            if ($studentId !== false) {
+                $studentIds[] = (int) $studentId;
+            }
+        }
+    }
+
+    return $studentIds;
+}
+
+/** Return successful tap times for the current teacher session. */
+function guruTappedStudentTimes(int $sessionId): array
+{
+    $prefix = (int) currentUser()['id'] . ':' . $sessionId . ':';
+    $times = [];
+    foreach ($_SESSION['_guru_tap_last'] ?? [] as $key => $timestamp) {
+        if (is_string($key) && str_starts_with($key, $prefix) && (is_float($timestamp) || is_int($timestamp))) {
+            $studentId = filter_var(substr($key, strlen($prefix)), FILTER_VALIDATE_INT);
+            if ($studentId !== false) {
+                $times[(int) $studentId] = date('H:i:s', (int) $timestamp);
+            }
+        }
+    }
+
+    return $times;
 }
 
 /** Add a manual participation score to an owned, ongoing session. */

@@ -1,11 +1,8 @@
 <?php
 session_start();
 require_once '../config/koneksi.php';
+require_once '../config/app.php';
 
-// Pastikan user sudah login (sesuaikan dengan nama file proteksi dari Auth & Session)
-// require_once '../includes/auth_check.php';
-
-// Tangkap ID alat dari URL
 $id_alat = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($id_alat === 0) {
@@ -36,11 +33,11 @@ include '../includes/header.php';
     <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 p-6">
         <div class="flex items-center mb-6 pb-4 border-b border-gray-200">
             <?php $foto_url = !empty($alat['foto']) ? "../uploads/alat/" . $alat['foto'] : "../assets/img/default-alat.png"; ?>
-            <img src="<?= htmlspecialchars($foto_url) ?>" alt="<?= htmlspecialchars($alat['nama']) ?>" class="w-24 h-24 object-cover rounded-md mr-6">
+            <img src="<?= e($foto_url) ?>" alt="<?= e($alat['nama']) ?>" class="w-24 h-24 object-cover rounded-md mr-6">
             <div>
-                <h2 class="text-2xl font-bold text-gray-800"><?= htmlspecialchars($alat['nama']) ?></h2>
-                <p class="text-sm text-gray-500">Kode: <?= htmlspecialchars($alat['kode']) ?> | Lokasi: <?= htmlspecialchars($alat['lokasi']) ?></p>
-                <p class="text-sm font-semibold text-blue-600 mt-1">Sisa Stok: <?= htmlspecialchars($alat['stok']) ?></p>
+                <h2 class="text-2xl font-bold text-gray-800"><?= e($alat['nama']) ?></h2>
+                <p class="text-sm text-gray-500">Kode: <?= e($alat['kode']) ?> | Lokasi: <?= e($alat['lokasi']) ?></p>
+                <p class="text-sm font-semibold text-blue-600 mt-1">Sisa Stok: <?= e($alat['stok']) ?></p>
             </div>
         </div>
 
@@ -63,7 +60,7 @@ include '../includes/header.php';
 
             <div class="mb-4">
                 <label for="jumlah" class="block text-gray-700 text-sm font-bold mb-2">Jumlah Pinjam</label>
-                <input type="number" id="jumlah" name="jumlah" min="1" max="<?= htmlspecialchars($alat['stok']) ?>" value="1" required
+                <input type="number" id="jumlah" name="jumlah" min="1" max="<?= e($alat['stok']) ?>" value="1" required
                     class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 <p class="text-xs text-gray-500 mt-1">Maksimal peminjaman tidak boleh melebihi stok tersedia.</p>
             </div>

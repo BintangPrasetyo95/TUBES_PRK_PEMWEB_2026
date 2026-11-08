@@ -25,6 +25,7 @@ function penugasan_redirect_with_flash(int $filterSemesterId, string $type, stri
     exit;
 }
 
+
 $isPost = $_SERVER['REQUEST_METHOD'] === 'POST';
 $filterSemesterId = $isPost
     ? penugasan_post_int('filter_semester_id')

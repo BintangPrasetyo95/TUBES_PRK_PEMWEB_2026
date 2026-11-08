@@ -103,13 +103,18 @@ function isLoggedIn(): bool
 /** Build a URL relative to this project, including when hosted in a subfolder. */
 function appUrl(string $path): string
 {
-    $scriptDirectory = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
-    $lastDirectory = basename($scriptDirectory);
-    if (in_array($lastDirectory, ['admin', 'guru'], true)) {
-        $scriptDirectory = dirname($scriptDirectory);
+    $scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/');
+    $pathSegments = array_values(array_filter(explode('/', trim($scriptPath, '/')), static fn (string $segment): bool => $segment !== ''));
+    if ($pathSegments !== []) {
+        array_pop($pathSegments);
     }
 
-    $base = rtrim($scriptDirectory, '/');
+    $lastDirectory = $pathSegments === [] ? '' : $pathSegments[array_key_last($pathSegments)];
+    if (in_array($lastDirectory, ['admin', 'guru'], true)) {
+        array_pop($pathSegments);
+    }
+
+    $base = $pathSegments === [] ? '' : '/' . implode('/', $pathSegments);
     return $base . '/' . ltrim($path, '/');
 }
 

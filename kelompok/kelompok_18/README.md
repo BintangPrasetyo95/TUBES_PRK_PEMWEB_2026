@@ -7,7 +7,7 @@ variabel lingkungan berikut pada proses PHP/web server:
 
 - `ATTENDARA_DB_HOST` (opsional, default `127.0.0.1`)
 - `ATTENDARA_DB_NAME` (opsional, default `attendara`)
-- `ATTENDARA_DB_USER` (wajib)
+- `ATTENDARA_DB_USER` (opsional untuk host lokal; default `root`, wajib untuk host lain)
 - `ATTENDARA_DB_PASSWORD` (opsional; gunakan nilai kosong bila tanpa password)
 
 Contoh nilai kredensial hanya boleh disimpan pada konfigurasi lokal server yang

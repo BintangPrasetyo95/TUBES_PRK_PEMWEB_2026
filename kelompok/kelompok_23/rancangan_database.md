@@ -37,3 +37,35 @@ dashboard menampilkan nilai nol.
 Produk masuk daftar stok menipis jika stock sudah mencapai
 atau berada di bawah min_stock. Jika stock bernilai nol,
 produk ditandai sebagai habis.
+
+## Aturan Relasi Data Master
+
+### Kategori dan Produk
+
+Kolom products.category_id mengacu pada categories.id.
+Satu kategori dapat digunakan oleh banyak produk.
+Setiap produk wajib memiliki kategori yang terdaftar.
+
+Relasi ini menggunakan ON DELETE RESTRICT.
+Kategori yang masih digunakan oleh produk tidak dapat dihapus.
+Produk perlu dipindahkan ke kategori lain atau dihapus terlebih dahulu.
+
+ON UPDATE CASCADE membuat category_id pada produk mengikuti perubahan
+id kategori jika id tersebut diperbarui.
+
+### Pengguna dan Transaksi
+
+Kolom transactions.user_id mengacu pada users.id.
+Satu pengguna dapat tercatat sebagai kasir pada banyak transaksi.
+Setiap transaksi wajib terhubung dengan pengguna yang terdaftar.
+
+Relasi ini menggunakan ON DELETE RESTRICT.
+Pengguna yang memiliki riwayat transaksi tidak dapat dihapus.
+Untuk menonaktifkan akun tersebut, gunakan kolom is_active
+agar riwayat transaksi tetap tersimpan.
+
+ON UPDATE CASCADE membuat user_id pada transaksi mengikuti perubahan
+id pengguna jika id tersebut diperbarui.
+
+Tabel users tidak memiliki relasi langsung dengan categories atau products.
+Hubungan pengguna dengan penjualan dicatat melalui tabel transactions.

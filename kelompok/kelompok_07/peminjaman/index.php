@@ -16,9 +16,6 @@ $alats = $stmt->fetchAll();
 include '../includes/header.php';
 ?>
 <script src="https://cdn.tailwindcss.com"></script>
-<?php
-include '../includes/navbar.php';
-?>
 
 <div class="container mx-auto mt-8 px-4">
     <h2 class="text-2xl font-bold mb-6 text-gray-800">Katalog Alat Laboratorium</h2>

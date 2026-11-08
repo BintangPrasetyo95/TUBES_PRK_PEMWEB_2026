@@ -1,13 +1,2 @@
 <?php
-
-declare(strict_types=1);
-
-require_once __DIR__ . '/config/auth.php';
-startAppSession();
-
-if (isLoggedIn()) {
-    redirectToDashboard();
-}
-
-header('Location: ' . appUrl('login.php'));
-exit;
+echo "<h1>Sistem Presensi Attendara - Kelompok 18</h1>";

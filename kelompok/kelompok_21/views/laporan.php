@@ -265,74 +265,118 @@
     .only-print { display: none !important; }
 
     @media print {
-        body {
-            background: white !important;
-            color: black !important;
-            font-size: 11pt !important;
+        @page {
+            size: A4 landscape;
+            margin: 12mm 15mm;
         }
-        .sidebar, .topbar, footer, .no-print {
+        *, *::before, *::after {
+            box-sizing: border-box;
+            text-shadow: none !important;
+            box-shadow: none !important;
+        }
+        html, body {
+            background: #fff !important;
+            color: #000 !important;
+            font-size: 10pt !important;
+            line-height: 1.4 !important;
+        }
+        .sidebar, .topbar, footer, .no-print, dialog {
             display: none !important;
         }
         .workspace {
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
+            max-width: 100% !important;
         }
         .only-print {
             display: block !important;
         }
         .print-header {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            text-align: center;
         }
         .print-brand h2 {
-            font-size: 15pt;
+            font-size: 14pt;
+            font-weight: bold;
             margin: 0 0 4px 0;
             color: #000;
-            letter-spacing: 0;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         .print-brand p {
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             font-size: 9pt;
-            color: #444;
+            color: #222;
         }
         .print-divider {
             border: 0;
             border-top: 2px solid #000;
-            margin-bottom: 12px;
+            margin: 8px 0 12px 0;
         }
         .print-meta-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 9.5pt;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            text-align: left;
         }
         .print-meta-table td {
             padding: 3px 6px;
             border: none !important;
         }
+        .table-scroll {
+            overflow: visible !important;
+        }
         table {
             width: 100% !important;
             border-collapse: collapse !important;
             page-break-inside: auto;
+            margin-top: 6px;
         }
         tr {
             page-break-inside: avoid;
             page-break-after: auto;
         }
         th, td {
-            border: 1px solid #444 !important;
-            padding: 6px 8px !important;
-            font-size: 9.5pt !important;
+            border: 1px solid #333 !important;
+            padding: 5px 7px !important;
+            font-size: 9pt !important;
             color: #000 !important;
+            text-align: center;
         }
         th {
-            background: #eee !important;
+            background: #f0f0f0 !important;
+            font-weight: bold;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        /* Rata kiri untuk nama siswa pada cetak */
+        td:nth-child(3) {
+            text-align: left !important;
         }
         .stats, .panel {
             border: none !important;
             box-shadow: none !important;
             padding: 0 !important;
             background: transparent !important;
+            margin: 0 !important;
+        }
+        .badge-lengkap, .badge-belum {
+            background: transparent !important;
+            padding: 0 !important;
+            font-weight: normal !important;
+        }
+        .badge-lengkap { color: #000 !important; font-weight: bold !important; }
+        .badge-belum { color: #555 !important; font-style: italic !important; }
+        .predikat-pill {
+            background: transparent !important;
+            color: #000 !important;
+            font-weight: bold !important;
+        }
+        .print-signature {
+            page-break-inside: avoid;
+            margin-top: 24px;
         }
     }
 </style>

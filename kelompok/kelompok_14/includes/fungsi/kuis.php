@@ -482,3 +482,172 @@ function tarikKuis($kuisId, $pengajarId, $catatan = null) {
 
     return ubahStatusKuis($kuisId, 'terbit', 'draft', $pengajarId, $catatan);
 }
+
+// Ambil data statistik untuk Dashboard Pengajar
+function ambilStatistikPengajar($pengajarId) {
+    global $pdo;
+
+    // 1. Hitung jumlah kuis per status
+    $jumlahStatus = [
+        'draft'    => 0,
+        'menunggu' => 0,
+        'terbit'   => 0,
+        'ditolak'  => 0,
+        'ditarik'  => 0
+    ];
+
+    $stmtStatus = $pdo->prepare("SELECT status, COUNT(*) AS total FROM kuis WHERE pengajar_id = ? GROUP BY status");
+    $stmtStatus->execute([$pengajarId]);
+    $rows = $stmtStatus->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($rows as $row) {
+        $st = $row['status'];
+        if (isset($jumlahStatus[$st])) {
+            $jumlahStatus[$st] = (int) $row['total'];
+        }
+    }
+
+    // 2. Ambil riwayat keputusan admin terbaru (terbit, ditolak, atau ditarik)
+    $sqlLog = "SELECT log_status_kuis.*, kuis.judul AS judul_kuis
+               FROM log_status_kuis
+               JOIN kuis ON log_status_kuis.kuis_id = kuis.id
+               WHERE kuis.pengajar_id = ? 
+                 AND log_status_kuis.status_ke IN ('terbit', 'ditolak', 'ditarik')
+               ORDER BY log_status_kuis.dibuat_pada DESC
+               LIMIT 5";
+    $stmtLog = $pdo->prepare($sqlLog);
+    $stmtLog->execute([$pengajarId]);
+    $riwayatKeputusan = $stmtLog->fetchAll(PDO::FETCH_ASSOC);
+
+    // 3. Hitung total percobaan dan rata-rata skor persen dari semua kuis pengajar ini
+    $sqlRekap = "SELECT percobaan_kuis.skor, percobaan_kuis.skor_maksimal
+                 FROM percobaan_kuis
+                 JOIN kuis ON percobaan_kuis.kuis_id = kuis.id
+                 WHERE kuis.pengajar_id = ?
+                   AND percobaan_kuis.status IN ('selesai', 'waktu_habis')";
+    $stmtRekap = $pdo->prepare($sqlRekap);
+    $stmtRekap->execute([$pengajarId]);
+    $daftarPercobaan = $stmtRekap->fetchAll(PDO::FETCH_ASSOC);
+
+    $totalPercobaan = count($daftarPercobaan);
+    $totalPersen = 0;
+
+    foreach ($daftarPercobaan as $p) {
+        if ($p['skor_maksimal'] > 0) {
+            $totalPersen += ($p['skor'] / $p['skor_maksimal']) * 100;
+        }
+    }
+
+    $rataRata = $totalPercobaan > 0 ? round($totalPersen / $totalPercobaan) : 0;
+
+    return [
+        'jumlah_status'     => $jumlahStatus,
+        'riwayat_keputusan' => $riwayatKeputusan,
+        'total_percobaan'   => $totalPercobaan,
+        'rata_rata_persen'  => $rataRata
+    ];
+}
+
+// Ambil statistik hasil dan soal tersulit untuk halaman Hasil Kuis Pengajar
+function ambilHasilKuisPengajar($kuisId, $pengajarId) {
+    global $pdo;
+
+    $kuis = ambilKuisById($kuisId, $pengajarId);
+    if (!$kuis) {
+        return null;
+    }
+
+    // 1. Ambil daftar percobaan pelajar yang sudah selesai (tanpa email pelajar)
+    $sqlNilai = "SELECT percobaan_kuis.*, user.nama AS nama_pelajar
+                 FROM percobaan_kuis
+                 JOIN user ON percobaan_kuis.pelajar_id = user.id
+                 WHERE percobaan_kuis.kuis_id = ?
+                   AND percobaan_kuis.status IN ('selesai', 'waktu_habis')
+                 ORDER BY percobaan_kuis.waktu_mulai DESC";
+    $stmtNilai = $pdo->prepare($sqlNilai);
+    $stmtNilai->execute([$kuisId]);
+    $daftarNilai = $stmtNilai->fetchAll(PDO::FETCH_ASSOC);
+
+    $jumlahPercobaan = count($daftarNilai);
+    $totalPersen = 0;
+    $nilaiTertinggi = 0;
+    $nilaiTerendah = 0;
+
+    foreach ($daftarNilai as $index => $item) {
+        $persen = 0;
+        if ($item['skor_maksimal'] > 0) {
+            $persen = round(($item['skor'] / $item['skor_maksimal']) * 100);
+        }
+        $daftarNilai[$index]['persen'] = $persen;
+        $totalPersen += $persen;
+
+        if ($index == 0) {
+            $nilaiTertinggi = $persen;
+            $nilaiTerendah = $persen;
+        } else {
+            if ($persen > $nilaiTertinggi) {
+                $nilaiTertinggi = $persen;
+            }
+            if ($persen < $nilaiTerendah) {
+                $nilaiTerendah = $persen;
+            }
+        }
+    }
+
+    $rataRata = $jumlahPercobaan > 0 ? round($totalPersen / $jumlahPercobaan) : 0;
+
+    // 2. Hitung persentase salah tiap soal untuk mencari soal tersulit
+    $stmtSoal = $pdo->prepare("SELECT * FROM soal WHERE kuis_id = ? ORDER BY urutan ASC");
+    $stmtSoal->execute([$kuisId]);
+    $daftarSoal = $stmtSoal->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmtBenar = $pdo->prepare(
+        "SELECT COUNT(*) FROM jawaban_percobaan
+         JOIN percobaan_kuis ON jawaban_percobaan.percobaan_id = percobaan_kuis.id
+         WHERE jawaban_percobaan.soal_id = ?
+           AND jawaban_percobaan.benar = 1
+           AND percobaan_kuis.status IN ('selesai', 'waktu_habis')"
+    );
+
+    $soalTersulit = [];
+    foreach ($daftarSoal as $soal) {
+        $stmtBenar->execute([$soal['id']]);
+        $jumlahBenar = (int) $stmtBenar->fetchColumn();
+        $jumlahSalah = $jumlahPercobaan - $jumlahBenar;
+        if ($jumlahSalah < 0) {
+            $jumlahSalah = 0;
+        }
+
+        $persenSalah = 0;
+        if ($jumlahPercobaan > 0) {
+            $persenSalah = round(($jumlahSalah / $jumlahPercobaan) * 100);
+        }
+
+        $soal['jumlah_benar'] = $jumlahBenar;
+        $soal['jumlah_salah'] = $jumlahSalah;
+        $soal['persen_salah'] = $persenSalah;
+        $soalTersulit[] = $soal;
+    }
+
+    // Urutkan soal dari persen_salah terbesar ke terkecil
+    $n = count($soalTersulit);
+    for ($i = 0; $i < $n - 1; $i++) {
+        for ($j = 0; $j < $n - $i - 1; $j++) {
+            if ($soalTersulit[$j]['persen_salah'] < $soalTersulit[$j + 1]['persen_salah']) {
+                $temp = $soalTersulit[$j];
+                $soalTersulit[$j] = $soalTersulit[$j + 1];
+                $soalTersulit[$j + 1] = $temp;
+            }
+        }
+    }
+
+    return [
+        'kuis'            => $kuis,
+        'jumlah_percobaan'=> $jumlahPercobaan,
+        'rata_rata'       => $rataRata,
+        'nilai_tertinggi' => $nilaiTertinggi,
+        'nilai_terendah'  => $nilaiTerendah,
+        'daftar_nilai'    => $daftarNilai,
+        'soal_tersulit'   => $soalTersulit
+    ];
+}

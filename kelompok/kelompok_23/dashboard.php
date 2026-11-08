@@ -62,8 +62,24 @@ require_once __DIR__ . '/includes/helper.php';
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <h5 class="text-muted fs-6">Total Produk</h5>
-                            <p class="fs-3 fw-bold mb-1">&mdash;</p>
+
+                            <p class="fs-3 fw-bold mb-1">
+                                <?= $totalProduk !== null
+                                    ? number_format($totalProduk, 0, ',', '.')
+                                    : '&mdash;'; ?>
+                            </p>
+
                             <small class="text-muted">Jumlah jenis produk</small>
+
+                            <?php if ($errorTotalProduk !== ''): ?>
+                                <p class="text-danger small mt-2 mb-0" role="alert">
+                                    <?= htmlspecialchars(
+                                        $errorTotalProduk,
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

@@ -360,3 +360,125 @@ function validasiKelengkapanKuis($kuisId) {
         'soal_lengkap' => $soalLengkap
     ];
 }
+
+// Fungsi: ubah status kuis dan simpan ke log_status_kuis (dipakai Pengajar & Admin)
+function ubahStatusKuis($kuisId, $dari, $ke, $pelaku, $catatan = null) {
+    global $pdo;
+
+    $catatan = $catatan != null ? trim($catatan) : null;
+    if ($catatan == '') {
+        $catatan = null;
+    }
+
+    // Kalau admin menolak atau menarik kuis, catatan alasan wajib diisi minimal 10 karakter
+    if (($dari == 'menunggu' && $ke == 'ditolak') || ($dari == 'terbit' && $ke == 'ditarik')) {
+        if ($catatan == null || strlen($catatan) < 10) {
+            return ['berhasil' => false, 'pesan' => 'Catatan alasan wajib diisi minimal 10 karakter.'];
+        }
+    }
+
+    // Mulai transaksi supaya update kuis dan insert log jalan bersamaan
+    $pakaiTransaksiSendiri = !$pdo->inTransaction();
+    if ($pakaiTransaksiSendiri) {
+        $pdo->beginTransaction();
+    }
+
+    try {
+        // Cek status kuis saat ini di database
+        $stmtCek = $pdo->prepare("SELECT status FROM kuis WHERE id = ? FOR UPDATE");
+        $stmtCek->execute([$kuisId]);
+        $kuis = $stmtCek->fetch(PDO::FETCH_ASSOC);
+
+        if (!$kuis) {
+            if ($pakaiTransaksiSendiri) {
+                $pdo->rollBack();
+            }
+            return ['berhasil' => false, 'pesan' => 'Kuis tidak ditemukan.'];
+        }
+
+        if ($kuis['status'] != $dari) {
+            if ($pakaiTransaksiSendiri) {
+                $pdo->rollBack();
+            }
+            return ['berhasil' => false, 'pesan' => 'Status kuis sudah berubah, silakan refresh halaman.'];
+        }
+
+        // Update status kuis (kalau terbit, isi juga diterbitkan_pada)
+        if ($ke == 'terbit') {
+            $stmtUpdate = $pdo->prepare("UPDATE kuis SET status = ?, diterbitkan_pada = NOW() WHERE id = ?");
+            $stmtUpdate->execute([$ke, $kuisId]);
+        } else {
+            $stmtUpdate = $pdo->prepare("UPDATE kuis SET status = ? WHERE id = ?");
+            $stmtUpdate->execute([$ke, $kuisId]);
+        }
+
+        // Simpan ke tabel log_status_kuis
+        $stmtLog = $pdo->prepare(
+            "INSERT INTO log_status_kuis (kuis_id, diubah_oleh, status_dari, status_ke, catatan)
+             VALUES (?, ?, ?, ?, ?)"
+        );
+        $stmtLog->execute([$kuisId, $pelaku, $dari, $ke, $catatan]);
+
+        // Kalau kuis ditarik dari status terbit, tutup percobaan pelajar yang masih berjalan
+        if ($dari == 'terbit' && ($ke == 'draft' || $ke == 'ditarik')) {
+            if (function_exists('tutupPercobaanKuis')) {
+                tutupPercobaanKuis($kuisId);
+            }
+        }
+
+        if ($pakaiTransaksiSendiri) {
+            $pdo->commit();
+        }
+
+        return ['berhasil' => true];
+    } catch (Exception $e) {
+        if ($pakaiTransaksiSendiri && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        return ['berhasil' => false, 'pesan' => 'Gagal mengubah status kuis.'];
+    }
+}
+
+// Ajukan publish kuis ke admin
+function ajukanPublishKuis($kuisId, $pengajarId, $catatan = null) {
+    global $pdo;
+
+    $kuis = ambilKuisById($kuisId, $pengajarId);
+    if (!$kuis) {
+        return ['berhasil' => false, 'pesan' => 'Kuis tidak ditemukan.'];
+    }
+
+    // Cek dulu apakah kuis dan soalnya sudah lengkap
+    $cek = validasiKelengkapanKuis($kuisId);
+    if (!$cek['lengkap']) {
+        return [
+            'berhasil' => false,
+            'pesan'    => 'Kuis belum lengkap untuk diajukan.',
+            'errors'   => $cek['errors']
+        ];
+    }
+
+    // Kalau status sebelumnya ditolak atau ditarik, ubah ke draft dulu baru ke menunggu
+    if ($kuis['status'] == 'ditolak' || $kuis['status'] == 'ditarik') {
+        $keDraft = ubahStatusKuis($kuisId, $kuis['status'], 'draft', $pengajarId, null);
+        if (!$keDraft['berhasil']) {
+            return $keDraft;
+        }
+    }
+
+    return ubahStatusKuis($kuisId, 'draft', 'menunggu', $pengajarId, $catatan);
+}
+
+// Tarik kuis yang sudah terbit kembali ke draft supaya bisa diedit pengajar
+function tarikKuis($kuisId, $pengajarId, $catatan = null) {
+    $kuis = ambilKuisById($kuisId, $pengajarId);
+    if (!$kuis) {
+        return ['berhasil' => false, 'pesan' => 'Kuis tidak ditemukan.'];
+    }
+
+    if ($kuis['status'] != 'terbit') {
+        return ['berhasil' => false, 'pesan' => 'Hanya kuis berstatus terbit yang bisa ditarik ke draft.'];
+    }
+
+    return ubahStatusKuis($kuisId, 'terbit', 'draft', $pengajarId, $catatan);
+}

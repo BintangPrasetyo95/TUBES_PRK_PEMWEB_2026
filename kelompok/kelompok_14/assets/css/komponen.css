@@ -253,3 +253,67 @@
   background-color: var(--accent);
   color: var(--teks);
 }
+
+/* --------------------------------------------------------
+   7. WIDGET PEMILIH TEMA (.pemilih-tema)
+   4 swatch bulat dengan warna Primary & Secondary
+   -------------------------------------------------------- */
+.pemilih-tema {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background-color: var(--kartu);
+  border-radius: var(--radius-m);
+  box-shadow: var(--clay-timbul);
+}
+
+.swatch-tema {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 2px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.swatch-tema:hover {
+  transform: scale(1.12);
+}
+
+.swatch-tema .swatch-warna {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Indikator tema yang sedang aktif (aria-pressed="true") */
+.swatch-tema[aria-pressed="true"] {
+  border-color: var(--teks);
+  transform: scale(1.15);
+}
+
+/* Warna Primary & Secondary tiap tema */
+.swatch-sky .swatch-warna {
+  background: linear-gradient(135deg, #7CB9FF 50%, #F9A8D4 50%);
+}
+
+.swatch-lavender .swatch-warna {
+  background: linear-gradient(135deg, #A78BFA 50%, #F9A8D4 50%);
+}
+
+.swatch-mint .swatch-warna {
+  background: linear-gradient(135deg, #6EE7B7 50%, #7DD3FC 50%);
+}
+
+.swatch-peach .swatch-warna {
+  background: linear-gradient(135deg, #FF9F7A 50%, #FDE68A 50%);
+}
+

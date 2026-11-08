@@ -31,6 +31,30 @@ try {
     $errorTotalProduk = 'Jumlah produk belum dapat dimuat.';
 }
 
+$totalTransaksiHariIni = null;
+$errorTransaksiHariIni = '';
+
+try {
+    $hasilTransaksi = $conn->query(
+        "SELECT COUNT(*) AS total_transaksi
+         FROM transactions
+         WHERE transaction_date >= CURDATE()
+           AND transaction_date < CURDATE() + INTERVAL 1 DAY"
+    );
+
+    if ($hasilTransaksi === false) {
+        throw new RuntimeException($conn->error);
+    }
+
+    $dataTransaksi = $hasilTransaksi->fetch_assoc();
+    $totalTransaksiHariIni = (int) $dataTransaksi['total_transaksi'];
+
+    $hasilTransaksi->free();
+} catch (Exception $e) {
+    error_log('Query transaksi hari ini gagal: ' . $e->getMessage());
+    $errorTransaksiHariIni = 'Jumlah transaksi belum dapat dimuat.';
+}
+
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/includes/helper.php';
 ?>
@@ -88,8 +112,24 @@ require_once __DIR__ . '/includes/helper.php';
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <h5 class="text-muted fs-6">Transaksi Hari Ini</h5>
-                            <p class="fs-3 fw-bold mb-1">&mdash;</p>
+
+                            <p class="fs-3 fw-bold mb-1">
+                                <?= $totalTransaksiHariIni !== null
+                                    ? number_format($totalTransaksiHariIni, 0, ',', '.')
+                                    : '&mdash;'; ?>
+                            </p>
+
                             <small class="text-muted">Jumlah transaksi penjualan</small>
+
+                            <?php if ($errorTransaksiHariIni !== ''): ?>
+                                <p class="text-danger small mt-2 mb-0" role="alert">
+                                    <?= htmlspecialchars(
+                                        $errorTransaksiHariIni,
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    ); ?>
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

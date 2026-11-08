@@ -1,0 +1,255 @@
+/* ========================================================
+   komponen.css - Komponen UI Claymorphism DynaQuiz (Kelompok 14)
+   Dibuat oleh: Farel (Hari 1 Sesi Siang - Tahap 1)
+   Sesuai spesifikasi PRD DynaQuiz Bagian 12.7
+   ======================================================== */
+
+/* --------------------------------------------------------
+   1. KONTINER & LAYOUT DASAR
+   -------------------------------------------------------- */
+.container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Grid Bento untuk Dashboard */
+.grid-bento {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 600px) {
+  .grid-bento {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .grid-bento {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* --------------------------------------------------------
+   2. KARTU CLAYMORPHISM (.card-clay)
+   -------------------------------------------------------- */
+.card-clay {
+  background-color: var(--kartu);
+  border-radius: var(--radius-l);
+  box-shadow: var(--clay-timbul);
+  padding: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-header {
+  margin-bottom: 16px;
+}
+
+.card-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--teks);
+}
+
+.card-subtitle {
+  font-size: 0.9rem;
+  color: var(--teks-2);
+  margin-top: 4px;
+}
+
+.card-body {
+  color: var(--teks);
+}
+
+.card-footer {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px dashed color-mix(in srgb, var(--teks) 15%, transparent);
+}
+
+/* --------------------------------------------------------
+   3. TOMBOL CLAYMORPHISM (.btn)
+   Tinggi minimal 44px untuk kenyamanan sentuhan layar HP
+   -------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: var(--radius-m);
+  border: none;
+  font-family: var(--font-isi);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--teks);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--clay-timbul);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+/* Efek saat tombol disentuh / ditekan */
+.btn:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.btn:active {
+  box-shadow: var(--clay-tekan);
+  transform: translateY(1px);
+}
+
+/* Varian Warna Tombol Sesuai PRD */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--teks);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--teks);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--teks);
+}
+
+/* Tombol Berisiko (Hapus, Tarik, Batalkan) */
+.btn-danger {
+  background-color: var(--galat-bg);
+  color: var(--galat-teks);
+  border: 1px solid color-mix(in srgb, var(--galat-teks) 30%, transparent);
+}
+
+/* Tombol Lebar Penuh */
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+/* --------------------------------------------------------
+   4. FORM INPUT (.input-clay, .select-clay, .textarea-clay)
+   Bayangan ke dalam (inset) khas claymorphism
+   -------------------------------------------------------- */
+.form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--teks);
+}
+
+.input-clay,
+.select-clay,
+.textarea-clay {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  background-color: var(--kartu);
+  border-radius: 16px;
+  border: 2px solid transparent;
+  box-shadow: var(--clay-tekan);
+  color: var(--teks);
+  font-family: var(--font-isi);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.textarea-clay {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.input-clay:focus,
+.select-clay:focus,
+.textarea-clay:focus {
+  border-color: var(--teks);
+}
+
+.form-help {
+  font-size: 0.8rem;
+  color: var(--teks-2);
+}
+
+.form-error {
+  font-size: 0.8rem;
+  color: var(--galat-teks);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------
+   5. NOTIFIKASI / ALERT & FLASH MESSAGE (.alert)
+   -------------------------------------------------------- */
+.alert {
+  padding: 14px 18px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.alert-sukses {
+  background-color: var(--sukses-bg);
+  color: var(--sukses-teks);
+}
+
+.alert-galat {
+  background-color: var(--galat-bg);
+  color: var(--galat-teks);
+}
+
+.alert-info {
+  background-color: var(--kartu);
+  color: var(--teks-2);
+  box-shadow: var(--clay-timbul);
+}
+
+/* --------------------------------------------------------
+   6. STATUS BADGE (.badge)
+   -------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.badge-sukses {
+  background-color: var(--sukses-bg);
+  color: var(--sukses-teks);
+}
+
+.badge-galat {
+  background-color: var(--galat-bg);
+  color: var(--galat-teks);
+}
+
+.badge-netral {
+  background-color: var(--netral-bg);
+  color: var(--netral-teks);
+}
+
+.badge-accent {
+  background-color: var(--accent);
+  color: var(--teks);
+}

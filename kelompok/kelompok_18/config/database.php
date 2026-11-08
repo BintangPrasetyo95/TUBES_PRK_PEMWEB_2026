@@ -2,12 +2,23 @@
 
 declare(strict_types=1);
 
-// Konfigurasi lokal Laragon/XAMPP. Sesuaikan host/credential jika server berbeda.
-$dbHost = '127.0.0.1';
-$dbName = 'attendara';
-$dbUser = 'root';
-$dbPassword = '';
+// Supply credentials through the PHP process environment; never place them in
+// frontend code or commit them to the repository.
+$dbHost = getenv('ATTENDARA_DB_HOST') ?: '127.0.0.1';
+$dbName = getenv('ATTENDARA_DB_NAME') ?: 'attendara';
+$dbUser = getenv('ATTENDARA_DB_USER');
+$dbPassword = getenv('ATTENDARA_DB_PASSWORD');
 $dbCharset = 'utf8mb4';
+
+if ($dbUser === false || $dbUser === '') {
+    error_log('ATTENDARA database configuration is missing ATTENDARA_DB_USER.');
+    http_response_code(500);
+    exit('Konfigurasi database belum lengkap.');
+}
+
+if ($dbPassword === false) {
+    $dbPassword = '';
+}
 
 $dsn = "mysql:host={$dbHost};dbname={$dbName};charset={$dbCharset}";
 
@@ -21,5 +32,5 @@ try {
     // Keep technical details out of the page; inspect server logs during development.
     error_log('ATTENDARA database connection failed: ' . $exception->getMessage());
     http_response_code(500);
-    exit('Koneksi database gagal. Periksa konfigurasi database dan pastikan server aktif.');
+    exit('Koneksi database gagal.');
 }

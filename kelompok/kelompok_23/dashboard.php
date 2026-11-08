@@ -79,6 +79,29 @@ try {
     $errorOmzetHariIni = 'Omzet hari ini belum dapat dimuat.';
 }
 
+$produkStokMenipis = [];
+$errorStokMenipis = '';
+
+try {
+    $hasilStok = $conn->query(
+        "SELECT id, sku, name, stock, min_stock
+         FROM products
+         WHERE stock <= min_stock
+         ORDER BY stock ASC, name ASC, id ASC"
+    );
+
+    if ($hasilStok === false) {
+        throw new RuntimeException($conn->error);
+    }
+
+    $produkStokMenipis = $hasilStok->fetch_all(MYSQLI_ASSOC);
+
+    $hasilStok->free();
+} catch (Exception $e) {
+    error_log('Query stok menipis gagal: ' . $e->getMessage());
+    $errorStokMenipis = 'Data stok produk belum dapat dimuat.';
+}
+
 require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/includes/helper.php';
 ?>
@@ -192,10 +215,86 @@ require_once __DIR__ . '/includes/helper.php';
                     <h4 id="judul-stok" class="fw-bold mb-2">
                         Monitoring Stok
                     </h4>
-                    <p class="text-muted mb-0">
-                        Daftar produk dengan stok mencapai atau di bawah
-                        batas minimum akan ditampilkan di bagian ini.
+
+                    <p class="text-muted">
+                        Produk dengan stok mencapai atau di bawah batas minimum.
                     </p>
+
+                    <?php if ($errorStokMenipis !== ''): ?>
+                        <p class="text-danger mb-0" role="alert">
+                            <?= htmlspecialchars(
+                                $errorStokMenipis,
+                                ENT_QUOTES,
+                                'UTF-8'
+                            ); ?>
+                        </p>
+                    <?php elseif (empty($produkStokMenipis)): ?>
+                        <p class="text-muted mb-0">
+                            Tidak ada produk dengan stok mencapai
+                            atau di bawah batas minimum.
+                        </p>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">No.</th>
+                                        <th scope="col">SKU</th>
+                                        <th scope="col">Nama Produk</th>
+                                        <th scope="col" class="text-end">Stok</th>
+                                        <th scope="col" class="text-end">
+                                            Batas Minimum
+                                        </th>
+                                        <th scope="col">Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <?php foreach ($produkStokMenipis as $index => $produk): ?>
+                                        <tr>
+                                            <td><?= $index + 1; ?></td>
+
+                                            <td>
+                                                <?= htmlspecialchars(
+                                                    $produk['sku'],
+                                                    ENT_QUOTES,
+                                                    'UTF-8'
+                                                ); ?>
+                                            </td>
+
+                                            <td>
+                                                <?= htmlspecialchars(
+                                                    $produk['name'],
+                                                    ENT_QUOTES,
+                                                    'UTF-8'
+                                                ); ?>
+                                            </td>
+
+                                            <td class="text-end">
+                                                <?= (int) $produk['stock']; ?>
+                                            </td>
+
+                                            <td class="text-end">
+                                                <?= (int) $produk['min_stock']; ?>
+                                            </td>
+
+                                            <td>
+                                                <?php if ((int) $produk['stock'] === 0): ?>
+                                                    <span class="badge bg-danger">
+                                                        Habis
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-warning text-dark">
+                                                        Menipis
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>

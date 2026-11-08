@@ -265,3 +265,98 @@ function hapusKuis($kuisId, $pengajarId) {
 
     return ['berhasil' => true];
 }
+
+// Fungsi: cek apakah kuis sudah lengkap sebelum diajukan publish
+function validasiKelengkapanKuis($kuisId) {
+    global $pdo;
+    $errors = [];
+
+    // 1. Cek data kuis
+    $stmtKuis = $pdo->prepare("SELECT * FROM kuis WHERE id = ?");
+    $stmtKuis->execute([$kuisId]);
+    $kuis = $stmtKuis->fetch(PDO::FETCH_ASSOC);
+
+    if (!$kuis) {
+        return [
+            'lengkap'      => false,
+            'errors'       => ['Data kuis tidak ditemukan.'],
+            'jumlah_soal'  => 0,
+            'soal_lengkap' => 0
+        ];
+    }
+
+    if (strlen(trim($kuis['judul'])) < 3) {
+        $errors[] = 'Judul kuis belum diisi dengan benar.';
+    }
+    if (empty($kuis['topik_id']) || empty($kuis['tingkat_id'])) {
+        $errors[] = 'Topik dan tingkat kuis harus dipilih.';
+    }
+    if ((int) $kuis['durasi_menit'] < 1) {
+        $errors[] = 'Durasi kuis harus diisi minimal 1 menit.';
+    }
+    if ($kuis['akses'] == 'privat' && empty($kuis['kode'])) {
+        $errors[] = 'Kuis privat harus memiliki kode akses.';
+    }
+
+    // 2. Ambil semua soal di kuis ini
+    $stmtSoal = $pdo->prepare("SELECT * FROM soal WHERE kuis_id = ? ORDER BY urutan ASC");
+    $stmtSoal->execute([$kuisId]);
+    $daftarSoal = $stmtSoal->fetchAll(PDO::FETCH_ASSOC);
+
+    $jumlahSoal = count($daftarSoal);
+    $soalLengkap = 0;
+
+    if ($jumlahSoal == 0) {
+        $errors[] = 'Kuis harus memiliki minimal 1 soal.';
+    }
+
+    // 3. Cek tiap soal beserta pilihan jawabannya
+    $stmtOpsi = $pdo->prepare("SELECT * FROM opsi_jawaban WHERE soal_id = ?");
+
+    foreach ($daftarSoal as $soal) {
+        $nomor = $soal['urutan'];
+        $soalOke = true;
+
+        if (trim($soal['pertanyaan']) == '') {
+            $errors[] = "Soal nomor $nomor belum ada teks pertanyaannya.";
+            $soalOke = false;
+        }
+
+        $stmtOpsi->execute([$soal['id']]);
+        $daftarOpsi = $stmtOpsi->fetchAll(PDO::FETCH_ASSOC);
+        $jumlahOpsi = count($daftarOpsi);
+
+        if ($jumlahOpsi < 2 || $jumlahOpsi > 5) {
+            $errors[] = "Soal nomor $nomor harus punya 2 sampai 5 pilihan jawaban.";
+            $soalOke = false;
+        }
+
+        // Hitung berapa opsi yang diset benar = 1
+        $jumlahKunci = 0;
+        foreach ($daftarOpsi as $opsi) {
+            if (trim($opsi['teks']) == '') {
+                $errors[] = "Soal nomor $nomor memiliki pilihan jawaban yang masih kosong.";
+                $soalOke = false;
+            }
+            if ((int) $opsi['benar'] == 1) {
+                $jumlahKunci++;
+            }
+        }
+
+        if ($jumlahKunci != 1) {
+            $errors[] = "Soal nomor $nomor harus memiliki tepat 1 kunci jawaban yang benar.";
+            $soalOke = false;
+        }
+
+        if ($soalOke) {
+            $soalLengkap++;
+        }
+    }
+
+    return [
+        'lengkap'      => count($errors) == 0,
+        'errors'       => $errors,
+        'jumlah_soal'  => $jumlahSoal,
+        'soal_lengkap' => $soalLengkap
+    ];
+}

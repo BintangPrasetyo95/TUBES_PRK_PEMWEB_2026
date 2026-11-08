@@ -1,3 +1,3 @@
 <?php
 
-echo 'KELOMPOK 14 TEST 1';
+echo 'KELOMPOK 14 TEST 2';

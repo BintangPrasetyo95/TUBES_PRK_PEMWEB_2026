@@ -6,6 +6,7 @@ require_once __DIR__ . '/../config/auth.php';
 startAppSession();
 requireRole('guru');
 require_once __DIR__ . '/../includes/ui/layout.php';
+require_once __DIR__ . '/_helpers.php';
 
 $guruNavigation = [
     ['label' => 'Dashboard', 'href' => 'dashboard.php', 'icon' => 'home'],

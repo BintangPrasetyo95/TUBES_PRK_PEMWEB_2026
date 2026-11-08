@@ -380,6 +380,14 @@ require_once __DIR__ . '/../includes/header.php';
             <p class="text-muted">
                 Kelola transaksi penjualan FEBMart.
             </p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="../riwayat/index.php" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-clock-history me-1"></i>Riwayat Transaksi
+                </a>
+                <a href="../laporan/index.php" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-bar-chart-line me-1"></i>Laporan Penjualan
+                </a>
+            </div>
         </div>
 
         <?php if ($pesan_sukses): ?>

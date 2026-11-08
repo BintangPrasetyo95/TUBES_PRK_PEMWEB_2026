@@ -91,7 +91,12 @@ Tujuan pengembangan FEBMart adalah:
 - Menghitung total omzet.
 - Menampilkan nota atau struk pembayaran.
 - Mencetak struk transaksi.
-- Mengekspor laporan ke format Excel.
+- Mengekspor laporan penjualan ke CSV berformat UTF-8 yang dapat dibuka di Microsoft Excel.
+
+Halaman riwayat tersedia di `riwayat/index.php`. Detail transaksi dapat dibuka melalui
+modal atau struk; halaman struk menyediakan tombol cetak dengan tata letak khusus
+untuk kertas cetak. Laporan tersedia di `laporan/index.php`, menggunakan rentang
+tanggal inklusif, dan dapat diekspor melalui tombol **Ekspor Excel**.
 
 ### E. UI/UX & Layout Website
 - Menggunakan template AdminLTE dan Bootstrap.

@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
         exit;
     }
 
-    
+
     $user_id = (int)$_SESSION['user_id'];
 
     if ($user_id <= 0) {
@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
         exit;
     }
 
-    
+
     $stmt_user = $conn->prepare("SELECT id FROM users WHERE id = ? AND is_active = 1");
     $stmt_user->bind_param("i", $user_id);
     $stmt_user->execute();
@@ -216,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
     $conn->begin_transaction();
 
     try {
-        
+
         $stmt_check_stock = $conn->prepare(
             "SELECT id, name, stock FROM products WHERE id = ? FOR UPDATE"
         );
@@ -248,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
             }
         }
 
-        
+
 
 
 
@@ -277,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'check
 
         $transaction_id = $conn->insert_id;
 
-        
+
 
 
 
@@ -359,253 +359,385 @@ foreach ($_SESSION['cart'] as $cart_item) {
 
 $total_bayar = $total_subtotal;
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaksi Kasir | FEBMart</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body { min-height:100vh; margin:0; padding:35px 20px; background:#f3f4f6; font-family:Arial,sans-serif; }
-        .main-container { width:100%; max-width:1200px; margin:0 auto; overflow:hidden; background:#fff; border-radius:14px; box-shadow:0 5px 25px rgba(0,0,0,.08); }
-        .header-section { padding:30px 35px; color:#fff; background:linear-gradient(145deg,#29245c,#5142a5); }
-        .brand { margin-bottom:25px; font-size:23px; font-weight:bold; }
-        .brand i { margin-right:7px; color:#ffad42; }
-        .header-section h2 { margin-bottom:8px; font-size:25px; font-weight:bold; }
-        .header-section p { margin:0; color:#d5d9e2; font-size:14px; }
-        .content-section { padding:35px; }
-        .section-card { height:100%; padding:24px; border:1px solid #e8e7f0; border-radius:12px; background:#fff; }
-        .section-title { margin-bottom:5px; color:#29245c; font-size:19px; font-weight:bold; }
-        .section-description { margin-bottom:22px; color:#888; font-size:13px; }
-        .empty-state { min-height:180px; padding:50px 20px; border:1px dashed #d8d5e8; border-radius:10px; color:#888; text-align:center; }
-        .empty-state i { display:block; margin-bottom:12px; color:#5142a5; font-size:42px; }
-        .summary-box { margin-bottom:20px; padding:18px; border-radius:10px; background:#f5f4fb; }
-        .summary-label { color:#888; font-size:13px; }
-        .summary-value { margin-top:5px; color:#29245c; font-size:22px; font-weight:bold; }
-        .btn-back { display:inline-flex; align-items:center; padding:10px 18px; border:1px solid #ddd; border-radius:7px; color:#5142a5; background:#f5f4fb; font-size:14px; font-weight:bold; text-decoration:none; }
-        .catalog-container { max-height:520px; overflow-y:auto; padding-right:5px; }
-        .product-card { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; padding:12px; border:1px solid #e8e7f0; border-radius:10px; }
-        .product-card:hover { border-color:#5142a5; background:#fbfbfe; }
-        .product-img { width:50px; height:50px; object-fit:cover; border-radius:8px; background:#f0f0f4; }
-        .product-info { flex:1; min-width:0; }
-        .product-name { overflow:hidden; margin-bottom:2px; color:#29245c; font-size:14px; font-weight:bold; white-space:nowrap; text-overflow:ellipsis; }
-        .product-meta { color:#777; font-size:12px; }
-        .product-price { color:#5142a5; font-size:14px; font-weight:bold; }
-        .btn-add-cart { padding:7px 14px; border:0; border-radius:6px; color:#fff; background:#29245c; font-size:12px; font-weight:600; }
-        .btn-add-cart:disabled { opacity:.5; }
-        .copyright { padding:20px; border-top:1px solid #eee; color:#999; font-size:12px; text-align:center; }
-        @media(max-width:768px) { .content-section {padding:18px;} .header-section {padding:24px;} body {padding:12px;} }
-    </style>
-</head>
-<body>
-<main class="main-container">
-    <header class="header-section">
-        <div class="brand"><i class="bi bi-cart3"></i>FEBMart</div>
-        <h2><i class="bi bi-cash-register me-2"></i>Transaksi Kasir</h2>
-        <p>Kelola transaksi penjualan FEBMart melalui halaman kasir.</p>
-        <div class="d-flex flex-wrap gap-2 mt-3">
-            <a href="../riwayat/index.php" class="btn btn-sm btn-light"><i class="bi bi-clock-history me-1"></i>Riwayat Transaksi</a>
-            <a href="../laporan/index.php" class="btn btn-sm btn-outline-light"><i class="bi bi-bar-chart-line me-1"></i>Laporan Penjualan</a>
-        </div>
-    </header>
 
-    <section class="content-section">
+<?php
+$pageTitle = 'Transaksi Kasir';
+require_once __DIR__ . '/../includes/header.php';
+?>
+
+<?php include __DIR__ . '/../includes/navbar.php'; ?>
+
+<div class="app-layout d-flex flex-grow-1">
+
+    <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+
+    <main class="main-content flex-grow-1 p-4">
+
+        <div class="mb-4">
+            <h3 class="fw-bold">
+                <i class="bi bi-cash-register me-2"></i>Transaksi Kasir
+            </h3>
+            <p class="text-muted">
+                Kelola transaksi penjualan FEBMart.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a href="../riwayat/index.php" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-clock-history me-1"></i>Riwayat Transaksi
+                </a>
+                <a href="../laporan/index.php" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-bar-chart-line me-1"></i>Laporan Penjualan
+                </a>
+            </div>
+        </div>
+
         <?php if ($pesan_sukses): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="bi bi-check-circle me-1"></i><?= htmlspecialchars($pesan_sukses); ?>
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle me-1"></i>
+                <?= htmlspecialchars($pesan_sukses); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <?php if ($pesan_error): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle me-1"></i><?= htmlspecialchars($pesan_error); ?>
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                <?= htmlspecialchars($pesan_error); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <div class="row g-4">
+
+            <!-- KATALOG PRODUK -->
             <div class="col-lg-7">
-                <div class="section-card">
-                    <h3 class="section-title">Katalog Produk</h3>
-                    <p class="section-description">Pilih produk yang ingin ditambahkan ke transaksi.</p>
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4">
 
-                    <form method="GET" class="mb-3">
-                        <div class="input-group">
-                            <input type="text" name="cari" class="form-control" placeholder="Cari nama produk atau SKU..." value="<?= htmlspecialchars($search); ?>">
-                            <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
-                            <?php if ($search !== ''): ?>
-                                <a href="index.php" class="btn btn-outline-danger"><i class="bi bi-x-lg"></i></a>
-                            <?php endif; ?>
-                        </div>
-                    </form>
+                        <h5 class="fw-bold mb-1">Katalog Produk</h5>
+                        <p class="text-muted small">
+                            Pilih produk untuk ditambahkan ke transaksi.
+                        </p>
 
-                    <div class="catalog-container">
-                        <?php if ($produk && $produk->num_rows > 0): ?>
-                            <?php while ($item = $produk->fetch_assoc()): ?>
-                                <div class="product-card">
-                                    <?php if (!empty($item['image']) && file_exists(__DIR__ . '/../assets/img/' . $item['image'])): ?>
-                                        <img src="../assets/img/<?= htmlspecialchars($item['image']); ?>" class="product-img" alt="<?= htmlspecialchars($item['name']); ?>">
-                                    <?php else: ?>
-                                        <div class="product-img d-flex align-items-center justify-content-center text-muted"><i class="bi bi-image"></i></div>
-                                    <?php endif; ?>
+                        <form method="GET" class="mb-3">
+                            <div class="input-group">
+                                <input type="text" name="cari"
+                                    class="form-control"
+                                    placeholder="Cari nama produk atau SKU..."
+                                    value="<?= htmlspecialchars($search); ?>">
 
-                                    <div class="product-info">
-                                        <div class="product-name"><?= htmlspecialchars($item['name']); ?></div>
-                                        <div class="product-meta">
-                                            <span class="badge bg-light text-dark border"><?= htmlspecialchars($item['sku']); ?></span>
-                                            <span class="ms-1">Stok: <strong><?= (int)$item['stock']; ?></strong></span>
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-search"></i>
+                                </button>
+
+                                <?php if ($search !== ''): ?>
+                                    <a href="index.php" class="btn btn-outline-danger">
+                                        <i class="bi bi-x-lg"></i>
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+
+                        <div style="max-height:520px;overflow-y:auto;">
+
+                            <?php if ($produk && $produk->num_rows > 0): ?>
+
+                                <?php while ($item = $produk->fetch_assoc()): ?>
+
+                                    <div class="d-flex align-items-center gap-3 border rounded p-3 mb-2">
+
+                                        <?php if (!empty($item['image']) && file_exists(__DIR__ . '/../assets/img/' . $item['image'])): ?>
+
+                                            <img src="../assets/img/<?= htmlspecialchars($item['image']); ?>"
+                                                width="55" height="55"
+                                                style="object-fit:cover;border-radius:8px;"
+                                                alt="<?= htmlspecialchars($item['name']); ?>">
+
+                                        <?php else: ?>
+
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                                style="width:55px;height:55px;">
+                                                <i class="bi bi-image fs-4 text-muted"></i>
+                                            </div>
+
+                                        <?php endif; ?>
+
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <div class="fw-bold text-truncate">
+                                                <?= htmlspecialchars($item['name']); ?>
+                                            </div>
+
+                                            <small class="text-muted">
+                                                <?= htmlspecialchars($item['sku']); ?>
+                                                | Stok: <?= (int)$item['stock']; ?>
+                                            </small>
+
+                                            <div class="fw-bold text-primary">
+                                                Rp <?= number_format((float)$item['price'], 0, ',', '.'); ?>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div class="text-end">
-                                        <div class="product-price mb-1">Rp <?= number_format((float)$item['price'], 0, ',', '.'); ?></div>
                                         <form method="POST" action="index.php" class="m-0">
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
+                                            <input type="hidden" name="csrf_token"
+                                                value="<?= htmlspecialchars($csrf_token); ?>">
                                             <input type="hidden" name="action" value="tambah">
-                                            <input type="hidden" name="product_id" value="<?= (int)$item['id']; ?>">
-                                            <button type="submit" class="btn-add-cart" <?= (int)$item['stock'] <= 0 ? 'disabled' : ''; ?>>
-                                                <i class="bi bi-cart-plus me-1"></i><?= (int)$item['stock'] <= 0 ? 'Habis' : 'Pilih'; ?>
+                                            <input type="hidden" name="product_id"
+                                                value="<?= (int)$item['id']; ?>">
+
+                                            <button type="submit"
+                                                class="btn btn-sm btn-primary"
+                                                <?= (int)$item['stock'] <= 0 ? 'disabled' : ''; ?>>
+
+                                                <i class="bi bi-cart-plus"></i>
+                                                <?= (int)$item['stock'] <= 0 ? 'Habis' : 'Pilih'; ?>
+
                                             </button>
                                         </form>
+
                                     </div>
+
+                                <?php endwhile; ?>
+
+                            <?php else: ?>
+
+                                <div class="text-center text-muted py-5">
+                                    <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+                                    Produk tidak ditemukan.
                                 </div>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <div class="empty-state">
-                                <i class="bi bi-box-seam"></i>
-                                <div>Produk tidak ditemukan.</div>
-                                <small>Tidak ada produk yang sesuai dengan pencarian.</small>
-                            </div>
-                        <?php endif; ?>
+
+                            <?php endif; ?>
+
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- KERANJANG -->
             <div class="col-lg-5">
-                <div class="section-card">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <h3 class="section-title mb-0">Keranjang Belanja</h3>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-secondary"><?= count($_SESSION['cart']); ?> Item</span>
-                            <?php if (!empty($_SESSION['cart'])): ?>
-                                <form method="POST" action="index.php" class="m-0" onsubmit="return confirm('Kosongkan semua item di keranjang?');">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
-                                    <input type="hidden" name="action" value="kosongkan">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Kosongkan</button>
-                                </form>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <p class="section-description">Daftar barang yang dipilih untuk transaksi.</p>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
 
-                    <?php if (empty($_SESSION['cart'])): ?>
-                        <div class="empty-state mb-4">
-                            <i class="bi bi-cart"></i>
-                            <div>Keranjang masih kosong.</div>
-                            <small>Tambahkan produk dari katalog.</small>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Keranjang Belanja</h5>
+
+                            <span class="badge bg-primary">
+                                <?= count($_SESSION['cart']); ?> Item
+                            </span>
                         </div>
-                    <?php else: ?>
-                        <div class="mb-3" style="max-height:320px;overflow-y:auto;">
-                            <?php foreach ($_SESSION['cart'] as $id => $cart_item): ?>
-                                <div class="d-flex justify-content-between align-items-center p-2 mb-2 border rounded bg-light">
-                                    <div style="min-width:0;flex:1;">
-                                        <div class="fw-bold text-truncate" style="font-size:13px;color:#29245c;">
+
+                        <?php if (!empty($_SESSION['cart'])): ?>
+
+                            <form method="POST" class="mb-3"
+                                onsubmit="return confirm('Kosongkan semua keranjang?');">
+
+                                <input type="hidden" name="csrf_token"
+                                    value="<?= htmlspecialchars($csrf_token); ?>">
+                                <input type="hidden" name="action" value="kosongkan">
+
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Kosongkan Keranjang
+                                </button>
+                            </form>
+
+                        <?php endif; ?>
+
+                        <?php if (empty($_SESSION['cart'])): ?>
+
+                            <div class="text-center text-muted py-5 border rounded mb-3">
+                                <i class="bi bi-cart fs-1 d-block mb-2"></i>
+                                Keranjang masih kosong.
+                            </div>
+
+                        <?php else: ?>
+
+                            <div style="max-height:320px;overflow-y:auto;">
+
+                                <?php foreach ($_SESSION['cart'] as $id => $cart_item): ?>
+
+                                    <div class="border rounded p-3 mb-2">
+
+                                        <div class="fw-bold">
                                             <?= htmlspecialchars($cart_item['name']); ?>
                                         </div>
-                                        <div class="text-muted" style="font-size:11px;">
-                                            <?= htmlspecialchars($cart_item['sku']); ?> |
-                                            Rp <?= number_format((float)$cart_item['price'], 0, ',', '.'); ?> × <?= (int)$cart_item['qty']; ?>
-                                            = <strong>Rp <?= number_format((float)$cart_item['price'] * (int)$cart_item['qty'], 0, ',', '.'); ?></strong>
+
+                                        <small class="text-muted">
+                                            <?= htmlspecialchars($cart_item['sku']); ?>
+                                            <br>
+                                            Rp <?= number_format((float)$cart_item['price'], 0, ',', '.'); ?>
+                                            Ã— <?= (int)$cart_item['qty']; ?>
+                                        </small>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+
+                                            <strong class="text-primary">
+                                                Rp <?= number_format(
+                                                    (float)$cart_item['price'] * (int)$cart_item['qty'],
+                                                    0, ',', '.'
+                                                ); ?>
+                                            </strong>
+
+                                            <div class="d-flex gap-1">
+
+                                                <form method="POST" class="d-flex gap-1">
+                                                    <input type="hidden" name="csrf_token"
+                                                        value="<?= htmlspecialchars($csrf_token); ?>">
+                                                    <input type="hidden" name="action" value="update">
+                                                    <input type="hidden" name="product_id"
+                                                        value="<?= (int)$id; ?>">
+
+                                                    <input type="number" name="qty"
+                                                        value="<?= (int)$cart_item['qty']; ?>"
+                                                        min="1"
+                                                        max="<?= (int)$cart_item['stock']; ?>"
+                                                        class="form-control form-control-sm"
+                                                        style="width:65px;">
+
+                                                    <button class="btn btn-sm btn-outline-primary"
+                                                        type="submit">
+                                                        <i class="bi bi-arrow-repeat"></i>
+                                                    </button>
+                                                </form>
+
+                                                <form method="POST">
+                                                    <input type="hidden" name="csrf_token"
+                                                        value="<?= htmlspecialchars($csrf_token); ?>">
+                                                    <input type="hidden" name="action" value="hapus">
+                                                    <input type="hidden" name="product_id"
+                                                        value="<?= (int)$id; ?>">
+
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                        type="submit">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="ms-2 d-flex align-items-center gap-1">
-                                        <form method="POST" action="index.php" class="d-flex align-items-center gap-1 m-0">
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
-                                            <input type="hidden" name="action" value="update">
-                                            <input type="hidden" name="product_id" value="<?= (int)$id; ?>">
-                                            <input type="number" name="qty" value="<?= (int)$cart_item['qty']; ?>" min="1" max="<?= (int)$cart_item['stock']; ?>" class="form-control form-control-sm text-center" style="width:60px;">
-                                            <button type="submit" class="btn btn-sm btn-outline-primary" title="Perbarui jumlah"><i class="bi bi-arrow-repeat"></i></button>
-                                        </form>
-                                        <form method="POST" action="index.php" class="m-0">
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
-                                            <input type="hidden" name="action" value="hapus">
-                                            <input type="hidden" name="product_id" value="<?= (int)$id; ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus item"><i class="bi bi-trash"></i></button>
-                                        </form>
+                                <?php endforeach; ?>
+
+                            </div>
+
+                        <?php endif; ?>
+
+                        <!-- RINGKASAN -->
+                        <div class="bg-light rounded p-3 my-3">
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Total Item</span>
+                                <strong>
+                                    <?= count($_SESSION['cart']); ?>
+                                    jenis (<?= $total_qty; ?> pcs)
+                                </strong>
+                            </div>
+
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal</span>
+                                <strong>
+                                    Rp <?= number_format($total_subtotal, 0, ',', '.'); ?>
+                                </strong>
+                            </div>
+
+                            <hr>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong>Total Bayar</strong>
+                                <h5 class="fw-bold text-primary mb-0">
+                                    Rp <?= number_format($total_bayar, 0, ',', '.'); ?>
+                                </h5>
+                            </div>
+
+                        </div>
+
+                        <!-- PEMBAYARAN -->
+                        <form method="POST" action="index.php" id="form-transaksi">
+
+                            <input type="hidden" name="csrf_token"
+                                value="<?= htmlspecialchars($csrf_token); ?>">
+                            <input type="hidden" name="action" value="checkout">
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Nominal Pembayaran (Cash)
+                                </label>
+
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" name="nominal_bayar"
+                                        id="nominal-bayar"
+                                        class="form-control"
+                                        placeholder="Masukkan nominal"
+                                        min="<?= (int)$total_bayar; ?>"
+                                        step="1" required
+                                        <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
+                                </div>
+
+                                <?php if (!empty($_SESSION['cart'])): ?>
+
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-secondary quick-payment"
+                                            data-amount="<?= (int)$total_bayar; ?>">
+                                            Uang Pas
+                                        </button>
+
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-secondary quick-payment"
+                                            data-amount="<?= (int)($total_bayar + 10000); ?>">
+                                            +10.000
+                                        </button>
+
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-secondary quick-payment"
+                                            data-amount="<?= (int)($total_bayar + 20000); ?>">
+                                            +20.000
+                                        </button>
+
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-secondary quick-payment"
+                                            data-amount="<?= (int)($total_bayar + 50000); ?>">
+                                            +50.000
+                                        </button>
                                     </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
 
-                    <div class="summary-box">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="summary-label">Total Item / Kuantitas</span>
-                            <strong style="font-size:13px;color:#29245c;"><?= count($_SESSION['cart']); ?> jenis (<?= $total_qty; ?> pcs)</strong>
-                        </div>
-                        <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
-                            <span class="summary-label">Subtotal</span>
-                            <strong style="font-size:14px;color:#29245c;">Rp <?= number_format($total_subtotal, 0, ',', '.'); ?></strong>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="summary-label fw-bold" style="color:#29245c;">Total Bayar</div>
-                            <div class="summary-value" id="display-total">Rp <?= number_format($total_bayar, 0, ',', '.'); ?></div>
-                        </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Kembalian</label>
+
+                                <div class="bg-light rounded p-3 d-flex justify-content-between">
+                                    <span class="text-muted">Uang Kembali</span>
+                                    <strong id="display-kembalian" class="text-success">
+                                        Rp 0
+                                    </strong>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                id="btn-submit-transaksi"
+                                class="btn btn-primary w-100 py-2 fw-bold"
+                                <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
+
+                                <i class="bi bi-check-circle me-1"></i>
+                                Selesaikan Transaksi
+
+                            </button>
+
+                        </form>
+
                     </div>
-
-                    <form method="POST" action="index.php" id="form-transaksi">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token); ?>">
-                        <input type="hidden" name="action" value="checkout">
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" style="font-size:13px;color:#29245c;">Nominal Pembayaran (Cash) <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light fw-bold">Rp</span>
-                                <input type="number" name="nominal_bayar" id="nominal-bayar" class="form-control"
-                                    placeholder="0" min="<?= (int)$total_bayar; ?>" step="1" required
-                                    <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
-                            </div>
-                            <?php if (!empty($_SESSION['cart'])): ?>
-                                <div class="d-flex flex-wrap gap-2 mt-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)$total_bayar; ?>">Uang Pas</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)($total_bayar + 10000); ?>">+10.000</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)($total_bayar + 20000); ?>">+20.000</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary quick-payment" data-amount="<?= (int)($total_bayar + 50000); ?>">+50.000</button>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold" style="font-size:13px;color:#29245c;">Kembalian</label>
-                            <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-center">
-                                <span class="text-muted" style="font-size:13px;">Uang Kembali:</span>
-                                <span class="fw-bold text-success" id="display-kembalian">Rp 0</span>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="btn-submit-transaksi" class="btn w-100 py-2 fw-bold"
-                            style="background:#29245c;color:white;border-radius:8px;"
-                            <?= empty($_SESSION['cart']) ? 'disabled' : ''; ?>>
-                            <i class="bi bi-check-circle me-1"></i>Selesaikan Transaksi
-                        </button>
-                    </form>
                 </div>
             </div>
+
         </div>
 
-        <a href="../dashboard.php" class="btn-back mt-4">
-            <i class="bi bi-arrow-left me-1"></i>Kembali ke Dashboard
-        </a>
-    </section>
+    </main>
 
-    <footer class="copyright">© 2026 FEBMart. All Rights Reserved.</footer>
-</main>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<?php include __DIR__ . '/../includes/footer.php'; ?>
+
 <script>
 const inputBayar = document.getElementById('nominal-bayar');
 const displayKembalian = document.getElementById('display-kembalian');
@@ -625,12 +757,18 @@ function hitungKembalian() {
     }
 
     if (kembalian >= 0) {
-        displayKembalian.textContent = 'Rp ' + Math.floor(kembalian).toLocaleString('id-ID');
+        displayKembalian.textContent =
+            'Rp ' + Math.floor(kembalian).toLocaleString('id-ID');
+
         displayKembalian.className = 'fw-bold text-success';
+
         if (btnSubmit) btnSubmit.disabled = false;
     } else {
-        displayKembalian.textContent = 'Kurang Rp ' + Math.floor(Math.abs(kembalian)).toLocaleString('id-ID');
+        displayKembalian.textContent =
+            'Kurang Rp ' + Math.floor(Math.abs(kembalian)).toLocaleString('id-ID');
+
         displayKembalian.className = 'fw-bold text-danger';
+
         if (btnSubmit) btnSubmit.disabled = true;
     }
 }
@@ -640,12 +778,13 @@ if (inputBayar) {
     hitungKembalian();
 }
 
-document.querySelectorAll('.quick-payment').forEach((button) => {
+document.querySelectorAll('.quick-payment').forEach(button => {
     button.addEventListener('click', () => {
         inputBayar.value = button.dataset.amount;
         hitungKembalian();
     });
 });
 </script>
+
 </body>
 </html>

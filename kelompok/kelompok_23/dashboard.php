@@ -1,5 +1,5 @@
-<?php
 
+<?php
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -7,43 +7,64 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+$pageTitle = 'Dashboard';
+
+require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/helper.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Admin | FEBMart</title>
+<?php include __DIR__ . '/includes/navbar.php'; ?>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<div class="app-layout d-flex flex-grow-1">
 
-    <div class="container mt-5">
-        <div class="card shadow-sm">
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
+
+    <main class="main-content flex-grow-1 p-4">
+
+        <div class="mb-4">
+            <h3 class="fw-bold">Dashboard</h3>
+            <p class="text-muted">
+                Selamat datang di sistem manajemen FEBMart.
+            </p>
+        </div>
+
+        <?php showFlash(); ?>
+
+        <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <h3>Selamat Datang, <?= htmlspecialchars($_SESSION['name']); ?>!</h3>
+
+                <h4 class="fw-bold mb-3">
+                    Selamat Datang,
+                    <?= htmlspecialchars($_SESSION['name'] ?? 'Admin'); ?>!
+                </h4>
 
                 <p class="text-muted">
                     Anda berhasil login ke sistem manajemen FEBMart.
                 </p>
 
-                <p>
-                    Username: <?= htmlspecialchars($_SESSION['username']); ?>
-                </p>
+                <hr>
 
-                <p>
-                    Role: <?= htmlspecialchars($_SESSION['role']); ?>
-                </p>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <small class="text-muted">Username</small>
+                        <p class="fw-semibold">
+                            <?= htmlspecialchars($_SESSION['username'] ?? '-'); ?>
+                        </p>
+                    </div>
 
-                 <a href="auth/logout.php" class="btn btn-danger mt-3">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
-                
+                    <div class="col-md-6 mb-3">
+                        <small class="text-muted">Role</small>
+                        <p class="fw-semibold">
+                            <?= htmlspecialchars($_SESSION['role'] ?? '-'); ?>
+                        </p>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
 
-</body>
-</html>
+    </main>
+
+</div>
+
+<?php include __DIR__ . '/includes/footer.php'; ?>

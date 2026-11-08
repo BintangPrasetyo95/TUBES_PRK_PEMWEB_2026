@@ -1,6 +1,4 @@
 <?php
-// includes/header.php
-// Header dan navigasi utama Aspiraku
 
 if (!isset($pageTitle)) {
     $pageTitle = 'Portal Pengaduan & Aspirasi';

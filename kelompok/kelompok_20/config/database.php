@@ -1,6 +1,4 @@
 <?php
-// config/database.php
-// Konfigurasi koneksi database menggunakan PDO untuk Aspiraku
 
 $db_host = 'localhost';
 $db_name = 'db_aspiraku';

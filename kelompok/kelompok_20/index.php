@@ -1,7 +1,4 @@
 <?php
-// index.php
-// Halaman utama sementara untuk pengujian layout Aspiraku (Kelompok 20)
-// File ini akan dilengkapi oleh Ridho pada tahap berikutnya
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
@@ -21,4 +18,3 @@ require_once __DIR__ . '/includes/header.php';
 <?php
 require_once __DIR__ . '/includes/footer.php';
 ?>
-

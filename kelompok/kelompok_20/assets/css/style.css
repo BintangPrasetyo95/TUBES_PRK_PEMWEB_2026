@@ -1,27 +1,23 @@
-/* ==========================================================================
-   CSS Utama - Aspiraku (Kelompok 20)
-   Tema: 03 FISIP - Portal Pengaduan & Aspirasi Publik
-   Desain: Mobile-First, Palet Hijau Hutan, Sage, Pasir, dan Krem
-   ========================================================================== */
-
 :root {
-    --color-primary: #1E3B2F;        /* Hijau hutan */
-    --color-primary-dark: #16291F;   /* Hijau hutan gelap (hover) */
-    --color-on-primary: #F5F0E6;     /* Krem (teks atas warna utama) */
-    --color-secondary: #7F8C6A;      /* Hijau sage (aksen & garis) */
-    --color-accent: #C8B48A;         /* Pasir (fokus & sorotan) */
-    --color-bg: #F5F0E6;             /* Latar halaman (krem hangat) */
-    --color-surface: #FFFFFF;        /* Latar kartu & tabel (putih) */
-    --color-text: #1E3B2F;           /* Teks utama */
-    --color-text-muted: #5F6B4E;     /* Teks sekunder */
-    --color-border: #DDD5C0;         /* Garis tepi */
-    --color-danger: #8B2E2E;         /* Pesan gagal / bahaya */
-    --color-danger-bg: #F7E0DC;      /* Latar pesan gagal */
+    --color-primary: #1E3B2F;
+    --color-primary-dark: #16291F;
+    --color-on-primary: #F5F0E6;
+    --color-secondary: #7F8C6A;
+    --color-accent: #C8B48A;
+    --color-bg: #F5F0E6;
+    --color-surface: #FFFFFF;
+    --color-text: #1E3B2F;
+    --color-text-muted: #5F6B4E;
+    --color-border: #DDD5C0;
+    --color-danger: #8B2E2E;
+    --color-danger-bg: #F7E0DC;
     --radius: 8px;
 }
 
 /* Reset Dasar */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -291,7 +287,8 @@ table {
     overflow: hidden;
 }
 
-th, td {
+th,
+td {
     padding: 0.85rem 1rem;
     text-align: left;
     border-bottom: 1px solid var(--color-border);
@@ -360,4 +357,3 @@ tbody tr:hover {
         width: 100%;
     }
 }
-

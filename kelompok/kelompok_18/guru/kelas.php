@@ -3,12 +3,22 @@
 declare(strict_types=1);
 require_once __DIR__ . '/_init.php';
 
+try {
+    $profile = guruProfile();
+    $activeSemester = guruActiveSemester();
+    $classes = $profile !== null && $activeSemester !== null
+        ? guruActiveAssignments((int) $profile['id'], (int) $activeSemester['id'])
+        : [];
+} catch (Throwable $exception) {
+    guruReportBackendError($exception);
+}
+
 guru_page_start('Kelas', 'kelas.php');
 ?>
 <section class="space-y-4">
     <div><h2 class="text-lg font-semibold text-[#20392a]">Kelas yang Ditugaskan</h2></div>
     <div class="grid gap-4 xl:grid-cols-2">
-        <?php foreach ($guruUiData['classes'] as $class): ?>
+        <?php foreach ($classes as $class): ?>
             <article class="rounded-2xl border border-[#e2e9e2] bg-white p-5 shadow-[0_2px_8px_rgba(30,55,38,0.04)] sm:p-6">
                 <div class="flex items-start justify-between gap-4">
                     <div><p class="text-xs font-semibold uppercase tracking-wide text-[#64806a]">Kode <?= attendara_ui_escape($class['code']) ?></p><h3 class="mt-1 text-lg font-semibold text-[#20392a]"><?= attendara_ui_escape($class['name']) ?></h3><p class="mt-1 text-sm text-slate-500">Tingkat <?= attendara_ui_escape((string) $class['level']) ?> · <?= attendara_ui_escape($class['semester']) ?></p></div>

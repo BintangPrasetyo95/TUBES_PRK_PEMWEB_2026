@@ -3,8 +3,27 @@
 declare(strict_types=1);
 require_once __DIR__ . '/_init.php';
 
-$class = $guruUiData['classes'][0];
-$rows = array_map(static fn (array $student): array => [$student['number'], $student['name']], $guruUiData['students']);
+$classId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!is_int($classId) || $classId < 1) {
+    http_response_code(404);
+    exit('Kelas tidak ditemukan.');
+}
+
+try {
+    $profile = guruProfile();
+    $activeSemester = guruActiveSemester();
+    $class = $profile !== null && $activeSemester !== null
+        ? guruOwnedActiveClass((int) $profile['id'], (int) $activeSemester['id'], $classId)
+        : null;
+    if ($class === null) {
+        http_response_code(404);
+        exit('Kelas tidak ditemukan.');
+    }
+    $students = guruClassStudents((int) $class['id'], (int) $class['semester_id']);
+    $rows = array_map(static fn (array $student): array => [$student['number'], $student['name']], $students);
+} catch (Throwable $exception) {
+    guruReportBackendError($exception);
+}
 
 guru_page_start('Detail Kelas', 'kelas.php');
 ?>

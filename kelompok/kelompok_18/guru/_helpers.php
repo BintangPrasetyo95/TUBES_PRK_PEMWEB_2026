@@ -89,9 +89,8 @@ function guruActiveSchedules(int $guruId, int $semesterId): array
     $statement->execute(['guru_id' => $guruId, 'semester_id' => $semesterId]);
     $schedules = $statement->fetchAll();
 
-    $dayNames = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
     foreach ($schedules as &$schedule) {
-        $schedule['day_label'] = $dayNames[(int) $schedule['day_number']] ?? ('Hari ' . $schedule['day_number']);
+        $schedule['day_label'] = 'Hari ' . $schedule['day_number'];
         $schedule['valid_from'] = $schedule['valid_from'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_from']));
         $schedule['valid_until'] = $schedule['valid_until'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_until']));
     }
@@ -151,10 +150,8 @@ function guruClassSchedules(int $assignmentId): array
     );
     $statement->execute(['assignment_id' => $assignmentId]);
     $schedules = $statement->fetchAll();
-    $dayNames = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
-
     foreach ($schedules as &$schedule) {
-        $schedule['day_label'] = $dayNames[(int) $schedule['day_number']] ?? ('Hari ' . $schedule['day_number']);
+        $schedule['day_label'] = 'Hari ' . $schedule['day_number'];
         $schedule['valid_from'] = $schedule['valid_from'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_from']));
         $schedule['valid_until'] = $schedule['valid_until'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_until']));
     }

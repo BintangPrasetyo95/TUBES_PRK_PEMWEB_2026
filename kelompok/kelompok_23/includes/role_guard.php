@@ -6,7 +6,11 @@ function requireRole(array $allowedRoles): void
         exit;
     }
 
-    if (!in_array($_SESSION['role'] ?? '', $allowedRoles, true)) {
+    $userRole = strtolower(trim($_SESSION['role'] ?? ''));
+
+    $allowedRoles = array_map('strtolower', $allowedRoles);
+
+    if (!in_array($userRole, $allowedRoles, true)) {
         header("Location: /TUBES_PRK_PEMWEB_2026/kelompok/kelompok_23/dashboard.php");
         exit;
     }

@@ -1,11 +1,13 @@
 CREATE DATABASE IF NOT EXISTS ruang_hukum CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE ruang_hukum;
 
+
 DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS replies;
 DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS users;
+
 
 CREATE TABLE users (
     id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -20,6 +22,7 @@ CREATE TABLE users (
     UNIQUE KEY uq_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
 CREATE TABLE categories (
     id   INT UNSIGNED NOT NULL AUTO_INCREMENT,
     name VARCHAR(50)  NOT NULL,
@@ -28,6 +31,7 @@ CREATE TABLE categories (
     UNIQUE KEY uq_categories_name (name),
     UNIQUE KEY uq_categories_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 CREATE TABLE posts (
     id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -44,6 +48,7 @@ CREATE TABLE posts (
     CONSTRAINT fk_posts_category FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
 CREATE TABLE replies (
     id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
     post_id    INT UNSIGNED NOT NULL,
@@ -56,6 +61,7 @@ CREATE TABLE replies (
     CONSTRAINT fk_replies_post FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
     CONSTRAINT fk_replies_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 CREATE TABLE likes (
     id         INT UNSIGNED NOT NULL AUTO_INCREMENT,

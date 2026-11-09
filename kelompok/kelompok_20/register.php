@@ -157,6 +157,8 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
+<script src="/assets/js/auth.js" defer></script>
+
 <?php
 require_once __DIR__ . '/includes/footer.php';
 

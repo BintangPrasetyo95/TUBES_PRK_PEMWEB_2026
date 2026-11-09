@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/database.php';
-include_once __DIR__ . '/includes/header.php';
+include_once __DIR__ . '/components/header.php';
 
 // ===== PENGATURAN KAMPUS =====
 $namaPortal = 'KabarSi FISIP';
@@ -372,4 +372,4 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 })();
 </script>
 
-<?php include_once __DIR__ . '/includes/footer.php'; ?>
+<?php include_once __DIR__ . '/components/footer.php'; ?>

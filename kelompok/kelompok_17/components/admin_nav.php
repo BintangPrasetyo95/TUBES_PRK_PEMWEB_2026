@@ -1,6 +1,6 @@
 <?php
 // Navigasi admin bersama. Pemakaian di halaman admin mana pun:
-//   include __DIR__ . '/../includes/admin_nav.php';   (sesuaikan jumlah ../ dengan kedalaman file)
+//   include __DIR__ . '/../components/admin_nav.php'; (sesuaikan jumlah ../ dengan kedalaman file)
 // Link memakai admin_url(), jadi tetap benar walau dipanggil dari subfolder.
 // Halaman yang sedang dibuka otomatis ditandai (underline tebal).
 

@@ -1,1 +1,0 @@
-OneBlood : Sistem Informasi Donor Darah

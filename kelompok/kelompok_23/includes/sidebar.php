@@ -32,13 +32,13 @@ $currentPath = str_replace('\\', '/', $_SERVER['PHP_SELF']);
         Transaksi
     </a>
 
-    <a href="<?= $baseUrl ?>/riwayat/index.php"
+    <a href="<?= $baseUrl ?>/transaksi/index.php?tab=riwayat"
        class="sidebar-link <?= str_contains($currentPath, '/riwayat/') ? 'active' : '' ?>">
         <i class="bi bi-clock-history"></i>
         Riwayat Transaksi
     </a>
 
-    <a href="<?= $baseUrl ?>/laporan/index.php"
+    <a href="<?= $baseUrl ?>/transaksi/index.php?tab=laporan"
        class="sidebar-link <?= str_contains($currentPath, '/laporan/') ? 'active' : '' ?>">
         <i class="bi bi-file-earmark-bar-graph"></i>
         Laporan
@@ -46,7 +46,7 @@ $currentPath = str_replace('\\', '/', $_SERVER['PHP_SELF']);
 
     <hr class="sidebar-divider">
 
-    <a href="<?= $baseUrl ?>/users.php"
+    <a href="<?= $baseUrl ?>/transaksi/index.php?tab=users"
        class="sidebar-link <?= $currentPage === 'users.php' ? 'active' : '' ?>">
         <i class="bi bi-people"></i>
         Kelola User

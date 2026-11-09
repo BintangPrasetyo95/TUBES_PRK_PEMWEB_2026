@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: ' . $_SERVER['PHP_SELF']);
             exit;
         } catch (PDOException $ex) {
-            $error = 'Gagal menyimpan: ' . $ex->getMessage(); // hapus getMessage() kalau sudah production
+            $error = 'Gagal menyimpan: ' . $ex->getMessage(); 
         }
     }
 }

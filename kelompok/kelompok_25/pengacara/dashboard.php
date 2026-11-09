@@ -50,7 +50,7 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
       <h2 class="mb-0">Dashboard Pengacara</h2>
-      <p class="text-secondary mb-0">Halo, <?= e(current_user()['nama']) ?>.</p>
+      <p class="text-secondary mb-0">Halo, <?= e(current_user()['nama']) ?></p>
     </div>
     <a href="profil.php" class="btn btn-outline-secondary btn-sm">Profil saya</a>
   </div>

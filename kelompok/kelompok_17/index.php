@@ -33,12 +33,6 @@ $stmt = $pdo->prepare("SELECT a.*, k.nama_kategori, u.nama_lengkap
 $stmt->execute();
 $aspirasiList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ===== STATISTIK =====
-$totalAspirasi = (int) $pdo->query("SELECT COUNT(*) FROM aspirasi")->fetchColumn();
-$totalSelesai  = (int) $pdo->query("SELECT COUNT(*) FROM aspirasi WHERE status = 'selesai'")->fetchColumn();
-$totalDitinjau = (int) $pdo->query("SELECT COUNT(*) FROM aspirasi WHERE status = 'ditinjau'")->fetchColumn();
-$totalBerita   = (int) $pdo->query("SELECT COUNT(*) FROM berita")->fetchColumn();
-
 function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
 $steps  = ['menunggu' => 'Terkirim', 'ditinjau' => 'Ditinjau', 'selesai' => 'Selesai'];
 $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terintegrasi', 'Layanan Publikasi Resmi', 'FISIP Universitas Lampung'];
@@ -76,7 +70,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 .btn-light{background:var(--card);color:var(--ink) !important;} 
 .btn-ink{background:var(--ink);color:var(--paper) !important;}
 
-/* Hero (Coretan SVG Presisi) */
+/* Hero */
 .hero-h{font-size:clamp(3rem,8.5vw,6.2rem);line-height:.95;font-weight:700}
 .hero-h .soft{color:#8a857b;display:block}
 .scribble{position:relative;display:inline-block;z-index:1}
@@ -93,12 +87,6 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 .ticker-track span::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--or)}
 @keyframes marq{to{transform:translateX(-50%)}}
 
-/* Panel Statistik Gelap */
-.stats{background:var(--ink);color:var(--paper);border:2px solid var(--ink);box-shadow:8px 8px 0 var(--or);padding:1.6rem 2rem}
-.stats b{font-size:clamp(2.2rem,5vw,3.4rem);line-height:1;font-weight:700;display:block}
-.stats b i{font-style:normal;color:var(--or)}
-.stats small{font:400 .68rem 'Space Mono',monospace;text-transform:uppercase;color:#a8a296;display:block;margin-top:.5rem}
-
 /* Judul Section */
 .sec-h{font-size:clamp(1.9rem,4.5vw,3rem);font-weight:700;line-height:1}
 .sec-h span{color:#8a857b}
@@ -113,13 +101,6 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 .hov .go{transition:transform .15s}
 .hov:hover .go{transform:translateX(5px)}
 
-/* Status Aspirasi */
-.st-menunggu{background:var(--hl)} .st-ditinjau{background:var(--or);color:#fff} .st-selesai{background:#9BE7A9} .st-ditolak{background:#FF9A94}
-.prog{display:flex;align-items:center;gap:.3rem;font:400 .66rem 'Space Mono',monospace;color:var(--muted)}
-.prog .d{width:11px;height:11px;border:2px solid var(--ink);background:var(--card);flex:none}
-.prog .l{height:2px;flex:1;background:var(--ink);opacity:.25}
-.prog .on{background:var(--or)} .prog .l.on{opacity:1}
-.prog .now{color:var(--ink);font-weight:700}
 .more{background:none;border:0;padding:0;font:700 .72rem 'Space Mono',monospace;text-decoration:underline;cursor:pointer;color:var(--ink)}
 
 @media (prefers-reduced-motion:reduce){
@@ -138,7 +119,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
       Suara
       <span class="scribble">Kritis.
         <svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M 15 50 C 10 20, 130 8, 235 15 C 285 22, 290 60, 205 74 C 120 84, 15 75, 25 45 C 32 25, 95 18, 160 20"/>
+          <path d=" M 15 50 C 10 20, 130 8, 235 15 C 285 22, 290 60, 205 74 C 120 84, 15 75, 25 45 C 32 25, 95 18, 160 20"/>
         </svg>
       </span>
       <span class="soft">Kabar Terbuka.</span>
@@ -148,7 +129,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
       <b>Pengiriman anonim dapat dilakukan secara aman dan transparan.</b>
     </p>
     <div class="mt-8 flex flex-wrap gap-4">
-      <a href="aspirasi_detail.php" class="btn btn-or">Sampaikan Aspirasi &rarr;</a>
+      <a href="user/dashboard.php" class="btn btn-or">Sampaikan Aspirasi &rarr;</a>
       <a href="#aspirasi" class="btn btn-light">Pantau Isu Kampus</a>
     </div>
   </div>
@@ -183,19 +164,6 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 
 <main class="max-w-6xl mx-auto px-4 py-16 space-y-24">
 
-  <!-- ===== STATISTIK ===== -->
-  <section class="stats" aria-label="Ringkasan Data">
-    <div class="flex justify-between items-center mb-6">
-      <span class="mono text-xs font-bold" style="color:var(--or)">&#9679; DATA REAL-TIME</span>
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-      <div><b data-count="<?= $totalAspirasi ?>">0</b><small>Aspirasi Diterima</small></div>
-      <div><b data-count="<?= $totalSelesai ?>">0</b><small>Telah Ditindak</small></div>
-      <div><b data-count="<?= $totalDitinjau ?>">0</b><small>Dalam Proses Tinjauan</small></div>
-      <div><b data-count="<?= $totalBerita ?>">0</b><small>Berita Terbit</small></div>
-    </div>
-  </section>
-
   <!-- ===== BERITA ===== -->
   <section id="berita" class="scroll-mt-6">
     <div class="flex justify-between items-end mb-8 flex-wrap gap-4">
@@ -218,7 +186,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
       <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
         <?php foreach ($daftarBerita as $berita): ?>
           <a href="berita_detail.php?id=<?= (int)$berita['id_berita'] ?>"
-             class="box hov p-5 flex flex-col gap-3 item" data-group="berita" data-val="<?= e($berita['nama_kategori'] ?? 'Umum') ?>">
+            class="box hov p-5 flex flex-col gap-3 item" data-group="berita" data-val="<?= e($berita['nama_kategori'] ?? 'Umum') ?>">
             <div class="flex justify-between items-start">
               <span class="num">00</span>
               <span class="tag"><?= e($berita['nama_kategori'] ?? 'Umum') ?></span>
@@ -237,33 +205,25 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 
   <!-- ===== ASPIRASI ===== -->
   <section id="aspirasi" class="scroll-mt-6">
-    <div class="flex justify-between items-end mb-6 flex-wrap gap-4">
+    <div class="flex justify-between items-end mb-8 flex-wrap gap-4">
       <div>
         <h2 class="sec-h">Daftar Aspirasi <span>Mahasiswa.</span></h2>
       </div>
-      <a href="aspirasi_detail.php" class="btn btn-ink">+ Buat Laporan</a>
+      <a href="user/dashboard.php" class="btn btn-ink">+ Buat Aspirasi</a>
     </div>
 
     <?php if (empty($aspirasiList)): ?>
       <div class="box p-10 text-center" style="color:var(--muted)">Belum ada data aspirasi yang masuk. Silakan sampaikan aspirasi pertama Anda.</div>
     <?php else: ?>
-      <div class="flex flex-wrap gap-2 mb-8" role="group" aria-label="Filter status aspirasi" data-group="asp">
-        <button class="chip" data-val="all" aria-pressed="true">Semua Status</button>
-        <?php foreach ($steps as $key => $label): ?>
-          <button class="chip" data-val="<?= $key ?>" aria-pressed="false"><?= e($label) ?></button>
-        <?php endforeach; ?>
-      </div>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <?php foreach ($aspirasiList as $aspirasi):
             $status = $aspirasi['status'];
             $isi    = strip_tags($aspirasi['isi_aspirasi']);
-            $idxNow = array_search($status, array_keys($steps));
+            $idAsp  = (int)($aspirasi['id_aspirasi'] ?? 0);
         ?>
           <article class="box hov p-5 pt-6 flex flex-col gap-4 item" data-group="asp" data-val="<?= e($status) ?>">
             <span class="tape" aria-hidden="true"></span>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="tag st-<?= e($status) ?>"><?= e(strtoupper($status)) ?></span>
               <span class="tag"><?= e($aspirasi['nama_kategori'] ?? 'Umum') ?></span>
               <span class="mono text-xs font-bold"><?= $aspirasi['is_anonim'] ? '👤 Anonim' : '🎓 ' . e($aspirasi['nama_lengkap'] ?? 'Mahasiswa') ?></span>
               <span class="mono text-xs ml-auto" style="color:var(--muted)"><?= date('d/m/Y', strtotime($aspirasi['tanggal_kirim'])) ?></span>
@@ -271,7 +231,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 
             <div class="flex-1">
               <h3 class="ttl text-xl font-bold leading-snug mb-2 clamp2">
-                <a href="aspirasi_detail.php?id=<?= (int)$aspirasi['id_aspirasi'] ?>"><?= e($aspirasi['judul_aspirasi']) ?></a>
+                <a href="aspirasi_detail.php?id=<?= $idAsp ?>"><?= e($aspirasi['judul_aspirasi']) ?></a>
               </h3>
               <p class="text-sm clamp3 body" style="color:var(--muted)"><?= e($isi) ?></p>
               <?php if (mb_strlen($isi) > 140): ?>
@@ -279,24 +239,13 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
               <?php endif; ?>
             </div>
 
-            <?php if ($idxNow !== false): ?>
-              <div class="prog" aria-label="Progres: <?= e($steps[$status]) ?>">
-                <?php $i = 0; foreach ($steps as $label): ?>
-                  <?php if ($i > 0): ?><span class="l <?= $i <= $idxNow ? 'on' : '' ?>"></span><?php endif; ?>
-                  <span class="d <?= $i <= $idxNow ? 'on' : '' ?>"></span>
-                  <span class="<?= $i === $idxNow ? 'now' : '' ?>"><?= e($label) ?></span>
-                <?php $i++; endforeach; ?>
-              </div>
-            <?php endif; ?>
-
             <div class="mono text-xs flex justify-between pt-3" style="border-top:2px dashed var(--ink)">
-              <span style="color:var(--muted)">ID: ASP-<?= (int)$aspirasi['id_aspirasi'] ?></span>
-              <a href="aspirasi_detail.php?id=<?= (int)$aspirasi['id_aspirasi'] ?>" class="font-bold" style="color:var(--or)">Rincian Status <span class="go inline-block">&rarr;</span></a>
+              <span style="color:var(--muted)">ID: ASP-<?= $idAsp ?></span>
+              <a href="aspirasi_detail.php?id=<?= $idAsp ?>" class="font-bold" style="color:var(--or)">Rincian Status <span class="go inline-block">&rarr;</span></a>
             </div>
           </article>
         <?php endforeach; ?>
       </div>
-      <p id="empty-asp" class="hide box p-8 text-center mt-6" style="color:var(--muted)">Belum ada aspirasi dengan status ini.</p>
     <?php endif; ?>
   </section>
 
@@ -305,8 +254,8 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
     <h2 class="text-3xl md:text-5xl font-bold leading-none max-w-2xl text-white">Ingin Menyampaikan Aspirasi atau Pengaduan Kampus?</h2>
     <p class="mt-4 max-w-lg text-amber-100">Sampaikan masukan Anda secara rinci. Laporan dapat disampaikan dengan nama terang maupun secara anonim, dan status tindak lanjutnya dapat dipantau berkala.</p>
     <div class="mt-7 flex flex-wrap gap-4">
-      <a href="aspirasi_detail.php" class="btn btn-ink">Sampaikan Aspirasi Sekarang &rarr;</a>
-      <a href="#berita" class="btn btn-light">Pelajari Berita Kampus</a>
+      <a href="user/dashboard.php" class="btn btn-ink">Sampaikan Aspirasi Sekarang &rarr;</a>
+      <a href="#berita" class="btn btn-light">Baca Berita Kampus</a>
     </div>
   </section>
 
@@ -316,18 +265,6 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 <script>
 (function () {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Hitung naik angka statistik
-  document.querySelectorAll('[data-count]').forEach(function (el) {
-    const target = parseInt(el.dataset.count, 10) || 0;
-    if (reduce || !target) { el.textContent = target; return; }
-    const t0 = performance.now(), dur = 900;
-    (function tick(t) {
-      const p = Math.min((t - t0) / dur, 1);
-      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
-      if (p < 1) requestAnimationFrame(tick);
-    })(t0);
-  });
 
   // Nomor berita (01, 02, ...)
   function renumber() {

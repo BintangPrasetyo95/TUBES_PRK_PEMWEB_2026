@@ -1,7 +1,6 @@
 <?php
 // app/Controllers/LahanController.php
-// Tugas: Menerima request, memanggil Model Lahan, mengembalikan JSON atau halaman web.
-// Diisi oleh: Faqih.
+// Tugas: Menerima request, memanggil Model Lahan, mengembalikan JSON.
 
 require_once __DIR__ . "/../Config/Database.php";
 require_once __DIR__ . "/../Models/LahanModel.php";
@@ -17,59 +16,167 @@ class LahanController
         $this->model = new LahanModel($db);
     }
 
-    // TODO: method index() - ambil semua data lahan
     public function index()
     {
         $stmt = $this->model->read();
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        \App\Config\Database::response($data);
+        \App\Config\Database::response([
+            'status' => 'success',
+            'message' => 'Data lahan berhasil diambil.',
+            'data' => $data,
+        ]);
+        return;
     }
 
-    // TODO: method show($id) - ambil satu lahan berdasarkan id
     public function show($id)
     {
         $stmt = $this->model->readSingle($id);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($data) {
-            \App\Config\Database::response($data);
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data lahan ditemukan.',
+                'data' => $data,
+            ]);
         } else {
-            \App\Config\Database::response(['message' => 'Data tidak ditemukan'], 404);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Data lahan tidak ditemukan.',
+                'data' => null,
+            ], 404);
         }
+        return;
     }
 
-    // TODO: method create() - tambah data lahan baru
     public function create()
     {
-        $data = json_decode(file_get_contents("php://input"));
-        if (!empty($data->nama) && !empty($data->lokasi) && !empty($data->luas)) {
-            if ($this->model->create($data)) {
-                \App\Config\Database::response(['message' => 'Data berhasil ditambahkan'], 201);
-            } else {
-                \App\Config\Database::response(['message' => 'Gagal menambahkan data'], 500);
-            }
-        } else {
-            \App\Config\Database::response(['message' => 'Data tidak lengkap'], 400);
+        $input = json_decode(file_get_contents("php://input"), true);
+        if (!is_array($input)) {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Format JSON tidak valid.',
+                'data' => null,
+            ], 400);
+            return;
         }
+
+        $nama = trim((string) ($input['nama'] ?? ''));
+        $lokasi = trim((string) ($input['lokasi'] ?? ''));
+        $luas = $input['luas'] ?? null;
+        $jenis_tanah = trim((string) ($input['jenis_tanah'] ?? ''));
+
+        if ($nama === '' || $lokasi === '' || $jenis_tanah === '') {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Nama, lokasi, dan jenis tanah wajib diisi.',
+                'data' => null,
+            ], 422);
+            return;
+        }
+        if (!is_numeric($luas) || (float) $luas < 0) {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Luas harus berupa angka 0 atau lebih.',
+                'data' => null,
+            ], 422);
+            return;
+        }
+
+        $data = (object) [
+            'nama' => $nama,
+            'lokasi' => $lokasi,
+            'luas' => (float) $luas,
+            'jenis_tanah' => $jenis_tanah,
+        ];
+
+        if ($this->model->create($data)) {
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data berhasil ditambahkan.',
+                'data' => $data,
+            ], 201);
+        } else {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal menambahkan data.',
+                'data' => null,
+            ], 500);
+        }
+        return;
     }
 
-    // TODO: method update($id) - ubah data lahan
     public function update($id)
     {
-        $data = json_decode(file_get_contents("php://input"));
-        if ($this->model->update($id, $data)) {
-            \App\Config\Database::response(['message' => 'Data berhasil diupdate']);
-        } else {
-            \App\Config\Database::response(['message' => 'Gagal mengupdate data'], 500);
+        $input = json_decode(file_get_contents("php://input"), true);
+        if (!is_array($input)) {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Format JSON tidak valid.',
+                'data' => null,
+            ], 400);
+            return;
         }
+
+        $nama = trim((string) ($input['nama'] ?? ''));
+        $lokasi = trim((string) ($input['lokasi'] ?? ''));
+        $luas = $input['luas'] ?? null;
+        $jenis_tanah = trim((string) ($input['jenis_tanah'] ?? ''));
+
+        if ($nama === '' || $lokasi === '' || $jenis_tanah === '') {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Nama, lokasi, dan jenis tanah wajib diisi.',
+                'data' => null,
+            ], 422);
+            return;
+        }
+        if (!is_numeric($luas) || (float) $luas < 0) {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Luas harus berupa angka 0 atau lebih.',
+                'data' => null,
+            ], 422);
+            return;
+        }
+
+        $data = (object) [
+            'nama' => $nama,
+            'lokasi' => $lokasi,
+            'luas' => (float) $luas,
+            'jenis_tanah' => $jenis_tanah,
+        ];
+
+        if ($this->model->update($id, $data)) {
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data berhasil diupdate.',
+                'data' => $data,
+            ]);
+        } else {
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal mengupdate data.',
+                'data' => null,
+            ], 500);
+        }
+        return;
     }
 
-    // TODO: method delete($id) - hapus data lahan
     public function delete($id)
     {
         if ($this->model->delete($id)) {
-            \App\Config\Database::response(['message' => 'Data berhasil dihapus']);
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data berhasil dihapus.',
+                'data' => null,
+            ]);
         } else {
-            \App\Config\Database::response(['message' => 'Gagal menghapus data'], 500);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal menghapus data.',
+                'data' => null,
+            ], 500);
         }
+        return;
     }
 }

@@ -253,8 +253,8 @@ $warnaStatus = [
             <a href="aspirasi_tambah.php"
                class="btn-hover gradient-bg text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-md inline-flex items-center gap-2">
 
-                <span class="text-lg">+</span>
-                Kirim Aspirasi
+                <span class="text-lg"></span>
+                Buat Aspirasi
 
             </a>
 

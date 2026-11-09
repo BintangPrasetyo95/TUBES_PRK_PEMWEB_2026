@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 09, 2026 at 05:17 PM
+-- Generation Time: Nov 09, 2026 at 05:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -62,17 +62,18 @@ CREATE TABLE `orders` (
   `subtotal` decimal(12,2) NOT NULL DEFAULT 0.00,
   `diskon` decimal(12,2) NOT NULL DEFAULT 0.00,
   `service_charge` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `pajak` decimal(12,2) NOT NULL DEFAULT 0.00
+  `pajak` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `no_invoice`, `user_id`, `nama_pelanggan`, `nomor_meja`, `total_tagihan`, `tipe_pembayaran`, `status_order`, `tanggal_transaksi`, `subtotal`, `diskon`, `service_charge`, `pajak`) VALUES
-(1, 'INV-20261109203242', 2, 'Umum', '-', 33000.00, 'split', 'lunas', '2026-11-09 20:32:42', 0.00, 0.00, 0.00, 0.00),
-(2, 'INV-20261109203834', 2, 'Mahiru', '11', 46000.00, 'split', 'lunas', '2026-11-09 20:38:34', 0.00, 0.00, 0.00, 0.00),
-(3, 'INV-20261109205358', 2, 'dihan', '12', 43000.00, 'split', 'lunas', '2026-11-09 20:53:58', 0.00, 0.00, 0.00, 0.00);
+INSERT INTO `orders` (`id`, `no_invoice`, `user_id`, `nama_pelanggan`, `nomor_meja`, `total_tagihan`, `tipe_pembayaran`, `status_order`, `tanggal_transaksi`, `subtotal`, `diskon`, `service_charge`, `pajak`, `created_at`) VALUES
+(1, 'INV-20261109203242', 2, 'Umum', '-', 33000.00, 'split', 'lunas', '2026-11-09 20:32:42', 0.00, 0.00, 0.00, 0.00, '2026-11-09 16:48:28'),
+(2, 'INV-20261109203834', 2, 'Mahiru', '11', 46000.00, 'split', 'lunas', '2026-11-09 20:38:34', 0.00, 0.00, 0.00, 0.00, '2026-11-09 16:48:28'),
+(3, 'INV-20261109205358', 2, 'dihan', '12', 43000.00, 'split', 'lunas', '2026-11-09 20:53:58', 0.00, 0.00, 0.00, 0.00, '2026-11-09 16:48:28');
 
 -- --------------------------------------------------------
 
@@ -116,21 +117,22 @@ CREATE TABLE `payments` (
   `nominal_bayar` decimal(12,2) NOT NULL,
   `uang_diterima` decimal(12,2) NOT NULL,
   `kembalian` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `waktu_bayar` datetime DEFAULT current_timestamp()
+  `waktu_bayar` datetime DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `payments`
 --
 
-INSERT INTO `payments` (`id`, `order_id`, `urutan_split`, `metode_bayar`, `nominal_bayar`, `uang_diterima`, `kembalian`, `waktu_bayar`) VALUES
-(1, 1, 1, 'tunai', 15000.00, 15000.00, 0.00, '2026-11-09 20:36:45'),
-(2, 1, 2, 'tunai', 18000.00, 18000.00, 0.00, '2026-11-09 20:38:02'),
-(3, 2, 1, 'tunai', 24000.00, 26000.00, 2000.00, '2026-11-09 20:38:42'),
-(4, 2, 2, 'tunai', 22000.00, 22000.00, 0.00, '2026-11-09 20:53:34'),
-(5, 3, 1, 'tunai', 12000.00, 12000.00, 0.00, '2026-11-09 20:54:51'),
-(6, 3, 2, 'tunai', 28000.00, 28000.00, 0.00, '2026-11-09 20:55:10'),
-(7, 3, 3, 'tunai', 3000.00, 3000.00, 0.00, '2026-11-09 20:55:23');
+INSERT INTO `payments` (`id`, `order_id`, `urutan_split`, `metode_bayar`, `nominal_bayar`, `uang_diterima`, `kembalian`, `waktu_bayar`, `created_at`) VALUES
+(1, 1, 1, 'tunai', 15000.00, 15000.00, 0.00, '2026-11-09 20:36:45', '2026-11-09 16:46:11'),
+(2, 1, 2, 'tunai', 18000.00, 18000.00, 0.00, '2026-11-09 20:38:02', '2026-11-09 16:46:11'),
+(3, 2, 1, 'tunai', 24000.00, 26000.00, 2000.00, '2026-11-09 20:38:42', '2026-11-09 16:46:11'),
+(4, 2, 2, 'tunai', 22000.00, 22000.00, 0.00, '2026-11-09 20:53:34', '2026-11-09 16:46:11'),
+(5, 3, 1, 'tunai', 12000.00, 12000.00, 0.00, '2026-11-09 20:54:51', '2026-11-09 16:46:11'),
+(6, 3, 2, 'tunai', 28000.00, 28000.00, 0.00, '2026-11-09 20:55:10', '2026-11-09 16:46:11'),
+(7, 3, 3, 'tunai', 3000.00, 3000.00, 0.00, '2026-11-09 20:55:23', '2026-11-09 16:46:11');
 
 -- --------------------------------------------------------
 
@@ -198,6 +200,7 @@ ALTER TABLE `categories`
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `no_invoice` (`no_invoice`),
+  ADD UNIQUE KEY `uniq_invoice` (`no_invoice`),
   ADD KEY `user_id` (`user_id`);
 
 --

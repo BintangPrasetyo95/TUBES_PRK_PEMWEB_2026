@@ -22,7 +22,7 @@ $nav_role = $nav_user['role'] ?? 'tamu';
             <?= link_if_exists('modules/reviewer/index.php', 'Dashboard Reviewer') ?>
 <?php elseif ($nav_role === 'admin'): ?>
             <?= link_if_exists('modules/admin/users.php', 'Akun') ?>
-            <?= link_if_exists('modules/admin/types.php', 'Jenis Dokumen') ?>
+            <?= link_if_exists('modules/admin/index.php', 'Jenis Dokumen') ?>
             <?= link_if_exists('modules/admin/requirements.php', 'Persyaratan') ?>
             <?= link_if_exists('modules/audit/index.php', 'Log Aktivitas') ?>
 <?php endif; ?>

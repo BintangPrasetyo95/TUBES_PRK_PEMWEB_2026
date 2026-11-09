@@ -25,7 +25,7 @@
 
         <span class="menu-heading">KEUANGAN</span>
 
-        <a href="anggaran.php" class="menu-item">
+        <a href="budget.php" class="menu-item">
             <span>▤</span> Anggaran
         </a>
 

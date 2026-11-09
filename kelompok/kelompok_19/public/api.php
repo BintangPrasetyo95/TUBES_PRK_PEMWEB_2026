@@ -17,7 +17,7 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = preg_replace('/^\/api/', '', $uri);
 
 // Parse path segments
-$segments = array_filter(explode('/', $uri), 'strlen');
+$segments = array_values(array_filter(explode('/', $uri), 'strlen'));
 
 // Routing sederhana: /api/lahan -> LahanController
 $resource = $segments[0] ?? '';

@@ -1,3 +1,4 @@
+
 <?php
 // Memulai session
 if (session_status() === PHP_SESSION_NONE) {
@@ -14,6 +15,11 @@ if (isset($_SESSION['user_id'])) {
 require_once 'config/database.php';
 
 $error = "";
+
+// [TAMBAHAN] Pesan setelah registrasi berhasil
+$success = isset($_GET['registered'])
+    ? "Registrasi berhasil! Silakan login menggunakan akun baru."
+    : "";
 
 // Memeriksa apakah form dikirim
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -78,6 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Silakan login untuk masuk ke sistem
         </p>
 
+        <!-- [TAMBAHAN] Pesan registrasi berhasil -->
+        <?php if ($success): ?>
+            <div class="bg-green-100 text-green-700 p-3 rounded-lg mb-4">
+                <?= htmlspecialchars($success) ?>
+            </div>
+        <?php endif; ?>
+
         <?php if ($error): ?>
             <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
                 <?= htmlspecialchars($error) ?>
@@ -118,6 +131,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
 
         </form>
+
+        <!-- [TAMBAHAN] Link menuju halaman registrasi -->
+        <p class="text-sm text-center text-slate-500 mt-5">
+            Belum memiliki akun?
+            <a href="register.php" class="text-blue-600 font-medium hover:underline">
+                Daftar sebagai Kasir
+            </a>
+        </p>
 
     </div>
 

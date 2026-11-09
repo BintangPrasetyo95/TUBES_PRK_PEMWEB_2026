@@ -11,20 +11,21 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(100) NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('admin', 'kasir') NOT NULL DEFAULT 'kasir',
+    photo VARCHAR(255) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 INSERT IGNORE INTO users
-(id, name, username, email, password, role, is_active)
+(id, name, username, email, password, role, photo, is_active)
 VALUES
 (1, 'Admin FEBMart', 'adminfebmart', 'admin@febmart.com',
 '$2y$10$p8YODzPHYBk6BduqZQvqQuohOUDvsXcLKjXlBcD.h2u18JxAyfMhq',
-'admin', 1),
+'admin', NULL, 1),
 (2, 'kasir percobaan', 'kasir01', 'kasir1febmart@email.com',
 '$2y$10$Z1T4unI7lKiF3qz1EylwDuv3X4NMvdJVdeKzaO6KURVFphFIoOgSW',
-'kasir', 1);
+'kasir', NULL, 1);
 
 CREATE TABLE IF NOT EXISTS categories (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

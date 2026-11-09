@@ -72,43 +72,22 @@ function rupiah(float|string $amount): string
     return 'Rp ' . number_format((float)$amount, 0, ',', '.');
 }
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Riwayat Transaksi | FEBMart</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body { min-height:100vh; margin:0; padding:35px 20px; background:#f3f4f6; font-family:Arial,sans-serif; }
-        .main-container { width:100%; max-width:1200px; margin:0 auto; overflow:hidden; background:#fff; border-radius:14px; box-shadow:0 5px 25px rgba(0,0,0,.08); }
-        .header-section { padding:30px 35px; color:#fff; background:linear-gradient(145deg,#29245c,#5142a5); }
-        .brand { margin-bottom:25px; font-size:23px; font-weight:bold; }
-        .brand i { margin-right:7px; color:#ffad42; }
-        .header-section h2 { margin-bottom:8px; font-size:25px; font-weight:bold; }
-        .header-section p { margin:0; color:#d5d9e2; font-size:14px; }
-        .content-section { padding:35px; }
-        .table { font-size:13px; }
-        .table thead th { padding:14px 12px; color:#fff; background:#29245c; white-space:nowrap; }
-        .table tbody td { padding:13px 12px; vertical-align:middle; }
-        .table tbody tr:nth-child(even) { background:#faf9fd; }
-        .table tbody tr:hover { background:#f0eef9; }
-        .table thead th:first-child, .table tbody td:first-child { width:56px; text-align:center; }
-        .table tbody td:last-child { min-width:155px; }
-        .invoice-number { color:#29245c; font-weight:700; }
-        .btn-back { display:inline-block; margin-top:20px; padding:10px 16px; border:1px solid #ddd; border-radius:7px; color:#5142a5; background:#f5f4fb; font-weight:bold; text-decoration:none; }
-        @media(max-width:768px) { body { padding:12px; } .header-section,.content-section { padding:22px; } }
-    </style>
-</head>
-<body>
-<main class="main-container">
-    <header class="header-section">
-        <div class="brand"><i class="bi bi-cart3"></i>FEBMart</div>
-        <h2><i class="bi bi-clock-history me-2"></i>Riwayat Transaksi</h2>
-        <p>Telusuri transaksi penjualan dan lihat rincian barang yang dibeli.</p>
-    </header>
-    <section class="content-section">
+<?php
+$pageTitle = 'Riwayat Transaksi';
+require_once __DIR__ . '/../includes/header.php';
+?>
+<?php include __DIR__ . '/../includes/navbar.php'; ?>
+
+<div class="app-layout d-flex flex-grow-1">
+
+    <?php include __DIR__ . '/../includes/sidebar.php'; ?>
+
+    <main class="main-content flex-grow-1 p-4">
+
+        <div class="mb-4">
+            <h3 class="fw-bold"><i class="bi bi-clock-history me-2"></i>Riwayat Transaksi</h3>
+            <p class="text-muted">Telusuri transaksi penjualan dan lihat rincian barang yang dibeli.</p>
+        </div>
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
             <div>
                 <h4 class="mb-1">Daftar Penjualan</h4>
@@ -203,10 +182,9 @@ function rupiah(float|string $amount): string
                 </ul>
             </nav>
         <?php endif; ?>
-        <a href="../dashboard.php" class="btn-back"><i class="bi bi-arrow-left me-1"></i>Kembali ke Dashboard</a>
-        <a href="../transaksi/index.php" class="btn-back"><i class="bi bi-cash-register me-1"></i>Halaman Kasir</a>
-    </section>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    </main>
+
+</div>
+
+<?php include __DIR__ . '/../includes/footer.php'; ?>
+

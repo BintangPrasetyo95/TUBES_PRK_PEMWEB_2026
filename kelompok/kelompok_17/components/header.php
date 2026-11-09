@@ -89,7 +89,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                             <a href="admin/index.php" class="nav-btn nav-btn-or">Panel Admin</a>
                         <?php else: ?>
-                            <a href="dashboard_user.php" class="nav-btn nav-btn-or">Dashboard Saya</a>
+                            <a href="user/dashboard.php" class="nav-btn nav-btn-or">Dashboard Saya</a>
                         <?php endif; ?>
                         
                         <a href="auth/logout.php" class="nav-btn bg-[#FF9A94] text-[#141414] hover:bg-red-500 hover:text-white">Logout</a>

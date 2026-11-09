@@ -14,15 +14,15 @@ $idAspirasi = (int) ($_POST['id_aspirasi'] ?? 0);
 $statusBaru = $_POST['status'] ?? '';
 
 // Validasi di server: status harus salah satu dari nilai ENUM di database.
-$statusValid = ['menunggu', 'ditinjau', 'selesai'];
+$statusValid = ['menunggu', 'ditolak', 'publikasi', 'ditinjau', 'selesai'];
 if (!in_array($statusBaru, $statusValid, true)) {
     http_response_code(400);
-    exit('Status tidak valid. <a href="aspirasi.php">Kembali</a>');
+    exit('Status tidak valid. <a href="aspirasi/index.php">Kembali</a>');
 }
 
 // Hanya kolom status yang diubah. Kolom lain tidak disentuh.
 $stmt = $pdo->prepare('UPDATE aspirasi SET status = ? WHERE id_aspirasi = ?');
 $stmt->execute([$statusBaru, $idAspirasi]);
 
-header('Location: aspirasi.php?pesan=status');
+header('Location: ' . admin_url('/admin/aspirasi/index.php?pesan=status'));
 exit;

@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Membuat URL absolut ke path di dalam folder kelompok, misalnya admin_url('/admin/aspirasi.php').
+// Membuat URL absolut ke path di dalam folder kelompok, misalnya admin_url('/admin/aspirasi/index.php').
 // Dihitung dari lokasi file yang sedang dibuka, jadi tetap benar dari subfolder mana pun.
 function admin_url(string $path): string
 {

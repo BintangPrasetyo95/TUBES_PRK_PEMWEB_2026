@@ -212,18 +212,23 @@ window.tutupModalDetail = function () {
 
 /* --------------------------------- Event ---------------------------------- */
 function pasang() {
-    const input = $('#input-cari'), reset = $('#btn-reset-cari');
+    const input = $('#input-cari'), reset = $('#btn-reset-cari'), hero = $('#hero-banner');
     let timer;
+    const sinkronkanHero = () => {
+        hero.hidden = input.value.trim().length > 0;
+    };
     const bersihkanCari = () => {
         clearTimeout(timer);
         input.value = '';
         reset.hidden = true;
         state.q = '';
+        sinkronkanHero();
         transisi();
     };
 
     input.addEventListener('input', () => {
         reset.hidden = !input.value;
+        sinkronkanHero();
         clearTimeout(timer);
         timer = setTimeout(() => { state.q = input.value; transisi(); }, 300); // debounce 300 ms
     });

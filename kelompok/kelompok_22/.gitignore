@@ -1,9 +1,0 @@
-.env
-config/koneksi.local.php
-backend/koneksi.local.php
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-*.log
-*.tmp

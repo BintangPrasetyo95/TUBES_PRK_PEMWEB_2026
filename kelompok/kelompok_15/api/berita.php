@@ -41,7 +41,7 @@ foreach ($faculties as $f) {
     $item1 = [];
     $item1['int_f_id'] = (int)$f['id'];
     $item1['facultyId_int_f_id_selected'] = $facultyId===(int)$f['id']?'selected':'';
-    $item1['f_code_f_name'] = e($f['code'] . ' Ã‚Â· ' . $f['name']);
+    $item1['f_code_f_name'] = e($f['code'] . ' · ' . $f['name']);
     $view['faculties'][] = $item1;
 }
 $view['categories'] = [];

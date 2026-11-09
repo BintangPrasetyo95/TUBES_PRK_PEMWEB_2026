@@ -74,6 +74,7 @@ if($selected) {
     $item1['selected_message'] = e($selected['message']);
     $item1['selected_email3'] = e($selected['email']);
     $item1['rawurlencode_selected_subject'] = rawurlencode($selected['subject']);
+    $item1['csrf_delete'] = csrf_token();
     $item1['messageActions'] = [];
     foreach(['read'=>'Tandai Dibaca','replied'=>'Tandai Dibalas','archived'=>'Arsipkan'] as $s=>$label) {
         $item2 = [];

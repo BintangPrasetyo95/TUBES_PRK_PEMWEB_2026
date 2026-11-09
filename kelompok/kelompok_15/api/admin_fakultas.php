@@ -23,9 +23,16 @@ if($msg=flash('success')) {
     $item1['msg'] = e($msg);
     $view['msg_flash_success'][] = $item1;
 }
+$view['msg_flash_error'] = [];
+if($msg=flash('error')) {
+    $item1 = [];
+    $item1['msg2'] = e($msg);
+    $view['msg_flash_error'][] = $item1;
+}
 $view['rows'] = [];
 foreach($rows as $f) {
     $item1 = [];
+    $item1['csrf_token'] = csrf_token();
     $item1['f_code'] = e($f['code']);
     $item1['f_name'] = e($f['name']);
     $item1['f_slug'] = e($f['slug']);
@@ -35,6 +42,9 @@ foreach($rows as $f) {
     $item1['int_f_id'] = (int)$f['id'];
     $view['rows'][] = $item1;
 }
+$view['csrf_token'] = csrf_token();
+$view['int_editing_id_0'] = (int)($editing['id']??0);
+$view['editing_Edit_Fakultas_Tambah_Fakultas'] = $editing ? 'Edit Informasi Fakultas' : 'Tambah Fakultas';
 $view['editing'] = [];
 if($editing) {
     $item1 = [];

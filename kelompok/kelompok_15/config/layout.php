@@ -39,7 +39,7 @@ function admin_layout(string $adminTitle, string $activeAdmin): array
     $view['currentAdminUser_name'] = e($currentAdminUser['name'] ?? '');
     $view['strtoupper_currentAdminUser_role'] = e(strtoupper($currentAdminUser['role'] ?? ''));
     $view['facultySuffix'] = !empty($currentAdminUser['faculty_name'])
-        ? ' Â· ' . e($currentAdminUser['faculty_name'])
+        ? ' · ' . e($currentAdminUser['faculty_name'])
         : '';
     $view['csrf_token'] = csrf_token();
     $view['adminTitle'] = e($adminTitle);
@@ -68,7 +68,7 @@ function public_layout(string $activeNav): array
     foreach ($facultiesForNav as $navFaculty) {
         $item1 = [];
         $item1['facultyUrl2'] = e(url('fakultas.html?slug=' . $navFaculty['slug']));
-        $item1['navFaculty_code_navFaculty_name'] = e($navFaculty['code'] . ' Â· ' . $navFaculty['name']);
+        $item1['navFaculty_code_navFaculty_name'] = e($navFaculty['code'] . ' · ' . $navFaculty['name']);
         $view['facultiesForNav2'][] = $item1;
     }
     $view['date_Y'] = date('Y');

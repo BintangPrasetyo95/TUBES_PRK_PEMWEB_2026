@@ -1,7 +1,7 @@
 <?php
 
 $db_host = 'localhost';
-$db_name = 'db_aspiraku';
+$db_name = 'tubes_ppw';
 $db_user = 'root';
 $db_pass = '';
 $db_charset = 'utf8mb4';

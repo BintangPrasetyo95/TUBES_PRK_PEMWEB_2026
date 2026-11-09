@@ -169,6 +169,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // ===== Bagian tampilan halaman (HTML) =====
 $judulHalaman = $modeEdit ? 'Edit Kuis' : 'Buat Kuis Baru';
 
+// Kalau kuis pernah ditolak atau ditarik, ambil alasannya untuk ditampilkan
+$catatanRevisi = '';
+if ($modeEdit && ($kuis['status'] == 'ditolak' || $kuis['status'] == 'ditarik')) {
+    $catatanRevisi = ambilCatatanStatusTerakhir($kuisId);
+}
+
 // Ambil token CSRF dari file csrf.php (nama fungsi bisa disesuaikan dengan punya Nanda)
 $tokenCsrf = '';
 if (function_exists('csrfToken')) {
@@ -191,6 +197,16 @@ if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
     <?php if ($pesanErrorUmum !== '') { ?>
         <div class="pesan pesan-galat" role="alert">
             <?= e($pesanErrorUmum) ?>
+        </div>
+    <?php } ?>
+
+    <?php if ($catatanRevisi !== '') { ?>
+        <div class="pesan pesan-info" role="status">
+            <strong>
+                Kuis ini <?= ($kuis['status'] == 'ditolak') ? 'ditolak' : 'ditarik' ?> oleh admin.
+            </strong>
+            <p>Catatan: <?= e($catatanRevisi) ?></p>
+            <p>Silakan perbaiki kuis lalu ajukan kembali.</p>
         </div>
     <?php } ?>
 
@@ -275,7 +291,25 @@ if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
             <?php } ?>
         </div>
 
-        <button type="submit" class="tombol tombol-utama">Simpan</button>
+        <!-- Kode kuis hanya tampil jika kuis privat sudah punya kode -->
+        <?php if ($modeEdit && $nilaiForm['akses'] == 'privat' && $nilaiForm['kode'] !== '') { ?>
+            <div class="kolom-form kotak-kode">
+                <p>Kode Kuis (bagikan ke pelajar)</p>
+                <p class="kode-kuis"><strong><?= e($nilaiForm['kode']) ?></strong></p>
+            </div>
+        <?php } elseif ($nilaiForm['akses'] == 'privat') { ?>
+            <p class="teks-bantu">Kode kuis akan dibuat otomatis setelah kuis disimpan.</p>
+        <?php } ?>
+
+        <div class="baris-tombol">
+            <a href="kuis.php" class="tombol tombol-sekunder">Batal</a>
+            <button type="submit" name="simpan" value="1" class="tombol tombol-utama">Simpan</button>
+            <?php if ($modeEdit) { ?>
+                <button type="submit" name="lanjut_soal" value="1" class="tombol tombol-aksen">
+                    Simpan &amp; Kelola Soal
+                </button>
+            <?php } ?>
+        </div>
     </form>
 </main>
 <?php

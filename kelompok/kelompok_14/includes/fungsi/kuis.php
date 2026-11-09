@@ -651,3 +651,19 @@ function ambilHasilKuisPengajar($kuisId, $pengajarId) {
         'soal_tersulit'   => $soalTersulit
     ];
 }
+
+
+// Ambil catatan keputusan terakhir dari log_status_kuis
+function ambilCatatanStatusTerakhir($kuisId) {
+    global $pdo;
+
+    $sql = "SELECT catatan FROM log_status_kuis
+            WHERE kuis_id = ? AND status_ke IN ('ditolak', 'ditarik') AND catatan IS NOT NULL
+            ORDER BY dibuat_pada DESC, id DESC
+            LIMIT 1";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$kuisId]);
+    $catatan = $stmt->fetchColumn();
+
+    return $catatan ? $catatan : '';
+}

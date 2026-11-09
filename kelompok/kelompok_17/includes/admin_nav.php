@@ -5,10 +5,10 @@
 // Halaman yang sedang dibuka otomatis ditandai (underline tebal).
 
 $navSkrip = $_SERVER['SCRIPT_NAME'] ?? '';
-if (str_contains($navSkrip, '/admin/berita/')) {
-    $navAktif = 'berita';
-} elseif (str_contains($navSkrip, '/admin/aspirasi.php')) {
+if (str_contains($navSkrip, '/admin/aspirasi/')) {
     $navAktif = 'aspirasi';
+} elseif (str_contains($navSkrip, '/admin/berita/')) {
+    $navAktif = 'berita';
 } else {
     $navAktif = 'dashboard';
 }
@@ -16,7 +16,7 @@ if (str_contains($navSkrip, '/admin/berita/')) {
 $navMenu = [
     'dashboard' => ['Dashboard', '/admin/index.php'],
     'berita'    => ['Berita', '/admin/berita/index.php'],
-    'aspirasi'  => ['Aspirasi', '/admin/aspirasi.php'],
+    'aspirasi'  => ['Aspirasi', '/admin/aspirasi/index.php'],
 ];
 ?>
 <nav class="bg-teal-700 text-white">

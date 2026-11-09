@@ -40,7 +40,6 @@ $totalPages = max(1, (int) ceil($total / $perPage));
 $page = min($page, $totalPages);
 $offset = ($page - 1) * $perPage;
 
-// $perPage dan $offset sudah int hasil perhitungan, aman ditulis langsung.
 $sql = "SELECT p.id, p.sku, p.name, p.unit, p.selling_price, p.min_stock, p.is_active,
                c.name AS category_name,
                COALESCE(SUM(CASE WHEN b.expiry_date IS NULL OR b.expiry_date >= CURDATE()

@@ -25,7 +25,7 @@ $input = [
 ];
 
 try {
-    // ---- Validasi ----
+
     $productId = filter_var($input['product_id'], FILTER_VALIDATE_INT);
     if (!$productId) {
         throw new InvalidArgumentException('Pilih produk.');
@@ -65,7 +65,7 @@ try {
     }
     $cost = $input['cost_per_unit'];
 
-    $receivedAt = null; // null = pakai NOW() dari database
+    $receivedAt = null;
     if ($input['received_at'] !== '') {
         $dt = DateTime::createFromFormat('Y-m-d\TH:i', $input['received_at']);
         if (!$dt || $dt->format('Y-m-d\TH:i') !== $input['received_at']) {
@@ -87,7 +87,6 @@ try {
         }
     }
 
-    // ---- Transaksi: batch + movement IN harus berhasil bersama ----
     $pdo->beginTransaction();
     try {
         $insBatch = $pdo->prepare(

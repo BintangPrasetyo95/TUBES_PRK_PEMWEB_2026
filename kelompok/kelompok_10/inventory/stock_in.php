@@ -20,7 +20,6 @@ $recent = $pdo->query(
      LIMIT 10'
 )->fetchAll();
 
-// Input lama jika validasi gagal; bisa juga dipilih dari ?product=ID
 $old = $_SESSION['old_stock_in'] ?? null;
 unset($_SESSION['old_stock_in']);
 $preselect = (int) filter_input(INPUT_GET, 'product', FILTER_VALIDATE_INT);

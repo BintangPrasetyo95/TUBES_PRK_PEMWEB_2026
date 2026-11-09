@@ -8,7 +8,6 @@ require_role('admin');
 
 $pdo = db();
 
-// Mode ubah: ?edit=ID
 $editing = null;
 $editId = filter_input(INPUT_GET, 'edit', FILTER_VALIDATE_INT);
 if ($editId) {

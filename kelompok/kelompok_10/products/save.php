@@ -15,7 +15,6 @@ $pdo = db();
 $action = (string) ($_POST['action'] ?? 'save');
 $id = (int) filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT);
 
-// ---- Aktif/nonaktifkan (tidak ada DELETE fisik) ----
 if ($action === 'toggle') {
     try {
         if ($id <= 0) {
@@ -36,7 +35,6 @@ if ($action === 'toggle') {
     inventory_redirect('index.php');
 }
 
-// ---- Simpan (tambah/ubah) ----
 $input = [
     'category_id'   => trim((string) ($_POST['category_id'] ?? '')),
     'sku'           => strtoupper(trim((string) ($_POST['sku'] ?? ''))),
@@ -68,7 +66,7 @@ try {
             throw new InvalidArgumentException('Produk tidak ditemukan.');
         }
     }
-    // Kategori nonaktif hanya boleh dipertahankan, tidak boleh dipilih baru.
+
     $categoryChanged = $existing === null || (int) $existing['category_id'] !== $categoryId;
     if ((int) $category['is_active'] !== 1 && $categoryChanged) {
         throw new InvalidArgumentException('Kategori tersebut sedang nonaktif.');

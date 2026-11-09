@@ -36,7 +36,6 @@ $batches = $stmt->fetchAll();
 
 $products = $pdo->query('SELECT id, sku, name FROM products ORDER BY name')->fetchAll();
 
-/** Status batch: [label, kelas badge] */
 function batch_status(array $b): array
 {
     if ((int) $b['qty_remaining'] === 0) {

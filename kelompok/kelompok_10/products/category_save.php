@@ -30,7 +30,6 @@ try {
         inventory_redirect('categories.php');
     }
 
-    // action = save
     $name = trim((string) ($_POST['name'] ?? ''));
     $description = trim((string) ($_POST['description'] ?? ''));
 
@@ -45,7 +44,6 @@ try {
     }
     $descriptionValue = $description === '' ? null : $description;
 
-    // Cek nama unik (abaikan baris yang sedang diubah)
     $dup = $pdo->prepare('SELECT id FROM categories WHERE name = ? AND id <> ?');
     $dup->execute([$name, $editId ?: 0]);
     if ($dup->fetch()) {

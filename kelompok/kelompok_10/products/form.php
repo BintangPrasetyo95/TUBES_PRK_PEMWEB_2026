@@ -20,7 +20,6 @@ if ($id > 0) {
     }
 }
 
-// Input lama jika validasi sebelumnya gagal
 $old = $_SESSION['old_product'] ?? null;
 unset($_SESSION['old_product']);
 

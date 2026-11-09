@@ -17,9 +17,14 @@ try {
     }
 
     if (isset($_GET['q']) && !empty($_GET['q'])) {
-        $query .= " AND nama_obat LIKE ?";
-        $params[] = "%" . $_GET['q'] . "%";
-        $types .= "s";
+        $query .= " AND (nama_obat LIKE ? OR indikasi LIKE ?)";
+        
+        $keyword = "%" . $_GET['q'] . "%";
+        
+        $params[] = $keyword;
+        $params[] = $keyword;
+        
+        $types .= "ss";
     }
 
     $stmt = $conn->prepare($query);

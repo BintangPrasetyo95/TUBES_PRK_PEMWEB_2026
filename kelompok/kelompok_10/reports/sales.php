@@ -17,7 +17,6 @@ $navItems = [
 
 $pdo = db();
 
-// Mengambil filter.
 $startDate = is_string($_GET['start_date'] ?? null) ? trim($_GET['start_date']) : '';
 $endDate = is_string($_GET['end_date'] ?? null) ? trim($_GET['end_date']) : '';
 $invoice = is_string($_GET['invoice'] ?? null) ? trim($_GET['invoice']) : '';
@@ -26,7 +25,6 @@ $where = ["s.status = 'completed'"];
 $params = [];
 $errors = [];
 
-// Validasi tanggal.
 foreach (['start_date' => $startDate, 'end_date' => $endDate] as $field => $value) {
     if ($value === '') {
         continue;
@@ -38,18 +36,18 @@ foreach (['start_date' => $startDate, 'end_date' => $endDate] as $field => $valu
         $errors[] = $field === 'start_date'
             ? 'Tanggal awal tidak valid.'
             : 'Tanggal akhir tidak valid.';
-    } else {
-        $where[] = $field === 'start_date'
-            ? 's.sold_at >= :start_date'
-            : 's.sold_at < :end_date';
+        continue;
+    }
 
-        $params[$field] = $field === 'start_date'
-            ? $value . ' 00:00:00'
-            : date('Y-m-d', strtotime($value . ' +1 day')) . ' 00:00:00';
+    if ($field === 'start_date') {
+        $where[] = 's.sold_at >= :start_date';
+        $params['start_date'] = $value . ' 00:00:00';
+    } else {
+        $where[] = 's.sold_at < :end_date';
+        $params['end_date'] = date('Y-m-d', strtotime($value . ' +1 day')) . ' 00:00:00';
     }
 }
 
-// Validasi rentang tanggal.
 if (
     $startDate !== '' &&
     $endDate !== '' &&
@@ -59,22 +57,19 @@ if (
     $errors[] = 'Tanggal awal tidak boleh melebihi tanggal akhir.';
 }
 
-// Pencarian invoice.
 if ($invoice !== '') {
     $where[] = 's.invoice_no LIKE :invoice';
     $params['invoice'] = '%' . $invoice . '%';
 }
 
-// Kasir hanya melihat transaksi sendiri.
 if (!$isAdmin) {
     $where[] = 's.cashier_id = :cashier_id';
     $params['cashier_id'] = (int) $user['id'];
 }
 
-// Mengambil data penjualan.
 $sales = [];
 
-if (!$errors) {
+if (empty($errors)) {
     $stmt = $pdo->prepare("
         SELECT
             s.id,
@@ -99,7 +94,6 @@ require_once __DIR__ . '/../includes/header.php';
 <link rel="stylesheet" href="<?= e(app_url('assets/css/recommendations-reports.css')) ?>">
 
 <section class="reports-container">
-
     <h1>Laporan Penjualan</h1>
     <p class="reports-description">
         Daftar transaksi penjualan yang telah selesai.
@@ -110,7 +104,6 @@ require_once __DIR__ . '/../includes/header.php';
 
         <form method="GET" action="<?= e(app_url('reports/sales.php')) ?>">
             <div class="report-filters">
-
                 <div>
                     <label for="start_date">Tanggal Awal</label>
                     <input type="date" id="start_date" name="start_date"
@@ -131,13 +124,12 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
 
                 <button type="submit">Terapkan Filter</button>
-
                 <a href="<?= e(app_url('reports/sales.php')) ?>">Reset</a>
-
-                <a href="<?= e(app_url('reports/export-sales.php')) ?>?<?= e(http_build_query($_GET)) ?>">
-                    Export CSV
-                </a>
-
+                <a href="<?= e(app_url('reports/export-sales.php')) ?>?<?= e(http_build_query([
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'invoice' => $invoice,
+                ])) ?>">Export CSV</a>
             </div>
         </form>
     </section>
@@ -145,18 +137,13 @@ require_once __DIR__ . '/../includes/header.php';
     <section class="analytics-section">
         <h2>Data Penjualan</h2>
 
-        <?php if ($errors): ?>
-
+        <?php if (!empty($errors)): ?>
             <?php foreach ($errors as $error): ?>
                 <p class="report-error"><?= e($error) ?></p>
             <?php endforeach; ?>
-
-        <?php elseif (!$sales): ?>
-
+        <?php elseif (empty($sales)): ?>
             <p>Belum ada transaksi penjualan yang sesuai.</p>
-
         <?php else: ?>
-
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -170,7 +157,6 @@ require_once __DIR__ . '/../includes/header.php';
                             <th>Aksi</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         <?php foreach ($sales as $index => $sale): ?>
                             <tr>
@@ -190,10 +176,8 @@ require_once __DIR__ . '/../includes/header.php';
                     </tbody>
                 </table>
             </div>
-
         <?php endif; ?>
     </section>
-
 </section>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

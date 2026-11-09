@@ -10,15 +10,21 @@ $isAdmin = $user['role'] === 'admin';
 
 $pdo = db();
 
-// Mengambil filter dari URL.
-$startDate = trim($_GET['start_date'] ?? '');
-$endDate = trim($_GET['end_date'] ?? '');
-$invoice = trim($_GET['invoice'] ?? '');
+$startDate = is_string($_GET['start_date'] ?? null)
+    ? trim($_GET['start_date'])
+    : '';
+
+$endDate = is_string($_GET['end_date'] ?? null)
+    ? trim($_GET['end_date'])
+    : '';
+
+$invoice = is_string($_GET['invoice'] ?? null)
+    ? trim($_GET['invoice'])
+    : '';
 
 $where = ["s.status = 'completed'"];
 $params = [];
 
-// Validasi tanggal awal.
 if ($startDate !== '') {
     $date = DateTime::createFromFormat('!Y-m-d', $startDate);
 
@@ -31,7 +37,6 @@ if ($startDate !== '') {
     $params['start_date'] = $startDate . ' 00:00:00';
 }
 
-// Validasi tanggal akhir.
 if ($endDate !== '') {
     $date = DateTime::createFromFormat('!Y-m-d', $endDate);
 
@@ -40,11 +45,13 @@ if ($endDate !== '') {
         exit('Tanggal akhir tidak valid.');
     }
 
-    $where[] = 's.sold_at <= :end_date';
-    $params['end_date'] = $endDate . ' 23:59:59';
+    $where[] = 's.sold_at < :end_date';
+    $params['end_date'] = date(
+        'Y-m-d',
+        strtotime($endDate . ' +1 day')
+    ) . ' 00:00:00';
 }
 
-// Memastikan tanggal awal tidak melebihi tanggal akhir.
 if (
     $startDate !== '' &&
     $endDate !== '' &&
@@ -54,19 +61,16 @@ if (
     exit('Tanggal awal tidak boleh melebihi tanggal akhir.');
 }
 
-// Filter nomor invoice.
 if ($invoice !== '') {
     $where[] = 's.invoice_no LIKE :invoice';
     $params['invoice'] = '%' . $invoice . '%';
 }
 
-// Pembatasan transaksi untuk kasir.
 if (!$isAdmin) {
     $where[] = 's.cashier_id = :cashier_id';
     $params['cashier_id'] = (int) $user['id'];
 }
 
-// Mengambil data transaksi.
 $sql = "
     SELECT
         s.invoice_no,
@@ -86,19 +90,14 @@ $sql = "
 
 $query = $pdo->prepare($sql);
 $query->execute($params);
-
 $sales = $query->fetchAll();
 
-// Menyiapkan file CSV.
 $filename = 'laporan-penjualan-' . date('Y-m-d-His') . '.csv';
 
 header('Content-Type: text/csv; charset=UTF-8');
-header(
-    'Content-Disposition: attachment; filename="' . $filename . '"'
-);
+header('Content-Disposition: attachment; filename="' . $filename . '"');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
-// Membuat output CSV.
 $output = fopen('php://output', 'w');
 
 if ($output === false) {
@@ -106,10 +105,16 @@ if ($output === false) {
     exit('Gagal membuat file CSV.');
 }
 
-// BOM UTF-8 agar karakter terbaca baik di Excel.
 fwrite($output, "\xEF\xBB\xBF");
 
-// Header kolom.
+$safeCsvValue = static function (mixed $value): string {
+    $value = (string) $value;
+
+    return preg_match('/^[\s]*[=+\-@]/u', $value)
+        ? "'" . $value
+        : $value;
+};
+
 fputcsv($output, [
     'No.',
     'Nomor Invoice',
@@ -123,18 +128,6 @@ fputcsv($output, [
     'Kembalian',
 ]);
 
-// Mencegah isi CSV diperlakukan sebagai formula spreadsheet.
-$safeCsvValue = static function (mixed $value): string {
-    $value = (string) $value;
-
-    if (preg_match('/^[\s]*[=+\-@]/u', $value)) {
-        return "'" . $value;
-    }
-
-    return $value;
-};
-
-// Mengisi baris CSV.
 foreach ($sales as $index => $sale) {
     fputcsv($output, [
         $index + 1,

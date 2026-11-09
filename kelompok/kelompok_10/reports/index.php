@@ -17,16 +17,14 @@ $navItems = [
 
 $pdo = db();
 
-// Filter transaksi berdasarkan status dan hak akses.
 $where = "s.status = 'completed'";
 $params = [];
 
 if (!$isAdmin) {
-    $where .= " AND s.cashier_id = :cashier_id";
+    $where .= ' AND s.cashier_id = :cashier_id';
     $params['cashier_id'] = (int) $user['id'];
 }
 
-// Ringkasan omzet dan jumlah transaksi.
 $stmt = $pdo->prepare("
     SELECT
         COALESCE(SUM(s.grand_total), 0) AS omzet,
@@ -37,7 +35,6 @@ $stmt = $pdo->prepare("
 $stmt->execute($params);
 $summary = $stmt->fetch();
 
-// Total HPP.
 $stmt = $pdo->prepare("
     SELECT COALESCE(SUM(si.qty * si.cost_price_snapshot), 0)
     FROM sale_items si
@@ -45,13 +42,12 @@ $stmt = $pdo->prepare("
     WHERE $where
 ");
 $stmt->execute($params);
-$hpp = (float) $stmt->fetchColumn();
 
 $omzet = (float) $summary['omzet'];
 $transaksi = (int) $summary['transaksi'];
+$hpp = (float) $stmt->fetchColumn();
 $labaKotor = $omzet - $hpp;
 
-// Lima produk terlaris.
 $stmt = $pdo->prepare("
     SELECT p.name, SUM(si.qty) AS total_terjual
     FROM sale_items si
@@ -65,7 +61,6 @@ $stmt = $pdo->prepare("
 $stmt->execute($params);
 $bestSellers = $stmt->fetchAll();
 
-// Produk aktif tanpa transaksi selesai selama 30 hari.
 $slowMoving = [];
 
 if ($isAdmin) {
@@ -80,11 +75,15 @@ if ($isAdmin) {
               WHERE si.product_id = p.id
                 AND s.status = 'completed'
                 AND s.sold_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                AND s.sold_at <= NOW()
           )
         ORDER BY p.name
         LIMIT 10
     ")->fetchAll();
 }
+
+$rupiah = static fn(float $value): string =>
+    'Rp ' . number_format($value, 0, ',', '.');
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -92,7 +91,6 @@ require_once __DIR__ . '/../includes/header.php';
 <link rel="stylesheet" href="<?= e(app_url('assets/css/recommendations-reports.css')) ?>">
 
 <section class="reports-container">
-
     <h1>Dashboard Analytics</h1>
 
     <p class="reports-description">
@@ -104,10 +102,10 @@ require_once __DIR__ . '/../includes/header.php';
     <section class="analytics-cards">
         <?php
         $cards = [
-            ['Total Omzet', 'Rp ' . number_format($omzet, 0, ',', '.')],
+            ['Total Omzet', $rupiah($omzet)],
             ['Transaksi Selesai', number_format($transaksi, 0, ',', '.')],
-            ['Total HPP', 'Rp ' . number_format($hpp, 0, ',', '.')],
-            ['Laba Kotor', 'Rp ' . number_format($labaKotor, 0, ',', '.')],
+            ['Total HPP', $rupiah($hpp)],
+            ['Laba Kotor', $rupiah($labaKotor)],
         ];
         ?>
 
@@ -122,7 +120,7 @@ require_once __DIR__ . '/../includes/header.php';
     <section class="analytics-section">
         <h2>5 Produk Terlaris</h2>
 
-        <?php if (!$bestSellers): ?>
+        <?php if (empty($bestSellers)): ?>
             <p>Belum ada data penjualan.</p>
         <?php else: ?>
             <div class="table-responsive">
@@ -151,7 +149,7 @@ require_once __DIR__ . '/../includes/header.php';
             <h2>Produk Tidak Terjual Selama 30 Hari</h2>
             <p>Produk aktif tanpa transaksi selesai dalam 30 hari terakhir.</p>
 
-            <?php if (!$slowMoving): ?>
+            <?php if (empty($slowMoving)): ?>
                 <p>Tidak ada produk yang memenuhi kriteria.</p>
             <?php else: ?>
                 <div class="table-responsive">
@@ -175,7 +173,6 @@ require_once __DIR__ . '/../includes/header.php';
             <?php endif; ?>
         </section>
     <?php endif; ?>
-
 </section>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

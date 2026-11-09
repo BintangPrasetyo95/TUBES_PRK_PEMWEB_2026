@@ -28,6 +28,7 @@ $productQuery = $pdo->query("
             SELECT SUM(sb.qty_remaining)
             FROM stock_batches sb
             WHERE sb.product_id = p.id
+             AND (sb.expiry_date IS NULL OR sb.expiry_date >= CURDATE())
         ), 0) AS available_stock,
 
         COALESCE((

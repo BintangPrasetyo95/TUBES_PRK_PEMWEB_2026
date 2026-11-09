@@ -24,7 +24,8 @@ $products = $pdo->query("
                    NULLIF(SUM(sb.qty_remaining), 0)
             FROM stock_batches sb
             WHERE sb.product_id = p.id
-              AND sb.qty_remaining > 0
+                AND sb.qty_remaining > 0
+                AND (sb.expiry_date IS NULL OR sb.expiry_date >= CURDATE())
         ) AS average_hpp
     FROM products p
     WHERE p.is_active = 1

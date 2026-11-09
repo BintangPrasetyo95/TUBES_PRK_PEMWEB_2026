@@ -21,11 +21,11 @@ INSERT INTO SISWA (id_siswa, id_kelas, nisn, nama_siswa, jenis_kelamin) VALUES
 (7,3,'0000000007','Fajar Nugraha','Laki-laki'), (8,3,'0000000008','Nadia Maharani','Perempuan');
 
 INSERT INTO PENILAIAN (id_penilaian, id_penugasan, judul_penilaian, jenis_komponen, tenggat_waktu, tanggal_dibuat) VALUES
-(1, 1, Tugas Rekapitulasi Bab 1, Tugas, 2026-10-15 23:59:00, 2026-10-01 08:00:00),
-(2, 1, Ujian Akhir Semester Ganjil, UAS, 2026-11-20 12:00:00, '2026-11-01 08:00:00')
-ON DUPLICATE KEY UPDATE `judul_penilaian` = VALUES(`judul_penilaian`);
+(1, 1, 'Tugas Rekapitulasi Bab 1', 'Tugas', '2026-10-15 23:59:00', '2026-10-01 08:00:00'),
+(2, 1, 'Ujian Akhir Semester Ganjil', 'UAS', '2026-11-20 12:00:00', '2026-11-01 08:00:00')
+ON DUPLICATE KEY UPDATE judul_penilaian = VALUES(judul_penilaian);
 
-INSERT INTO NILAI_DAN_PENGUMPULAN (`id_siswa`, `id_penilaian`, `waktu_pengumpulan`, `status_pengumpulan`, `nilai`) VALUES
+INSERT INTO NILAI_DAN_PENGUMPULAN (id_siswa, id_penilaian, waktu_pengumpulan, status_pengumpulan, nilai) VALUES
 (1, 1, '2026-10-14 10:00:00', 'Tepat Waktu', 95),
 (1, 2, '2026-11-20 10:00:00', 'Tepat Waktu', 90),
 (2, 1, '2026-10-14 11:00:00', 'Tepat Waktu', 85),
@@ -42,7 +42,6 @@ INSERT INTO NILAI_DAN_PENGUMPULAN (`id_siswa`, `id_penilaian`, `waktu_pengumpula
 (7, 2, '2026-11-20 09:45:00', 'Tepat Waktu', 94),
 (8, 1, '2026-10-16 15:00:00', 'Terlambat', 60),
 (8, 2, '2026-11-20 10:15:00', 'Tepat Waktu', 88)
-ON DUPLICATE KEY UPDATE `nilai` = VALUES(`nilai`);
+ON DUPLICATE KEY UPDATE nilai = VALUES(nilai);
 
-Select * from nilai_dan_pengumpulan;
 COMMIT;

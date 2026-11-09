@@ -83,3 +83,85 @@ $nilaiForm = [
 
 $errors = [];
 $pesanErrorUmum = '';
+
+// Proses saat form dikirim (POST)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Cek token CSRF
+    if (function_exists('verifikasiCsrf')) {
+        verifikasiCsrf();
+    }
+
+    // Ambil input dari form
+    $nilaiForm['judul']        = trim($_POST['judul'] ?? '');
+    $nilaiForm['deskripsi']    = trim($_POST['deskripsi'] ?? '');
+    $nilaiForm['topik_id']     = (int) ($_POST['topik_id'] ?? 0);
+    $nilaiForm['tingkat_id']   = (int) ($_POST['tingkat_id'] ?? 0);
+    $nilaiForm['durasi_menit'] = (int) ($_POST['durasi_menit'] ?? 15);
+    $nilaiForm['akses']        = $_POST['akses'] ?? 'publik';
+
+    // Validasi per kolom supaya error bisa ditampilkan di bawah masing-masing input
+    if ($nilaiForm['judul'] === '') {
+        $errors['judul'] = 'Judul kuis wajib diisi.';
+    } elseif (strlen($nilaiForm['judul']) < 3 || strlen($nilaiForm['judul']) > 150) {
+        $errors['judul'] = 'Judul kuis harus 3 sampai 150 karakter.';
+    }
+
+    if ($nilaiForm['topik_id'] <= 0) {
+        $errors['topik_id'] = 'Silakan pilih topik kuis.';
+    }
+
+    if ($nilaiForm['tingkat_id'] <= 0) {
+        $errors['tingkat_id'] = 'Silakan pilih tingkat jenjang.';
+    }
+
+    if ($nilaiForm['durasi_menit'] < 1 || $nilaiForm['durasi_menit'] > 240) {
+        $errors['durasi_menit'] = 'Durasi pengerjaan harus antara 1 sampai 240 menit.';
+    }
+
+    if ($nilaiForm['akses'] !== 'publik' && $nilaiForm['akses'] !== 'privat') {
+        $errors['akses'] = 'Pilih jenis akses publik atau privat.';
+    }
+
+    // Kalau tidak ada error validasi, simpan ke database
+    if (empty($errors)) {
+        if ($modeEdit) {
+            $hasil = editKuis($kuisId, $pengajarId, $nilaiForm);
+            if ($hasil['berhasil']) {
+                if (function_exists('flash')) {
+                    flash('sukses', 'Perubahan kuis berhasil disimpan.');
+                }
+
+                // Cek apakah pengajar menekan tombol lanjut kelola soal
+                $tujuan = isset($_POST['lanjut_soal'])
+                    ? 'soal.php?kuis_id=' . $kuisId
+                    : 'kuis.php';
+
+                if (function_exists('redirect')) {
+                    redirect('pengajar/' . $tujuan);
+                }
+                header('Location: ' . $tujuan);
+                exit;
+            } else {
+                $pesanErrorUmum = $hasil['pesan'] ?? 'Gagal memperbarui kuis.';
+            }
+        } else {
+            $hasil = tambahKuis($pengajarId, $nilaiForm);
+            if ($hasil['berhasil']) {
+                $idBaru = (int) $hasil['kuis_id'];
+                if (function_exists('flash')) {
+                    flash('sukses', 'Draft kuis berhasil dibuat. Silakan tambahkan soal.');
+                }
+
+                // Setelah buat kuis baru, mengarah ke halaman kelola soal
+                $tujuan = 'soal.php?kuis_id=' . $idBaru;
+                if (function_exists('redirect')) {
+                    redirect('pengajar/' . $tujuan);
+                }
+                header('Location: ' . $tujuan);
+                exit;
+            } else {
+                $pesanErrorUmum = $hasil['pesan'] ?? 'Gagal membuat kuis baru.';
+            }
+        }
+    }
+}

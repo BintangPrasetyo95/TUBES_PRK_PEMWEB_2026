@@ -119,7 +119,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
       Suara
       <span class="scribble">Kritis.
         <svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M 15 50 C 10 20, 130 8, 235 15 C 285 22, 290 60, 205 74 C 120 84, 15 75, 25 45 C 32 25, 95 18, 160 20"/>
+          <path d=" M 15 50 C 10 20, 130 8, 235 15 C 285 22, 290 60, 205 74 C 120 84, 15 75, 25 45 C 32 25, 95 18, 160 20"/>
         </svg>
       </span>
       <span class="soft">Kabar Terbuka.</span>
@@ -255,7 +255,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
     <p class="mt-4 max-w-lg text-amber-100">Sampaikan masukan Anda secara rinci. Laporan dapat disampaikan dengan nama terang maupun secara anonim, dan status tindak lanjutnya dapat dipantau berkala.</p>
     <div class="mt-7 flex flex-wrap gap-4">
       <a href="user/dashboard.php" class="btn btn-ink">Sampaikan Aspirasi Sekarang &rarr;</a>
-      <a href="#berita" class="btn btn-light">Pelajari Berita Kampus</a>
+      <a href="#berita" class="btn btn-light">Baca Berita Kampus</a>
     </div>
   </section>
 

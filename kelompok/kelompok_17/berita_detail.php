@@ -148,7 +148,7 @@ include_once __DIR__ . '/components/header.php';
                 </div>
 
                 <button type="submit" name="submit_komentar"
-                    class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-lg shadow-sm transition-all">
+                    class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium text-xs rounded-lg shadow-sm transition-all">
                     Kirim Komentar
                 </button>
             </form>

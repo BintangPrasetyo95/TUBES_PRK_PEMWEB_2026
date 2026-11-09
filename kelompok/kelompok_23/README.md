@@ -174,8 +174,7 @@ cd kelompok/kelompok_23
 
 ### Langkah 5 – Buat Database
 1. Buka **phpMyAdmin** melalui browser (`http://localhost/phpmyadmin`).
-2. Buat database baru bernama `febmart`.
-3. Impor file `database/schema.sql` ke dalam database `febmart`.
+2. Impor satu file `database/febmart.sql`. File ini membuat database, tabel, akun awal, serta data contoh produk dan transaksi.
 
 ### Langkah 6 – Konfigurasi Database
 Sesuaikan konfigurasi koneksi database pada file:

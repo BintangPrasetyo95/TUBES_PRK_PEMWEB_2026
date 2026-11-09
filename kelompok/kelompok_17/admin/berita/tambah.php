@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php
     $action = 'tambah.php';
     $judulHalaman = 'Tambah Berita';
-    include __DIR__ . '/../../includes/form_berita.php';
+    include __DIR__ . '/../../components/form_berita.php';
     ?>
 </main>
 </body>

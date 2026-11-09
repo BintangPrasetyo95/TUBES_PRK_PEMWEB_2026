@@ -6,12 +6,13 @@
 // -------------------------------------------------------------
 // 1. ENDPOINT BASE URL
 // -------------------------------------------------------------
+const APP_ROOT = new URL('../', document.currentScript.src);
 const API = {
-    aspirasi: 'api/aspirasi.php',
-    berita: 'api/berita.php',
-    kategori: 'api/kategori.php',
-    komentar: 'api/komentar.php',
-    users: 'api/users.php'
+    aspirasi: new URL('api/aspirasi.php', APP_ROOT).href,
+    berita: new URL('api/berita.php', APP_ROOT).href,
+    kategori: new URL('api/kategori.php', APP_ROOT).href,
+    komentar: new URL('api/komentar.php', APP_ROOT).href,
+    users: new URL('api/users.php', APP_ROOT).href
 };
 
 // -------------------------------------------------------------
@@ -19,14 +20,14 @@ const API = {
 // -------------------------------------------------------------
 
 /**
- * Menampilkan Alert / Toast Notifikasi Dinamis
+ * Menampilkan Alert / Toast Notifikasi Dinamisg
  */
 function showAlert(message, type = 'success') {
     const alertContainer = document.getElementById('alert-box');
     if (!alertContainer) return;
 
     alertContainer.textContent = message;
-    alertContainer.className = `alert-box alert-${type}`;
+    alertContainer.className = `mb-4 rounded-lg p-3 ${type === 'danger' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`;
     alertContainer.style.display = 'block';
 
     setTimeout(() => {
@@ -43,20 +44,37 @@ function showAlert(message, type = 'success') {
  */
 async function loadAspirasi(keyword = '') {
     const container = document.getElementById('tabel-aspirasi') || document.getElementById('container-aspirasi');
-    if (!container) return;
+    const tbody = document.getElementById('tabel-body-aspirasi');
+    if (!container && !tbody) return;
 
     try {
         const response = await fetch(API.aspirasi);
         const result = await response.json();
 
-        if (response.ok && result.status === 'success') {
+        if (response.ok && result.status === 'success' && Array.isArray(result.data)) {
             renderAspirasi(result.data, keyword);
         } else {
-            showAlert(result.message || 'Gagal mengambil data aspirasi', 'danger');
+            const message = result.message || 'Gagal mengambil data aspirasi';
+            showAlert(message, 'danger');
+            setAspirasiTableMessage(message);
         }
     } catch (err) {
         showAlert(`Kesalahan koneksi aspirasi: ${err.message}`, 'danger');
+        setAspirasiTableMessage('Data aspirasi gagal dimuat. Muat ulang halaman untuk mencoba lagi.');
     }
+}
+
+function setAspirasiTableMessage(message) {
+    const tbody = document.getElementById('tabel-body-aspirasi');
+    if (!tbody) return;
+
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.className = 'p-6 text-center text-red-700';
+    cell.textContent = message;
+    row.appendChild(cell);
+    tbody.replaceChildren(row);
 }
 
 /**
@@ -68,30 +86,77 @@ function renderAspirasi(list = [], keyword = '') {
 
     // Jika menggunakan tabel (Admin View)
     if (tbody) {
-        tbody.innerHTML = '';
+        tbody.replaceChildren();
         if (list.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center">Belum ada aspirasi.</td></tr>';
-            return;
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 5;
+            cell.className = 'p-6 text-center text-slate-500';
+            cell.textContent = 'Belum ada aspirasi.';
+            row.appendChild(cell);
+            tbody.appendChild(row);
         }
 
-        list.forEach((item, index) => {
+        list.forEach(item => {
             const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td><strong>${item.judul_aspirasi}</strong></td>
-                <td><span class="badge badge-category">${item.nama_kategori}</span></td>
-                <td>${item.pengirim}</td>
-                <td>${new Date(item.tanggal_kirim).toLocaleDateString('id-ID')}</td>
-                <td><span class="status-${item.status}">${item.status}</span></td>
-                <td>
-                    <select onchange="updateStatusAspirasi(${item.id_aspirasi}, this.value)" class="form-select-sm">
-                        <option value="menunggu" ${item.status === 'menunggu' ? 'selected' : ''}>Menunggu</option>
-                        <option value="ditinjau" ${item.status === 'ditinjau' ? 'selected' : ''}>Ditinjau</option>
-                        <option value="selesai" ${item.status === 'selesai' ? 'selected' : ''}>Selesai</option>
-                    </select>
-                    <button class="btn btn-danger btn-sm" onclick="deleteAspirasi(${item.id_aspirasi})">Hapus</button>
-                </td>
-            `;
+            tr.className = 'border-t align-top';
+            const pengirim = item.pengirim || (Number(item.is_anonim) === 1 ? 'Anonim' : item.nama_lengkap || '-');
+            const tanggal = new Date(item.tanggal_kirim);
+            const cells = [
+                item.judul_aspirasi,
+                item.nama_kategori || '-',
+                pengirim,
+                Number.isNaN(tanggal.getTime()) ? '-' : tanggal.toLocaleString('id-ID')
+            ];
+            cells.forEach(value => {
+                const cell = document.createElement('td');
+                cell.className = 'p-3';
+                cell.textContent = value;
+                tr.appendChild(cell);
+            });
+
+            const statusCell = document.createElement('td');
+            statusCell.className = 'p-3';
+            const form = document.createElement('form');
+            form.className = 'flex items-center gap-2';
+            form.dataset.statusForm = '';
+
+            const idInput = document.createElement('input');
+            idInput.type = 'hidden';
+            idInput.name = 'id_aspirasi';
+            idInput.value = item.id_aspirasi;
+            form.appendChild(idInput);
+
+            const select = document.createElement('select');
+            select.name = 'status';
+            select.className = 'border rounded px-2 py-1';
+            select.setAttribute('aria-label', `Status aspirasi: ${item.judul_aspirasi}`);
+            const statuses = [
+                ['menunggu', 'Menunggu'],
+                ['ditolak', 'Ditolak'],
+                ['publikasi', 'Publikasi'],
+                ['ditinjau', 'Ditinjau'],
+                ['selesai', 'Selesai']
+            ];
+            if (!statuses.some(([value]) => value === item.status)) {
+                statuses.push([item.status, `${item.status} (status lama)`]);
+            }
+            statuses.forEach(([value, label]) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                option.selected = item.status === value;
+                select.appendChild(option);
+            });
+            form.appendChild(select);
+
+            const submit = document.createElement('button');
+            submit.type = 'submit';
+            submit.className = 'bg-teal-600 text-white px-3 py-1 rounded hover:bg-teal-700';
+            submit.textContent = 'Simpan';
+            form.appendChild(submit);
+            statusCell.appendChild(form);
+            tr.appendChild(statusCell);
             tbody.appendChild(tr);
         });
     }
@@ -160,9 +225,18 @@ if (formAspirasi) {
  */
 async function updateStatusAspirasi(idAspirasi, newStatus) {
     try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (!csrfToken) {
+            throw new Error('Token CSRF tidak ditemukan. Muat ulang halaman.');
+        }
+
         const response = await fetch(`${API.aspirasi}?id=${idAspirasi}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken
+            },
             body: JSON.stringify({ status: newStatus })
         });
         const result = await response.json();
@@ -352,6 +426,23 @@ if (formKomentar) {
 // 6. INISIALISASI SAAT HALAMAN SELESAI DIMUAT
 // -------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+    const aspirasiTableBody = document.getElementById('tabel-body-aspirasi');
+    if (aspirasiTableBody) {
+        aspirasiTableBody.addEventListener('submit', event => {
+            if (!(event.target instanceof HTMLFormElement) || !event.target.matches('[data-status-form]')) return;
+            event.preventDefault();
+
+            const id = event.target.elements.namedItem('id_aspirasi')?.value;
+            const status = event.target.elements.namedItem('status')?.value;
+            if (!id || !status) {
+                showAlert('ID atau status aspirasi tidak valid.', 'danger');
+                return;
+            }
+
+            updateStatusAspirasi(id, status);
+        });
+    }
+
     loadAspirasi();
     loadBerita();
 });

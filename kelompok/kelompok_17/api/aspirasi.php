@@ -14,6 +14,18 @@ require_once __DIR__ . '/../config/database.php';
 $method = $_SERVER['REQUEST_METHOD'];
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
+if ($method === 'PUT') {
+    require_once __DIR__ . '/../includes/auth_admin.php';
+    require_once __DIR__ . '/../includes/csrf.php';
+
+    $csrfHeader = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!is_string($csrfHeader) || !hash_equals(csrf_token(), $csrfHeader)) {
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Token CSRF tidak valid. Muat ulang halaman lalu coba lagi.']);
+        exit;
+    }
+}
+
 switch ($method) {
     case 'GET':
         handleGet($pdo, $id);
@@ -106,12 +118,34 @@ function handlePut(PDO $pdo, ?int $id): void {
         return;
     }
 
-    $input = json_decode(file_get_contents('php://input'), true) ?? [];
+    $input = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($input)) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Body permintaan harus berupa JSON object.']);
+        return;
+    }
     
-    // Jika hanya ingin memperbarui status (oleh Admin)
+    // Status can only use values supported by the aspirasi schema.
     if (isset($input['status'])) {
+        $status = is_string($input['status']) ? trim($input['status']) : '';
+        $statusValid = ['menunggu', 'ditolak', 'publikasi', 'ditinjau', 'selesai'];
+        if (!in_array($status, $statusValid, true)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'Status aspirasi tidak valid.']);
+            return;
+        }
+
         $stmt = $pdo->prepare('UPDATE aspirasi SET status = :status WHERE id_aspirasi = :id');
-        $stmt->execute([':id' => $id, ':status' => trim($input['status'])]);
+        $stmt->execute([':id' => $id, ':status' => $status]);
+        if ($stmt->rowCount() === 0) {
+            $check = $pdo->prepare('SELECT 1 FROM aspirasi WHERE id_aspirasi = :id');
+            $check->execute([':id' => $id]);
+            if (!$check->fetchColumn()) {
+                http_response_code(404);
+                echo json_encode(['status' => 'error', 'message' => 'Aspirasi tidak ditemukan.']);
+                return;
+            }
+        }
         echo json_encode(['status' => 'success', 'message' => 'Status aspirasi berhasil diperbarui.']);
         return;
     }

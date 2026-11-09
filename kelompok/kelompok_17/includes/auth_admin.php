@@ -20,12 +20,24 @@ function admin_url(string $path): string
 }
 
 if (!isset($_SESSION['id_user'])) {
+    if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
+        http_response_code(401);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['status' => 'error', 'message' => 'Sesi login berakhir. Silakan login kembali.']);
+        exit;
+    }
+
     header('Location: ' . admin_url('/auth/login.php'));
     exit;
 }
 
 if (($_SESSION['role'] ?? '') !== 'admin') {
     http_response_code(403);
+    if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['status' => 'error', 'message' => 'Akses ditolak: halaman ini hanya untuk admin.']);
+        exit;
+    }
     exit('Akses ditolak: halaman ini hanya untuk admin.');
 }
 

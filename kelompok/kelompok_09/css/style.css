@@ -379,30 +379,218 @@ main {
   background: transparent;
 }
 
-/* 6. Opsi Remember Me & Forget Password */
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-  color: #1c1c1c;
-  margin: 20px 4px 28px;
+/* Form pendaftaran */
+.register-page .login-wrapper {
+  box-sizing: border-box;
+  min-height: 100vh;
+  gap: clamp(0px, 3vw, 40px);
+  padding: clamp(28px, 6vw, 72px) 7%;
 }
 
-.remember-me {
+.register-page .login-illustration {
+  min-width: 0;
+}
+
+.register-page .login-illustration img {
+  filter: drop-shadow(0 18px 24px rgba(59, 10, 18, 0.1));
+}
+
+.register-page .login-card {
+  box-sizing: border-box;
+  max-width: 480px;
+  padding: clamp(28px, 4vw, 42px);
+}
+
+.register-page .login-title {
+  margin: 0 0 26px;
+}
+
+.register-page .grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.register-page .input-group {
+  box-sizing: border-box;
+  min-width: 0;
+  margin-bottom: 16px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.register-page .input-group:focus-within {
+  border-color: rgba(155, 29, 48, 0.45);
+  box-shadow: 0 0 0 4px rgba(155, 29, 48, 0.08);
+}
+
+.register-page .input-group input {
+  min-width: 0;
+  font: inherit;
+}
+
+.register-page .custom-select {
+  position: relative;
+  z-index: 1;
+  overflow: visible;
+  padding: 0 20px;
+}
+
+.register-page .custom-select:focus-within,
+.register-page .custom-select.is-open {
+  z-index: 5;
+}
+
+.register-page .custom-select > i:first-child {
+  flex: 0 0 auto;
+  margin-right: 12px;
+}
+
+.register-page .custom-select.is-open {
+  border-color: var(--darah);
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 0 0 3px rgba(101, 189, 178, 0.12);
+}
+
+.register-page .select-trigger {
+  width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  color: #333;
+  text-align: left;
+  background: transparent;
   cursor: pointer;
 }
 
+.register-page .select-value {
+  overflow: hidden;
+  color: #77808c;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.register-page .select-trigger[aria-invalid="true"] .select-value {
+  color: var(--darah);
+}
+
+.register-page .select-trigger:focus-visible {
+  outline: 0;
+}
+
+.register-page .select-chevron {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.75rem !important;
+  transition: transform 0.2s ease;
+}
+
+.register-page .select-trigger[aria-expanded="true"] .select-chevron {
+  transform: rotate(180deg);
+}
+
+.register-page .select-menu {
+  position: absolute;
+  top: calc(100% - 1px);
+  right: -1px;
+  left: -1px;
+  z-index: 10;
+  display: grid;
+  gap: 2px;
+  padding: 7px 9px 9px;
+  border: 1px solid var(--darah);
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: #fff;
+  box-shadow: 0 10px 20px rgba(40, 74, 79, 0.1);
+}
+
+.register-page .select-menu[hidden] {
+  display: none;
+}
+
+.register-page .select-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 8px;
+  color: #334155;
+  font: inherit;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.register-page .select-option:hover,
+.register-page .select-option:focus-visible {
+  outline: 0;
+  color: #276f68;
+  background: #e8f7f4;
+}
+
+.register-page .select-option[aria-checked="true"] {
+  color: #276f68;
+  background: #e8f7f4;
+}
+
+.register-page .form-options {
+  color: #5f5254;
+}
+
+.register-page .form-options {
+  margin: 4px 0 22px;
+}
+
+/* 6. Opsi Remember Me & Forget Password */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin: 18px 0 26px;
+    padding: 0 6px; /* Memberi sedikit jarak agar tidak terlalu mepet ujung */
+    font-size: 0.85rem;
+}
 .forget-link {
-  color: #1c1c1c;
-  text-decoration: none;
+    color: #4a5568;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
 .forget-link:hover {
-  text-decoration: underline;
+    color: #e6192e;
+    text-decoration: underline;
+}
+
+/* Teks Daftar di bawah tombol Masuk */
+.register-prompt {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 0.88rem;
+    color: #64748b;
+}
+
+.register-prompt a {
+    color: var(--darah); /* Atau #030a4c mengikuti warna tombol */
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 4px;
+}
+
+.register-prompt a:hover {
+    text-decoration: underline;
 }
 
 /* 7. Tombol Masuk */

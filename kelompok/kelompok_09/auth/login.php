@@ -74,7 +74,7 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="login-wrapper">
     <!-- SISI KIRI: Tampilan Gambar -->
     <div class="login-illustration">
-        <img src="<?= base_url('assets/donor1.jpg') ?>" alt="Ilustrasi OneBlood">
+        <img src="<?= base_url('assets/donor3.jpg') ?>" alt="Ilustrasi OneBlood">
     </div>
 
     <!-- SISI KANAN: Tampilan Kartu Login -->
@@ -101,16 +101,17 @@ require_once __DIR__ . '/../includes/header.php';
                     <input type="password" id="passwordInput" name="password" placeholder="Password" required>
                 </div>
 
-                <div class="form-options">
+                 <div class="form-options">
                     <label class="remember-me">
                         <input type="checkbox" name="remember">
-                        <span>Remember me</span>
+                        <span>Ingat saya</span>
                     </label>
-                    <a href="<?= base_url('auth/register.php') ?>" class="forget-link">Belum punya akun? Daftar</a>
+                    <a href="#" class="forget-link">Lupa password?</a>
                 </div>
-
-                <!-- Tombol Submit -->
                 <button type="submit" class="btn-login">Masuk</button>
+                <div class="register-prompt">
+                    Belum punya akun? <a href="<?= base_url('auth/register.php') ?>">Daftar sekarang</a>
+                </div>
             </form>
         </div>
     </div>

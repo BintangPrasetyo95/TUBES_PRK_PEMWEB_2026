@@ -28,7 +28,8 @@ class Database
             );
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $exception) {
-            echo "Connection error: " . $exception->getMessage();
+            error_log("Koneksi database gagal: " . $exception->getMessage());
+            throw $exception;
         }
 
         return $this->conn;
@@ -39,6 +40,5 @@ class Database
         http_response_code($status);
         header("Content-Type: application/json; charset=UTF-8");
         echo json_encode($data);
-        exit;
     }
 }

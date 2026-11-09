@@ -1,11 +1,44 @@
+
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Memeriksa apakah pengguna sudah login
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+// Memeriksa role pengguna
+$role = $_SESSION['role'] ?? '';
+
+if (!in_array($role, ['admin', 'kasir'], true)) {
+    session_unset();
+    session_destroy();
+
+    header("Location: login.php");
+    exit;
+}
+
 require_once 'config/database.php';
 
 // 1. Tangkap parameter page dari URL, default ke 'dashboard'
-$page = $_GET['page'] ?? 'dashboard';
+$page = $_GET['page'] ?? null;
+
+// Menentukan halaman default berdasarkan role pengguna
+if ($page === null) {
+    $page = ($role === 'kasir') ? 'kasir' : 'dashboard';
+}
+
+// Membatasi akses halaman berdasarkan role pengguna
+if (
+    $role === 'kasir' &&
+    in_array($page, ['dashboard', 'produk'], true)
+) {
+    http_response_code(403);
+    exit("Akses ditolak! Halaman ini hanya dapat diakses Admin.");
+}
 
 // 2. Tentukan judul halaman dinamis untuk Topbar
 $titles = [

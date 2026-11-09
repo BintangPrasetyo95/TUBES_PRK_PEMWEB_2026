@@ -74,10 +74,10 @@ CREATE TABLE payments (
 -- DATA DUMMY AWAL (Agar Dashboard Tidak Kosong)
 -- ==========================================
 
--- Password default: admin123 (menggunakan MD5/Bcrypt nanti diatur Anggota 2, ini contoh teks)
+-- Password default: admin123 dan kasir123 (menggunakan Bcrypt password_hash PHP)
 INSERT INTO users (nama_lengkap, username, password, role) VALUES
-('Administrator Utama', 'admin', 'admin123', 'admin'),
-('Kasir Shift Pagi', 'kasir1', 'kasir123', 'kasir');
+('Administrator Utama', 'admin', '$2y$10$0q04.g5GKKC9tpxB3kYShediyyCjO2xhMkQPFry/aNuG2XyQg17qu', 'admin'),
+('Kasir Shift Pagi', 'kasir1', '$2y$10$AvYdjjitDPzYVLo1f6sze.3a2FhfgV91uIDaLKM3rxcm6Lap1okh.', 'kasir');
 
 INSERT INTO categories (nama_kategori, deskripsi) VALUES
 ('Kopi & Espresso', 'Minuman berbasis espresso panas dan dingin'),

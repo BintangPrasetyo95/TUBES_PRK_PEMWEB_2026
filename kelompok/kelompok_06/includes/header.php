@@ -5,9 +5,9 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/../config/database.php';
 
-// Simulasi data session sementara sebelum Anggota 2 selesai kerja
-$nama_user = $_SESSION['nama_lengkap'] ?? 'Dihan Ahmad (Demo Admin)';
-$role_user = $_SESSION['role'] ?? 'Administrator';
+// Mengambil data pengguna dari session login
+$nama_user = $_SESSION['nama_lengkap'] ?? 'Pengguna';
+$role_user = $_SESSION['role'] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="id">

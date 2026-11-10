@@ -74,7 +74,7 @@ guru_page_start('Sesi Pembelajaran', 'kelas.php');
 <section class="space-y-4">
     <div><h2 class="text-lg font-semibold text-[#20392a]">Menu Dalam Sesi</h2></div>
     <div class="grid gap-4 md:grid-cols-3">
-        <a href="tap-sesi.php?session_id=<?= (int) $session['id'] ?>" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Tap Kehadiran</h3><p class="mt-2 text-sm text-slate-500">Tandai siswa yang sudah melakukan tap.</p></a>
+        <a href="tap-sesi.php?session_id=<?= (int) $session['id'] ?>" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Tap Kehadiran</h3><p class="mt-2 text-sm text-slate-500">Tambah hitungan tap anonim pada sesi.</p></a>
         <a href="absensi.php?session_id=<?= (int) $session['id'] ?>" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Data Siswa &amp; Poin</h3><p class="mt-2 text-sm text-slate-500">Atur status kehadiran dan poin siswa.</p></a>
         <a href="kelompok.php?session_id=<?= (int) $session['id'] ?>" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Kelompok</h3><p class="mt-2 text-sm text-slate-500">Buat dan acak kelompok siswa.</p></a>
     </div>

@@ -18,6 +18,10 @@ try {
         http_response_code(404);
         exit('Data absensi tidak ditemukan.');
     }
+    if ($session['status'] !== 'berlangsung') {
+        http_response_code(409);
+        exit('Absensi hanya dapat diubah selama sesi berlangsung.');
+    }
     $students = guruSessionAttendance($sessionId);
     $student = null;
     foreach ($students as $candidate) {

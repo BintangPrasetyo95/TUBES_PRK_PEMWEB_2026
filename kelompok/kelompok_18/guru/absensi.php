@@ -16,6 +16,7 @@ try {
         exit('Sesi tidak ditemukan.');
     }
     $students = guruSessionAttendance($sessionId);
+    $canEdit = $session['status'] === 'berlangsung';
 } catch (DomainException $exception) {
     http_response_code(404);
     exit('Sesi tidak ditemukan.');
@@ -43,7 +44,7 @@ guru_page_start('Data Siswa & Poin', 'kelas.php');
                         <td class="whitespace-nowrap px-4 py-3.5"><?= attendara_ui_escape($student['name']) ?></td>
                         <td class="whitespace-nowrap px-4 py-3.5"><span class="rounded-full bg-[#e8f1e7] px-2.5 py-1 text-xs font-medium text-[#31583c]"><?= attendara_ui_escape($attendanceLabel) ?></span></td>
                         <td class="whitespace-nowrap px-4 py-3.5 text-slate-500"><?= number_format((float) $student['points'], 2, '.', ',') ?></td>
-                        <td class="whitespace-nowrap px-4 py-3.5"><div class="flex gap-2"><a href="absensi-edit.php?session_id=<?= (int) $sessionId ?>&amp;id=<?= (int) $student['id'] ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Ubah Status</a><a href="poin-tambah.php?session_id=<?= (int) $sessionId ?>&amp;id=<?= (int) $student['id'] ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Tambah Poin</a></div></td>
+                        <td class="whitespace-nowrap px-4 py-3.5"><div class="flex gap-2"><?php if ($canEdit): ?><a href="absensi-edit.php?session_id=<?= (int) $sessionId ?>&amp;id=<?= (int) $student['id'] ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Ubah Status</a><a href="poin-tambah.php?session_id=<?= (int) $sessionId ?>&amp;id=<?= (int) $student['id'] ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Tambah Poin</a><?php else: ?>—<?php endif; ?></div></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

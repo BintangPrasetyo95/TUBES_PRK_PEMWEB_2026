@@ -28,7 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     } catch (DomainException $exception) {
         http_response_code(409);
-        exit('Sesi tidak ditemukan atau tidak dapat diubah.');
+        header('Content-Type: text/plain; charset=utf-8');
+        exit($exception->getMessage());
     } catch (Throwable $exception) {
         guruReportBackendError($exception);
     }
@@ -45,7 +46,7 @@ try {
 }
 
 $isOngoing = $session['status'] === 'berlangsung';
-$canChange = $isOngoing && $session['semester_status'] === 'aktif';
+$canChange = $isOngoing;
 $statusLabels = [
     'direncanakan' => 'Direncanakan',
     'berlangsung' => 'Berlangsung',
@@ -70,6 +71,15 @@ guru_page_start('Sesi Pembelajaran', 'kelas.php');
 </section>
 
 <p class="text-sm text-slate-600">Mata pelajaran: <?= attendara_ui_escape($session['subject_name']) ?> · Mulai aktual: <?= attendara_ui_escape(date('d M Y H:i', strtotime($session['mulai_at']))) ?></p>
+
+<?php if ($session['status'] === 'selesai'): ?>
+    <form method="post" action="sesi-aktif.php?id=<?= (int) $session['id'] ?>" class="flex justify-end" onsubmit="return window.confirm('Tandai sesi ini sebagai dibatalkan?')">
+        <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
+        <input type="hidden" name="session_id" value="<?= (int) $session['id'] ?>">
+        <input type="hidden" name="action" value="cancel_session">
+        <button type="submit" class="min-h-10 rounded-lg border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50">Tandai Sesi Dibatalkan</button>
+    </form>
+<?php endif; ?>
 
 <section class="space-y-4">
     <div><h2 class="text-lg font-semibold text-[#20392a]">Menu Dalam Sesi</h2></div>

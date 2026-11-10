@@ -31,6 +31,8 @@ Rancangan entitas dan relasi terbaru ada di [docs/ERD.md](docs/ERD.md). Entitas 
 - `sesi_pembelajaran` dan `absensi` untuk sesi aktual, hitungan tap anonim, dan status akhir siswa.
 - `kelompok`, `anggota_kelompok`, dan `poin_keaktifan` untuk pengelolaan pembelajaran.
 
+Aturan perilaku dan validasi fitur—termasuk konflik jadwal, cooldown tap, koreksi hitungan, komposisi gender kelompok, dan penguncian sesi—dicatat di [docs/ATURAN_PENGERJAAN.md](docs/ATURAN_PENGERJAAN.md).
+
 **Status implementasi:** `database/attendara.sql` dan `database/attendara_dummy.sql` sekarang mengikuti ERD revisi. Kode PHP Admin/Guru masih memakai model lama: antara lain belum memakai penugasan mata pelajaran, kelas per semester, hitungan tap anonim di database, dan tabel poin baru. Karena itu, halaman aplikasi belum kompatibel dengan skema target sampai kode PHP dimigrasikan.
 
 ## Teknologi dan menyiapkan database target

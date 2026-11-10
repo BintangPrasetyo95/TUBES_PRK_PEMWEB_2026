@@ -1,36 +1,23 @@
 <?php
 /**
- * =================================================================
  * ENDPOINT API: Kalkulasi Nilai Akhir & Pengaturan Bobot
  * Modul       : Perhitungan Nilai & Laporan Akademik
  * Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
- * =================================================================
- *
- * Endpoint ini menangani:
- * - GET  ?action=penugasan                     → Daftar penugasan guru yang login
- * - GET  ?action=bobot&id_penugasan=X          → Ambil pengaturan bobot
- * - GET  ?action=rekap&id_penugasan=X          → Ambil rekap nilai dengan rincian per komponen
- * - GET  ?action=ringkasan&id_penugasan=X      → Statistik ringkasan kelas
- * - POST ?action=bobot&id_penugasan=X          → Simpan/perbarui bobot (total wajib 100%)
- * - POST ?action=hitung&id_penugasan=X         → Hitung nilai akhir & simpan ke REKAP
- *
- * Nama Kuadran Belajar Arunika:
- *   Bintang Kelas     → Nilai >= 75 & Disiplin >= 75
- *   Bakat Terpendam   → Nilai >= 75 & Disiplin <  75
- *   Butuh Cara Baru   → Nilai <  75 & Disiplin >= 75
- *   Perlu Pendampingan→ Nilai <  75 & Disiplin <  75
- * =================================================================
+ 
+ 
+ * Kuadran Belajar (diselaraskan dengan modul Klasifikasi Siswa):
+ *   Rajin & nilai tinggi          → Nilai >= 75 & Disiplin >= 80
+ *   Jarang kumpul & nilai tinggi  → Nilai >= 75 & Disiplin <  80
+ *   Rajin & nilai rendah          → Nilai <  75 & Disiplin >= 80
+ *   Jarang kumpul & nilai rendah  → Nilai <  75 & Disiplin <  80
  */
 require __DIR__ . '/bootstrap.php';
-
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 $action = $_GET['action'] ?? '';
 
-// =================================================================
 // FUNGSI BANTU: Predikat Huruf berdasarkan Nilai Akhir
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 // Skala: A (>=85), B (>=75), C (>=65), D (>=55), E (<55)
-// =================================================================
+
 function hitungPredikat($nilaiAkhir) {
     if ($nilaiAkhir === null) return '-';
     if ($nilaiAkhir >= 85) return 'A';
@@ -40,10 +27,9 @@ function hitungPredikat($nilaiAkhir) {
     return 'E';
 }
 
-// =================================================================
-// FUNGSI BANTU: Distribusi Predikat untuk Ringkasan Kelas
+// FUNGSI : Distribusi Predikat untuk Ringkasan Kelas
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// =================================================================
+
 function hitungDistribusiPredikat(array $nilaiArr): array {
     $distribusi = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0];
     foreach ($nilaiArr as $nilai) {
@@ -53,16 +39,16 @@ function hitungDistribusiPredikat(array $nilaiArr): array {
     return $distribusi;
 }
 
-// =================================================================
-// FUNGSI BANTU: Distribusi Kuadran Belajar untuk Ringkasan Kelas
+
+// FUNGSI : Distribusi Kuadran Belajar untuk Ringkasan Kelas
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// =================================================================
+
 function hitungDistribusiKuadran(array $rekapAll): array {
     $distribusi = [
-        'Bintang Kelas'      => 0,
-        'Bakat Terpendam'    => 0,
-        'Butuh Cara Baru'    => 0,
-        'Perlu Pendampingan' => 0
+        'Rajin & nilai tinggi'         => 0,
+        'Jarang kumpul & nilai tinggi' => 0,
+        'Rajin & nilai rendah'         => 0,
+        'Jarang kumpul & nilai rendah' => 0
     ];
     foreach ($rekapAll as $r) {
         $k = $r['kategori_kuadran'] ?? '';
@@ -71,11 +57,9 @@ function hitungDistribusiKuadran(array $rekapAll): array {
     return $distribusi;
 }
 
-// =================================================================
-// FUNGSI BANTU: Validasi akses penugasan guru
+// FUNGSI : Validasi akses penugasan guru
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// Mengembalikan data penugasan lengkap (JOIN kelas, mapel, guru, periode)
-// =================================================================
+
 function validasiPenugasan(PDO $pdo, int $idPenugasan): array {
     $stmt = $pdo->prepare(
         'SELECT pm.*, k.nama_kelas, k.tingkat, m.nama_mapel, m.kode_mapel,
@@ -96,10 +80,9 @@ function validasiPenugasan(PDO $pdo, int $idPenugasan): array {
     return $penugasan;
 }
 
-// =================================================================
 // FUNGSI BANTU: Ambil bobot aktif (default 25% merata jika belum diatur)
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// =================================================================
+
 function ambilBobot(PDO $pdo, int $idPenugasan): array {
     $stmt = $pdo->prepare('SELECT * FROM PENGATURAN_BOBOT WHERE id_penugasan = ?');
     $stmt->execute([$idPenugasan]);
@@ -117,11 +100,10 @@ function ambilBobot(PDO $pdo, int $idPenugasan): array {
     return $bobot;
 }
 
-// =================================================================
 // FUNGSI BANTU: Ambil peta nilai seluruh siswa secara bulk
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 // Menghindari N+1 query untuk performa optimal
-// =================================================================
+
 function ambilNilaiBulk(PDO $pdo, array $idPenilaianAll): array {
     $nilaiMap = [];
     if (!empty($idPenilaianAll)) {
@@ -137,10 +119,9 @@ function ambilNilaiBulk(PDO $pdo, array $idPenilaianAll): array {
     return $nilaiMap;
 }
 
-// =================================================================
 // FUNGSI BANTU: Kelompokkan daftar penilaian per jenis komponen
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// =================================================================
+
 function kelompokkanPenilaian(array $daftarPenilaian): array {
     $penilaianPerJenis = ['Tugas' => [], 'Kuis' => [], 'UTS' => [], 'UAS' => []];
     foreach ($daftarPenilaian as $p) {
@@ -151,10 +132,10 @@ function kelompokkanPenilaian(array $daftarPenilaian): array {
     return $penilaianPerJenis;
 }
 
-// =================================================================
+
 // FUNGSI BANTU: Hitung rata-rata per jenis komponen untuk satu siswa
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// =================================================================
+
 function hitungRataPerJenis(array $penilaianPerJenis, array $nilaiSiswa): array {
     $rataPerJenis = [];
     foreach ($penilaianPerJenis as $jenis => $ids) {
@@ -171,12 +152,12 @@ function hitungRataPerJenis(array $penilaianPerJenis, array $nilaiSiswa): array 
     return $rataPerJenis;
 }
 
-// =================================================================
+
 // FUNGSI BANTU: Hitung nilai akhir berbobot
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 // Formula: NA = (Rata_Tugas×B_Tugas + Rata_Kuis×B_Kuis
 //             + Rata_UTS×B_UTS + Rata_UAS×B_UAS) / 100
-// =================================================================
+
 function hitungNilaiAkhir(array $rataPerJenis, array $bobot): float {
     $na = (
         ($rataPerJenis['Tugas'] ?? 0) * (float)$bobot['bobot_tugas'] +
@@ -187,35 +168,32 @@ function hitungNilaiAkhir(array $rataPerJenis, array $bobot): float {
     return round($na, 2);
 }
 
-// =================================================================
-// FUNGSI BANTU: Tentukan kategori kuadran belajar Arunika
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// =================================================================
+// FUNGSI BANTU: Tentukan kategori kuadran belajar
+// Diselaraskan dengan modul Klasifikasi Siswa (batas disiplin 80)
+
 function tentukanKuadran(float $nilaiAkhir, float $indeksKedisiplinan): string {
-    if ($nilaiAkhir >= 75 && $indeksKedisiplinan >= 75) return 'Bintang Kelas';
-    if ($nilaiAkhir >= 75 && $indeksKedisiplinan <  75) return 'Bakat Terpendam';
-    if ($nilaiAkhir <  75 && $indeksKedisiplinan >= 75) return 'Butuh Cara Baru';
-    return 'Perlu Pendampingan';
+    if ($nilaiAkhir >= 75 && $indeksKedisiplinan >= 80) return 'Rajin & nilai tinggi';
+    if ($nilaiAkhir >= 75 && $indeksKedisiplinan <  80) return 'Jarang kumpul & nilai tinggi';
+    if ($nilaiAkhir <  75 && $indeksKedisiplinan >= 80) return 'Rajin & nilai rendah';
+    return 'Jarang kumpul & nilai rendah';
 }
 
-// =================================================================
+
 // FUNGSI BANTU: Ambil rekomendasi sistem berdasarkan kuadran
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// =================================================================
+
 function ambilRekomendasi(string $kuadran): string {
     return [
-        'Bintang Kelas'      => 'Siswa berprestasi dan disiplin. Pertahankan dan berikan apresiasi.',
-        'Bakat Terpendam'    => 'Nilai baik namun kedisiplinan rendah. Perlu pembinaan kedisiplinan pengumpulan tugas.',
-        'Butuh Cara Baru'    => 'Disiplin baik namun nilai rendah. Perlu bimbingan akademik dan metode belajar baru.',
-        'Perlu Pendampingan' => 'Perlu perhatian khusus: bimbingan akademik dan pembinaan kedisiplinan secara intensif.'
-    ][$kuadran] ?? 'Kategori kuadran tidak dikenali.';
+        'Rajin & nilai tinggi'         => 'Pertahankan konsistensi belajar. Siswa siap diberikan materi pengayaan dan dapat ditugaskan sebagai tutor sebaya.',
+        'Jarang kumpul & nilai tinggi' => 'Kemampuan kognitif tinggi namun kedisiplinan rendah. Perlu peningkatan motivasi serta pemantauan pengumpulan tugas harian.',
+        'Rajin & nilai rendah'         => 'Kedisiplinan belajar sangat baik namun hasil nilai belum optimal. Disarankan evaluasi cara belajar atau pendampingan remedial konsep dasar.',
+        'Jarang kumpul & nilai rendah' => 'Perlu perhatian segera. Jadwalkan sesi pendampingan belajar khusus dan komunikasi bersama wali kelas/orang tua.'
+    ][$kuadran] ?? 'Perlu evaluasi berkala.';
 }
 
 
-// ╔═════════════════════════════════════════════════════════════════╗
-// ║  ACTION: Daftar Penugasan Guru yang Sedang Login               ║
-// ║  Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)        ║
-// ╚═════════════════════════════════════════════════════════════════╝
+
+// ACTION: Daftar Penugasan Guru yang Sedang Login               
+
 if ($action === 'penugasan') {
     if ($method !== 'GET') respond(null, 'Metode tidak didukung.', 405);
 
@@ -244,26 +222,20 @@ if ($action === 'penugasan') {
 }
 
 
-// ── Validasi id_penugasan (wajib untuk aksi selain 'penugasan') ──
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
+// Validasi id_penugasan (wajib untuk aksi selain 'penugasan') 
 $idPenugasan = positiveId($_GET['id_penugasan'] ?? 0);
 $penugasan   = validasiPenugasan($pdo, $idPenugasan);
 
+//  ACTION: GET Pengaturan Bobot                                          
 
-// ╔═════════════════════════════════════════════════════════════════╗
-// ║  ACTION: GET Pengaturan Bobot                                  ║
-// ║  Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)        ║
-// ╚═════════════════════════════════════════════════════════════════╝
 if ($action === 'bobot' && $method === 'GET') {
     respond(ambilBobot($pdo, $idPenugasan));
 }
 
 
-// ╔═════════════════════════════════════════════════════════════════╗
-// ║  ACTION: POST Simpan/Perbarui Bobot                            ║
-// ║  Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)        ║
-// ║  Validasi: semua bobot >= 0 dan total harus tepat 100%         ║
-// ╚═════════════════════════════════════════════════════════════════╝
+
+//  ACTION: POST Simpan/Perbarui Bobot                            
+
 if ($action === 'bobot' && in_array($method, ['POST', 'PUT'])) {
     $input = inputData();
 
@@ -312,12 +284,8 @@ if ($action === 'bobot' && in_array($method, ['POST', 'PUT'])) {
 }
 
 
-// ╔═════════════════════════════════════════════════════════════════╗
 // ║  ACTION: GET Rekap Nilai dengan Rincian per Komponen           ║
-// ║  Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)        ║
-// ║  Menghitung on-the-fly: rata-rata per komponen, nilai akhir,   ║
-// ║  predikat huruf, dan status kelengkapan nilai tiap siswa.      ║
-// ╚═════════════════════════════════════════════════════════════════╝
+
 if ($action === 'rekap' && $method === 'GET') {
     $bobot = ambilBobot($pdo, $idPenugasan);
 
@@ -349,7 +317,7 @@ if ($action === 'rekap' && $method === 'GET') {
     }
 
     // Hitung rincian per siswa
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
+    
     $hasilRekap = [];
     foreach ($daftarSiswa as $siswa) {
         $idSiswa    = $siswa['id_siswa'];
@@ -445,8 +413,10 @@ if ($action === 'ringkasan' && $method === 'GET') {
             'persen_lengkap'     => 0,
             'distribusi_predikat'=> ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0],
             'distribusi_kuadran' => [
-                'Bintang Kelas' => 0, 'Bakat Terpendam' => 0,
-                'Butuh Cara Baru' => 0, 'Perlu Pendampingan' => 0
+                'Rajin & nilai tinggi'         => 0,
+                'Jarang kumpul & nilai tinggi' => 0,
+                'Rajin & nilai rendah'         => 0,
+                'Jarang kumpul & nilai rendah' => 0
             ]
         ]);
     }
@@ -481,11 +451,11 @@ if ($action === 'ringkasan' && $method === 'GET') {
 // ║  Indeks Kedisiplinan:                                           ║
 // ║    IK = (Jumlah Tepat Waktu / Total Penilaian) × 100%          ║
 // ║                                                                 ║
-// ║  Kuadran Belajar Arunika:                                       ║
-// ║    NA>=75 & IK>=75 → Bintang Kelas                              ║
-// ║    NA>=75 & IK<75  → Bakat Terpendam                            ║
-// ║    NA<75  & IK>=75 → Butuh Cara Baru                            ║
-// ║    NA<75  & IK<75  → Perlu Pendampingan                         ║
+// ║  Kuadran Belajar:                                               ║
+// ║    NA>=75 & IK>=80 → Rajin & nilai tinggi                       ║
+// ║    NA>=75 & IK<80  → Jarang kumpul & nilai tinggi               ║
+// ║    NA<75  & IK>=80 → Rajin & nilai rendah                       ║
+// ║    NA<75  & IK<80  → Jarang kumpul & nilai rendah               ║
 // ╚═════════════════════════════════════════════════════════════════╝
 if ($action === 'hitung' && $method === 'POST') {
     $bobot = ambilBobot($pdo, $idPenugasan);
@@ -525,11 +495,12 @@ if ($action === 'hitung' && $method === 'POST') {
         $nilaiAkhir = hitungNilaiAkhir($rataPerJenis, $bobot);
 
         // ── Indeks kedisiplinan ──
+        // Pencocokan status tidak peka huruf besar/kecil dan spasi berlebih
         $tepatWaktu   = 0;
         $sudahDinilai = 0;
         foreach ($nilaiSiswa as $n) {
             $sudahDinilai++;
-            if ($n['status_pengumpulan'] === 'Tepat waktu') $tepatWaktu++;
+            if (strtolower(trim($n['status_pengumpulan'] ?? '')) === 'tepat waktu') $tepatWaktu++;
         }
         $indeksKedisiplinan = ($totalPenilaian > 0)
             ? round(($tepatWaktu / $totalPenilaian) * 100, 2)
@@ -596,4 +567,3 @@ if ($action === 'hitung' && $method === 'POST') {
 // ── Fallback: aksi tidak dikenali ──
 // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 respond(null, 'Aksi tidak dikenali. Gunakan: penugasan, bobot, rekap, ringkasan, atau hitung.', 400);
-

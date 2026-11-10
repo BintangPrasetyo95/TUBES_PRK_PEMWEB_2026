@@ -5,6 +5,7 @@
 $root = $root ?? '';
 ?>
   </main>
+  </div>
 </div>
 
 <?php

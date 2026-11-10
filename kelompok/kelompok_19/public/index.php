@@ -13,6 +13,13 @@ $routes = [
 ];
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+// Teruskan request API ke gateway; tanpa ini built-in server mengirim /api/* ke index.php.
+if ($path === '/api' || str_starts_with($path, '/api/')) {
+    require __DIR__ . '/api.php';
+    exit;
+}
+
 $view = $routes[$path] ?? null;
 
 if ($view === null) {
@@ -21,5 +28,4 @@ if ($view === null) {
     exit;
 }
 
-// TODO: Sesuaikan path dasar jika proyek dijalankan dalam subfolder.
 require_once __DIR__ . "/../app/Views/" . $view;

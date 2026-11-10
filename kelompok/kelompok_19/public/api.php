@@ -17,7 +17,7 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = preg_replace('/^\/api/', '', $uri);
 
 // Parse path segments
-$segments = array_filter(explode('/', $uri), 'strlen');
+$segments = array_values(array_filter(explode('/', $uri), 'strlen'));
 
 // Routing sederhana: /api/lahan -> LahanController
 $resource = $segments[0] ?? '';
@@ -39,34 +39,72 @@ if (!isset($controllers[$resource])) {
 
 $controller = $controllers[$resource];
 
-// TODO: Implementasikan pemanggilan method sesuai HTTP method & path.
-// Contoh struktur:
-// GET    /api/lahan        -> $controller->index()
-// GET    /api/lahan/{id}   -> $controller->show($id)
-// POST   /api/lahan        -> $controller->create()
-// PUT    /api/lahan/{id}   -> $controller->update($id)
-// DELETE /api/lahan/{id}   -> $controller->delete($id)
+// Endpoint transaksi inventaris memakai segmen path khusus, bukan id angka.
+if ($resource === 'inventaris' && $method === 'GET' && $id === 'transaksi') {
+    $controller->indexTransaksi();
+    exit;
+}
+if ($resource === 'inventaris' && $method === 'POST' && $id === 'createTransaksi') {
+    $controller->createTransaksi();
+    exit;
+}
 
+// Presensi pekerja memakai sub-route, pola sama dengan transaksi inventaris.
+if ($resource === 'pekerja' && $id === 'presensi') {
+    $presensiId = $segments[2] ?? null;
+
+    switch ($method) {
+        case 'GET':
+            $controller->indexPresensi();
+            break;
+
+        case 'POST':
+            $controller->createPresensi();
+            break;
+
+        case 'PUT':
+            if ($presensiId) {
+                $controller->updatePresensi($presensiId);
+            } else {
+                http_response_code(400);
+                \App\Config\Database::response(['error' => 'ID presensi diperlukan untuk update']);
+            }
+            break;
+
+        case 'DELETE':
+            if ($presensiId) {
+                $controller->deletePresensi($presensiId);
+            } else {
+                http_response_code(400);
+                \App\Config\Database::response(['error' => 'ID presensi diperlukan untuk delete']);
+            }
+            break;
+
+        default:
+            http_response_code(405);
+            \App\Config\Database::response(['error' => 'Method tidak diizinkan']);
+            break;
+    }
+    exit;
+}
+
+// Routing berdasarkan method HTTP.
 switch ($method) {
     case 'GET':
         if ($id) {
-            // TODO: $controller->show($id);
-            \App\Config\Database::response(['message' => "GET $resource/$id - belum diimplementasikan"]);
+            $controller->show($id);
         } else {
-            // TODO: $controller->index();
-            \App\Config\Database::response(['message' => "GET $resource - belum diimplementasikan"]);
+            $controller->index();
         }
         break;
 
     case 'POST':
-        // TODO: $controller->create();
-        \App\Config\Database::response(['message' => "POST $resource - belum diimplementasikan"], 201);
+        $controller->create();
         break;
 
     case 'PUT':
         if ($id) {
-            // TODO: $controller->update($id);
-            \App\Config\Database::response(['message' => "PUT $resource/$id - belum diimplementasikan"]);
+            $controller->update($id);
         } else {
             http_response_code(400);
             \App\Config\Database::response(['error' => 'ID diperlukan untuk update']);
@@ -75,8 +113,7 @@ switch ($method) {
 
     case 'DELETE':
         if ($id) {
-            // TODO: $controller->delete($id);
-            \App\Config\Database::response(['message' => "DELETE $resource/$id - belum diimplementasikan"]);
+            $controller->delete($id);
         } else {
             http_response_code(400);
             \App\Config\Database::response(['error' => 'ID diperlukan untuk delete']);

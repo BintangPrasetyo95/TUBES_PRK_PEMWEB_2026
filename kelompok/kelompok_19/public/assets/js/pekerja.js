@@ -94,8 +94,7 @@ async function simpanData(event) {
         const result = await response.json();
         if (result.status === "success" || result.success) {
             const modalElement = document.getElementById("modalPekerja");
-            const modal = bootstrap.Modal.getInstance(modalElement);
-            if (modal) modal.hide();
+            tutupModal(modalElement);
 
             resetFormPekerja();
             loadData();
@@ -125,8 +124,7 @@ async function editData(id) {
             document.getElementById("modalPekerjaTitle").textContent = "Edit Data Pekerja";
 
             const modalElement = document.getElementById("modalPekerja");
-            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
-            modal.show();
+            bukaModal(modalElement);
         }
     } catch (error) {
         console.error("Gagal mengambil data pekerja untuk diedit:", error);

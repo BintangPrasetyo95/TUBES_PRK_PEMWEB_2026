@@ -1,85 +1,85 @@
 <?php
 // app/Views/lahan.php
-// Tugas: CRUD Lahan (tabel + form modal).
-// Diisi oleh: Faqih.
-
+// CRUD Lahan: satu tabel, satu dialog. ID yang dipakai JavaScript dipertahankan.
 $title = "Manajemen Lahan";
 require_once __DIR__ . "/layouts/header.php";
-require_once __DIR__ . "/layouts/sidebar.php";
 ?>
-            <div class="container-fluid p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1>Data Lahan</h1>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalLahan" onclick="resetFormLahan()">
-                        Tambah Lahan
-                    </button>
-                </div>
+<header class="page-header">
+    <h1 id="judul-lahan">Petak lahan</h1>
+    <p class="top-label">Catatan lahan · <time datetime="<?= date('Y-m-d') ?>"><?= htmlspecialchars($tanggalPanjang) ?></time></p>
+    <p class="intro">Luas, lokasi, dan jenis tanah tiap petak. Nama petak dipakai lagi saat mencatat siklus tanam.</p>
+    <p class="actions">
+        <button class="btn" type="button" data-modal-open="#modalLahan">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah petak
+        </button>
+    </p>
+</header>
 
-                <div class="card">
-                    <div class="card-body">
-                        <table class="table table-striped" id="tabelLahan">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama Lahan</th>
-                                    <th>Lokasi</th>
-                                    <th>Luas (m²)</th>
-                                    <th>Jenis Tanah</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- TODO: Isi data via JS fetch ke API -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<div class="table-wrap">
+    <table id="tabelLahan">
+        <caption class="sr-only">Daftar petak lahan beserta lokasi, luas, dan jenis tanah</caption>
+        <thead>
+            <tr>
+                <th scope="col">No</th>
+                <th scope="col">Nama petak</th>
+                <th scope="col">Lokasi</th>
+                <th scope="col">Luas (m²)</th>
+                <th scope="col">Jenis tanah</th>
+                <th scope="col">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="placeholderLahan"><td colspan="6" class="text-center">Memuat data lahan...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<dialog class="modal" id="modalLahan" aria-labelledby="modalLahanTitle">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalLahanTitle">Tambah Petak</h2>
+            <button class="btn-close" type="button" data-modal-close aria-label="Tutup">&times;</button>
+        </div>
+        <form id="formLahan" class="modal-form">
+            <input type="hidden" name="id" id="lahanId">
+            <div class="form-group">
+                <label for="lahanNama">Nama petak</label>
+                <input type="text" class="form-control" name="nama" id="lahanNama" autocomplete="off" required>
+                <span class="form-hint">Contoh: Petak Utara, Bedeng 2.</span>
             </div>
-
-            <!-- Modal Form Lahan -->
-            <div class="modal fade" id="modalLahan" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalLahanTitle">Tambah Lahan</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <form id="formLahan">
-                            <input type="hidden" name="id" id="lahanId">
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Nama Lahan</label>
-                                    <input type="text" class="form-control" name="nama" id="lahanNama" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Lokasi</label>
-                                    <input type="text" class="form-control" name="lokasi" id="lahanLokasi" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Luas (m²)</label>
-                                    <input type="number" class="form-control" name="luas" id="lahanLuas" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Jenis Tanah</label>
-                                    <select class="form-select" name="jenis_tanah" id="lahanJenisTanah" required>
-                                        <option value="">Pilih...</option>
-                                        <option value="Liat">Liat</option>
-                                        <option value="Pasir">Pasir</option>
-                                        <option value="Humus">Humus</option>
-                                        <option value="Lainnya">Lainnya</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-primary">Simpan</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="lahanLokasi">Lokasi</label>
+                <input type="text" class="form-control" name="lokasi" id="lahanLokasi" autocomplete="off" required>
+                <span class="form-hint">Contoh: Cisarua, belakang gudang.</span>
             </div>
+            <div class="form-group">
+                <label for="lahanLuas">Luas (m²)</label>
+                <input type="number" class="form-control" name="luas" id="lahanLuas" inputmode="decimal" required min="0" step="0.01">
+                <span class="form-hint">Tulis angka saja, contoh 450.</span>
+            </div>
+            <div class="form-group">
+                <label for="lahanJenisTanah">Jenis tanah</label>
+                <select class="form-select" name="jenis_tanah" id="lahanJenisTanah" required>
+                    <option value="">Pilih jenis tanah...</option>
+                    <option value="Aluvial">Aluvial</option>
+                    <option value="Andosol">Andosol</option>
+                    <option value="Latosol">Latosol</option>
+                    <option value="Grumosol">Grumosol</option>
+                    <option value="Regosol">Regosol</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn btn--secondary" type="button" data-modal-close>Batal</button>
+            <button class="btn" type="submit" form="formLahan" id="btnSimpanLahan">Simpan petak</button>
+        </div>
+    </div>
+</dialog>
 
-            <script src="/assets/js/lahan.js"></script>
+<script src="/assets/js/lahan.js"></script>
 <?php
 require_once __DIR__ . "/layouts/footer.php";
 ?>
+

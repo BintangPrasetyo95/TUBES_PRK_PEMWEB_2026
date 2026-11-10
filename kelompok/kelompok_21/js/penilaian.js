@@ -11,7 +11,7 @@
     let idNilaiAktif = null;
 
     async function req(url, method = 'GET', data = null) {
-        const options = {method, headers: {'X-CSRF-Token': csrfToken}};
+        const options = { method, headers: { 'X-CSRF-Token': csrfToken } };
         if (data !== null) {
             options.headers['Content-Type'] = 'application/json';
             options.body = JSON.stringify(data);
@@ -51,16 +51,68 @@
         return value === null || value === undefined ? '—' : Number(value).toString();
     }
 
-    /* ---------- Konteks (kelas + mapel + periode) ---------- */
+    /* ---------- Konteks (Kelas, Mapel, Periode) ---------- */
     async function loadKonteks() {
         const result = await req(URL_API + '?aksi=konteks');
-        const select = $('pn-konteks');
-        select.replaceChildren(new Option(result.data.length ? 'Pilih kelas & mata pelajaran' : 'Belum ada penugasan', ''));
-        result.data.forEach(item => {
-            const label = item.nama_kelas + ' · ' + item.nama_mapel + ' · ' + item.tahun_ajaran + ' ' + item.semester
-                + (Number(item.status_aktif) === 1 ? ' (aktif)' : '');
-            select.add(new Option(label, item.id_penugasan));
+        const { kelas = [], mapel = [], periode = [] } = result.data || {};
+        const collator = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
+
+        // Urutkan Kelas (X -> XI -> XII lalu nama kelas secara natural)
+        const bobotTingkat = t => ({ X: 1, '10': 1, XI: 2, '11': 2, XII: 3, '12': 3 }[String(t).toUpperCase()] || 9);
+        kelas.sort((a, b) => bobotTingkat(a.tingkat) - bobotTingkat(b.tingkat) || collator.compare(a.nama_kelas, b.nama_kelas));
+
+        // Urutkan Mata Pelajaran (A - Z)
+        mapel.sort((a, b) => collator.compare(a.nama_mapel, b.nama_mapel));
+
+        const bobotSem = s => (String(s).toLowerCase() === 'genap' ? 1 : 2);
+        periode.sort((a, b) => collator.compare(b.tahun_ajaran, a.tahun_ajaran) || bobotSem(a.semester) - bobotSem(b.semester));
+
+        const selKelas = $('pn-kelas');
+        const selMapel = $('pn-mapel');
+        const selPeriode = $('pn-periode');
+
+        const prevKelas = selKelas.value;
+        const prevMapel = selMapel.value;
+        const prevPeriode = selPeriode.value;
+
+        selKelas.replaceChildren(new Option(kelas.length ? 'Pilih kelas' : 'Belum ada kelas', ''));
+        kelas.forEach(k => selKelas.add(new Option(k.nama_kelas, k.id_kelas)));
+
+        selMapel.replaceChildren(new Option(mapel.length ? 'Pilih mata pelajaran' : 'Belum ada mapel', ''));
+        mapel.forEach(m => selMapel.add(new Option(m.nama_mapel, m.id_mapel)));
+
+        selPeriode.replaceChildren(new Option(periode.length ? 'Pilih periode' : 'Belum ada periode', ''));
+        let defaultPeriode = '';
+        periode.forEach(p => {
+            const aktif = Number(p.status_aktif) === 1;
+            if (aktif && !defaultPeriode) defaultPeriode = String(p.id_periode);
+            selPeriode.add(new Option(p.tahun_ajaran + ' · ' + p.semester + (aktif ? ' (aktif)' : ''), p.id_periode));
         });
+
+        selKelas.value = prevKelas;
+        selMapel.value = prevMapel;
+        selPeriode.value = prevPeriode || defaultPeriode || (periode[0] ? String(periode[0].id_periode) : '');
+    }
+
+    async function pilihKonteks() {
+        const id_kelas = $('pn-kelas').value;
+        const id_mapel = $('pn-mapel').value;
+        const id_periode = $('pn-periode').value;
+
+        if (!id_kelas || !id_mapel || !id_periode) {
+            idPenugasan = '';
+            await refresh();
+            return;
+        }
+        try {
+            const res = await req(URL_API + '?aksi=siapkan_konteks', 'POST', { id_kelas, id_mapel, id_periode });
+            idPenugasan = String(res.data.id_penugasan);
+            await refresh();
+        } catch (error) {
+            idPenugasan = '';
+            await refresh();
+            info(error.message, true);
+        }
     }
 
     async function refresh() {
@@ -160,7 +212,7 @@
         try {
             const res = await req(URL_API + '?aksi=nilai&id_penilaian=' + id);
             idNilaiAktif = id;
-            const {penilaian, siswa} = res.data;
+            const { penilaian, siswa } = res.data;
             $('pn-nilai-title').textContent = penilaian.judul_penilaian + ' (' + penilaian.jenis_komponen + ')';
             $('pn-nilai-error').textContent = '';
             const body = $('pn-nilai-body');
@@ -181,7 +233,7 @@
                 body.append(tr);
             });
             $('pn-nilai-panel').hidden = false;
-            $('pn-nilai-panel').scrollIntoView({behavior: 'smooth', block: 'start'});
+            $('pn-nilai-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         } catch (error) { info(error.message, true); }
     }
 
@@ -218,10 +270,10 @@
     async function init() {
         try {
             await loadKonteks();
-            $('pn-konteks').addEventListener('change', async event => {
-                idPenugasan = event.target.value;
-                try { await refresh(); } catch (error) { info(error.message, true); }
+            ['pn-kelas', 'pn-mapel', 'pn-periode'].forEach(id => {
+                $(id).addEventListener('change', pilihKonteks);
             });
+            window.addEventListener('focus', () => { loadKonteks().catch(() => { }); });
             $('pn-add').onclick = () => bukaForm();
             ['pn-dialog-x', 'pn-dialog-batal'].forEach(id => $(id).onclick = () => $('pn-dialog').close());
             $('pn-form').onsubmit = submitForm;

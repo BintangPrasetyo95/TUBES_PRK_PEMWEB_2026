@@ -8,28 +8,27 @@
     </div>
 
     <nav class="sidebar-menu">
-        
-<?php if (($_SESSION['user']['role'] ?? '') === 'admin'): ?>
 
-    <span class="menu-heading">ADMINISTRATOR</span>
+        <?php if (($_SESSION['user']['role'] ?? '') === 'admin'): ?>
 
-    <a href="admin_dashboard.php" class="menu-item <?= ($pageTitle ?? '') === 'Admin Dashboard' ? 'active' : '' ?>">
-        <span>▦</span>
-        <span>Dashboard</span>
-    </a>
+            <span class="menu-heading">ADMINISTRATOR</span>
 
-    <a href="admin_pengguna.php" class="menu-item <?= ($pageTitle ?? '') === 'Manajemen Pengguna' ? 'active' : '' ?>">
-        <span>♙</span>
-        <span>Manajemen Pengguna</span>
-    </a>
+            <a href="admin_dashboard.php" class="menu-item <?= ($pageTitle ?? '') === 'Admin Dashboard' ? 'active' : '' ?>">
+                <span>▦</span>
+                <span>Dashboard</span>
+            </a>
 
-    <a href="admin_kategori.php" class="menu-item <?= ($pageTitle ?? '') === 'Manajemen Kategori' ? 'active' : '' ?>">
-        <span>▤</span>
-        <span>Manajemen Kategori</span>
-    </a>
+            <a href="admin_pengguna.php" class="menu-item <?= ($pageTitle ?? '') === 'Manajemen Pengguna' ? 'active' : '' ?>">
+                <span>♙</span>
+                <span>Manajemen Pengguna</span>
+            </a>
 
-<?php else: ?>
+            <a href="admin_kategori.php" class="menu-item <?= ($pageTitle ?? '') === 'Manajemen Kategori' ? 'active' : '' ?>">
+                <span>▤</span>
+                <span>Manajemen Kategori</span>
+            </a>
 
+        <?php else: ?>
 
             <span class="menu-heading">MENU UTAMA</span>
 
@@ -47,7 +46,7 @@
 
             <span class="menu-heading">KEUANGAN</span>
 
-            <a href="anggaran.php" class="menu-item">
+            <a href="budget.php" class="menu-item">
                 <span>▤</span> Anggaran
             </a>
 
@@ -60,5 +59,11 @@
             </a>
 
         <?php endif; ?>
+
     </nav>
+
+    <a href="../logout.php" class="sidebar-logout">
+        <span>↪</span>
+        <span>Logout</span>
+    </a>
 </aside>

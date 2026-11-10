@@ -1,7 +1,24 @@
-
 <?php
+session_start();
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+// Cek apakah pengguna sudah login
+if (!isset($_SESSION['user'])) {
+    header('Location: ../login.php');
+    exit;
+}
+
+// Dashboard ini khusus Kepala Keluarga
+if (($_SESSION['user']['role'] ?? '') !== 'kepala_keluarga') {
+    if (($_SESSION['user']['role'] ?? '') === 'admin') {
+        header('Location: admin_dashboard.php');
+    } else {
+        header('Location: ../login.php');
+    }
+    exit;
+}
 
 $pageTitle = 'SaveSmart';
 ?>
@@ -130,4 +147,4 @@ $pageTitle = 'SaveSmart';
     <script src="../assets/js/script.js"></script>
 
 </body>
-</html>s
+</html>

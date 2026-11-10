@@ -48,11 +48,12 @@ $user  = current_user();
 </nav>
 
 <?php $pesan = ambil_flash(); if ($pesan): ?>
-<div class="container mt-3">
+<div class="toast-rh-wrap" aria-live="polite">
   <?php foreach ($pesan as $f): ?>
-    <div class="alert alert-<?= e($f['tipe']) ?> alert-dismissible fade show" role="alert">
-      <?= e($f['pesan']) ?>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+    <div class="toast-rh toast-<?= e($f['tipe']) ?>" role="alert">
+      <i class="bi <?= ['success' => 'bi-check-circle-fill', 'danger' => 'bi-x-circle-fill', 'warning' => 'bi-exclamation-triangle-fill'][$f['tipe']] ?? 'bi-info-circle-fill' ?>"></i>
+      <div class="pesan"><?= e($f['pesan']) ?></div>
+      <button type="button" class="btn-close" aria-label="Tutup"></button>
     </div>
   <?php endforeach; ?>
 </div>

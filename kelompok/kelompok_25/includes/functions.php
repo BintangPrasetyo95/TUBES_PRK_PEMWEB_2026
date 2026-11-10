@@ -13,9 +13,15 @@ function url(string $path = ''): string
     return BASE_URL . '/' . ltrim($path, '/');
 }
 
+/**
+ * Pindah halaman. Cukup tulis path biasa: redirect('klien/dashboard.php')
+ * Kalau alamatnya sudah dibungkus url(), tetap aman (tidak ditempel dua kali).
+ */
 function redirect(string $path): never
 {
-    header('Location: ' . url($path));
+    $sudahLengkap = preg_match('#^https?://#i', $path) === 1
+        || (BASE_URL !== '' && str_starts_with($path, BASE_URL . '/'));
+    header('Location: ' . ($sudahLengkap ? $path : url($path)));
     exit;
 }
 

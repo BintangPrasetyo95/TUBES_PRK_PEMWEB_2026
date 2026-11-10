@@ -4,16 +4,24 @@
     <div>
         <p class="eyebrow">MANAJEMEN PENILAIAN TERPADU</p>
         <h1>Penilaian</h1>
-        <p>Kelola Tugas, Kuis, UTS, dan UAS, lalu isi nilai siswa dalam satu kelas (0–100).</p>
+        <p>Kelola Penilaian Tugas, Kuis, UTS, dan UAS.</p>
     </div>
     <button id="pn-add" class="primary" type="button" hidden>+ Tambah penilaian</button>
 </div>
 
 <section class="panel">
-    <div class="table-toolbar" style="margin-bottom:0">
-        <label class="search-label" style="max-width:560px;margin-bottom:0">Kelas · Mata pelajaran · Periode
-            <select id="pn-konteks"><option value="">Memuat…</option></select>
-        </label>
+    <div class="table-toolbar" style="margin-bottom:0;flex-wrap:wrap">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;flex:1">
+            <label class="search-label" style="max-width:220px;margin-bottom:0">Kelas
+                <select id="pn-kelas"><option value="">Pilih kelas</option></select>
+            </label>
+            <label class="search-label" style="max-width:260px;margin-bottom:0">Mata pelajaran
+                <select id="pn-mapel"><option value="">Pilih mata pelajaran</option></select>
+            </label>
+            <label class="search-label" style="max-width:240px;margin-bottom:0">Periode penilaian
+                <select id="pn-periode"><option value="">Pilih periode</option></select>
+            </label>
+        </div>
         <span id="pn-count" class="pill">—</span>
     </div>
 </section>

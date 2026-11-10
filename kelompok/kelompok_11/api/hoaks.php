@@ -4,6 +4,19 @@ header('Content-Type: application/json; charset=utf-8');
 // Menghubungkan ke database PDO
 require_once '../config/database.php';
 
+// BLOK TAMBAHAN FARHAN: Mengambil data verifikasi (Selain 'pending')
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    try {
+        $stmt = $pdo->query("SELECT judul_isu, link_sumber, status, created_at FROM lapor_hoaks WHERE status != 'pending' ORDER BY created_at DESC");
+        $data = $stmt->fetchAll();
+        echo json_encode(["status" => "success", "data" => $data]);
+        exit;
+    } catch (PDOException $e) {
+        echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+        exit;
+    }
+}
+
 // Memastikan request menggunakan POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

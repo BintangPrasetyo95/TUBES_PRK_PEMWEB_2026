@@ -97,6 +97,8 @@ function renderHoaks(contentArea) {
 
             </form>
 
+            <div id="hoaks-feedback-list" class="mt-10"></div>
+
         </section>
     `;
 
@@ -136,7 +138,7 @@ function renderHoaks(contentArea) {
     }
 
     // Menangani pengiriman form
-    form.addEventListener('submit', async function(event) {
+    form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
         // Mengambil nilai input
@@ -210,4 +212,49 @@ function renderHoaks(contentArea) {
             submitButton.textContent = 'Kirim Laporan';
         }
     });
+
+    // BLOK TAMBAHAN FARHAN: Menarik dan menampilkan feedback admin
+    async function loadHoaksFeedback() {
+        const listContainer = document.getElementById('hoaks-feedback-list');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = '<p class="text-sm text-slate-500 animate-pulse">Memuat papan klarifikasi...</p>';
+
+        try {
+            const response = await fetch('api/hoaks.php');
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data.length > 0) {
+                let html = '<h3 class="text-xl font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-4">Papan Klarifikasi Isu</h3><div class="grid gap-3">';
+
+                result.data.forEach(item => {
+                    // Penentuan warna badge otomatis
+                    const badgeStyle = item.status === 'fakta'
+                        ? 'bg-green-100 text-green-700 border-green-300'
+                        : 'bg-red-100 text-red-700 border-red-300';
+
+                    html += `
+                        <div class="p-4 border border-slate-200 rounded-lg bg-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+                            <div>
+                                <h4 class="font-semibold text-slate-800 text-sm">${item.judul_isu}</h4>
+                                <a href="${item.link_sumber}" target="_blank" class="text-xs text-blue-600 hover:underline">Tinjau Sumber Laporan</a>
+                            </div>
+                            <span class="px-3 py-1 border rounded-md text-xs font-bold uppercase ${badgeStyle}">
+                                ${item.status}
+                            </span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                listContainer.innerHTML = html;
+            } else {
+                listContainer.innerHTML = '<p class="text-sm text-slate-500 bg-slate-50 p-4 rounded-lg border border-slate-200 text-center">Belum ada laporan isu yang selesai diverifikasi oleh Admin.</p>';
+            }
+        } catch (error) {
+            listContainer.innerHTML = '<p class="text-sm text-red-500">Gagal memuat papan klarifikasi.</p>';
+        }
+    }
+
+    // Panggil fungsinya biar langsung jalan pas halaman dibuka
+    setTimeout(loadHoaksFeedback, 100);
 }

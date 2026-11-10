@@ -21,45 +21,50 @@ $startDate = is_string($_GET['start_date'] ?? null) ? trim($_GET['start_date']) 
 $endDate = is_string($_GET['end_date'] ?? null) ? trim($_GET['end_date']) : '';
 $invoice = is_string($_GET['invoice'] ?? null) ? trim($_GET['invoice']) : '';
 
-$where = ["s.status = 'completed'"];
-$params = [];
 $errors = [];
 
-foreach (['start_date' => $startDate, 'end_date' => $endDate] as $field => $value) {
-    if ($value === '') {
-        continue;
-    }
-
+$validDate = static function (string $value): bool {
     $date = DateTime::createFromFormat('!Y-m-d', $value);
+    return $date !== false && $date->format('Y-m-d') === $value;
+};
 
-    if (!$date || $date->format('Y-m-d') !== $value) {
-        $errors[] = $field === 'start_date'
-            ? 'Tanggal awal tidak valid.'
-            : 'Tanggal akhir tidak valid.';
-        continue;
-    }
+if ($startDate !== '' && !$validDate($startDate)) {
+    $errors[] = 'Tanggal awal tidak valid.';
+}
 
-    if ($field === 'start_date') {
-        $where[] = 's.sold_at >= :start_date';
-        $params['start_date'] = $value . ' 00:00:00';
-    } else {
-        $where[] = 's.sold_at < :end_date';
-        $params['end_date'] = date('Y-m-d', strtotime($value . ' +1 day')) . ' 00:00:00';
-    }
+if ($endDate !== '' && !$validDate($endDate)) {
+    $errors[] = 'Tanggal akhir tidak valid.';
 }
 
 if (
+    empty($errors) &&
     $startDate !== '' &&
     $endDate !== '' &&
-    empty($errors) &&
     $startDate > $endDate
 ) {
     $errors[] = 'Tanggal awal tidak boleh melebihi tanggal akhir.';
 }
 
-if ($invoice !== '') {
-    $where[] = 's.invoice_no LIKE :invoice';
-    $params['invoice'] = '%' . $invoice . '%';
+$where = ["s.status = 'completed'"];
+$params = [];
+
+if (empty($errors)) {
+    if ($startDate !== '') {
+        $where[] = 's.sold_at >= :start_date';
+        $params['start_date'] = $startDate . ' 00:00:00';
+    }
+
+    if ($endDate !== '') {
+        $where[] = 's.sold_at < :end_date';
+        $params['end_date'] = (new DateTimeImmutable($endDate))
+            ->modify('+1 day')
+            ->format('Y-m-d') . ' 00:00:00';
+    }
+
+    if ($invoice !== '') {
+        $where[] = 's.invoice_no LIKE :invoice';
+        $params['invoice'] = '%' . $invoice . '%';
+    }
 }
 
 if (!$isAdmin) {
@@ -88,6 +93,12 @@ if (empty($errors)) {
     $sales = $stmt->fetchAll();
 }
 
+$exportUrl = app_url('reports/export-sales.php') . '?' . http_build_query([
+    'start_date' => $startDate,
+    'end_date' => $endDate,
+    'invoice' => $invoice,
+]);
+
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -95,6 +106,7 @@ require_once __DIR__ . '/../includes/header.php';
 
 <section class="reports-container">
     <h1>Laporan Penjualan</h1>
+
     <p class="reports-description">
         Daftar transaksi penjualan yang telah selesai.
     </p>
@@ -125,11 +137,10 @@ require_once __DIR__ . '/../includes/header.php';
 
                 <button type="submit">Terapkan Filter</button>
                 <a href="<?= e(app_url('reports/sales.php')) ?>">Reset</a>
-                <a href="<?= e(app_url('reports/export-sales.php')) ?>?<?= e(http_build_query([
-                    'start_date' => $startDate,
-                    'end_date' => $endDate,
-                    'invoice' => $invoice,
-                ])) ?>">Export CSV</a>
+
+                <?php if (empty($errors)): ?>
+                    <a href="<?= e($exportUrl) ?>">Export CSV</a>
+                <?php endif; ?>
             </div>
         </form>
     </section>
@@ -165,7 +176,9 @@ require_once __DIR__ . '/../includes/header.php';
                                 <td><?= e(date('d-m-Y H:i', strtotime($sale['sold_at']))) ?></td>
                                 <td><?= e($sale['cashier_name']) ?></td>
                                 <td><?= e($sale['payment_method']) ?></td>
-                                <td>Rp <?= number_format((float) $sale['grand_total'], 0, ',', '.') ?></td>
+                                <td>
+                                    Rp <?= number_format((float) $sale['grand_total'], 0, ',', '.') ?>
+                                </td>
                                 <td>
                                     <a href="<?= e(app_url('reports/sales-detail.php?id=' . (int) $sale['id'])) ?>">
                                         Detail

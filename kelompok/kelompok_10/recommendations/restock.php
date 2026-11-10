@@ -28,6 +28,7 @@ $productQuery = $pdo->query("
             SELECT SUM(sb.qty_remaining)
             FROM stock_batches sb
             WHERE sb.product_id = p.id
+            AND sb.qty_remaining > 0
              AND (sb.expiry_date IS NULL OR sb.expiry_date >= CURDATE())
         ), 0) AS available_stock,
 
@@ -37,7 +38,7 @@ $productQuery = $pdo->query("
             INNER JOIN sales s ON s.id = si.sale_id
             WHERE si.product_id = p.id
               AND s.status = 'completed'
-              AND s.sold_at >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
+              AND s.sold_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
               AND s.sold_at <= NOW()
         ), 0) AS sold_qty
 

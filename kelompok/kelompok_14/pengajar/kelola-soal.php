@@ -141,6 +141,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Ambil data soal yang mau diedit 
+$editSoalId = isset($_GET['edit']) ? (int) $_GET['edit'] : 0;
+$modeEditSoal = false;
+
+if ($editSoalId > 0 && !$terkunci) {
+    $dataEdit = ambilSoalById($editSoalId, $kuisId);
+    if ($dataEdit) {
+        $modeEditSoal = true;
+        // Jika belum ada input error dari POST sebelumnya, isi form dengan data yang mau diedit
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $nilaiSoal['pertanyaan'] = $dataEdit['pertanyaan'];
+            $nilaiSoal['pembahasan'] = $dataEdit['pembahasan'] ?? '';
+            $nilaiSoal['poin']       = (int) $dataEdit['poin'];
+
+            foreach ($dataEdit['opsi'] as $opsiItem) {
+                $lbl = $opsiItem['label'];
+                if (isset($nilaiSoal['opsi'][$lbl])) {
+                    $nilaiSoal['opsi'][$lbl] = $opsiItem['teks'];
+                }
+                if ($opsiItem['benar'] == 1) {
+                    $nilaiSoal['kunci'] = $lbl;
+                }
+            }
+        }
+    }
+}
+
 // Bagian tampilan halaman (HTML)
 $judulHalaman = 'Kelola Soal';
 
@@ -251,6 +278,62 @@ if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
             </article>
         <?php } ?>
     </section>
+
+    <!-- Form Tambah / Edit Soal -->
+    <?php if (!$terkunci) { ?>
+        <section class="kotak-form-soal">
+            <h2><?= $modeEditSoal ? 'Edit Soal' : 'Tambah Soal Baru' ?></h2>
+
+            <form method="post" action="kelola-soal.php?kuis_id=<?= e($kuisId) ?>">
+                <input type="hidden" name="csrf_token" value="<?= e($tokenCsrf) ?>">
+                <input type="hidden" name="aksi" value="<?= $modeEditSoal ? 'edit' : 'tambah' ?>">
+                <?php if ($modeEditSoal) { ?>
+                    <input type="hidden" name="soal_id" value="<?= e($editSoalId) ?>">
+                <?php } ?>
+
+                <div class="kolom-form">
+                    <label for="pertanyaan">Pertanyaan Soal</label>
+                    <textarea id="pertanyaan" name="pertanyaan" rows="3" required><?= e($nilaiSoal['pertanyaan']) ?></textarea>
+                </div>
+
+                <div class="kolom-form">
+                    <label for="poin">Poin Soal (1 - 100)</label>
+                    <input type="number" id="poin" name="poin" min="1" max="100" value="<?= e($nilaiSoal['poin']) ?>" required>
+                </div>
+
+                <fieldset class="grup-opsi">
+                    <legend>Pilihan Jawaban (isi minimal 2 opsi dan pilih 1 kunci jawaban)</legend>
+                    <?php foreach (['A', 'B', 'C', 'D', 'E'] as $huruf) { ?>
+                        <div class="baris-opsi">
+                            <label>
+                                <input type="radio" name="kunci" value="<?= $huruf ?>"
+                                    <?= ($nilaiSoal['kunci'] === $huruf) ? 'checked' : '' ?> required>
+                                <strong><?= $huruf ?>.</strong>
+                            </label>
+                            <input type="text" name="opsi[<?= $huruf ?>]" maxlength="255"
+                                   placeholder="Teks pilihan <?= $huruf ?><?= in_array($huruf, ['A', 'B']) ? ' (wajib)' : ' (opsional)' ?>"
+                                   value="<?= e($nilaiSoal['opsi'][$huruf]) ?>"
+                                   <?= in_array($huruf, ['A', 'B']) ? 'required' : '' ?>>
+                        </div>
+                    <?php } ?>
+                </fieldset>
+
+                <div class="kolom-form">
+                    <label for="pembahasan">Pembahasan (penjelasan setelah pelajar menjawab)</label>
+                    <textarea id="pembahasan" name="pembahasan" rows="3"><?= e($nilaiSoal['pembahasan']) ?></textarea>
+                </div>
+
+                <div class="baris-tombol">
+                    <button type="submit" class="tombol tombol-utama">
+                        <?= $modeEditSoal ? 'Simpan Perubahan Soal' : 'Tambah Soal' ?>
+                    </button>
+                    <?php if ($modeEditSoal) { ?>
+                        <a href="kelola-soal.php?kuis_id=<?= e($kuisId) ?>" class="tombol tombol-sekunder">Batal Edit</a>
+                    <?php } ?>
+                </div>
+            </form>
+        </section>
+    <?php } ?>
 
     <!-- Tombol ajukan publish -->
     <?php if (!$terkunci) { ?>

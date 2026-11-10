@@ -61,3 +61,71 @@ $kelengkapan = validasiKelengkapanKuis($kuisId);
 
 $pesanError = '';
 $daftarError = [];
+
+// Nilai form soal (dipakai lagi jika ada error supaya isian tidak hilang)
+$nilaiSoal = [
+    'pertanyaan' => '',
+    'pembahasan' => '',
+    'poin'       => 10,
+    'opsi'       => ['A' => '', 'B' => '', 'C' => '', 'D' => '', 'E' => ''],
+    'kunci'      => ''
+];
+
+// Proses saat ada form yang dikirim (POST)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (function_exists('verifikasiCsrf')) {
+        verifikasiCsrf();
+    }
+
+    $aksi = $_POST['aksi'] ?? '';
+    $soalId = (int) ($_POST['soal_id'] ?? 0);
+
+    // Kuis yang terkunci tidak boleh diubah
+    if ($terkunci) {
+        $pesanError = 'Kuis sedang menunggu persetujuan atau sudah terbit, jadi tidak bisa diubah.';
+    } else {
+        // Ambil isian form soal
+        $nilaiSoal['pertanyaan'] = trim($_POST['pertanyaan'] ?? '');
+        $nilaiSoal['pembahasan'] = trim($_POST['pembahasan'] ?? '');
+        $nilaiSoal['poin']       = (int) ($_POST['poin'] ?? 10);
+        $nilaiSoal['kunci']      = $_POST['kunci'] ?? '';
+
+        $opsiPost = $_POST['opsi'] ?? [];
+        foreach ($nilaiSoal['opsi'] as $huruf => $teks) {
+            $nilaiSoal['opsi'][$huruf] = trim($opsiPost[$huruf] ?? '');
+        }
+
+        $hasil = null;
+        $pesanSukses = '';
+
+        if ($aksi == 'tambah') {
+            $hasil = tambahSoal($kuisId, $pengajarId, $nilaiSoal);
+            $pesanSukses = 'Soal berhasil ditambahkan.';
+        } elseif ($aksi == 'edit') {
+            $hasil = editSoal($soalId, $kuisId, $pengajarId, $nilaiSoal);
+            $pesanSukses = 'Soal berhasil diubah.';
+        } elseif ($aksi == 'hapus') {
+            $hasil = hapusSoal($soalId, $kuisId, $pengajarId);
+            $pesanSukses = 'Soal berhasil dihapus.';
+        } elseif ($aksi == 'naik' || $aksi == 'turun') {
+            $hasil = geserUrutanSoal($soalId, $kuisId, $pengajarId, $aksi);
+            $pesanSukses = 'Urutan soal berhasil diubah.';
+        }
+
+        if ($hasil != null) {
+            if ($hasil['berhasil']) {
+                // Berhasil: simpan pesan lalu muat ulang halaman supaya data terbaru tampil
+                if (function_exists('flash')) {
+                    flash('sukses', $pesanSukses);
+                }
+                header('Location: kelola-soal.php?kuis_id=' . $kuisId);
+                exit;
+            } else {
+                $pesanError = $hasil['pesan'] ?? 'Terjadi kesalahan.';
+            }
+        }
+
+        // Ambil ulang data soal untuk jaga-jaga
+        $daftarSoal = ambilSoalByKuis($kuisId);
+    }
+}

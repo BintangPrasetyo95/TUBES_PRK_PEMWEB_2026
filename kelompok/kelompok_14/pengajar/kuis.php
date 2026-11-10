@@ -158,3 +158,125 @@ require_once __DIR__ . '/../includes/partials/header-panel.php';
 
     </div>
 </div>
+
+<!-- Daftar Kartu Kuis Pengajar -->
+<?php if (empty($daftarKuis)): ?>
+    <div class="card" style="padding: 40px; text-align: center;">
+        <p style="font-size: 18px; color: var(--teks-2); margin-bottom: 16px;">
+            Belum ada kuis yang ditemukan<?= $statusFilter !== '' ? ' untuk status "' . e($statusFilter) . '"' : '' ?><?= $kataKunci !== '' ? ' dengan kata kunci "' . e($kataKunci) . '"' : '' ?>.
+        </p>
+        <a href="kuis-form.php" class="btn btn-primary">+ Buat Kuis Sekarang</a>
+    </div>
+<?php else: ?>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+        <?php foreach ($daftarKuis as $k): ?>
+            <?php
+            // Penentuan warna badge status sesuai desain claymorphism
+            $kelasBadge = 'badge-neutral';
+            $labelStatus = ucfirst($k['status']);
+            if ($k['status'] === 'terbit') {
+                $kelasBadge = 'badge-success';
+            } elseif ($k['status'] === 'ditolak') {
+                $kelasBadge = 'badge-danger';
+            } elseif ($k['status'] === 'menunggu') {
+                $kelasBadge = 'badge-warning';
+                $labelStatus = 'Menunggu Persetujuan';
+            } elseif ($k['status'] === 'ditarik') {
+                $kelasBadge = 'badge-neutral';
+                $labelStatus = 'Ditarik Admin';
+            }
+            ?>
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 20px;">
+                <div>
+                    <!-- Header Kartu: Status dan Jenis Akses -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="badge <?= $kelasBadge ?>" style="font-size: 12px;">
+                            <?= e($labelStatus) ?>
+                        </span>
+                        <span class="badge <?= $k['akses'] === 'privat' ? 'badge-warning' : 'badge-neutral' ?>" style="font-size: 12px;">
+                            <?= e(ucfirst($k['akses'])) ?>
+                        </span>
+                    </div>
+
+                    <!-- Judul Kuis -->
+                    <h3 style="margin: 0 0 8px 0; font-size: 18px;">
+                        <?= e($k['judul']) ?>
+                    </h3>
+
+                    <!-- Informasi Topik, Tingkat, Soal, Durasi -->
+                    <p class="text-secondary" style="font-size: 13px; margin: 0 0 12px 0;">
+                        <span>📚 <?= e($k['nama_topik']) ?></span> &bull; 
+                        <span>🎓 <?= e($k['nama_tingkat']) ?></span>
+                    </p>
+
+                    <div style="font-size: 13px; margin-bottom: 14px; background: rgba(0,0,0,0.03); padding: 8px 12px; border-radius: var(--radius-s);">
+                        <div>📝 <strong><?= e($k['jumlah_soal']) ?></strong> Soal</div>
+                        <div>⏱️ <strong><?= e($k['durasi_menit']) ?></strong> Menit</div>
+                        <?php if ($k['akses'] === 'privat' && !empty($k['kode'])): ?>
+                            <div style="margin-top: 4px;">🔑 Kode: <strong><?= e($k['kode']) ?></strong></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Tampilkan Catatan Alasan jika Ditolak atau Ditarik -->
+                    <?php if (($k['status'] === 'ditolak' || $k['status'] === 'ditarik') && !empty($k['catatan_status_terakhir'])): ?>
+                        <div class="alert alert-galat" style="font-size: 13px; padding: 10px; margin-bottom: 14px;">
+                            <strong>Catatan Admin:</strong><br>
+                            <?= e($k['catatan_status_terakhir']) ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Tombol Aksi Sesuai Status Kuis -->
+                <div style="border-top: 1px solid rgba(0,0,0,0.08); padding-top: 14px; margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    
+                    <?php if ($k['status'] === 'draft'): ?>
+                        <!-- Draft: Edit, Kelola Soal, Pratinjau, Hapus -->
+                        <a href="kuis-form.php?id=<?= e($k['id']) ?>" class="btn btn-secondary" style="font-size: 13px; padding: 6px 12px;">Edit</a>
+                        <a href="kelola-soal.php?kuis_id=<?= e($k['id']) ?>" class="btn btn-primary" style="font-size: 13px; padding: 6px 12px;">Kelola Soal</a>
+                        <a href="pratinjau.php?id=<?= e($k['id']) ?>" class="btn btn-neutral" style="font-size: 13px; padding: 6px 12px;">Pratinjau</a>
+                        <?php if ((int)$k['jumlah_percobaan'] === 0): ?>
+                            <form method="post" action="kuis.php" style="margin: 0;" onsubmit="return confirm('Yakin ingin menghapus draft kuis ini?');">
+                                <input type="hidden" name="csrf_token" value="<?= e($tokenCsrf) ?>">
+                                <input type="hidden" name="kuis_id" value="<?= e($k['id']) ?>">
+                                <input type="hidden" name="aksi" value="hapus">
+                                <button type="submit" class="btn btn-danger" style="font-size: 13px; padding: 6px 12px;">Hapus</button>
+                            </form>
+                        <?php endif; ?>
+
+                    <?php elseif ($k['status'] === 'menunggu'): ?>
+                        <!-- Menunggu Persetujuan: Hanya Pratinjau (kunci) -->
+                        <a href="pratinjau.php?id=<?= e($k['id']) ?>" class="btn btn-neutral" style="font-size: 13px; padding: 6px 12px;">Pratinjau</a>
+                        <span class="text-secondary" style="font-size: 12px; align-self: center;">Sedang ditinjau admin</span>
+
+                    <?php elseif ($k['status'] === 'terbit'): ?>
+                        <!-- Terbit: Lihat Hasil, Pratinjau, Tarik ke Draft -->
+                        <a href="hasil.php?kuis_id=<?= e($k['id']) ?>" class="btn btn-primary" style="font-size: 13px; padding: 6px 12px;">Lihat Hasil</a>
+                        <a href="pratinjau.php?id=<?= e($k['id']) ?>" class="btn btn-neutral" style="font-size: 13px; padding: 6px 12px;">Pratinjau</a>
+                        <form method="post" action="kuis.php" style="margin: 0;" onsubmit="return confirm('Tarik kuis ini kembali ke Draft untuk diedit? Pelajar tidak akan bisa mengerjakan kuis ini selama ditarik.');">
+                            <input type="hidden" name="csrf_token" value="<?= e($tokenCsrf) ?>">
+                            <input type="hidden" name="kuis_id" value="<?= e($k['id']) ?>">
+                            <input type="hidden" name="aksi" value="tarik">
+                            <button type="submit" class="btn btn-warning" style="font-size: 13px; padding: 6px 12px;">Tarik ke Draft</button>
+                        </form>
+
+                    <?php elseif ($k['status'] === 'ditolak' || $k['status'] === 'ditarik'): ?>
+                        <!-- Ditolak / Ditarik: Pindahkan ke Draft untuk Revisi / Kelola Soal -->
+                        <form method="post" action="kuis.php" style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="<?= e($tokenCsrf) ?>">
+                            <input type="hidden" name="kuis_id" value="<?= e($k['id']) ?>">
+                            <input type="hidden" name="aksi" value="revisi">
+                            <button type="submit" class="btn btn-primary" style="font-size: 13px; padding: 6px 12px;">Revisi Kuis</button>
+                        </form>
+                        <a href="pratinjau.php?id=<?= e($k['id']) ?>" class="btn btn-neutral" style="font-size: 13px; padding: 6px 12px;">Pratinjau</a>
+
+                    <?php endif; ?>
+
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
+<?php
+// Muat template footer panel
+require_once __DIR__ . '/../includes/partials/footer-panel.php';

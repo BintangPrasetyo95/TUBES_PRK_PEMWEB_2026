@@ -543,9 +543,9 @@ kbd {
     border-radius: 999px;
     background: var(--primary-soft);
     color: var(--primary);
-    font-family: var(--font-mono);
-    font-size: .6em;
-    font-weight: 500;
+    font-family: var(--font-ui);
+    font-size: .62em;
+    font-weight: 600;
     letter-spacing: 0;
     vertical-align: .2em;
     white-space: nowrap

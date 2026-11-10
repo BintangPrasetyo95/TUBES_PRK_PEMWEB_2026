@@ -1,3 +1,4 @@
+
 <!-- SIDEBAR KIRI (Disembunyikan saat mode print) -->
     <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between no-print shrink-0">
         <div>
@@ -19,11 +20,13 @@
                 <p class="px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Menu Utama</p>
                 
                 <!-- Slot Anggota 5: Dashboard -->
+                <?php if ($_SESSION['role'] === 'admin'): ?>
                 <a href="index.php?page=dashboard" 
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors <?= ($active_page == 'dashboard') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' ?>">
                     <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                     Dashboard Analitik
                 </a>
+                <?php endif; ?>
 
                 <!-- Slot Anggota 4: Kasir & Split Bill -->
                 <a href="index.php?page=kasir" 
@@ -35,11 +38,13 @@
                 <p class="px-3 pt-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Manajemen Data</p>
 
                 <!-- Slot Anggota 3: Data Master Produk -->
+                <?php if ($_SESSION['role'] === 'admin'): ?>
                 <a href="index.php?page=produk" 
                    class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors <?= ($active_page == 'produk') ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' ?>">
                     <i data-lucide="package" class="w-4 h-4"></i>
                     Data Master Produk
                 </a>
+                <?php endif; ?>
 
                 <!-- Slot Anggota 5: Laporan & Riwayat -->
                 <a href="index.php?page=laporan" 
@@ -52,7 +57,7 @@
 
         <!-- Footer Sidebar / Logout (Slot Anggota 2) -->
         <div class="p-4 border-t border-slate-100">
-            <a href="index.php?page=logout" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+            <a href="logout.php" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
                 <i data-lucide="log-out" class="w-4 h-4"></i>
                 Keluar Sesi
             </a>

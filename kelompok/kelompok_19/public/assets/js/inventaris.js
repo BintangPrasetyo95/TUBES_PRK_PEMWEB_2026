@@ -73,7 +73,7 @@ document.getElementById("formInventaris").addEventListener("submit", async funct
 
         if (result.status === "success") {
             alert(result.message);
-            bootstrap.Modal.getInstance(document.getElementById("modalInventaris")).hide();
+            tutupModal(document.getElementById("modalInventaris"));
             loadData(); // Refresh tabel otomatis
         } else {
             alert(result.message);
@@ -98,7 +98,7 @@ async function editData(id) {
             document.getElementById("inventarisHargaSatuan").value = item.harga_satuan;
 
             document.getElementById("modalInventarisTitle").textContent = "Edit Item";
-            new bootstrap.Modal(document.getElementById("modalInventaris")).show();
+            bukaModal(document.getElementById("modalInventaris"));
         } else {
             alert(result.message);
         }
@@ -162,7 +162,7 @@ function bukaModalTransaksi(id, nama) {
     document.getElementById('grupSiklusTanam').style.display = 'none';
     document.getElementById('transaksiSiklusId').required = false;
 
-    new bootstrap.Modal(document.getElementById('modalTransaksi')).show();
+    bukaModal(document.getElementById('modalTransaksi'));
 }
 
 // Logika Tampilkan Dropdown Siklus Tanam jika transaksi = 'Keluar'
@@ -202,7 +202,7 @@ document.getElementById('formTransaksi')?.addEventListener('submit', async (e) =
 
         if (result.status === 'success') {
             alert('Transaksi berhasil dicatat!');
-            bootstrap.Modal.getInstance(document.getElementById('modalTransaksi')).hide();
+            tutupModal(document.getElementById('modalTransaksi'));
             loadData(); // Update sisa stok di tabel utama
         } else {
             alert(result.message);

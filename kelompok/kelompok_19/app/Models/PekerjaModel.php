@@ -76,7 +76,7 @@ class PekerjaModel
 
     public function getTotalUpah()
     {
-        $query = "SELECT SUM(upah_harian) AS total_upah FROM " . $this->table_name;
+        $query = "SELECT SUM(upah_harian) AS total_upah FROM presensi_pekerja";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);

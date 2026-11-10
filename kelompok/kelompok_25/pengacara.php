@@ -28,10 +28,10 @@ require_once __DIR__ . '/includes/header.php';
 <div class="container page-head">
   <h2 class="section-title">Pengacara Kami</h2>
 
-  <div class="mb-4 d-flex flex-wrap gap-2">
-    <a href="pengacara.php" class="btn btn-sm <?= $bidangId ? 'btn-outline-secondary' : 'btn-warning' ?>">Semua</a>
+    <div class="mb-4 d-flex flex-wrap gap-2">
+    <a href="<?= url('pengacara.php') ?>" class="btn btn-sm <?= $bidangId ? 'btn-outline-secondary' : 'btn-warning' ?>">Semua</a>
     <?php foreach ($bidangList as $b): ?>
-      <a href="pengacara.php?bidang=<?= (int)$b['id'] ?>"
+      <a href="<?= url('pengacara.php') ?>?bidang=<?= (int)$b['id'] ?>"
          class="btn btn-sm <?= $bidangId === (int)$b['id'] ? 'btn-warning' : 'btn-outline-secondary' ?>">
         <?= e($b['nama']) ?>
       </a>

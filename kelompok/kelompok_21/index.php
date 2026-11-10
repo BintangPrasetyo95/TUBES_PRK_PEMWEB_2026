@@ -3,7 +3,7 @@ require __DIR__ . '/includes/auth.php';
 requireLogin();
 $menus = ['beranda' => 'Beranda', 'kelas' => 'Data kelas', 'siswa' => 'Data siswa',
     'mapel' => 'Mata pelajaran', 'periode' => 'Periode penilaian', 'penugasan' => 'Penugasan guru', 
-    'penilaian' => 'Penilaian', 'klasifikasi' => 'Klasifikasi siswa', 'monitoring' => 'Pengumpulan tugas','laporan' => 'Rekap & laporan', 'profil' => 'Profil saya'];
+    'penilaian' => 'Penilaian', 'klasifikasi' => 'Klasifikasi siswa', 'monitoring' => 'Pengumpulan tugas','laporan' => 'Rekap & laporan', 'kualitatif' => 'Catatan kualitatif', 'profil' => 'Profil saya'];
 $page = $_GET['halaman'] ?? 'beranda';
 if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemukan.'); }
 ?>
@@ -25,6 +25,9 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
         <?php elseif ($page === 'monitoring'): ?>
             <!-- Dikerjakan oleh: Dwi Septy (NPM. 2465061006) -->
             <script src="js/monitoring.js" defer></script>
+        <?php elseif ($page === 'kualitatif'): ?>
+            <!-- Dikerjakan oleh: Nova Arundyna Inzani -->
+            <script src="js/kualitatif.js" defer></script>
         <?php else: ?>
             <script src="js/app.js" defer></script>
         <?php endif; ?>
@@ -155,6 +158,10 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
                 <!-- Dikerjakan oleh: Dwi Septy (NPM. 2465061006) -->
                 <?php include __DIR__ . '/views/monitoring.php'; ?>
 
+                <?php elseif ($page === 'kualitatif'): ?>
+                <!-- Dikerjakan oleh: Nova Arundyna Inzani -->
+                <?php include __DIR__ . '/views/kualitatif.php'; ?>
+
                 <?php elseif ($page === 'profil'): ?>
                     <div class="page-heading">
                         <div>
@@ -230,4 +237,3 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
         </div>
     </body>
 </html>
-

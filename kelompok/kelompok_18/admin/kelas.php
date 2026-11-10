@@ -76,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $kode = kelas_post_string('kode');
         $nama = kelas_post_string('nama');
         $tingkat = kelas_post_string('tingkat');
+        $semesterId = (int) ($_POST['semester_id'] ?? 0);
 
         // Server-side validation.
         if ($kode === '') {
@@ -90,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Nama kelas maksimal 100 karakter.';
         }
 
+        if ($semesterId <= 0) {
+            $errors[] = 'Semester wajib dipilih.';
+        }
+
         $tingkatValue = null;
         if ($tingkat !== '') {
             if (!ctype_digit($tingkat) || (int) $tingkat > 255) {
@@ -99,10 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Uniqueness check with a friendly message.
+        // Uniqueness check with a friendly message. Kode kelas unik per semester.
         if ($errors === []) {
-            $sql = 'SELECT COUNT(*) FROM kelas WHERE kode = :kode';
-            $params = ['kode' => $kode];
+            $sql = 'SELECT COUNT(*) FROM kelas WHERE kode = :kode AND semester_id = :semester_id';
+            $params = ['kode' => $kode, 'semester_id' => $semesterId];
             if ($id > 0) {
                 $sql .= ' AND id <> :id';
                 $params['id'] = $id;
@@ -110,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $statement = $pdo->prepare($sql);
             $statement->execute($params);
             if ((int) $statement->fetchColumn() > 0) {
-                $errors[] = 'Kode kelas sudah digunakan.';
+                $errors[] = 'Kode kelas sudah digunakan pada semester ini.';
             }
         }
 
@@ -118,10 +123,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 if ($id === 0) {
                     $statement = $pdo->prepare(
-                        'INSERT INTO kelas (kode, nama, tingkat, is_active)
-                         VALUES (:kode, :nama, :tingkat, TRUE)'
+                        'INSERT INTO kelas (semester_id, kode, nama, tingkat, is_active)
+                         VALUES (:semester_id, :kode, :nama, :tingkat, TRUE)'
                     );
                     $statement->execute([
+                        'semester_id' => $semesterId,
                         'kode' => $kode,
                         'nama' => $nama,
                         'tingkat' => $tingkatValue,
@@ -129,9 +135,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     kelas_redirect_with_flash('success', 'Kelas berhasil ditambahkan.');
                 } else {
                     $statement = $pdo->prepare(
-                        'UPDATE kelas SET kode = :kode, nama = :nama, tingkat = :tingkat WHERE id = :id'
+                        'UPDATE kelas SET semester_id = :semester_id, kode = :kode, nama = :nama, tingkat = :tingkat WHERE id = :id'
                     );
                     $statement->execute([
+                        'semester_id' => $semesterId,
                         'kode' => $kode,
                         'nama' => $nama,
                         'tingkat' => $tingkatValue,
@@ -142,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (PDOException $exception) {
                 error_log('ATTENDARA save kelas failed: ' . $exception->getMessage());
                 $errors[] = $exception->getCode() === '23000'
-                    ? 'Kode kelas sudah digunakan.'
+                    ? 'Kode kelas sudah digunakan pada semester ini.'
                     : 'Data kelas gagal disimpan.';
             }
         }
@@ -150,17 +157,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ---------------------------------------------------------------
-// Active semester is used to count students and show membership.
+// Active semester is used as the default value for the class form.
 // ---------------------------------------------------------------
 $statement = $pdo->prepare('SELECT id, nama FROM semester WHERE status = :status LIMIT 1');
 $statement->execute(['status' => 'aktif']);
 $activeSemester = $statement->fetch() ?: null;
 
+// Daftar semester untuk dropdown form kelas.
+$semesterList = $pdo->query(
+    'SELECT id, kode, nama, status FROM semester ORDER BY tanggal_mulai DESC, id DESC'
+)->fetchAll();
+
 // ---------------------------------------------------------------
-// Detail view: class info and its students in the active semester.
+// Detail view: class info and its students in the class's own semester.
 // ---------------------------------------------------------------
 if ($detailId > 0) {
-    $statement = $pdo->prepare('SELECT id, kode, nama, tingkat, is_active, created_at, updated_at FROM kelas WHERE id = :id LIMIT 1');
+    $statement = $pdo->prepare(
+        'SELECT k.id, k.semester_id, sm.nama AS semester_nama, sm.status AS semester_status,
+                k.kode, k.nama, k.tingkat, k.is_active, k.created_at, k.updated_at
+         FROM kelas AS k
+         INNER JOIN semester AS sm ON sm.id = k.semester_id
+         WHERE k.id = :id LIMIT 1'
+    );
     $statement->execute(['id' => $detailId]);
     $detailKelas = $statement->fetch();
 
@@ -168,21 +186,20 @@ if ($detailId > 0) {
         kelas_redirect_with_flash('error', 'Data kelas tidak ditemukan.');
     }
 
-    $anggota = [];
-    if ($activeSemester !== null) {
-        $statement = $pdo->prepare(
-            'SELECT s.nomor_induk, s.nama, s.is_active
-             FROM anggota_kelas AS ak
-             JOIN siswa AS s ON s.id = ak.siswa_id
-             WHERE ak.kelas_id = :kelas_id AND ak.semester_id = :semester_id
-             ORDER BY s.nama'
-        );
-        $statement->execute([
-            'kelas_id' => $detailId,
-            'semester_id' => (int) $activeSemester['id'],
-        ]);
-        $anggota = $statement->fetchAll();
-    }
+    $detailSemesterId = (int) $detailKelas['semester_id'];
+
+    $statement = $pdo->prepare(
+        'SELECT s.nomor_induk, s.nama, s.is_active
+         FROM anggota_kelas AS ak
+         JOIN siswa AS s ON s.id = ak.siswa_id
+         WHERE ak.kelas_id = :kelas_id AND ak.semester_id = :semester_id
+         ORDER BY s.nama'
+    );
+    $statement->execute([
+        'kelas_id' => $detailId,
+        'semester_id' => $detailSemesterId,
+    ]);
+    $anggota = $statement->fetchAll();
 
     admin_page_start('Detail Kelas', 'kelas.php');
     ?>
@@ -201,12 +218,12 @@ if ($detailId > 0) {
         <dl class="grid gap-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:grid-cols-2 sm:p-6">
             <div><dt class="text-sm font-medium text-slate-500">Tingkat</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) ($detailKelas['tingkat'] ?? '-')) ?></dd></div>
             <div><dt class="text-sm font-medium text-slate-500">Status</dt><dd class="mt-1 text-sm text-slate-800"><?= (bool) $detailKelas['is_active'] ? 'Aktif' : 'Nonaktif' ?></dd></div>
-            <div><dt class="text-sm font-medium text-slate-500">Semester</dt><dd class="mt-1 text-sm text-slate-800"><?= h($activeSemester !== null ? (string) $activeSemester['nama'] : '-') ?></dd></div>
+            <div><dt class="text-sm font-medium text-slate-500">Semester</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) ($detailKelas['semester_nama'] ?? '-')) ?></dd></div>
             <div><dt class="text-sm font-medium text-slate-500">Jumlah siswa</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) count($anggota)) ?></dd></div>
         </dl>
 
         <div class="space-y-3">
-            <h3 class="text-base font-semibold text-[#20392a]">Anggota Kelas (Semester Aktif)</h3>
+            <h3 class="text-base font-semibold text-[#20392a]">Anggota Kelas</h3>
             <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
                 <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
                     <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
@@ -219,7 +236,7 @@ if ($detailId > 0) {
                     </thead>
                     <tbody class="divide-y divide-[#edf1ec] text-slate-700">
                         <?php if ($anggota === []): ?>
-                            <tr><td colspan="4" class="px-4 py-9 text-center text-slate-500">Belum ada siswa pada semester aktif.</td></tr>
+                            <tr><td colspan="4" class="px-4 py-9 text-center text-slate-500">Belum ada siswa pada kelas ini.</td></tr>
                         <?php else: ?>
                             <?php foreach ($anggota as $index => $siswa): ?>
                                 <tr class="hover:bg-[#f8faf7]">
@@ -245,26 +262,21 @@ if ($detailId > 0) {
 // ---------------------------------------------------------------
 $editKelas = null;
 if ($editId > 0) {
-    $statement = $pdo->prepare('SELECT id, kode, nama, tingkat FROM kelas WHERE id = :id LIMIT 1');
+    $statement = $pdo->prepare('SELECT id, semester_id, kode, nama, tingkat FROM kelas WHERE id = :id LIMIT 1');
     $statement->execute(['id' => $editId]);
     $editKelas = $statement->fetch() ?: null;
 }
 
-if ($activeSemester !== null) {
-    $statement = $pdo->prepare(
-        'SELECT k.id, k.kode, k.nama, k.tingkat, k.is_active, COUNT(ak.siswa_id) AS jumlah_siswa
-         FROM kelas AS k
-         LEFT JOIN anggota_kelas AS ak ON ak.kelas_id = k.id AND ak.semester_id = :semester_id
-         GROUP BY k.id, k.kode, k.nama, k.tingkat, k.is_active
-         ORDER BY k.kode'
-    );
-    $statement->execute(['semester_id' => (int) $activeSemester['id']]);
-} else {
-    $statement = $pdo->query(
-        'SELECT id, kode, nama, tingkat, is_active, 0 AS jumlah_siswa
-         FROM kelas ORDER BY kode'
-    );
-}
+$statement = $pdo->query(
+    'SELECT k.id, k.semester_id, sm.nama AS semester_nama, sm.status AS semester_status,
+            k.kode, k.nama, k.tingkat, k.is_active,
+            COUNT(ak.siswa_id) AS jumlah_siswa
+     FROM kelas AS k
+     INNER JOIN semester AS sm ON sm.id = k.semester_id
+     LEFT JOIN anggota_kelas AS ak ON ak.kelas_id = k.id AND ak.semester_id = k.semester_id
+     GROUP BY k.id, k.semester_id, sm.nama, sm.status, k.kode, k.nama, k.tingkat, k.is_active
+     ORDER BY sm.tanggal_mulai DESC, sm.id DESC, k.kode'
+);
 $kelasList = $statement->fetchAll();
 
 // Repopulate the form from the last POST when validation failed.
@@ -274,6 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
         'kode' => kelas_post_string('kode'),
         'nama' => kelas_post_string('nama'),
         'tingkat' => kelas_post_string('tingkat'),
+        'semester_id' => (int) ($_POST['semester_id'] ?? 0),
     ];
 } elseif ($editKelas !== null) {
     $formValues = [
@@ -281,6 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
         'kode' => (string) $editKelas['kode'],
         'nama' => (string) $editKelas['nama'],
         'tingkat' => (string) ($editKelas['tingkat'] ?? ''),
+        'semester_id' => (int) ($editKelas['semester_id'] ?? 0),
     ];
 } else {
     $formValues = [
@@ -288,6 +302,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
         'kode' => '',
         'nama' => '',
         'tingkat' => '',
+        'semester_id' => $activeSemester !== null ? (int) $activeSemester['id'] : 0,
     ];
 }
 
@@ -299,7 +314,7 @@ admin_page_start($isEditing ? 'Edit Kelas' : 'Data Kelas', 'kelas.php');
     <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
             <h2 class="text-lg font-semibold text-[#20392a]">Daftar Kelas</h2>
-            <p class="mt-1 text-sm text-slate-600">Jumlah siswa mengikuti semester aktif.</p>
+            <p class="mt-1 text-sm text-slate-600">Kelas dikelompokkan per semester. Jumlah siswa mengikuti semester kelas tersebut.</p>
         </div>
         <?php attendara_ui_button('Tambah Kelas', 'kelas.php'); ?>
     </div>
@@ -312,7 +327,7 @@ admin_page_start($isEditing ? 'Edit Kelas' : 'Data Kelas', 'kelas.php');
     <?php endif; ?>
 
     <p class="text-sm text-slate-500">
-        Data untuk <?= h($activeSemester !== null ? (string) $activeSemester['nama'] : 'semester aktif (belum ditetapkan)') ?>.
+        Semua kelas ditampilkan beserta semester pemiliknya. Data semester lampau tetap tersimpan sebagai arsip.
     </p>
 
     <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
@@ -320,6 +335,7 @@ admin_page_start($isEditing ? 'Edit Kelas' : 'Data Kelas', 'kelas.php');
             <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
                 <tr>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Semester</th>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kode</th>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nama</th>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Tingkat</th>
@@ -330,11 +346,12 @@ admin_page_start($isEditing ? 'Edit Kelas' : 'Data Kelas', 'kelas.php');
             </thead>
             <tbody class="divide-y divide-[#edf1ec] text-slate-700">
                 <?php if ($kelasList === []): ?>
-                    <tr><td colspan="7" class="px-4 py-9 text-center text-slate-500">Belum ada data kelas.</td></tr>
+                    <tr><td colspan="8" class="px-4 py-9 text-center text-slate-500">Belum ada data kelas.</td></tr>
                 <?php else: ?>
                     <?php foreach ($kelasList as $index => $kelas): ?>
                         <tr class="hover:bg-[#f8faf7]">
                             <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
+                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($kelas['semester_nama'] ?? '-')) ?></td>
                             <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $kelas['kode']) ?></td>
                             <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $kelas['nama']) ?></td>
                             <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($kelas['tingkat'] ?? '-')) ?></td>
@@ -384,6 +401,18 @@ admin_page_start($isEditing ? 'Edit Kelas' : 'Data Kelas', 'kelas.php');
         <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
         <input type="hidden" name="action" value="save">
         <input type="hidden" name="id" value="<?= h((string) $formValues['id']) ?>">
+
+        <div class="sm:col-span-3">
+            <label for="semester_id" class="mb-1.5 block text-sm font-medium text-slate-700">Semester</label>
+            <select id="semester_id" name="semester_id" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm">
+                <option value="0">Pilih semester</option>
+                <?php foreach ($semesterList as $semester): ?>
+                    <option value="<?= h((string) $semester['id']) ?>" <?= (int) $semester['id'] === $formValues['semester_id'] ? 'selected' : '' ?>>
+                        <?= h((string) $semester['nama']) ?><?= $semester['status'] === 'aktif' ? ' (aktif)' : '' ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
         <?php
         attendara_ui_input('Kode', 'kode', $formValues['kode'], 'text', 'Contoh: X-A');

@@ -515,56 +515,58 @@ function guruCorrectTapCount(int $sessionId, int $tapCount): void
 /** Add a manual participation score to an owned, ongoing session. */
 function guruAddPoints(int $sessionId, int $studentId, string $points, ?string $note): void
 {
-    if (!preg_match('/^(?:0|[1-9][0-9]{0,4})(?:\.[0-9]{1,2})?$/', $points)) {
-        throw new DomainException('Poin harus bernilai 0 sampai 99999.99 dengan maksimal 2 angka desimal.');
+    $points = trim($points);
+    if (
+        !preg_match('/^(?:0|[1-9][0-9]{0,4})(?:\.[0-9]{1,2})?$/', $points)
+        || preg_match('/^0(?:\.0{1,2})?$/', $points)
+    ) {
+        throw new DomainException('Poin harus lebih dari 0 dan maksimal 99999.99 dengan maksimal 2 angka desimal.');
     }
     if ($note !== null && (function_exists('mb_strlen') ? mb_strlen($note, 'UTF-8') : strlen($note)) > 500) {
         throw new DomainException('Catatan maksimal 500 karakter.');
+    }
+
+    $user = currentUser();
+    if ($user === null) {
+        throw new DomainException('Sesi login tidak tersedia.');
     }
 
     $pdo = guruDb();
     $pdo->beginTransaction();
     try {
         $sessionQuery = $pdo->prepare(
-            'SELECT pg.kelas_id, pg.semester_id
+            'SELECT sp.id, sp.status
              FROM sesi_pembelajaran sp
-             INNER JOIN penugasan_guru pg ON pg.id = sp.penugasan_guru_id
+             INNER JOIN jadwal_mengajar jm ON jm.id = sp.jadwal_mengajar_id
+             INNER JOIN penugasan_guru pg ON pg.id = jm.penugasan_guru_id
              INNER JOIN guru g ON g.id = pg.guru_id
-             INNER JOIN semester sem ON sem.id = pg.semester_id
              WHERE sp.id = :session_id AND g.user_id = :user_id
-               AND sem.status = :active_semester AND sp.status = :ongoing_status
              LIMIT 1 FOR UPDATE'
         );
         $sessionQuery->execute([
             'session_id' => $sessionId,
-            'user_id' => currentUser()['id'],
-            'active_semester' => 'aktif',
-            'ongoing_status' => 'berlangsung',
+            'user_id' => $user['id'],
         ]);
         $session = $sessionQuery->fetch();
-        if (!is_array($session)) {
+        if (!is_array($session) || $session['status'] !== 'berlangsung') {
             throw new DomainException('Poin hanya dapat dicatat pada sesi Guru yang sedang berlangsung.');
         }
 
         $studentQuery = $pdo->prepare(
-            'SELECT sis.id
-             FROM anggota_kelas ak
-             INNER JOIN siswa sis ON sis.id = ak.siswa_id AND sis.is_active = 1
-             WHERE ak.siswa_id = :student_id AND ak.kelas_id = :class_id
-               AND ak.semester_id = :semester_id
-             LIMIT 1'
+            'SELECT id FROM absensi
+             WHERE sesi_pembelajaran_id = :session_id AND siswa_id = :student_id
+             LIMIT 1 FOR UPDATE'
         );
         $studentQuery->execute([
+            'session_id' => $sessionId,
             'student_id' => $studentId,
-            'class_id' => $session['kelas_id'],
-            'semester_id' => $session['semester_id'],
         ]);
         if ($studentQuery->fetchColumn() === false) {
             throw new DomainException('Siswa tidak terdaftar pada kelas sesi ini.');
         }
 
         $insert = $pdo->prepare(
-            'INSERT INTO nilai_keaktifan
+            'INSERT INTO poin_keaktifan
                 (sesi_pembelajaran_id, siswa_id, poin, dicatat_oleh_user_id, catatan, waktu_dicatat)
              VALUES (:session_id, :student_id, :points, :user_id, :note, CURRENT_TIMESTAMP())'
         );
@@ -572,7 +574,7 @@ function guruAddPoints(int $sessionId, int $studentId, string $points, ?string $
             'session_id' => $sessionId,
             'student_id' => $studentId,
             'points' => $points,
-            'user_id' => currentUser()['id'],
+            'user_id' => $user['id'],
             'note' => $note === '' ? null : $note,
         ]);
         $pdo->commit();
@@ -592,12 +594,20 @@ function guruStudentPointHistory(int $sessionId, int $studentId): array
         throw new DomainException('Sesi tidak ditemukan.');
     }
 
+    $snapshot = guruDb()->prepare(
+        'SELECT id FROM absensi WHERE sesi_pembelajaran_id = :session_id AND siswa_id = :student_id LIMIT 1'
+    );
+    $snapshot->execute(['session_id' => $sessionId, 'student_id' => $studentId]);
+    if ($snapshot->fetchColumn() === false) {
+        throw new DomainException('Siswa tidak memiliki baris absensi pada snapshot sesi ini.');
+    }
+
     $statement = guruDb()->prepare(
-        'SELECT nk.poin, nk.waktu_dicatat, nk.catatan, u.username AS recorded_by
-         FROM nilai_keaktifan nk
-         INNER JOIN users u ON u.id = nk.dicatat_oleh_user_id
-         WHERE nk.sesi_pembelajaran_id = :session_id AND nk.siswa_id = :student_id
-         ORDER BY nk.waktu_dicatat DESC, nk.id DESC'
+        'SELECT pk.poin, pk.waktu_dicatat, pk.catatan, u.username AS recorded_by
+         FROM poin_keaktifan pk
+         INNER JOIN users u ON u.id = pk.dicatat_oleh_user_id
+         WHERE pk.sesi_pembelajaran_id = :session_id AND pk.siswa_id = :student_id
+         ORDER BY pk.waktu_dicatat DESC, pk.id DESC'
     );
     $statement->execute(['session_id' => $sessionId, 'student_id' => $studentId]);
 

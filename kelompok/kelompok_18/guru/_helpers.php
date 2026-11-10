@@ -614,7 +614,7 @@ function guruStudentPointHistory(int $sessionId, int $studentId): array
     return $statement->fetchAll();
 }
 
-/** Return class and semester options from all of the teacher's assignments. */
+/** Return historical class and semester filter options from teacher-owned assignments. */
 function guruArchiveFilters(): array
 {
     $classes = guruDb()->prepare(
@@ -631,7 +631,8 @@ function guruArchiveFilters(): array
         'SELECT DISTINCT sem.id, sem.nama AS name, sem.tanggal_mulai
          FROM penugasan_guru pg
          INNER JOIN guru g ON g.id = pg.guru_id
-         INNER JOIN semester sem ON sem.id = pg.semester_id
+         INNER JOIN kelas k ON k.id = pg.kelas_id
+         INNER JOIN semester sem ON sem.id = k.semester_id
          WHERE g.user_id = :user_id
          ORDER BY sem.tanggal_mulai DESC, sem.id DESC'
     );
@@ -640,24 +641,31 @@ function guruArchiveFilters(): array
     return ['classes' => $classes->fetchAll(), 'semesters' => $semesters->fetchAll()];
 }
 
-/** Fetch completed sessions for the authenticated teacher with optional filters. */
+/** Fetch completed and cancelled sessions for the authenticated teacher with optional filters. */
 function guruArchiveSessions(?int $classId = null, ?int $semesterId = null): array
 {
     $sql =
-        'SELECT sp.id, sp.tanggal, sp.waktu_mulai, sp.waktu_selesai,
+        'SELECT sp.id, DATE(sp.mulai_at) AS tanggal,
+                sp.mulai_at AS waktu_mulai, sp.selesai_at AS waktu_selesai,
                 jm.jam_mulai AS scheduled_start, jm.jam_selesai AS scheduled_end,
                 k.id AS class_id, k.nama AS class_name,
-                sem.id AS semester_id, sem.nama AS semester, sp.status,
-                COUNT(DISTINCT ak.siswa_id) AS student_count
+                sem.id AS semester_id, sem.nama AS semester,
+                mp.nama AS subject_name, sp.status,
+                COUNT(DISTINCT a.siswa_id) AS student_count
          FROM sesi_pembelajaran sp
-         INNER JOIN penugasan_guru pg ON pg.id = sp.penugasan_guru_id
+         INNER JOIN jadwal_mengajar jm ON jm.id = sp.jadwal_mengajar_id
+         INNER JOIN penugasan_guru pg ON pg.id = jm.penugasan_guru_id
          INNER JOIN guru g ON g.id = pg.guru_id
          INNER JOIN kelas k ON k.id = pg.kelas_id
-         INNER JOIN semester sem ON sem.id = pg.semester_id
-         LEFT JOIN jadwal_mengajar jm ON jm.id = sp.jadwal_mengajar_id
-         LEFT JOIN anggota_kelas ak ON ak.kelas_id = pg.kelas_id AND ak.semester_id = pg.semester_id
-         WHERE g.user_id = :user_id AND sp.status = :completed_status';
-    $parameters = ['user_id' => currentUser()['id'], 'completed_status' => 'selesai'];
+         INNER JOIN semester sem ON sem.id = k.semester_id
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
+         LEFT JOIN absensi a ON a.sesi_pembelajaran_id = sp.id
+         WHERE g.user_id = :user_id AND sp.status IN (:completed_status, :cancelled_status)';
+    $parameters = [
+        'user_id' => currentUser()['id'],
+        'completed_status' => 'selesai',
+        'cancelled_status' => 'dibatalkan',
+    ];
 
     if ($classId !== null) {
         $sql .= ' AND k.id = :class_id';
@@ -669,46 +677,48 @@ function guruArchiveSessions(?int $classId = null, ?int $semesterId = null): arr
     }
 
     $sql .=
-        ' GROUP BY sp.id, sp.tanggal, sp.waktu_mulai, sp.waktu_selesai,
+        ' GROUP BY sp.id, sp.mulai_at, sp.selesai_at,
                   jm.jam_mulai, jm.jam_selesai, k.id, k.nama,
-                  sem.id, sem.nama, sp.status
-          ORDER BY sp.tanggal DESC, sp.id DESC';
+                  sem.id, sem.nama, mp.nama, sp.status
+          ORDER BY sp.mulai_at DESC, sp.id DESC';
     $statement = guruDb()->prepare($sql);
     $statement->execute($parameters);
 
     return $statement->fetchAll();
 }
 
-/** Return one completed session and its historical class roster, attendance and scores. */
+/** Return one terminal owned session and its snapshot attendance and completed-session score totals. */
 function guruArchiveDetail(int $sessionId): ?array
 {
     $session = guruOwnedSession($sessionId);
-    if ($session === null || $session['status'] !== 'selesai') {
+    if ($session === null || !in_array($session['status'], ['selesai', 'dibatalkan'], true)) {
         return null;
     }
 
+    $pointJoin = $session['status'] === 'selesai'
+        ? 'LEFT JOIN (
+               SELECT sesi_pembelajaran_id, siswa_id, SUM(poin) AS total_points
+               FROM poin_keaktifan
+               WHERE sesi_pembelajaran_id = :points_session_id
+               GROUP BY sesi_pembelajaran_id, siswa_id
+           ) p ON p.sesi_pembelajaran_id = a.sesi_pembelajaran_id AND p.siswa_id = a.siswa_id'
+        : '';
+    $pointSelect = $session['status'] === 'selesai' ? 'COALESCE(p.total_points, 0)' : '0';
     $statement = guruDb()->prepare(
         "SELECT sis.id, sis.nomor_induk AS number, sis.nama AS name,
-                COALESCE(a.status, 'hadir') AS attendance_status,
-                COALESCE(p.total_points, 0) AS points
-         FROM anggota_kelas ak
-         INNER JOIN siswa sis ON sis.id = ak.siswa_id
-         LEFT JOIN absensi a ON a.sesi_pembelajaran_id = :session_id AND a.siswa_id = sis.id
-         LEFT JOIN (
-             SELECT sesi_pembelajaran_id, siswa_id, SUM(poin) AS total_points
-             FROM nilai_keaktifan WHERE sesi_pembelajaran_id = :points_session_id
-             GROUP BY sesi_pembelajaran_id, siswa_id
-         ) p ON p.sesi_pembelajaran_id = :joined_session_id AND p.siswa_id = sis.id
-         WHERE ak.kelas_id = :class_id AND ak.semester_id = :semester_id
+                a.status AS attendance_status,
+                {$pointSelect} AS points
+         FROM absensi a
+         INNER JOIN siswa sis ON sis.id = a.siswa_id
+         {$pointJoin}
+         WHERE a.sesi_pembelajaran_id = :session_id
          ORDER BY sis.nama, sis.id"
     );
-    $statement->execute([
-        'session_id' => $sessionId,
-        'points_session_id' => $sessionId,
-        'joined_session_id' => $sessionId,
-        'class_id' => $session['class_id'],
-        'semester_id' => $session['semester_id'],
-    ]);
+    $parameters = ['session_id' => $sessionId];
+    if ($session['status'] === 'selesai') {
+        $parameters['points_session_id'] = $sessionId;
+    }
+    $statement->execute($parameters);
     $session['students'] = $statement->fetchAll();
 
     return $session;

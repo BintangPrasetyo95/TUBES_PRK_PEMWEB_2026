@@ -40,12 +40,12 @@ guru_page_start('Detail Arsip Pembelajaran', 'arsip-pembelajaran.php');
     <?php
     attendara_ui_stat_card('Kelas', $session['class_name'], $session['semester'], 'school');
     attendara_ui_stat_card('Tanggal', $dateLabel, 'Tanggal sesi', 'calendar');
-    attendara_ui_stat_card('Waktu', $timeLabel, 'Waktu sesi atau jadwal', 'calendar');
+    attendara_ui_stat_card('Waktu', $timeLabel, 'Waktu aktual sesi', 'calendar');
     attendara_ui_stat_card('Status', ucfirst((string) $session['status']), 'Sesi pembelajaran', 'chart');
     ?>
 </section>
 <section class="space-y-4">
-    <div><h2 class="text-lg font-semibold text-[#20392a]">Kehadiran dan Poin</h2><p class="mt-1 text-sm text-slate-600">Catatan per siswa dalam sesi.</p></div>
+    <div><h2 class="text-lg font-semibold text-[#20392a]">Kehadiran dan Poin</h2><p class="mt-1 text-sm text-slate-600"><?= $session['status'] === 'dibatalkan' ? 'Snapshot kehadiran sesi; poin sesi batal tidak masuk rekap.' : 'Snapshot kehadiran dan total poin per siswa.' ?></p></div>
     <?php guru_render_table(['Nomor Induk', 'Nama Siswa', 'Status Kehadiran', 'Poin Keaktifan'], $rows, 'Belum ada catatan siswa.'); ?>
 </section>
 <section class="space-y-4">

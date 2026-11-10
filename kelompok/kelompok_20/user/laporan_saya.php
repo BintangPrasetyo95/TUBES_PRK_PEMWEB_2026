@@ -7,7 +7,11 @@ wajibLogin();
 
 $userId = $_SESSION['user_id'];
 
-// Semua laporan milik user yang sedang aktif beserta nama kategori dan tanggapan admin terakhir
+// Mengambil filter dari URL
+$filterJenis  = trim($_GET['jenis'] ?? '');
+$filterStatus = trim($_GET['status'] ?? '');
+
+// Mengambil data laporan sesuai filter
 try {
     $sql = "
         SELECT 
@@ -30,11 +34,26 @@ try {
         FROM laporan l
         LEFT JOIN kategori k ON l.kategori_id = k.id
         WHERE l.user_id = :user_id
-        ORDER BY l.created_at DESC
     ";
 
+    $params = [':user_id' => $userId];
+
+    // Filter berdasarkan Jenis jika dipilih
+    if (!empty($filterJenis) && in_array($filterJenis, ['pengaduan', 'aspirasi'], true)) {
+        $sql .= " AND l.jenis = :jenis";
+        $params[':jenis'] = $filterJenis;
+    }
+
+    // Filter berdasarkan Status jika dipilih
+    if (!empty($filterStatus) && in_array($filterStatus, ['menunggu', 'diproses', 'selesai'], true)) {
+        $sql .= " AND l.status = :status";
+        $params[':status'] = $filterStatus;
+    }
+
+    $sql .= " ORDER BY l.created_at DESC";
+
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([':user_id' => $userId]);
+    $stmt->execute($params);
     $daftarLaporan = $stmt->fetchAll();
 
 } catch (PDOException $e) {
@@ -42,7 +61,8 @@ try {
     $daftarLaporan = [];
 }
 
-$pageTitle = 'Laporan Saya';
+$isFiltered = (!empty($filterJenis) || !empty($filterStatus));
+$pageTitle  = 'Laporan Saya';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -59,12 +79,49 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
+    <!-- Formulir Filter Jenis & Status -->
+    <form method="GET" action="/user/laporan_saya.php" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1.5rem; padding: 1rem; background-color: var(--color-bg); border-radius: var(--radius); border: 1px solid var(--color-border);">
+        <div style="flex: 1; min-width: 170px;">
+            <label for="filter-jenis" class="form-label" style="font-size: 0.88rem; margin-bottom: 0.3rem;">Jenis Laporan:</label>
+            <select id="filter-jenis" name="jenis" class="form-control" style="padding: 0.5rem 0.75rem;">
+                <option value="">-- Semua Jenis --</option>
+                <option value="pengaduan" <?= ($filterJenis === 'pengaduan') ? 'selected' : '' ?>>Pengaduan</option>
+                <option value="aspirasi" <?= ($filterJenis === 'aspirasi') ? 'selected' : '' ?>>Aspirasi</option>
+            </select>
+        </div>
+
+        <div style="flex: 1; min-width: 170px;">
+            <label for="filter-status" class="form-label" style="font-size: 0.88rem; margin-bottom: 0.3rem;">Status Laporan:</label>
+            <select id="filter-status" name="status" class="form-control" style="padding: 0.5rem 0.75rem;">
+                <option value="">-- Semua Status --</option>
+                <option value="menunggu" <?= ($filterStatus === 'menunggu') ? 'selected' : '' ?>>Menunggu</option>
+                <option value="diproses" <?= ($filterStatus === 'diproses') ? 'selected' : '' ?>>Diproses</option>
+                <option value="selesai" <?= ($filterStatus === 'selesai') ? 'selected' : '' ?>>Selesai</option>
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Filter</button>
+            <?php if ($isFiltered): ?>
+                <a href="/user/laporan_saya.php" class="btn btn-secondary" style="padding: 0.5rem 1rem;" title="Kembali ke semua laporan">Reset</a>
+            <?php endif; ?>
+        </div>
+    </form>
+
+    <!-- Tabel Data Laporan -->
     <?php if (empty($daftarLaporan)): ?>
         <div style="text-align: center; padding: 3rem 1rem;">
-            <p style="font-size: 1.1rem; color: var(--color-text-light); margin-bottom: 1.25rem;">
-                Anda belum pernah mengirimkan pengaduan ataupun aspirasi.
-            </p>
-            <a href="/user/kirim.php" class="btn btn-primary">Sampaikan Laporan Sekarang</a>
+            <?php if ($isFiltered): ?>
+                <p style="font-size: 1.05rem; color: var(--color-text-light); margin-bottom: 1rem;">
+                    Tidak ada laporan yang sesuai dengan filter yang dipilih.
+                </p>
+                <a href="/user/laporan_saya.php" class="btn btn-secondary">Reset Filter</a>
+            <?php else: ?>
+                <p style="font-size: 1.1rem; color: var(--color-text-light); margin-bottom: 1.25rem;">
+                    Anda belum pernah mengirimkan pengaduan ataupun aspirasi.
+                </p>
+                <a href="/user/kirim.php" class="btn btn-primary">Sampaikan Laporan Sekarang</a>
+            <?php endif; ?>
         </div>
     <?php else: ?>
         <div class="table-responsive">
@@ -152,4 +209,3 @@ require_once __DIR__ . '/../includes/header.php';
 <?php
 require_once __DIR__ . '/../includes/footer.php';
 ?>
-

@@ -2,7 +2,7 @@
 
 ## Tujuan dan status
 
-Dokumen ini menjelaskan rancangan database ATTENDARA berdasarkan alur yang telah disepakati. Ini adalah rancangan untuk ditinjau; file SQL dan aplikasi yang ada belum otomatis berubah mengikuti dokumen ini.
+Dokumen ini menjelaskan rancangan database ATTENDARA berdasarkan alur yang telah disepakati. `database/attendara.sql` sekarang membuat skema sesuai rancangan ini; kode PHP yang ada masih perlu disesuaikan sebelum dapat memakai skema baru.
 
 ATTENDARA adalah aplikasi administrasi pembelajaran SMA dengan dua role: Admin dan Guru. Siswa tidak memiliki akun. Admin mengelola semester, kelas, siswa, mata pelajaran, penugasan guru, dan jadwal. Guru melihat jadwal penugasannya, memulai sesi, menghitung tap kehadiran secara anonim, menetapkan status siswa yang tidak hadir, mencatat poin keaktifan, dan mengelola kelompok.
 
@@ -26,7 +26,7 @@ Siswa tidak memiliki akun.
 ### `guru` — profil guru
 
 - `id` — PK.
-- `user_id` — FK ke `users.id`, unik.
+- `user_id` — FK ke `users.id`, unik dan wajib.
 - `nomor_induk`, `nama` — wajib.
 - `email`, `no_telepon` — opsional.
 - `is_active`, `created_at`, `updated_at`.
@@ -36,7 +36,7 @@ Siswa tidak memiliki akun.
 - `id` — PK.
 - `nomor_induk` — unik dan wajib.
 - `nama` — wajib.
-- `jenis_kelamin` — wajib; nilai yang direncanakan `L` (laki-laki) atau `P` (perempuan), untuk pengacakan kelompok seimbang.
+- `jenis_kelamin ENUM('L','P')` — wajib untuk pengacakan kelompok seimbang.
 - `tanggal_lahir` — opsional.
 - `is_active`, `created_at`, `updated_at`.
 
@@ -52,7 +52,7 @@ Siswa tidak memiliki akun.
 - `id` — PK.
 - `kode` — unik dan wajib.
 - `nama`, `tanggal_mulai`, `tanggal_selesai` — wajib.
-- `status` — setidaknya membedakan semester berjalan dan semester lampau.
+- `status` — `direncanakan`, `aktif`, atau `selesai`; hanya satu semester dapat berstatus `aktif`.
 - `created_at`, `updated_at`.
 
 Admin menetapkan semester berjalan. Form penugasan dan jadwal hanya menawarkan kelas dari semester berjalan. Riwayat semester lampau tetap tersedia untuk arsip.
@@ -71,9 +71,10 @@ Satu baris kelas mewakili rombongan belajar dalam satu semester. Kode seperti `X
 - `id` — PK.
 - `siswa_id` — FK ke `siswa.id`, wajib.
 - `kelas_id` — FK ke `kelas.id`, wajib.
+- `semester_id` — FK ke `semester.id`, wajib dan harus sama dengan semester kelas.
 - `created_at`.
 
-Siswa dan kelas berelasi banyak-ke-banyak sepanjang riwayat. Satu siswa hanya boleh memiliki satu penempatan aktif pada satu kelas dalam semester yang sama. Jika mutasi kelas tengah semester perlu didukung, aturan waktunya perlu ditambahkan.
+Siswa dan kelas berelasi banyak-ke-banyak sepanjang riwayat. Kunci gabungan kelas/semester memastikan semester penempatan sama dengan semester kelas. Kombinasi `(siswa_id, semester_id)` unik memastikan satu siswa hanya memiliki satu kelas per semester. Jika mutasi kelas tengah semester perlu didukung, aturan waktunya perlu ditambahkan.
 
 ### `penugasan_guru` — guru, mata pelajaran, dan kelas
 
@@ -100,9 +101,10 @@ Jadwal tidak digenerate dari penugasan: penugasan tidak memuat hari dan jam. Adm
 
 - `id` — PK.
 - `jadwal_mengajar_id` — FK ke `jadwal_mengajar.id`, wajib.
-- `mulai_at`, `selesai_at` — waktu aktual sesi; `selesai_at` kosong selama sesi berjalan.
-- `status` — misalnya `berlangsung`, `selesai`, atau `dibatalkan`.
-- `jumlah_tap` — jumlah tap anonim yang diterima pada sesi; mulai dari nol dan dapat dikoreksi manual.
+- `mulai_at DATETIME` — waktu aktual mulai.
+- `selesai_at DATETIME` — waktu aktual selesai; kosong selama sesi berjalan.
+- `status` — `berlangsung`, `selesai`, atau `dibatalkan`.
+- `jumlah_tap SMALLINT UNSIGNED` — jumlah tap anonim yang diterima pada sesi; mulai dari nol dan dapat dikoreksi manual.
 - `tap_terakhir_at` — waktu tap terakhir yang diterima, untuk menerapkan jeda dua detik antar-tap pada sesi yang sama.
 - `created_at`, `updated_at`.
 
@@ -114,8 +116,8 @@ Sesi dimulai dari jadwal. Waktu rencana tetap berada di `jadwal_mengajar`; waktu
 - `sesi_pembelajaran_id` — FK ke `sesi_pembelajaran.id`, wajib.
 - `siswa_id` — FK ke `siswa.id`, wajib.
 - `status` — `hadir`, `izin`, `sakit`, atau `alpha`; default `hadir` ketika sesi dibuat.
-- `dicatat_oleh_user_id` — FK ke `users.id`, untuk Guru yang menetapkan/mengubah status.
-- `waktu_dicatat`, `catatan` — waktu perubahan dan catatan opsional.
+- `dicatat_oleh_user_id` — FK ke `users.id`, Guru yang membuat/terakhir mengubah catatan.
+- `waktu_dicatat DATETIME`, `catatan VARCHAR(500)` — waktu pencatatan dan catatan opsional.
 
 Saat sesi dimulai, sistem membuat satu baris untuk setiap siswa dalam kelas dan mengisi status awal `hadir`. Tap hanya mengubah `jumlah_tap` pada sesi, bukan status siswa tertentu. Guru mencari tahu siswa yang tidak hadir dan mengganti status siswa tersebut pada daftar. Satu pasangan `(sesi_pembelajaran_id, siswa_id)` hanya memiliki satu status akhir.
 
@@ -143,7 +145,7 @@ Aplikasi harus memastikan anggota kelompok berasal dari kelas pada penugasan yan
 - `id` — PK.
 - `sesi_pembelajaran_id` — FK ke `sesi_pembelajaran.id`, wajib.
 - `siswa_id` — FK ke `siswa.id`, wajib.
-- `poin` — jumlah poin yang ditambahkan.
+- `poin DECIMAL(7,2)` — jumlah poin positif yang ditambahkan.
 - `dicatat_oleh_user_id` — FK ke `users.id`, Guru pencatat.
 - `waktu_dicatat`, `catatan` — waktu dan catatan opsional.
 
@@ -186,8 +188,9 @@ erDiagram
 
 ## Constraint dan integritas yang direncanakan
 
-- Unik: `users.username`, `guru.user_id`, `guru.nomor_induk`, `siswa.nomor_induk`, `mata_pelajaran.kode`, `semester.kode`, dan `(kelas.semester_id, kelas.kode)`.
-- Satu kelas per siswa per semester: kombinasi `(anggota_kelas.siswa_id, kelas.semester_id)` harus unik. Karena semester melekat pada kelas, aturan ini memerlukan validasi aplikasi atau kunci komposit yang sesuai.
+- Unik: `users.username`, `guru.user_id`, `guru.nomor_induk`, `siswa.nomor_induk`, `mata_pelajaran.kode`, `mata_pelajaran.nama`, `semester.kode`, dan `(kelas.semester_id, kelas.kode)`.
+- Hanya satu semester berstatus `aktif`, ditegakkan dengan kunci unik pada kolom terhitung.
+- Satu kelas per siswa per semester: `anggota_kelas(siswa_id, semester_id)` unik; FK komposit memastikan semester penempatan sama dengan semester kelas.
 - Satu baris penugasan untuk kombinasi `(guru_id, mata_pelajaran_id, kelas_id)`; guru berbeda tetap boleh mengajar mata pelajaran/kelas yang sama.
 - `absensi(sesi_pembelajaran_id, siswa_id)` unik.
 - `anggota_kelompok(kelompok_id, siswa_id)` unik melalui PK gabungan.
@@ -205,9 +208,9 @@ erDiagram
 3. Apakah masa berlaku jadwal perlu tanggal akhir atau cukup mengikuti semester.
 4. Apakah koreksi jumlah tap perlu menyimpan alasan dan riwayat koreksi, atau nilai terkoreksi pada sesi sudah cukup.
 5. Apakah status sesi `dibatalkan` memerlukan alasan.
-6. Rentang, format pecahan, dan aturan nilai negatif untuk poin keaktifan.
+6. Apakah poin keaktifan perlu pecahan; skema saat ini menerima nilai positif dengan dua angka desimal.
 7. Apakah akun wajib bagi setiap Guru dan kolom profil tambahan yang diperlukan.
 
 ## Batas dokumen
 
-Dokumen ini adalah rancangan ERD, bukan perubahan skema database atau implementasi aplikasi. Skema SQL, backend, halaman Admin/Guru, dan data seed yang sudah ada perlu ditinjau dan dimigrasikan agar sesuai rancangan ini sebelum fitur dapat dianggap memakai model baru.
+Dokumen ini adalah rancangan ERD. Skema SQL dan data demo sudah disusun mengikuti rancangan ini, tetapi backend serta halaman Admin/Guru masih perlu dimigrasikan sebelum aplikasi dapat berjalan dengan skema baru.

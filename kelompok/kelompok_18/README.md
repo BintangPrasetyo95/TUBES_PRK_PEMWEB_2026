@@ -31,9 +31,9 @@ Rancangan entitas dan relasi terbaru ada di [docs/ERD.md](docs/ERD.md). Entitas 
 - `sesi_pembelajaran` dan `absensi` untuk sesi aktual, hitungan tap anonim, dan status akhir siswa.
 - `kelompok`, `anggota_kelompok`, dan `poin_keaktifan` untuk pengelolaan pembelajaran.
 
-**Status implementasi:** ERD tersebut adalah rancangan target yang disepakati, tetapi belum diterapkan pada SQL dan kode aplikasi yang ada. File `database/attendara.sql` serta beberapa halaman Admin/Guru masih memakai model lama: antara lain belum memiliki entitas mata pelajaran, jenis kelamin masih opsional, dan tap absensi masih memakai perilaku lama. Jangan menganggap impor SQL yang ada sudah menghasilkan skema sesuai ERD revisi. Migrasi skema dan penyesuaian aplikasi masih diperlukan.
+**Status implementasi:** `database/attendara.sql` dan `database/attendara_dummy.sql` sekarang mengikuti ERD revisi. Kode PHP Admin/Guru masih memakai model lama: antara lain belum memakai penugasan mata pelajaran, kelas per semester, hitungan tap anonim di database, dan tabel poin baru. Karena itu, halaman aplikasi belum kompatibel dengan skema target sampai kode PHP dimigrasikan.
 
-## Teknologi dan menjalankan versi saat ini
+## Teknologi dan menyiapkan database target
 
 Proyek memakai PHP Native, PDO, dan MySQL/MariaDB. Untuk pengembangan lokal dapat menggunakan Laragon atau server PHP lokal.
 
@@ -43,9 +43,11 @@ Proyek memakai PHP Native, PDO, dan MySQL/MariaDB. Untuk pengembangan lokal dapa
    - `ATTENDARA_DB_NAME` (opsional, default `attendara`)
    - `ATTENDARA_DB_USER` (default `root` hanya untuk host lokal; wajib untuk host lain)
    - `ATTENDARA_DB_PASSWORD` (opsional; isi kosong jika database lokal tidak memakai password)
-3. Impor `database/attendara.sql` untuk membuat **skema versi saat ini**. File koneksi [config/database.php](config/database.php) hanya membuka koneksi; file itu tidak membuat tabel.
-4. Untuk data demo, impor `database/attendara_dummy.sql` sekali saja setelah skema dibuat dan masih kosong. Kredensial demo ditulis di dalam file SQL dan hanya untuk pengembangan lokal; jangan gunakan di lingkungan publik.
-5. Buka `login.php` melalui web server PHP. Di Laragon, buka proyek dari document root yang digunakan Laragon.
+3. Impor `database/attendara.sql` ke database `attendara` yang **baru/kosong** untuk membuat skema target. File koneksi [config/database.php](config/database.php) hanya membuka koneksi; file itu tidak membuat atau memigrasikan tabel.
+4. Untuk data demo yang bermakna, impor `database/attendara_dummy.sql` sekali saja setelah skema dibuat dan masih kosong. Akun demo tetap `admin` dengan password `admin`, serta `guru1` sampai `guru5` dengan password yang sama seperti username. Data profil guru, siswa, kelas, dan mata pelajaran memakai nama contoh.
+5. Impor file SQL saja belum membuat halaman PHP kompatibel. Migrasikan kode Admin/Guru sebelum menjalankan alur aplikasi lengkap. Setelah migrasi, buka `login.php` melalui web server PHP, misalnya Laragon.
+
+Kedua file SQL memakai `CREATE TABLE IF NOT EXISTS`; mengimpornya ke database lama **tidak mengubah tabel lama**. Buat database baru/kosong untuk skema revisi, atau siapkan dan jalankan migrasi terencana setelah mencadangkan database lama.
 
 > **Catatan keamanan:** jangan menyimpan kredensial database produksi di repository. Gunakan environment web server dan ganti/hapus akun demo sebelum aplikasi dipublikasikan.
 
@@ -59,4 +61,4 @@ Logout dilakukan melalui POST ke `logout.php` dengan field `_csrf_token`; endpoi
 
 ## Batas dan pekerjaan berikutnya
 
-ERD terbaru mendokumentasikan alur dan model data yang dimaksud. Sebelum alur tersebut dapat digunakan, skema SQL perlu dirancang ulang dan aplikasi perlu disesuaikan dengan model semester, penugasan mata pelajaran, jadwal, tap anonim, kelompok, dan poin pada ERD. Data demo saat ini juga mengikuti skema lama.
+Skema SQL dan data demo sudah memakai model semester, penugasan mata pelajaran, jadwal, tap anonim, kelompok, dan poin pada ERD. Pekerjaan berikutnya adalah menyesuaikan kode PHP agar membaca dan menulis struktur baru tersebut.

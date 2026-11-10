@@ -15,17 +15,46 @@ class SiklusModel
     }
 
     // TODO: method read() -> SELECT * FROM siklus
-    public function read()
+    public function read($filters = [])
     {
         $query = "SELECT s.*, 
                          l.nama AS nama_lahan,
                          l.lokasi AS lokasi_lahan
                   FROM " . $this->table_name . " s
                   INNER JOIN lahan l ON s.lahan_id = l.id
-                  ORDER BY s.id DESC";
+                  WHERE 1 = 1";
+
+        $params = [];
+
+        if (!empty($filters['q'])) {
+            $query .= " AND (s.nama_tanaman LIKE :q OR l.nama LIKE :q OR l.lokasi LIKE :q)";
+            $params[':q'] = '%' . $filters['q'] . '%';
+        }
+
+        if (!empty($filters['status'])) {
+            $query .= " AND s.status = :status";
+            $params[':status'] = $filters['status'];
+        }
+
+        if (!empty($filters['lahan_id'])) {
+            $query .= " AND s.lahan_id = :lahan_id";
+            $params[':lahan_id'] = $filters['lahan_id'];
+        }
+
+        if (!empty($filters['dari'])) {
+            $query .= " AND s.tanggal_tanam >= :dari";
+            $params[':dari'] = $filters['dari'];
+        }
+
+        if (!empty($filters['sampai'])) {
+            $query .= " AND s.tanggal_tanam <= :sampai";
+            $params[':sampai'] = $filters['sampai'];
+        }
+
+        $query .= " ORDER BY s.id DESC";
 
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+        $stmt->execute($params);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

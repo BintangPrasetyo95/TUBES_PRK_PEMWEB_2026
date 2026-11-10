@@ -1,37 +1,20 @@
 /**
- * =================================================================
+
  * JAVASCRIPT DOM & AJAX FETCH: Modul Rekap Nilai & Pengaturan Bobot
- * Modul       : Perhitungan Nilai & Laporan Akademik
+ * Fitur       : Perhitungan Nilai & Laporan Akademik
  * Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
- * =================================================================
- *
- * Fitur yang ditangani:
- * 1. Fetch & populasi dropdown penugasan guru yang sedang login
- * 2. Fetch & tampilkan pengaturan bobot komponen penilaian aktif
- * 3. Validasi DOM interaktif real-time: total bobot wajib tepat 100%
- * 4. AJAX POST/PUT simpan pembaruan bobot komponen penilaian
- * 5. AJAX POST kalkulasi nilai akhir otomatis di backend (trigger hitung)
- * 6. Fetch & render tabel rekapitulasi nilai siswa beserta predikat & kuadran
- * 7. Live search/filter siswa berdasarkan nama atau NISN tanpa me-reload
- * 8. Render ringkasan statistik kelas (rata-rata, tertinggi, terendah, % lengkap)
- * 9. Cetak laporan via window.print() dengan populasi kop & tanda tangan resmi
- * =================================================================
  */
 
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 (function () {
     'use strict';
 
-    // Dapatkan token CSRF dari meta tag
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-    // State Modul Laporan
     let daftarPenugasan = [];
     let penugasanAktif  = null;
     let dataSiswaRekap  = [];
     let bobotAktif      = { bobot_tugas: 25, bobot_kuis: 25, bobot_uts: 25, bobot_uas: 25 };
 
-    // Elemen DOM
     const selectPenugasan       = document.getElementById('select-penugasan');
     const badgeStatusRekap      = document.getElementById('badge-status-rekap');
     const formBobot             = document.getElementById('form-bobot');
@@ -49,7 +32,6 @@
     const bodyRekapNilai        = document.getElementById('body-rekap-nilai');
     const laporanNotice         = document.getElementById('laporan-notice');
 
-    // Elemen Statistik
     const statRataKelas         = document.getElementById('stat-rata-kelas');
     const statPredikatKelas     = document.getElementById('stat-predikat-kelas');
     const statNilaiMax          = document.getElementById('stat-nilai-max');
@@ -57,7 +39,6 @@
     const statKelengkapan       = document.getElementById('stat-kelengkapan');
     const statSiswaLengkap      = document.getElementById('stat-siswa-lengkap');
 
-    // Elemen Kop Cetak
     const printMapel            = document.getElementById('print-mapel');
     const printKelas            = document.getElementById('print-kelas');
     const printPeriode          = document.getElementById('print-periode');
@@ -67,10 +48,6 @@
     const printNamaTtd          = document.getElementById('print-nama-ttd');
     const printNipTtd           = document.getElementById('print-nip-ttd');
 
-    // =================================================================
-    // FUNGSI BANTU: AJAX Fetch Wrapper Aman dengan CSRF Header
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function apiRequest(url, method = 'GET', body = null) {
         const options = {
             method: method,
@@ -105,17 +82,12 @@
         return result.data;
     }
 
-    // =================================================================
-    // FUNGSI BANTU: Tampilkan Notifikasi Banner
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     function tampilkanNotifikasi(pesan, isError = false) {
         if (!laporanNotice) return;
         laporanNotice.hidden = false;
         laporanNotice.className = 'message ' + (isError ? 'error' : 'success');
         laporanNotice.textContent = pesan;
 
-        // Auto hide setelah 5 detik jika sukses
         if (!isError) {
             setTimeout(() => {
                 laporanNotice.hidden = true;
@@ -123,10 +95,6 @@
         }
     }
 
-    // =================================================================
-    // FUNGSI 1: Inisialisasi Modul & Pemuatan Daftar Penugasan
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function muatDaftarPenugasan() {
         try {
             daftarPenugasan = await apiRequest('api/kalkulasi.php?action=penugasan');
@@ -153,7 +121,6 @@
                 selectPenugasan.appendChild(opt);
             });
 
-            // Pilih otomatis penugasan pertama jika ada
             if (daftarPenugasan.length > 0) {
                 selectPenugasan.selectedIndex = 1;
                 handlePilihPenugasan();
@@ -163,10 +130,6 @@
         }
     }
 
-    // =================================================================
-    // FUNGSI 2: Penanganan Pergantian Penugasan Terpilih
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function handlePilihPenugasan() {
         const idPenugasan = selectPenugasan.value;
         if (!idPenugasan) {
@@ -179,7 +142,6 @@
         penugasanAktif = daftarPenugasan.find(p => String(p.id_penugasan) === String(idPenugasan));
         badgeStatusRekap.textContent = penugasanAktif ? `${penugasanAktif.nama_kelas} • ${penugasanAktif.kode_mapel}` : 'Memuat…';
 
-        // Update header cetak
         if (penugasanAktif) {
             if (printMapel)   printMapel.textContent   = `${penugasanAktif.nama_mapel} (${penugasanAktif.kode_mapel})`;
             if (printKelas)   printKelas.textContent   = `${penugasanAktif.nama_kelas} (Tingkat ${penugasanAktif.tingkat})`;
@@ -188,7 +150,6 @@
             if (printNamaTtd) printNamaTtd.textContent = penugasanAktif.nama_guru;
         }
 
-        // Muat bobot dan data rekap secara paralel
         await Promise.all([
             muatBobot(idPenugasan),
             muatRekapNilai(idPenugasan),
@@ -196,10 +157,6 @@
         ]);
     }
 
-    // =================================================================
-    // FUNGSI 3: Muat Data Bobot Aktif
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function muatBobot(idPenugasan) {
         try {
             const dataBobot = await apiRequest(`api/kalkulasi.php?action=bobot&id_penugasan=${idPenugasan}`);
@@ -223,10 +180,6 @@
         }
     }
 
-    // =================================================================
-    // FUNGSI 4: Validasi Real-Time Total Bobot (Wajib 100%)
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     function validasiTotalBobot() {
         const bt = parseFloat(inputBobotTugas.value) || 0;
         const bk = parseFloat(inputBobotKuis.value)  || 0;
@@ -269,10 +222,6 @@
         }
     }
 
-    // =================================================================
-    // FUNGSI 5: Simpan Pembaruan Bobot Komponen Penilaian (AJAX POST)
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function handleSimpanBobot(e) {
         e.preventDefault();
         if (!penugasanAktif) {
@@ -306,7 +255,6 @@
             updatePrintBobot();
             tampilkanNotifikasi('Pengaturan bobot berhasil disimpan.');
 
-            // Refresh tabel rekap & ringkasan untuk merefleksikan bobot baru
             await Promise.all([
                 muatRekapNilai(penugasanAktif.id_penugasan),
                 muatRingkasanKelas(penugasanAktif.id_penugasan)
@@ -319,10 +267,6 @@
         }
     }
 
-    // =================================================================
-    // FUNGSI 6: Kalkulasi Nilai Akhir Otomatis (Trigger Backend Hitung)
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function handleHitungUlang() {
         if (!penugasanAktif) {
             tampilkanNotifikasi('Silakan pilih penugasan mengajar terlebih dahulu.', true);
@@ -340,7 +284,6 @@
 
             tampilkanNotifikasi(`Kalkulasi nilai akhir berhasil diperbarui untuk ${hasil.length} siswa.`);
 
-            // Muat ulang tabel rekap & statistik kelas
             await Promise.all([
                 muatRekapNilai(penugasanAktif.id_penugasan),
                 muatRingkasanKelas(penugasanAktif.id_penugasan)
@@ -353,10 +296,6 @@
         }
     }
 
-    // =================================================================
-    // FUNGSI 7: Muat & Render Data Rekapitulasi Nilai Siswa
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function muatRekapNilai(idPenugasan) {
         bodyRekapNilai.innerHTML = '<tr><td colspan="11" class="empty">Memuat data rekapitulasi nilai…</td></tr>';
 
@@ -370,10 +309,6 @@
         }
     }
 
-    // =================================================================
-    // FUNGSI 8: Render Baris Tabel Nilai ke DOM
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     function renderTabelRekap(siswaList) {
         bodyRekapNilai.innerHTML = '';
         countSiswaLaporan.textContent = `${siswaList.length} siswa`;
@@ -394,49 +329,40 @@
         siswaList.forEach((s, idx) => {
             const row = document.createElement('tr');
 
-            // No
             const tdNo = document.createElement('td');
             tdNo.textContent = String(idx + 1);
             row.appendChild(tdNo);
 
-            // NISN
             const tdNisn = document.createElement('td');
             tdNisn.textContent = s.nisn;
             row.appendChild(tdNisn);
 
-            // Nama Siswa
             const tdNama = document.createElement('td');
             tdNama.style.fontWeight = '600';
             tdNama.textContent = s.nama_siswa;
             row.appendChild(tdNama);
 
-            // Rata Tugas
             const tdTugas = document.createElement('td');
             tdTugas.textContent = s.rata_tugas !== null ? Number(s.rata_tugas).toFixed(1) : '—';
             row.appendChild(tdTugas);
 
-            // Rata Kuis
             const tdKuis = document.createElement('td');
             tdKuis.textContent = s.rata_kuis !== null ? Number(s.rata_kuis).toFixed(1) : '—';
             row.appendChild(tdKuis);
 
-            // Rata UTS
             const tdUts = document.createElement('td');
             tdUts.textContent = s.rata_uts !== null ? Number(s.rata_uts).toFixed(1) : '—';
             row.appendChild(tdUts);
 
-            // Rata UAS
             const tdUas = document.createElement('td');
             tdUas.textContent = s.rata_uas !== null ? Number(s.rata_uas).toFixed(1) : '—';
             row.appendChild(tdUas);
 
-            // Nilai Akhir
             const tdAkhir = document.createElement('td');
             tdAkhir.style.fontWeight = 'bold';
             tdAkhir.textContent = s.nilai_akhir !== null ? Number(s.nilai_akhir).toFixed(2) : '—';
             row.appendChild(tdAkhir);
 
-            // Predikat
             const tdPredikat = document.createElement('td');
             if (s.predikat && s.predikat !== '-') {
                 const pill = document.createElement('span');
@@ -448,7 +374,6 @@
             }
             row.appendChild(tdPredikat);
 
-            // Kelengkapan
             const tdLengkap = document.createElement('td');
             const badgeLengkap = document.createElement('span');
             badgeLengkap.className = s.status_kelengkapan_nilai === 'Lengkap' ? 'badge-lengkap' : 'badge-belum';
@@ -456,7 +381,6 @@
             tdLengkap.appendChild(badgeLengkap);
             row.appendChild(tdLengkap);
 
-            // Kuadran Belajar (no-print)
             const tdKuadran = document.createElement('td');
             tdKuadran.className = 'no-print';
             if (s.kategori_kuadran) {
@@ -475,10 +399,6 @@
         });
     }
 
-    // =================================================================
-    // FUNGSI 9: Muat & Render Statistik Ringkasan Kelas
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     async function muatRingkasanKelas(idPenugasan) {
         try {
             const data = await apiRequest(`api/kalkulasi.php?action=ringkasan&id_penugasan=${idPenugasan}`);
@@ -489,7 +409,6 @@
                 statNilaiMin.textContent      = Number(data.nilai_terendah).toFixed(2);
                 statKelengkapan.textContent   = `${data.persen_lengkap}%`;
 
-                // Hitung predikat rata-rata
                 let predikatRata = 'E';
                 if (data.rata_rata_kelas >= 85) predikatRata = 'A';
                 else if (data.rata_rata_kelas >= 75) predikatRata = 'B';
@@ -507,15 +426,10 @@
                 statSiswaLengkap.textContent  = 'Belum ada rekap tersimpan';
             }
         } catch (error) {
-            // Abaikan error non-kritis ringkasan
             statRataKelas.textContent = '—';
         }
     }
 
-    // =================================================================
-    // FUNGSI 10: Live Filter Pencarian Siswa (Real-time DOM)
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     function handlePencarianSiswa() {
         const keyword = inputSearchSiswa.value.toLowerCase().trim();
         if (!keyword) {
@@ -531,31 +445,23 @@
         renderTabelRekap(filtered);
     }
 
-    // =================================================================
-    // FUNGSI 11: Cetak Laporan (window.print())
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     function handleCetakLaporan() {
         if (!penugasanAktif) {
             tampilkanNotifikasi('Silakan pilih penugasan mengajar sebelum mencetak laporan.', true);
             return;
         }
 
-        // Tanggal TTD otomatis hari ini dalam bahasa Indonesia
         if (printTanggalTtd) {
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             printTanggalTtd.textContent = new Date().toLocaleDateString('id-ID', options);
         }
 
-        // Tampilkan semua siswa (batalkan filter pencarian sebelum cetak)
         inputSearchSiswa.value = '';
         renderTabelRekap(dataSiswaRekap);
 
-        // Panggil fungsi print bawaan browser
         window.print();
     }
 
-    // Reset Tampilan Tabel
     function resetTabel() {
         bodyRekapNilai.innerHTML = '<tr><td colspan="11" class="empty">Silakan pilih penugasan mengajar terlebih dahulu.</td></tr>';
         countSiswaLaporan.textContent = '0 siswa';
@@ -565,16 +471,11 @@
         statKelengkapan.textContent = '—';
     }
 
-    // =================================================================
-    // EVENT LISTENERS
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-    // =================================================================
     function pasangEventListener() {
         if (selectPenugasan) {
             selectPenugasan.addEventListener('change', handlePilihPenugasan);
         }
 
-        // Live validation pada semua input bobot
         [inputBobotTugas, inputBobotKuis, inputBobotUts, inputBobotUas].forEach(inp => {
             if (inp) {
                 inp.addEventListener('input', validasiTotalBobot);
@@ -598,16 +499,13 @@
         }
     }
 
-    // Inisialisasi awal saat DOM siap
     document.addEventListener('DOMContentLoaded', () => {
         pasangEventListener();
         muatDaftarPenugasan();
     });
 
-    // Jika script dimuat secara defer atau setelah DOMContentLoaded
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
         pasangEventListener();
         muatDaftarPenugasan();
     }
 })();
-

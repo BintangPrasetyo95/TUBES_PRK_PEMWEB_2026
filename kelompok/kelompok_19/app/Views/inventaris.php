@@ -1,141 +1,130 @@
 <?php
 // app/Views/inventaris.php
-// Tugas: CRUD Inventaris (tabel + form modal) & Log Transaksi.
-// Diisi oleh: Valerie.
-
+// CRUD Inventaris + transaksi masuk/keluar. Stok memakai <meter>, bukan kartu.
 $title = "Manajemen Inventaris";
 require_once __DIR__ . "/layouts/header.php";
-require_once __DIR__ . "/layouts/sidebar.php";
 ?>
-<div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Data Inventaris</h1>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalInventaris" onclick="resetFormInventaris()">
-            <i class="bi bi-plus-circle"></i> Tambah Item
+<header class="page-header">
+    <h1 id="judul-inventaris">Stok kebun</h1>
+    <p class="top-label">Catatan sarana produksi · <time datetime="<?= date('Y-m-d') ?>"><?= htmlspecialchars($tanggalPanjang) ?></time></p>
+    <p class="intro">Bibit, pupuk, dan pestisida. Barang yang hampir habis tampil paling atas, lengkap dengan pencatatan transaksi masuk dan keluar.</p>
+    <p class="actions">
+        <button class="btn" type="button" data-modal-open="#modalInventaris">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah item
         </button>
-    </div>
+    </p>
+</header>
 
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover" id="tabelInventaris">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>No</th>
-                            <th>Nama Item</th>
-                            <th>Kategori</th>
-                            <th>Stok</th>
-                            <th>Satuan</th>
-                            <th>Harga Satuan</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Data akan disuntikkan via Fetch API (inventaris.js) -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<div class="table-wrap">
+    <table id="tabelInventaris">
+        <caption class="sr-only">Daftar sarana produksi beserta stok, satuan, dan harga satuan</caption>
+        <thead>
+            <tr>
+                <th scope="col">No</th>
+                <th scope="col">Nama item</th>
+                <th scope="col">Kategori</th>
+                <th scope="col">Stok</th>
+                <th scope="col">Harga satuan</th>
+                <th scope="col">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr id="placeholderInventaris"><td colspan="6" class="text-center">Memuat data inventaris...</td></tr>
+        </tbody>
+    </table>
 </div>
 
-<!-- Modal Form Master Inventaris -->
-<div class="modal fade" id="modalInventaris" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalInventarisTitle">Tambah Item Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<dialog class="modal" id="modalInventaris" aria-labelledby="modalInventarisTitle">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalInventarisTitle">Tambah Item</h2>
+            <button class="btn-close" type="button" data-modal-close aria-label="Tutup">&times;</button>
+        </div>
+        <form id="formInventaris" class="modal-form">
+            <input type="hidden" name="id" id="inventarisId">
+            <p id="inventarisError" class="form-error" role="alert" hidden></p>
+            <div class="form-group">
+                <label for="inventarisNama">Nama item</label>
+                <input type="text" class="form-control" name="nama" id="inventarisNama" autocomplete="off" required>
+                <span class="form-hint">Contoh: Pupuk NPK, bibit cabai rawit.</span>
             </div>
-            <form id="formInventaris">
-                <input type="hidden" name="id" id="inventarisId">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Item</label>
-                        <input type="text" class="form-control" name="nama" id="inventarisNama" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kategori</label>
-                        <select class="form-select" name="kategori" id="inventarisKategori" required>
-                            <option value="">Pilih...</option>
-                            <option value="Bibit">Bibit</option>
-                            <option value="Pupuk">Pupuk</option>
-                            <option value="Pestisida">Pestisida</option>
-                            <option value="Alat">Alat</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Stok Awal</label>
-                        <input type="number" class="form-control" name="stok" id="inventarisStok" required min="0" step="0.01">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Satuan</label>
-                        <input type="text" class="form-control" name="satuan" id="inventarisSatuan" required placeholder="Contoh: kg, liter, pcs">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Harga Satuan (Rp)</label>
-                        <input type="number" class="form-control" name="harga_satuan" id="inventarisHargaSatuan" required min="0" step="0.01">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan Data</button>
-                </div>
-            </form>
+            <div class="form-group">
+                <label for="inventarisKategori">Kategori</label>
+                <select class="form-select" name="kategori" id="inventarisKategori" required>
+                    <option value="">Pilih kategori...</option>
+                    <option value="Bibit">Bibit</option>
+                    <option value="Pupuk">Pupuk</option>
+                    <option value="Pestisida">Pestisida</option>
+                    <option value="Alat">Alat</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="inventarisStok">Stok awal</label>
+                <input type="number" class="form-control" name="stok" id="inventarisStok" inputmode="decimal" required min="0" step="0.01">
+            </div>
+            <div class="form-group">
+                <label for="inventarisSatuan">Satuan</label>
+                <input type="text" class="form-control" name="satuan" id="inventarisSatuan" autocomplete="off" required placeholder="Contoh: kg, liter, sak">
+            </div>
+            <div class="form-group">
+                <label for="inventarisHargaSatuan">Harga satuan (Rp)</label>
+                <input type="number" class="form-control" name="harga_satuan" id="inventarisHargaSatuan" inputmode="numeric" required min="0" step="0.01">
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn btn--secondary" type="button" data-modal-close>Batal</button>
+            <button class="btn" type="submit" form="formInventaris">Simpan item</button>
         </div>
     </div>
-</div>
+</dialog>
 
-<!-- Modal Form Transaksi (Masuk/Keluar) -->
-<div class="modal fade" id="modalTransaksi" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Catat Transaksi Barang</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<dialog class="modal" id="modalTransaksi" aria-labelledby="modalTransaksiTitle">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTransaksiTitle">Catat Transaksi Barang</h2>
+            <button class="btn-close" type="button" data-modal-close aria-label="Tutup">&times;</button>
+        </div>
+        <form id="formTransaksi" class="modal-form">
+            <input type="hidden" name="inventaris_id" id="transaksiInventarisId">
+            <p id="transaksiError" class="form-error" role="alert" hidden></p>
+            <div class="form-group">
+                <label for="transaksiNamaItem">Nama barang</label>
+                <input type="text" class="form-control" id="transaksiNamaItem" readonly>
             </div>
-            <form id="formTransaksi">
-                <input type="hidden" name="inventaris_id" id="transaksiInventarisId">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Barang</label>
-                        <input type="text" class="form-control" id="transaksiNamaItem" readonly disabled>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Jenis Transaksi</label>
-                        <select class="form-select" name="jenis" id="transaksiJenis" required>
-                            <option value="">Pilih...</option>
-                            <option value="Masuk">Barang Masuk (Kulakan / Restock)</option>
-                            <option value="Keluar">Barang Keluar (Pemakaian ke Lahan)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Tanggal Transaksi</label>
-                        <input type="date" class="form-control" name="tanggal" id="transaksiTanggal" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Jumlah</label>
-                        <input type="number" class="form-control" name="jumlah" id="transaksiJumlah" required min="0.01" step="0.01">
-                    </div>
-                    <!-- Dropdown Siklus: Disembunyikan secara default, hanya muncul jika jenis = Keluar -->
-                    <div class="mb-3" id="grupSiklusTanam" style="display: none;">
-                        <label class="form-label">Gunakan untuk Siklus Tanam:</label>
-                        <select class="form-select" name="siklus_id" id="transaksiSiklusId">
-                            <option value="">-- Memuat data siklus... --</option>
-                        </select>
-                        <small class="text-muted">Wajib diisi untuk mencatat beban biaya pemakaian lahan.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success">Simpan Transaksi</button>
-                </div>
-            </form>
+            <div class="form-group">
+                <label for="transaksiJenis">Jenis transaksi</label>
+                <select class="form-select" name="jenis" id="transaksiJenis" required>
+                    <option value="">Pilih jenis transaksi...</option>
+                    <option value="Masuk">Barang masuk (kulakan / restock)</option>
+                    <option value="Keluar">Barang keluar (pemakaian ke lahan)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="transaksiTanggal">Tanggal transaksi</label>
+                <input type="date" class="form-control" name="tanggal" id="transaksiTanggal" required>
+            </div>
+            <div class="form-group">
+                <label for="transaksiJumlah">Jumlah</label>
+                <input type="number" class="form-control" name="jumlah" id="transaksiJumlah" inputmode="decimal" required min="0.01" step="0.01">
+            </div>
+            <div class="form-group" id="grupSiklusTanam" hidden>
+                <label for="transaksiSiklusId">Siklus tanam</label>
+                <select class="form-select" name="siklus_id" id="transaksiSiklusId">
+                    <option value="">Memuat data siklus...</option>
+                </select>
+                <span class="form-hint">Wajib diisi saat mencatat pemakaian untuk lahan.</span>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn btn--secondary" type="button" data-modal-close>Batal</button>
+            <button class="btn" type="submit" form="formTransaksi">Simpan transaksi</button>
         </div>
     </div>
-</div>
+</dialog>
 
 <script src="/assets/js/inventaris.js"></script>
 <?php
 require_once __DIR__ . "/layouts/footer.php";
 ?>
+

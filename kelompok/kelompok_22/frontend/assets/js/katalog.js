@@ -98,6 +98,11 @@ async function muatData() {
 const GAMBAR_OBAT = {
     1: '../assets/images/obat/paracetamol.png',
     2: '../assets/images/obat/ibuprofen.png',
+    3: '../assets/images/obat/asam-mefenamat.png',
+    4: '../assets/images/obat/sanmol-sirup.png',
+    5: '../assets/images/obat/obh-combi.png',
+    6: '../assets/images/obat/siladex-mucolytic-&-expectorant.png',
+    7: '../assets/images/obat/tremenza-sirup.png',
 };
 
 function visualObat(o, warna, besar = false) {

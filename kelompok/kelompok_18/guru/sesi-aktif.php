@@ -69,6 +69,8 @@ guru_page_start('Sesi Pembelajaran', 'kelas.php');
     <?php endif; ?>
 </section>
 
+<p class="text-sm text-slate-600">Mata pelajaran: <?= attendara_ui_escape($session['subject_name']) ?> · Mulai aktual: <?= attendara_ui_escape(date('d M Y H:i', strtotime($session['mulai_at']))) ?></p>
+
 <section class="space-y-4">
     <div><h2 class="text-lg font-semibold text-[#20392a]">Menu Dalam Sesi</h2></div>
     <div class="grid gap-4 md:grid-cols-3">
@@ -77,7 +79,7 @@ guru_page_start('Sesi Pembelajaran', 'kelas.php');
         <a href="kelompok.php?session_id=<?= (int) $session['id'] ?>" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Kelompok</h3><p class="mt-2 text-sm text-slate-500">Buat dan acak kelompok siswa.</p></a>
     </div>
 </section>
-<a href="kelas-detail.php?id=<?= (int) $session['class_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Kembali ke Kelas</a>
+<a href="kelas-detail.php?assignment_id=<?= (int) $session['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Kembali ke Kelas</a>
 
 <?php if ($canChange): ?>
     <dialog id="finish-dialog" class="w-[min(28rem,calc(100%-2rem))] rounded-2xl border border-[#dfe7dd] p-0 shadow-xl backdrop:bg-slate-900/30"><div class="p-6"><h2 class="text-lg font-semibold text-[#20392a]">Selesaikan sesi?</h2><p class="mt-2 text-sm text-slate-600">Pastikan status kehadiran dan poin sudah diperiksa.</p><div class="mt-6 flex justify-end gap-2"><button type="button" data-close="finish-dialog" class="min-h-10 rounded-lg border border-[#d8e2d8] px-4 text-sm font-semibold">Kembali</button><form method="post" action="sesi-aktif.php?id=<?= (int) $session['id'] ?>"><input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>"><input type="hidden" name="session_id" value="<?= (int) $session['id'] ?>"><input type="hidden" name="action" value="finish_session"><button type="submit" class="min-h-10 rounded-lg bg-[#1e5638] px-4 text-sm font-semibold text-white">Selesaikan</button></form></div></div></dialog>

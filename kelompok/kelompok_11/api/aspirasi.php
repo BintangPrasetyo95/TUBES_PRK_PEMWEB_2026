@@ -2,6 +2,19 @@
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../config/database.php';
 
+// BLOK TAMBAHAN: Mengambil daftar aspirasi untuk ditampilkan
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    try {
+        $stmt = $pdo->query('SELECT nama_pengirim, pesan_aspirasi, created_at FROM aspirasi ORDER BY id DESC');
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode(['status' => 'success', 'data' => $data]);
+        exit;
+    } catch (PDOException $e) {
+        echo json_encode(['status' => 'error', 'message' => 'Gagal memuat daftar aspirasi']);
+        exit;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['status' => 'error', 'message' => 'Method tidak diizinkan']);

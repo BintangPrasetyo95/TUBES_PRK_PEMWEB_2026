@@ -15,31 +15,6 @@ $guruNavigation = [
     ['label' => 'Logout', 'href' => '../logout.php', 'icon' => 'file', 'type' => 'logout'],
 ];
 
-// Contoh statis untuk tampilan Guru, selaras dengan relasi ERD.
-$guruUiData = [
-    'teacher' => ['name' => 'Budi Santoso', 'number' => 'G-2026-001'],
-    'classes' => [
-        ['id' => 1, 'assignment_id' => 6, 'schedule_id' => 6, 'code' => 'X-A', 'name' => 'Kelas X-A', 'level' => 10, 'semester_id' => 2, 'semester' => '2026/2027 Ganjil'],
-    ],
-    // Label hari ini contoh UI karena konversi kolom hari belum ditetapkan di skema.
-    'schedules' => [
-        ['id' => 6, 'assignment_id' => 6, 'class_id' => 1, 'class_name' => 'Kelas X-A', 'semester' => '2026/2027 Ganjil', 'day_label' => 'Senin', 'day_number' => 1, 'start' => '07:00', 'end' => '08:30', 'valid_from' => '13 Jul 2026', 'valid_until' => '19 Des 2026'],
-    ],
-    'students' => [],
-    'archives' => [
-        ['id' => 6, 'date' => '02 Nov 2026', 'class_name' => 'Kelas X-A', 'semester' => '2026/2027 Ganjil', 'time' => '07:00–08:30', 'status' => 'selesai', 'attendance_count' => 20],
-    ],
-];
-
-for ($studentId = 1; $studentId <= 20; $studentId++) {
-    $sequence = str_pad((string) $studentId, 3, '0', STR_PAD_LEFT);
-    $guruUiData['students'][] = [
-        'id' => $studentId,
-        'number' => 'ATT-2026-' . $sequence,
-        'name' => 'Siswa ' . str_pad((string) $studentId, 2, '0', STR_PAD_LEFT),
-    ];
-}
-
 /** Open the compact shared shell for Guru pages. */
 function guru_page_start(string $title, string $activeHref): void
 {

@@ -1,6 +1,9 @@
 <?php
+// includes/partials/pemilih-tema.php
+// Komponen pemilih 4 tema warna Claymorphism
 ?>
 <div class="pemilih-tema" role="group" aria-label="Pilihan Tema Tampilan">
+  <span class="pemilih-tema-ikon" aria-hidden="true" title="Pilihan Tema">&#127912;</span>
   <button type="button" class="swatch-tema swatch-sky" data-pilih-tema="sky-bubblegum" aria-label="Tema Sky Bubblegum" title="Sky Bubblegum" aria-pressed="false">
     <span class="swatch-warna"></span>
   </button>

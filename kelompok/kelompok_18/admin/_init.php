@@ -14,6 +14,7 @@ $adminNavigation = [
     ['label' => 'Kelas', 'href' => 'kelas.php', 'icon' => 'school'],
     ['label' => 'Siswa', 'href' => 'siswa.php', 'icon' => 'users'],
     ['label' => 'Guru', 'href' => 'guru.php', 'icon' => 'users'],
+    ['label' => 'Mata Pelajaran', 'href' => 'mata-pelajaran.php', 'icon' => 'book'],
     ['label' => 'Semester', 'href' => 'semester.php', 'icon' => 'calendar'],
     ['label' => 'Penempatan Kelas', 'href' => 'penempatan-kelas.php', 'icon' => 'school'],
     ['label' => 'Penugasan Guru', 'href' => 'penugasan-guru.php', 'icon' => 'users'],

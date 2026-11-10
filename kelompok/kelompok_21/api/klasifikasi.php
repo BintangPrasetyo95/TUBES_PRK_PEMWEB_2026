@@ -14,8 +14,16 @@ $sql = "
             s.nisn AS nis,
             s.nama_siswa AS name,
             s.id_kelas AS kelas,
-            ROUND(COALESCE((COUNT(DISTINCT CASE WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' AND LOWER(TRIM(np.status_pengumpulan)) = 'tepat waktu' THEN np.id_penilaian END) 
-            / NULLIF(COUNT(DISTINCT CASE WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' THEN p.id_penilaian END), 0)) * 100, 0), 1) AS tugas,
+            ROUND(COALESCE(
+                (SUM(CASE 
+                    WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' AND LOWER(TRIM(np.status_pengumpulan)) = 'tepat waktu' THEN 100
+                    WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' AND LOWER(TRIM(np.status_pengumpulan)) = 'terlambat' THEN 50
+                    ELSE 0 
+                END) 
+                / 
+                NULLIF(COUNT(DISTINCT CASE WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' THEN p.id_penilaian END) * 100, 0)
+                ) * 100, 
+            0), 1) AS tugas,
             ROUND(COALESCE(AVG(CASE WHEN LOWER(TRIM(p.jenis_komponen)) IN ('uas', 'uts', 'ujian') AND np.nilai IS NOT NULL THEN np.nilai END), 0), 1) AS ujian
         FROM SISWA s
         LEFT JOIN PENUGASAN_MENGAJAR pm ON pm.id_kelas = s.id_kelas
@@ -23,7 +31,7 @@ $sql = "
         LEFT JOIN NILAI_DAN_PENGUMPULAN np ON np.id_penilaian = p.id_penilaian 
                                           AND np.id_siswa = s.id_siswa
     ";
-
+    
     $params = [];
     if ($kelasId !== '0' && $kelasId !== '' && strtolower($kelasId) !== 'semua kelas') {
         $sql .= " WHERE s.id_kelas = ? ";

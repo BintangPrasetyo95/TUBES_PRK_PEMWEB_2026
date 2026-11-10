@@ -1,11 +1,8 @@
 (function () {
   'use strict';
 
-
 const PETISI_API = 'api/petisi.php';
 const PETISI_STORAGE_KEY = 'civilens_petisi_didukung';
-
-//Helper
 
 function escapeHtml(teks) {
   const el = document.createElement('div');
@@ -34,10 +31,8 @@ function simpanDidukung(id) {
       daftar.push(id);
       localStorage.setItem(PETISI_STORAGE_KEY, JSON.stringify(daftar));
     }
-  } catch { /* localStorage tidak tersedia, abaikan */ }
+  } catch  {}
 }
-
-//Template
 
 function kartuPetisi(p) {
   const persen = p.target_tanda_tangan > 0
@@ -77,8 +72,6 @@ function kartuPetisi(p) {
     </article>`;
 }
 
-//Render utama
-
 async function renderPetisi(target) {
   const container = typeof target === 'string' ? document.querySelector(target) : target;
   if (!container) return;
@@ -112,8 +105,6 @@ async function renderPetisi(target) {
     status.textContent = err.message || 'Tidak dapat terhubung ke server.';
   }
 }
-
-//Tombol dukung
 
 async function tanganiKlikDukung(e, list) {
   const btn = e.target.closest('[data-aksi="dukung"]');

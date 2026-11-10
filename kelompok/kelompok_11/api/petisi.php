@@ -30,7 +30,6 @@ function ambilPetisi(PDO $pdo, int $id): ?array
 try {
     $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
-    //GET
     if ($method === 'GET') {
         if (isset($_GET['id'])) {
             $id = filter_var($_GET['id'], FILTER_VALIDATE_INT);
@@ -59,7 +58,6 @@ try {
         kirimJson(200, ['success' => true, 'data' => $daftar]);
     }
 
-    // POST
     if ($method === 'POST') {
         $input = json_decode(file_get_contents('php://input') ?: '', true);
         if (!is_array($input) || !isset($input['id'])) {

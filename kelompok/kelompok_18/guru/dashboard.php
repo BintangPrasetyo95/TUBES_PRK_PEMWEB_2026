@@ -12,6 +12,11 @@ try {
     $schedules = $profile !== null && $activeSemester !== null
         ? guruActiveSchedules((int) $profile['id'], (int) $activeSemester['id'])
         : [];
+    $classCounts = [];
+    foreach ($classes as $class) {
+        $classCounts[(int) $class['id']] = (int) $class['student_count'];
+    }
+    $studentCount = array_sum($classCounts);
 } catch (Throwable $exception) {
     guruReportBackendError($exception);
 }
@@ -20,7 +25,7 @@ guru_page_start('Dashboard Guru', 'dashboard.php');
 ?>
 <section aria-label="Ringkasan Guru" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
     <?php
-    attendara_ui_stat_card('Kelas ditugaskan', (string) count($classes), null, 'school');
+    attendara_ui_stat_card('Kelas ditugaskan', (string) count($classCounts), $studentCount . ' siswa pada kelas aktif', 'school');
     attendara_ui_stat_card('Jadwal mengajar', (string) count($schedules), $activeSemester['nama'] ?? 'Tidak ada semester aktif', 'calendar');
     attendara_ui_stat_card('Profil Guru', $profile['nomor_induk'] ?? 'Belum terhubung', $profile['nama'] ?? 'Profil Guru belum tersedia', 'users');
     ?>
@@ -38,7 +43,7 @@ guru_page_start('Dashboard Guru', 'dashboard.php');
                     <span class="min-w-24 rounded-xl bg-[#e9f0e8] px-3 py-2 text-center text-sm font-semibold text-[#28583b]"><?= attendara_ui_escape($schedule['day_label']) ?></span>
                     <div>
                         <h3 class="font-semibold text-[#20392a]"><?= attendara_ui_escape($schedule['class_name']) ?></h3>
-                        <p class="mt-1 text-sm text-slate-500"><?= attendara_ui_escape($schedule['semester']) ?></p>
+                        <p class="mt-1 text-sm text-slate-500"><?= attendara_ui_escape($schedule['subject_name'] . ' · ' . $schedule['semester']) ?></p>
                     </div>
                 </div>
                 <p class="text-sm font-medium text-slate-700 sm:text-right"><?= attendara_ui_escape($schedule['start'] . '–' . $schedule['end']) ?></p>

@@ -205,7 +205,7 @@ function guruClassSchedules(int $assignmentId): array
 }
 
 /** Create or resume today's ongoing session for a teacher-owned schedule. */
-function guruStartSession(int $classId, int $scheduleId): int
+function guruStartSession(int $assignmentId, int $scheduleId): int
 {
     $profile = guruProfile();
     $semester = guruActiveSemester();
@@ -217,23 +217,23 @@ function guruStartSession(int $classId, int $scheduleId): int
     $pdo->beginTransaction();
     try {
         $assignmentQuery = $pdo->prepare(
-            'SELECT pg.id
+            'SELECT pg.id, pg.kelas_id, k.semester_id
              FROM penugasan_guru pg
              INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
-             INNER JOIN semester sem ON sem.id = pg.semester_id AND sem.status = :active_status
-             WHERE pg.guru_id = :guru_id AND pg.kelas_id = :class_id
-               AND pg.semester_id = :semester_id
+             INNER JOIN semester sem ON sem.id = k.semester_id AND sem.status = :active_status
+             WHERE pg.guru_id = :guru_id AND pg.id = :assignment_id
+               AND k.semester_id = :semester_id
              LIMIT 1 FOR UPDATE'
         );
         $assignmentQuery->execute([
             'active_status' => 'aktif',
             'guru_id' => $profile['id'],
-            'class_id' => $classId,
+            'assignment_id' => $assignmentId,
             'semester_id' => $semester['id'],
         ]);
-        $assignmentId = $assignmentQuery->fetchColumn();
-        if ($assignmentId === false) {
-            throw new DomainException('Kelas tidak ditemukan.');
+        $assignment = $assignmentQuery->fetch();
+        if (!is_array($assignment)) {
+            throw new DomainException('Penugasan tidak ditemukan.');
         }
 
         $scheduleQuery = $pdo->prepare(
@@ -244,7 +244,7 @@ function guruStartSession(int $classId, int $scheduleId): int
                AND (berlaku_sampai IS NULL OR berlaku_sampai >= CURRENT_DATE())
              LIMIT 1'
         );
-        $scheduleQuery->execute(['schedule_id' => $scheduleId, 'assignment_id' => $assignmentId]);
+        $scheduleQuery->execute(['schedule_id' => $scheduleId, 'assignment_id' => $assignment['id']]);
         if ($scheduleQuery->fetchColumn() === false) {
             throw new DomainException('Jadwal tidak tersedia untuk kelas ini.');
         }
@@ -254,7 +254,7 @@ function guruStartSession(int $classId, int $scheduleId): int
              WHERE penugasan_guru_id = :assignment_id AND status = :status
              ORDER BY id DESC LIMIT 1 FOR UPDATE"
         );
-        $ongoingQuery->execute(['assignment_id' => $assignmentId, 'status' => 'berlangsung']);
+        $ongoingQuery->execute(['assignment_id' => $assignment['id'], 'status' => 'berlangsung']);
         $ongoingSessionId = $ongoingQuery->fetchColumn();
         if ($ongoingSessionId !== false) {
             $pdo->commit();
@@ -267,7 +267,7 @@ function guruStartSession(int $classId, int $scheduleId): int
              VALUES (:assignment_id, :schedule_id, CURRENT_DATE(), CURRENT_TIMESTAMP(), :status)"
         );
         $insert->execute([
-            'assignment_id' => $assignmentId,
+            'assignment_id' => $assignment['id'],
             'schedule_id' => $scheduleId,
             'status' => 'berlangsung',
         ]);
@@ -285,8 +285,8 @@ function guruStartSession(int $classId, int $scheduleId): int
             'session_id' => $sessionId,
             'attendance_status' => 'hadir',
             'user_id' => currentUser()['id'],
-            'class_id' => $classId,
-            'semester_id' => $semester['id'],
+            'class_id' => $assignment['kelas_id'],
+            'semester_id' => $assignment['semester_id'],
         ]);
         $pdo->commit();
 

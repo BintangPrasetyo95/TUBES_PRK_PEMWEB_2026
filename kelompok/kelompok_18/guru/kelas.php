@@ -24,9 +24,10 @@ guru_page_start('Kelas', 'kelas.php');
                     <div><p class="text-xs font-semibold uppercase tracking-wide text-[#64806a]">Kode <?= attendara_ui_escape($class['code']) ?></p><h3 class="mt-1 text-lg font-semibold text-[#20392a]"><?= attendara_ui_escape($class['name']) ?></h3><p class="mt-1 text-sm text-slate-500">Tingkat <?= attendara_ui_escape((string) $class['level']) ?> · <?= attendara_ui_escape($class['semester']) ?></p></div>
                     <span class="rounded-xl bg-[#e9f0e8] p-2 text-[#28583b]"><?php attendara_ui_icon('school', 'h-5 w-5'); ?></span>
                 </div>
+                <p class="mt-3 text-sm font-medium text-[#526257]"><?= attendara_ui_escape($class['subject_name']) ?></p>
                 <div class="mt-5 flex flex-wrap gap-2">
-                    <a href="kelas-detail.php?id=<?= (int) $class['id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d]">Lihat Kelas</a>
-                    <a href="pengaturan-kelas.php?id=<?= (int) $class['id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Pengaturan Kelas</a>
+                    <a href="kelas-detail.php?assignment_id=<?= (int) $class['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d]">Lihat Kelas</a>
+                    <a href="pengaturan-kelas.php?assignment_id=<?= (int) $class['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Pengaturan Kelas</a>
                 </div>
             </article>
         <?php endforeach; ?>

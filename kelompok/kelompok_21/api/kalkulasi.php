@@ -3,9 +3,8 @@
  * ENDPOINT API: Kalkulasi Nilai Akhir & Pengaturan Bobot
  * Modul       : Perhitungan Nilai & Laporan Akademik
  * Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
- 
- 
- * Kuadran Belajar (diselaraskan dengan modul Klasifikasi Siswa):
+ *
+ * Kuadran Belajar):
  *   Rajin & nilai tinggi          → Nilai >= 75 & Disiplin >= 80
  *   Jarang kumpul & nilai tinggi  → Nilai >= 75 & Disiplin <  80
  *   Rajin & nilai rendah          → Nilai <  75 & Disiplin >= 80
@@ -13,10 +12,6 @@
  */
 require __DIR__ . '/bootstrap.php';
 $action = $_GET['action'] ?? '';
-
-// FUNGSI BANTU: Predikat Huruf berdasarkan Nilai Akhir
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// Skala: A (>=85), B (>=75), C (>=65), D (>=55), E (<55)
 
 function hitungPredikat($nilaiAkhir) {
     if ($nilaiAkhir === null) return '-';
@@ -27,9 +22,6 @@ function hitungPredikat($nilaiAkhir) {
     return 'E';
 }
 
-// FUNGSI : Distribusi Predikat untuk Ringkasan Kelas
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-
 function hitungDistribusiPredikat(array $nilaiArr): array {
     $distribusi = ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0];
     foreach ($nilaiArr as $nilai) {
@@ -38,10 +30,6 @@ function hitungDistribusiPredikat(array $nilaiArr): array {
     }
     return $distribusi;
 }
-
-
-// FUNGSI : Distribusi Kuadran Belajar untuk Ringkasan Kelas
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 
 function hitungDistribusiKuadran(array $rekapAll): array {
     $distribusi = [
@@ -56,9 +44,6 @@ function hitungDistribusiKuadran(array $rekapAll): array {
     }
     return $distribusi;
 }
-
-// FUNGSI : Validasi akses penugasan guru
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 
 function validasiPenugasan(PDO $pdo, int $idPenugasan): array {
     $stmt = $pdo->prepare(
@@ -80,9 +65,6 @@ function validasiPenugasan(PDO $pdo, int $idPenugasan): array {
     return $penugasan;
 }
 
-// FUNGSI BANTU: Ambil bobot aktif (default 25% merata jika belum diatur)
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-
 function ambilBobot(PDO $pdo, int $idPenugasan): array {
     $stmt = $pdo->prepare('SELECT * FROM PENGATURAN_BOBOT WHERE id_penugasan = ?');
     $stmt->execute([$idPenugasan]);
@@ -100,10 +82,6 @@ function ambilBobot(PDO $pdo, int $idPenugasan): array {
     return $bobot;
 }
 
-// FUNGSI BANTU: Ambil peta nilai seluruh siswa secara bulk
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// Menghindari N+1 query untuk performa optimal
-
 function ambilNilaiBulk(PDO $pdo, array $idPenilaianAll): array {
     $nilaiMap = [];
     if (!empty($idPenilaianAll)) {
@@ -119,9 +97,6 @@ function ambilNilaiBulk(PDO $pdo, array $idPenilaianAll): array {
     return $nilaiMap;
 }
 
-// FUNGSI BANTU: Kelompokkan daftar penilaian per jenis komponen
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-
 function kelompokkanPenilaian(array $daftarPenilaian): array {
     $penilaianPerJenis = ['Tugas' => [], 'Kuis' => [], 'UTS' => [], 'UAS' => []];
     foreach ($daftarPenilaian as $p) {
@@ -131,10 +106,6 @@ function kelompokkanPenilaian(array $daftarPenilaian): array {
     }
     return $penilaianPerJenis;
 }
-
-
-// FUNGSI BANTU: Hitung rata-rata per jenis komponen untuk satu siswa
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 
 function hitungRataPerJenis(array $penilaianPerJenis, array $nilaiSiswa): array {
     $rataPerJenis = [];
@@ -152,12 +123,6 @@ function hitungRataPerJenis(array $penilaianPerJenis, array $nilaiSiswa): array 
     return $rataPerJenis;
 }
 
-
-// FUNGSI BANTU: Hitung nilai akhir berbobot
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
-// Formula: NA = (Rata_Tugas×B_Tugas + Rata_Kuis×B_Kuis
-//             + Rata_UTS×B_UTS + Rata_UAS×B_UAS) / 100
-
 function hitungNilaiAkhir(array $rataPerJenis, array $bobot): float {
     $na = (
         ($rataPerJenis['Tugas'] ?? 0) * (float)$bobot['bobot_tugas'] +
@@ -168,18 +133,12 @@ function hitungNilaiAkhir(array $rataPerJenis, array $bobot): float {
     return round($na, 2);
 }
 
-// FUNGSI BANTU: Tentukan kategori kuadran belajar
-// Diselaraskan dengan modul Klasifikasi Siswa (batas disiplin 80)
-
 function tentukanKuadran(float $nilaiAkhir, float $indeksKedisiplinan): string {
     if ($nilaiAkhir >= 75 && $indeksKedisiplinan >= 80) return 'Rajin & nilai tinggi';
     if ($nilaiAkhir >= 75 && $indeksKedisiplinan <  80) return 'Jarang kumpul & nilai tinggi';
     if ($nilaiAkhir <  75 && $indeksKedisiplinan >= 80) return 'Rajin & nilai rendah';
     return 'Jarang kumpul & nilai rendah';
 }
-
-
-// FUNGSI BANTU: Ambil rekomendasi sistem berdasarkan kuadran
 
 function ambilRekomendasi(string $kuadran): string {
     return [
@@ -189,10 +148,6 @@ function ambilRekomendasi(string $kuadran): string {
         'Jarang kumpul & nilai rendah' => 'Perlu perhatian segera. Jadwalkan sesi pendampingan belajar khusus dan komunikasi bersama wali kelas/orang tua.'
     ][$kuadran] ?? 'Perlu evaluasi berkala.';
 }
-
-
-
-// ACTION: Daftar Penugasan Guru yang Sedang Login               
 
 if ($action === 'penugasan') {
     if ($method !== 'GET') respond(null, 'Metode tidak didukung.', 405);
@@ -221,20 +176,12 @@ if ($action === 'penugasan') {
     respond($stmt->fetchAll());
 }
 
-
-// Validasi id_penugasan (wajib untuk aksi selain 'penugasan') 
 $idPenugasan = positiveId($_GET['id_penugasan'] ?? 0);
 $penugasan   = validasiPenugasan($pdo, $idPenugasan);
-
-//  ACTION: GET Pengaturan Bobot                                          
 
 if ($action === 'bobot' && $method === 'GET') {
     respond(ambilBobot($pdo, $idPenugasan));
 }
-
-
-
-//  ACTION: POST Simpan/Perbarui Bobot                            
 
 if ($action === 'bobot' && in_array($method, ['POST', 'PUT'])) {
     $input = inputData();
@@ -244,22 +191,18 @@ if ($action === 'bobot' && in_array($method, ['POST', 'PUT'])) {
     $bobotUts   = filter_var($input['bobot_uts']   ?? '', FILTER_VALIDATE_FLOAT);
     $bobotUas   = filter_var($input['bobot_uas']   ?? '', FILTER_VALIDATE_FLOAT);
 
-    // Validasi tipe data numerik
     if ($bobotTugas === false || $bobotKuis === false ||
         $bobotUts === false  || $bobotUas === false) {
         respond(null, 'Semua bobot harus berupa angka.', 422);
     }
-    // Validasi nilai tidak negatif
     if ($bobotTugas < 0 || $bobotKuis < 0 || $bobotUts < 0 || $bobotUas < 0) {
         respond(null, 'Bobot tidak boleh bernilai negatif.', 422);
     }
-    // Validasi total bobot wajib tepat 100%
     $total = $bobotTugas + $bobotKuis + $bobotUts + $bobotUas;
     if (abs($total - 100) > 0.01) {
         respond(null, 'Total bobot harus tepat 100%. Saat ini: ' . round($total, 2) . '%', 422);
     }
 
-    // Upsert: cek apakah bobot sudah ada untuk penugasan ini
     $stmt = $pdo->prepare('SELECT id_bobot FROM PENGATURAN_BOBOT WHERE id_penugasan = ?');
     $stmt->execute([$idPenugasan]);
     $existing = $stmt->fetch();
@@ -283,13 +226,9 @@ if ($action === 'bobot' && in_array($method, ['POST', 'PUT'])) {
     }
 }
 
-
-// ║  ACTION: GET Rekap Nilai dengan Rincian per Komponen           ║
-
 if ($action === 'rekap' && $method === 'GET') {
     $bobot = ambilBobot($pdo, $idPenugasan);
 
-    // Ambil seluruh siswa di kelas penugasan
     $stmt = $pdo->prepare(
         'SELECT id_siswa, nisn, nama_siswa, jenis_kelamin
          FROM SISWA WHERE id_kelas = ? ORDER BY nama_siswa'
@@ -297,18 +236,15 @@ if ($action === 'rekap' && $method === 'GET') {
     $stmt->execute([$penugasan['id_kelas']]);
     $daftarSiswa = $stmt->fetchAll();
 
-    // Ambil seluruh item penilaian dalam penugasan
     $stmt = $pdo->prepare('SELECT * FROM PENILAIAN WHERE id_penugasan = ?');
     $stmt->execute([$idPenugasan]);
-    $daftarPenilaian  = $stmt->fetchAll();
+    $daftarPenilaian   = $stmt->fetchAll();
     $penilaianPerJenis = kelompokkanPenilaian($daftarPenilaian);
     $totalPenilaian    = count($daftarPenilaian);
 
-    // Bulk-fetch semua nilai (menghindari N+1 query)
     $idPenilaianAll = array_column($daftarPenilaian, 'id_penilaian');
     $nilaiMap       = ambilNilaiBulk($pdo, $idPenilaianAll);
 
-    // Ambil rekap tersimpan (jika sudah pernah dihitung sebelumnya)
     $stmt = $pdo->prepare('SELECT * FROM REKAP_AKADEMIK_KUADRAN WHERE id_penugasan = ?');
     $stmt->execute([$idPenugasan]);
     $rekapMap = [];
@@ -316,17 +252,13 @@ if ($action === 'rekap' && $method === 'GET') {
         $rekapMap[$r['id_siswa']] = $r;
     }
 
-    // Hitung rincian per siswa
-    
     $hasilRekap = [];
     foreach ($daftarSiswa as $siswa) {
         $idSiswa    = $siswa['id_siswa'];
         $nilaiSiswa = $nilaiMap[$idSiswa] ?? [];
 
-        // Rata-rata per jenis komponen
         $rataPerJenis = hitungRataPerJenis($penilaianPerJenis, $nilaiSiswa);
 
-        // Hitung nilai akhir berbobot (hanya jika sudah ada data nilai)
         $sudahDinilai = count($nilaiSiswa);
         $nilaiAkhir   = null;
         $predikat     = '-';
@@ -335,11 +267,9 @@ if ($action === 'rekap' && $method === 'GET') {
             $predikat   = hitungPredikat($nilaiAkhir);
         }
 
-        // Status kelengkapan
         $statusKelengkapan = ($sudahDinilai >= $totalPenilaian && $totalPenilaian > 0)
             ? 'Lengkap' : 'Belum lengkap';
 
-        // Data rekap tersimpan (indeks kedisiplinan & kuadran)
         $rekap = $rekapMap[$idSiswa] ?? null;
 
         $hasilRekap[] = [
@@ -356,7 +286,6 @@ if ($action === 'rekap' && $method === 'GET') {
             'status_kelengkapan_nilai'=> $statusKelengkapan,
             'jumlah_dinilai'          => $sudahDinilai,
             'jumlah_penilaian'        => $totalPenilaian,
-            // Dari tabel REKAP (tersedia setelah action=hitung)
             'indeks_kedisiplinan'     => $rekap['indeks_kedisiplinan'] ?? null,
             'kategori_kuadran'        => $rekap['kategori_kuadran'] ?? null,
             'rekomendasi_sistem'      => $rekap['rekomendasi_sistem'] ?? null
@@ -386,13 +315,6 @@ if ($action === 'rekap' && $method === 'GET') {
     ]);
 }
 
-
-// ╔═════════════════════════════════════════════════════════════════╗
-// ║  ACTION: GET Ringkasan Statistik Kelas                         ║
-// ║  Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)        ║
-// ║  Menampilkan rata-rata kelas, nilai tertinggi/terendah,        ║
-// ║  persentase kelengkapan, distribusi predikat & kuadran.        ║
-// ╚═════════════════════════════════════════════════════════════════╝
 if ($action === 'ringkasan' && $method === 'GET') {
     $stmt = $pdo->prepare(
         'SELECT r.*, s.nama_siswa
@@ -405,14 +327,14 @@ if ($action === 'ringkasan' && $method === 'GET') {
 
     if (empty($rekapAll)) {
         respond([
-            'sudah_dihitung'     => false,
-            'jumlah_siswa'       => 0,
-            'rata_rata_kelas'    => null,
-            'nilai_tertinggi'    => null,
-            'nilai_terendah'     => null,
-            'persen_lengkap'     => 0,
-            'distribusi_predikat'=> ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0],
-            'distribusi_kuadran' => [
+            'sudah_dihitung'      => false,
+            'jumlah_siswa'        => 0,
+            'rata_rata_kelas'     => null,
+            'nilai_tertinggi'     => null,
+            'nilai_terendah'      => null,
+            'persen_lengkap'      => 0,
+            'distribusi_predikat' => ['A' => 0, 'B' => 0, 'C' => 0, 'D' => 0, 'E' => 0],
+            'distribusi_kuadran'  => [
                 'Rajin & nilai tinggi'         => 0,
                 'Jarang kumpul & nilai tinggi' => 0,
                 'Rajin & nilai rendah'         => 0,
@@ -421,11 +343,11 @@ if ($action === 'ringkasan' && $method === 'GET') {
         ]);
     }
 
-    $nilaiAkhirArr    = array_column($rekapAll, 'nilai_akhir');
-    $jumlahLengkap    = count(array_filter(
+    $nilaiAkhirArr = array_column($rekapAll, 'nilai_akhir');
+    $jumlahLengkap = count(array_filter(
         $rekapAll, fn($r) => $r['status_kelengkapan_nilai'] === 'Lengkap'
     ));
-    $jumlahSiswa      = count($rekapAll);
+    $jumlahSiswa   = count($rekapAll);
 
     respond([
         'sudah_dihitung'      => true,
@@ -439,35 +361,15 @@ if ($action === 'ringkasan' && $method === 'GET') {
     ]);
 }
 
-
-// ╔═════════════════════════════════════════════════════════════════╗
-// ║  ACTION: POST Hitung Nilai Akhir & Simpan ke Rekap             ║
-// ║  Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)        ║
-// ║                                                                 ║
-// ║  Formula Nilai Akhir:                                           ║
-// ║    NA = (Rata_Tugas × B_Tugas + Rata_Kuis × B_Kuis             ║
-// ║        + Rata_UTS × B_UTS + Rata_UAS × B_UAS) / 100            ║
-// ║                                                                 ║
-// ║  Indeks Kedisiplinan:                                           ║
-// ║    IK = (Jumlah Tepat Waktu / Total Penilaian) × 100%          ║
-// ║                                                                 ║
-// ║  Kuadran Belajar:                                               ║
-// ║    NA>=75 & IK>=80 → Rajin & nilai tinggi                       ║
-// ║    NA>=75 & IK<80  → Jarang kumpul & nilai tinggi               ║
-// ║    NA<75  & IK>=80 → Rajin & nilai rendah                       ║
-// ║    NA<75  & IK<80  → Jarang kumpul & nilai rendah               ║
-// ╚═════════════════════════════════════════════════════════════════╝
 if ($action === 'hitung' && $method === 'POST') {
     $bobot = ambilBobot($pdo, $idPenugasan);
 
-    // Ambil seluruh item penilaian
     $stmt = $pdo->prepare('SELECT * FROM PENILAIAN WHERE id_penugasan = ?');
     $stmt->execute([$idPenugasan]);
     $daftarPenilaian   = $stmt->fetchAll();
     $penilaianPerJenis = kelompokkanPenilaian($daftarPenilaian);
     $totalPenilaian    = count($daftarPenilaian);
 
-    // Ambil daftar siswa di kelas
     $stmt = $pdo->prepare('SELECT id_siswa FROM SISWA WHERE id_kelas = ?');
     $stmt->execute([$penugasan['id_kelas']]);
     $daftarSiswa = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -476,26 +378,18 @@ if ($action === 'hitung' && $method === 'POST') {
         respond(null, 'Tidak ada siswa di kelas ini.', 422);
     }
 
-    // Bulk-fetch semua nilai (optimasi performa)
     $idPenilaianAll = array_column($daftarPenilaian, 'id_penilaian');
     $nilaiMap       = ambilNilaiBulk($pdo, $idPenilaianAll);
 
-    // Mulai transaksi database
-    // Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
     $pdo->beginTransaction();
     $hasilRekap = [];
 
     foreach ($daftarSiswa as $idSiswa) {
         $nilaiSiswa = $nilaiMap[$idSiswa] ?? [];
 
-        // ── Rata-rata per jenis komponen ──
         $rataPerJenis = hitungRataPerJenis($penilaianPerJenis, $nilaiSiswa);
+        $nilaiAkhir   = hitungNilaiAkhir($rataPerJenis, $bobot);
 
-        // ── Nilai akhir berbobot ──
-        $nilaiAkhir = hitungNilaiAkhir($rataPerJenis, $bobot);
-
-        // ── Indeks kedisiplinan ──
-        // Pencocokan status tidak peka huruf besar/kecil dan spasi berlebih
         $tepatWaktu   = 0;
         $sudahDinilai = 0;
         foreach ($nilaiSiswa as $n) {
@@ -506,16 +400,13 @@ if ($action === 'hitung' && $method === 'POST') {
             ? round(($tepatWaktu / $totalPenilaian) * 100, 2)
             : 0;
 
-        // ── Status kelengkapan ──
         $statusKelengkapan = ($sudahDinilai >= $totalPenilaian && $totalPenilaian > 0)
             ? 'Lengkap' : 'Belum lengkap';
 
-        // ── Kategori kuadran & rekomendasi ──
         $kuadran     = tentukanKuadran($nilaiAkhir, $indeksKedisiplinan);
         $rekomendasi = ambilRekomendasi($kuadran);
         $predikat    = hitungPredikat($nilaiAkhir);
 
-        // ── Upsert ke tabel REKAP_AKADEMIK_KUADRAN ──
         $stmt = $pdo->prepare(
             'SELECT id_rekap FROM REKAP_AKADEMIK_KUADRAN
              WHERE id_penugasan = ? AND id_siswa = ?'
@@ -563,7 +454,4 @@ if ($action === 'hitung' && $method === 'POST') {
     respond($hasilRekap, 'Rekap berhasil dihitung untuk ' . count($hasilRekap) . ' siswa.');
 }
 
-
-// ── Fallback: aksi tidak dikenali ──
-// Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
 respond(null, 'Aksi tidak dikenali. Gunakan: penugasan, bobot, rekap, ringkasan, atau hitung.', 400);

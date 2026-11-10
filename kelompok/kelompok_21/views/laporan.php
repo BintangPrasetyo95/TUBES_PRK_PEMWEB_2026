@@ -7,9 +7,7 @@
  * =================================================================
  */
 ?>
-<!-- Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067) -->
 <div id="laporan-root">
-    <!-- Header Halaman -->
     <div class="page-heading">
         <div>
             <p class="eyebrow">EVALUASI AKADEMIK & REKAP KELAS</p>
@@ -26,10 +24,8 @@
         </div>
     </div>
 
-    <!-- Notifikasi Modul Laporan -->
     <div id="laporan-notice" class="message" hidden role="alert"></div>
 
-    <!-- Kop Cetak Resmi (Hanya Tampil Saat Dicetak / window.print()) -->
     <section class="print-header only-print" aria-hidden="true">
         <div class="print-brand">
             <h2>ARUNIKA — LAPORAN REKAPITULASI NILAI AKADEMIK</h2>
@@ -56,7 +52,6 @@
         </table>
     </section>
 
-    <!-- Toolbar Pemilihan Penugasan & Ringkasan Cepat -->
     <section class="panel no-print" style="margin-bottom: 20px;">
         <div class="table-toolbar" style="flex-wrap: wrap; gap: 14px;">
             <label class="search-label" style="min-width: 280px; margin-bottom: 0;">
@@ -69,7 +64,6 @@
         </div>
     </section>
 
-    <!-- Panel Pengaturan Bobot Komponen Penilaian -->
     <section class="panel no-print" style="margin-bottom: 24px;">
         <div class="section-title">
             <div>
@@ -111,7 +105,6 @@
         </form>
     </section>
 
-    <!-- Ringkasan Statistik Kelas (Cards) -->
     <section class="stats" aria-label="Statistik capaian kelas" style="margin-bottom: 24px;">
         <article>
             <span>Rata-rata nilai kelas</span>
@@ -135,7 +128,6 @@
         </article>
     </section>
 
-    <!-- Tabel Rekapitulasi Nilai Siswa -->
     <section class="panel">
         <div class="table-toolbar no-print">
             <label class="search-label" style="margin-bottom: 0;">
@@ -174,7 +166,6 @@
             Nilai akhir dihitung secara otomatis berdasarkan rata-rata komponen terbobot. Siswa berstatus <em>Belum lengkap</em> masih memiliki komponen penilaian yang belum dinilai.
         </p>
 
-        <!-- Tanda Tangan Cetak (Hanya Tampil Saat Dicetak) -->
         <div class="print-signature only-print">
             <div style="float: right; width: 260px; text-align: center; margin-top: 30px;">
                 <p>Bandar Lampung, <span id="print-tanggal-ttd">—</span></p>
@@ -187,8 +178,6 @@
     </section>
 </div>
 
-<!-- Styling Khusus Modul Laporan & Print -->
-<!-- Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067) -->
 <style>
     #laporan-root .bobot-grid {
         display: grid;
@@ -261,7 +250,6 @@
         color: #2b533d;
     }
 
-    /* Utilitas Khusus Cetak */
     .only-print { display: none !important; }
 
     @media print {
@@ -351,7 +339,6 @@
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
-        /* Rata kiri untuk nama siswa pada cetak */
         td:nth-child(3) {
             text-align: left !important;
         }
@@ -380,4 +367,3 @@
         }
     }
 </style>
-

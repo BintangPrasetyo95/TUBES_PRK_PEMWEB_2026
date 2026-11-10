@@ -1,22 +1,23 @@
 <?php
 // MODUL ADMIN (Linda) - Daftar Artikel
 require_once __DIR__ . '/../config/app.php';
+$pdo = db();
 require_role('admin');
 
 // Proses Hapus Artikel jika tombol hapus diklik
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'hapus') {
-    if (!verify_csrf()) {
-        set_flash('Token CSRF tidak valid.', 'danger');
-        redirect('artikel.php');
+    if (!csrf_valid()) {
+        flash('danger', 'Token CSRF tidak valid.');
+        redirect('admin/artikel.php');
     }
 
     $id = $_POST['id'] ?? null;
     if ($id) {
         $stmt = $pdo->prepare("DELETE FROM artikel WHERE id = ?");
         $stmt->execute([$id]);
-        set_flash('Artikel berhasil dihapus.', 'success');
+        flash('success', 'Artikel berhasil dihapus.');
     }
-    redirect('artikel.php');
+    redirect('admin/artikel.php');
 }
 
 // Ambil semua data artikel
@@ -35,13 +36,6 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
         <a href="artikel_form.php" class="btn btn-primary">+ Tambah Artikel</a>
     </div>
-
-    <?php if (has_flash()): ?>
-        <div class="alert alert-<?= flash_type() ?> alert-dismissible fade show" role="alert">
-            <?= flash() ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
 
     <div class="card shadow-sm">
         <div class="card-body">

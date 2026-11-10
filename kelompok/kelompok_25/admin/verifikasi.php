@@ -1,13 +1,14 @@
 <?php
 // MODUL ADMIN (Linda) - Verifikasi Pengacara
 require_once __DIR__ . '/../config/app.php';
+$pdo = db();
 require_role('admin');
 
 // Proses aksi Setujui atau Tolak jika tombol diklik
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) {
-        set_flash('Token CSRF tidak valid.', 'danger');
-        redirect('verifikasi.php');
+    if (!csrf_valid()) {
+        flash('danger', 'Token CSRF tidak valid.');
+        redirect('admin/verifikasi.php');
     }
 
     $user_id = $_POST['user_id'] ?? null;
@@ -18,14 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$aksi, $user_id]);
         
         $pesan = ($aksi === 'aktif') ? 'Pengacara berhasil disetujui.' : 'Pengacara ditolak.';
-        set_flash($pesan, 'success');
+        flash('success', $pesan);
     }
-    redirect('verifikasi.php');
+    redirect('admin/verifikasi.php');
 }
 
 // Ambil daftar pengacara yang statusnya 'menunggu' beserta data profilnya
 $stmt = $pdo->query("
-    SELECT u.id, u.nama, u.email, p.no_izin, p.pengalaman_tahun, p.kota, b.nama_ bidang 
+    SELECT u.id, u.nama, u.email, p.no_izin, p.pengalaman_tahun, p.kota, b.nama AS bidang 
     FROM users u
     JOIN profil_pengacara p ON u.id = p.user_id
     LEFT JOIN bidang_hukum b ON p.bidang_id = b.id
@@ -40,13 +41,6 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="container page-head my-4">
     <h2>Verifikasi Pendaftaran Pengacara</h2>
     <p class="text-secondary">Daftar pengacara yang mendaftar dan menunggu persetujuan admin.</p>
-
-    <?php if (has_flash()): ?>
-        <div class="alert alert-<?= flash_type() ?> alert-dismissible fade show" role="alert">
-            <?= flash() ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
 
     <div class="card shadow-sm mt-3">
         <div class="card-body">

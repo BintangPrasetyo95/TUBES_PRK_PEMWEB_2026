@@ -1,6 +1,7 @@
 <?php
 // MODUL ADMIN (Linda) - Dashboard Admin
 require_once __DIR__ . '/../config/app.php';
+$pdo = db();
 require_role('admin');
 
 // 1. Hitung jumlah pengguna berdasarkan peran

@@ -1,6 +1,7 @@
 <?php
 // Halaman Publik - Detail Artikel Ruang Hukum
 require_once __DIR__ . '/config/app.php';
+$pdo = db();
 
 $slug = $_GET['slug'] ?? '';
 if (empty($slug)) {
@@ -13,7 +14,7 @@ $stmt->execute([$slug]);
 $artikel = $stmt->fetch();
 
 if (!$artikel) {
-    set_flash('Artikel tidak ditemukan atau belum diterbitkan.', 'danger');
+    flash('danger', 'Artikel tidak ditemukan atau belum diterbitkan.');
     redirect('artikel.php');
 }
 
@@ -37,7 +38,7 @@ require_once __DIR__ . '/includes/header.php';
             </p>
             
             <div class="artikel-konten mt-4" style="line-height: 1.8; white-space: pre-line;">
-                <?= e($artikel['konten']) ?>
+                <?= e($artikel['isi']) ?>
             </div>
 
             <div class="mt-4 pt-3 border-top">

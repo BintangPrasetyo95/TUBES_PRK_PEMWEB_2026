@@ -1,6 +1,7 @@
 <?php
 // Halaman Publik - Daftar Artikel Ruang Hukum
 require_once __DIR__ . '/config/app.php';
+$pdo = db();
 
 // Ambil semua artikel yang berstatus 'terbit'
 $stmt = $pdo->query("SELECT a.*, u.nama as penulis FROM artikel a LEFT JOIN users u ON a.penulis_id = u.id WHERE a.status = 'terbit' ORDER BY a.created_at DESC");
@@ -29,7 +30,7 @@ require_once __DIR__ . '/includes/header.php';
                                 Oleh: <?= e($a['penulis'] ?? 'Admin') ?> | <?= e(date('d M Y', strtotime($a['created_at']))) ?>
                             </p>
                             <p class="card-text flex-grow-1">
-                                <?= e(substr(strip_tags($a['konten']), 0, 100)) ?>...
+                                <?= e(substr(strip_tags($a['isi']), 0, 100)) ?>...
                             </p>
                             <a href="artikel_detail.php?slug=<?= e($a['slug']) ?>" class="btn btn-outline-primary btn-sm mt-auto">Baca Selengkapnya</a>
                         </div>

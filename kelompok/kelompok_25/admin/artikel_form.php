@@ -1,12 +1,13 @@
 <?php
 // MODUL ADMIN (Linda) - Form Tambah/Ubah Artikel
 require_once __DIR__ . '/../config/app.php';
+$pdo = db();
 require_role('admin');
 
 $id = $_GET['id'] ?? null;
 $artikel = [
     'judul' => '',
-    'konten' => '',
+    'isi' => '',
     'status' => 'draft'
 ];
 
@@ -16,16 +17,16 @@ if ($id) {
     $stmt->execute([$id]);
     $artikel = $stmt->fetch();
     if (!$artikel) {
-        set_flash('Artikel tidak ditemukan.', 'danger');
-        redirect('artikel.php');
+        flash('danger', 'Artikel tidak ditemukan.');
+        redirect('admin/artikel.php');
     }
 }
 
 // Proses Simpan (Tambah / Ubah)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) {
-        set_flash('Token CSRF tidak valid.', 'danger');
-        redirect('artikel.php');
+    if (!csrf_valid()) {
+        flash('danger', 'Token CSRF tidak valid.');
+        redirect('admin/artikel.php');
     }
 
     $judul_input = trim($_POST['judul'] ?? '');
@@ -34,10 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $penulis_id = current_user()['id'];
 
     if (empty($judul_input) || empty($konten)) {
-        set_flash('Judul dan konten artikel wajib diisi.', 'danger');
+        flash('danger', 'Judul dan konten artikel wajib diisi.');
     } else {
         // Buat slug otomatis dari judul (huruf kecil, spasi jadi tanda -, hapus karakter khusus)
-        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $judul_input)));
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $judul_input), '-'));
         // Pastikan slug unik (tambahkan timestamp jika duplikat, kecuali untuk artikel milik sendiri yang sedang diedit)
         if ($id) {
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM artikel WHERE slug = ? AND id != ?");
@@ -53,16 +54,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($id) {
             // Update artikel
-            $stmt = $pdo->prepare("UPDATE artikel SET judul = ?, slug = ?, konten = ?, status = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE artikel SET judul = ?, slug = ?, isi = ?, status = ? WHERE id = ?");
             $stmt->execute([$judul_input, $slug, $konten, $status, $id]);
-            set_flash('Artikel berhasil diperbarui.', 'success');
+            flash('success', 'Artikel berhasil diperbarui.');
         } else {
             // Tambah artikel baru
-            $stmt = $pdo->prepare("INSERT INTO artikel (judul, slug, konten, penulis_id, status) VALUES (?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO artikel (judul, slug, isi, penulis_id, status) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$judul_input, $slug, $konten, $penulis_id, $status]);
-            set_flash('Artikel baru berhasil ditambahkan.', 'success');
+            flash('success', 'Artikel baru berhasil ditambahkan.');
         }
-        redirect('artikel.php');
+        redirect('admin/artikel.php');
     }
 }
 
@@ -73,13 +74,6 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="container page-head my-4">
     <h2><?= $id ? 'Ubah Artikel' : 'Tambah Artikel Baru' ?></h2>
     <p class="text-secondary">Silakan isi formulir di bawah ini dengan lengkap.</p>
-
-    <?php if (has_flash()): ?>
-        <div class="alert alert-<?= flash_type() ?> alert-dismissible fade show" role="alert">
-            <?= flash() ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
 
     <div class="card shadow-sm mt-3">
         <div class="card-body">
@@ -101,7 +95,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                 <div class="mb-3">
                     <label for="konten" class="form-label">Konten Artikel</label>
-                    <textarea class="form-control" id="konten" name="konten" rows="8" required><?= e($artikel['konten']) ?></textarea>
+                    <textarea class="form-control" id="konten" name="konten" rows="8" required><?= e($artikel['isi']) ?></textarea>
                 </div>
 
                 <div class="d-flex justify-content-between">

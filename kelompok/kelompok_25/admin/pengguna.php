@@ -1,13 +1,14 @@
 <?php
 // MODUL ADMIN (Linda) - Manajemen Pengguna
 require_once __DIR__ . '/../config/app.php';
+$pdo = db();
 require_role('admin');
 
 // Proses aksi ubah status (aktif / nonaktif)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) {
-        set_flash('Token CSRF tidak valid.', 'danger');
-        redirect('pengguna.php');
+    if (!csrf_valid()) {
+        flash('danger', 'Token CSRF tidak valid.');
+        redirect('admin/pengguna.php');
     }
 
     $user_id = $_POST['user_id'] ?? null;
@@ -15,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Pastikan admin tidak menonaktifkan akun sendiri
     if ($user_id == current_user()['id']) {
-        set_flash('Anda tidak dapat mengubah status akun sendiri.', 'danger');
-        redirect('pengguna.php');
+        flash('danger', 'Anda tidak dapat mengubah status akun sendiri.');
+        redirect('admin/pengguna.php');
     }
 
     if ($user_id && in_array($aksi, ['aktif', 'nonaktif'])) {
@@ -24,9 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$aksi, $user_id]);
         
         $pesan = ($aksi === 'aktif') ? 'Pengguna berhasil diaktifkan.' : 'Pengguna dinonaktifkan.';
-        set_flash($pesan, 'success');
+        flash('success', $pesan);
     }
-    redirect('pengguna.php');
+    redirect('admin/pengguna.php');
 }
 
 // Ambil semua data pengguna
@@ -40,13 +41,6 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="container page-head my-4">
     <h2>Manajemen Pengguna</h2>
     <p class="text-secondary">Daftar seluruh akun pengguna yang terdaftar di sistem Ruang Hukum.</p>
-
-    <?php if (has_flash()): ?>
-        <div class="alert alert-<?= flash_type() ?> alert-dismissible fade show" role="alert">
-            <?= flash() ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
 
     <div class="card shadow-sm mt-3">
         <div class="card-body">

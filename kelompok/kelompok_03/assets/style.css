@@ -8,6 +8,15 @@
     --bg-white: #ffffff;
     --border: #e2e8f0;
     --radius: 8px;
+
+    /* Variabel halaman pasien */
+    --utama: #0f766e;
+    --utama-gelap: #115e59;
+    --sorot: #f59e0b;
+    --tinta: #0f172a;
+    --tinta-lembut: #64748b;
+    --garis: #e2e8f0;
+    --permukaan: #ffffff;
 }
 
 body {
@@ -156,4 +165,239 @@ h2.text-primary {
     background: #fee2e2 !important;
     color: #b91c1c !important;
     border-color: #fecaca !important;
+}
+
+/* Halaman depan pasien (index.php). Memakai variabel warna dari pasien.css */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.topbar {
+    background: var(--utama-gelap);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px clamp(20px, 4vw, 56px);
+}
+
+.topbar .brand {
+    color: #fff;
+    text-decoration: none;
+}
+
+.topbar nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.topbar nav a {
+    color: #d3ebec;
+    text-decoration: none;
+}
+
+.topbar nav a:hover {
+    color: #fff;
+}
+
+.tombol-kecil {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--sorot);
+    color: var(--tinta) !important;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.tombol-kecil:hover {
+    filter: brightness(.95);
+}
+
+.tombol-kecil:focus-visible {
+    outline: 3px solid var(--tinta);
+    outline-offset: 2px;
+}
+
+.wadah {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 40px clamp(20px, 4vw, 56px) 64px;
+}
+
+.pembuka .tanggal {
+    color: var(--utama);
+    font-weight: 600;
+}
+
+.pembuka h1 {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    line-height: 1.15;
+    margin: 4px 0 8px;
+}
+
+.pembuka p:last-child {
+    color: var(--tinta-lembut);
+    max-width: 56ch;
+}
+
+.filter {
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter label {
+    font-weight: 600;
+}
+
+.filter select {
+    font: inherit;
+    padding: 8px 12px;
+    border: 1px solid var(--garis);
+    border-radius: 6px;
+    background: var(--permukaan);
+    color: var(--tinta);
+}
+
+.filter select:focus-visible {
+    outline: 3px solid var(--sorot);
+    outline-offset: 2px;
+}
+
+.tabel-dokter {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--permukaan);
+}
+
+.tabel-dokter th {
+    text-align: left;
+    font-size: .9rem;
+    color: var(--tinta-lembut);
+    font-weight: 600;
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--tinta);
+}
+
+.tabel-dokter td {
+    padding: 16px 14px;
+    border-bottom: 1px solid var(--garis);
+    vertical-align: middle;
+}
+
+.tabel-dokter .aksi {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.nonaktif {
+    color: var(--tinta-lembut);
+    font-size: .9rem;
+}
+
+.lencana {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.lencana-praktik {
+    background: #d7f0e3;
+    color: #14573a;
+}
+
+.lencana-belum {
+    background: #fdf0cf;
+    color: #6b4a00;
+}
+
+.lencana-penuh {
+    background: #e6e9ea;
+    color: #4d6770;
+}
+
+@media (max-width: 760px) {
+    .tabel-dokter thead {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .tabel-dokter,
+    .tabel-dokter tbody,
+    .tabel-dokter tr,
+    .tabel-dokter td {
+        display: block;
+        width: 100%;
+    }
+
+    .tabel-dokter tr {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--garis);
+    }
+
+    .tabel-dokter td {
+        border: 0;
+        padding: 4px 14px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .tabel-dokter td::before {
+        content: attr(data-label);
+        color: var(--tinta-lembut);
+    }
+
+    .tabel-dokter td.aksi {
+        justify-content: flex-end;
+        padding-top: 10px;
+    }
+
+    .tabel-dokter td.aksi::before {
+        content: none;
+    }
+}
+
+/* Animasi kedip lembut untuk badge status saat antrean sedang dipanggil */
+@keyframes denyutStatus {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.03);
+    }
+}
+
+.animate-pulse {
+    animation: denyutStatus 1.5s infinite ease-in-out;
+}
+
+/* Animasi kedip lembut untuk badge status saat antrean sedang dipanggil */
+@keyframes denyutStatus {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.03);
+    }
+}
+
+.animate-pulse {
+    animation: denyutStatus 1.5s infinite ease-in-out;
 }

@@ -3,8 +3,9 @@
 
 require_once __DIR__ . '/../includes/init.php';
 
+// Jika sudah login, langsung alihkan ke dashboard masing-masing role (admin atau pasien)
 if (isset($_SESSION['user_id'])) {
-    $redirect = $_SESSION['role'] === 'admin' ? '../admin/admin.php' : '../pasien/daftar_dokter.php';
+    $redirect = $_SESSION['role'] === 'admin' ? '../admin/admin.php' : '../pasien/pasien.php';
     header("Location: $redirect");
     exit;
 }
@@ -30,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['role'] = $user['role'];
 
-                $redirect = $user['role'] === 'admin' ? '../admin/admin.php' : '../pasien/daftar_dokter.php';
+                // Alihkan ke dashboard admin jika role admin, atau ke portal pasien (pasien.php) jika role pasien
+                $redirect = $user['role'] === 'admin' ? '../admin/admin.php' : '../pasien/pasien.php';
                 header("Location: $redirect");
                 exit;
             } else {

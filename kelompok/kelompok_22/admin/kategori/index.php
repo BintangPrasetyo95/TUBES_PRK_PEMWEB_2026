@@ -14,7 +14,8 @@ $result = $conn->query("SELECT * FROM kategori ORDER BY id_kategori DESC");
 <body style="font-family: Arial, sans-serif; margin: 20px;">
     <h2>Manajemen Kategori Obat</h2>
     <a href="tambah.php">+ Tambah Kategori Baru</a> | 
-    <a href="../logout.php" style="color: red;">Logout</a>
+<a href="../obat/index.php">Kelola Obat</a> | 
+<a href="../logout.php" style="color: red;">Logout</a>
     <hr>
     <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; margin-top: 15px;">
         <thead>

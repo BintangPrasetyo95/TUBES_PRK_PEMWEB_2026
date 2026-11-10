@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 ?>
@@ -8,36 +9,71 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SaveSmart</title>
+    <link rel="stylesheet" href="assets/css/login.css">
 </head>
 <body>
 
-    <h2>Login SaveSmart</h2>
+    <main class="login-container">
+        <section class="login-illustration">
+            <div class="login-brand">Save<span>Smart</span></div>
 
-    <?php if (isset($_SESSION['error'])): ?>
-        <p><?= htmlspecialchars($_SESSION['error']) ?></p>
-        <?php unset($_SESSION['error']); ?>
-    <?php endif; ?>
+            <div class="login-illustration-content">
+                <h1>Kelola Keuangan, Raih Masa Depan.</h1>
+                <p>Mulai atur pemasukan, pengeluaran, anggaran, dan tabunganmu dengan lebih mudah bersama SaveSmart.</p>
+            </div>
 
-    <?php if (isset($_SESSION['success'])): ?>
-        <p><?= htmlspecialchars($_SESSION['success']) ?></p>
-        <?php unset($_SESSION['success']); ?>
-    <?php endif; ?>
+            <div class="login-illustration-footer">
+                Smart Financial Management
+            </div>
 
-    <form action="backend/auth/login_process.php" method="POST">
+            <div class="login-decoration"></div>
+        </section>
 
-        <label>Email</label><br>
-        <input type="email" name="email" required>
-        <br><br>
+        <section class="login-form-section">
+            <div class="login-form-wrapper">
+                <div class="login-heading">
+                    <h2>Selamat Datang!</h2>
+                    <p>Silakan masuk ke akun SaveSmart kamu.</p>
+                </div>
 
-        <label>Password</label><br>
-        <input type="password" name="password" required>
-        <br><br>
+                <?php if (isset($_SESSION['error'])): ?>
+                    <div class="login-message login-error">
+                        <?= htmlspecialchars($_SESSION['error']) ?>
+                    </div>
+                    <?php unset($_SESSION['error']); ?>
+                <?php endif; ?>
 
-        <button type="submit">Login</button>
+                <?php if (isset($_SESSION['success'])): ?>
+                    <div class="login-message login-success">
+                        <?= htmlspecialchars($_SESSION['success']) ?>
+                    </div>
+                    <?php unset($_SESSION['success']); ?>
+                <?php endif; ?>
 
-    </form>
+                <form action="backend/auth/login_process.php" method="POST">
+                    <div class="login-field">
+                        <label for="email">Email</label>
+                        <div class="login-input-wrapper">
+                            <input type="email" id="email" name="email" placeholder="Masukkan email kamu" required>
+                        </div>
+                    </div>
 
-    <p>Belum punya akun? <a href="register.php">Daftar di sini</a></p>
+                    <div class="login-field">
+                        <label for="password">Password</label>
+                        <div class="login-input-wrapper">
+                            <input type="password" id="password" name="password" placeholder="Masukkan password kamu" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="login-button">Masuk ke Akun</button>
+                </form>
+
+                <div class="login-register">
+                    Belum punya akun? <a href="register.php">Daftar di sini</a>
+                </div>
+            </div>
+        </section>
+    </main>
 
 </body>
 </html>

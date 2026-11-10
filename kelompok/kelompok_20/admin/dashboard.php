@@ -90,7 +90,6 @@ $list_terbaru = $q_terbaru->fetchAll(PDO::FETCH_ASSOC);
             <a href="kategori.php" class="btn btn-secondary" style="background: transparent; color: #1E3B2F; border: 1px solid #7F8C6A; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; display: inline-block;">Kelola Kategori</a>
         </div>
 
-        <!-- Tabel 5 Laporan Terbaru -->
         <h3 style="color: #1E3B2F; margin-bottom: 15px; font-size: 20px;">5 Laporan Terbaru</h3>
         
         <div class="table-responsive" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 15px; overflow-x: auto;">

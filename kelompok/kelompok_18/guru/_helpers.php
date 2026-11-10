@@ -58,14 +58,17 @@ function guruActiveAssignments(int $guruId, int $semesterId): array
     $statement = guruDb()->prepare(
         'SELECT pg.id AS assignment_id, k.id AS id, k.kode AS code, k.nama AS name,
                 k.tingkat AS level, s.id AS semester_id, s.nama AS semester,
-                COUNT(DISTINCT ak.siswa_id) AS student_count
+                mp.id AS subject_id, mp.kode AS subject_code, mp.nama AS subject_name,
+                COUNT(DISTINCT sis.id) AS student_count
          FROM penugasan_guru pg
          INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
-         INNER JOIN semester s ON s.id = pg.semester_id
+         INNER JOIN semester s ON s.id = k.semester_id
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
          LEFT JOIN anggota_kelas ak ON ak.kelas_id = k.id AND ak.semester_id = s.id
          LEFT JOIN siswa sis ON sis.id = ak.siswa_id AND sis.is_active = 1
-         WHERE pg.guru_id = :guru_id AND pg.semester_id = :semester_id
-         GROUP BY pg.id, k.id, k.kode, k.nama, k.tingkat, s.id, s.nama
+         WHERE pg.guru_id = :guru_id AND k.semester_id = :semester_id
+         GROUP BY pg.id, k.id, k.kode, k.nama, k.tingkat, s.id, s.nama,
+                  mp.id, mp.kode, mp.nama
          ORDER BY k.nama, k.id'
     );
     $statement->execute(['guru_id' => $guruId, 'semester_id' => $semesterId]);
@@ -78,14 +81,15 @@ function guruActiveSchedules(int $guruId, int $semesterId): array
 {
     $statement = guruDb()->prepare(
         'SELECT jm.id, pg.id AS assignment_id, k.id AS class_id, k.nama AS class_name,
-                s.nama AS semester, jm.hari AS day_number, jm.jam_mulai AS start,
+                mp.nama AS subject_name, s.nama AS semester, jm.hari AS day_number, jm.jam_mulai AS start,
                 jm.jam_selesai AS end, jm.berlaku_mulai AS valid_from,
                 jm.berlaku_sampai AS valid_until
          FROM jadwal_mengajar jm
          INNER JOIN penugasan_guru pg ON pg.id = jm.penugasan_guru_id
          INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
-         INNER JOIN semester s ON s.id = pg.semester_id
-         WHERE pg.guru_id = :guru_id AND pg.semester_id = :semester_id
+         INNER JOIN semester s ON s.id = k.semester_id
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
+         WHERE pg.guru_id = :guru_id AND k.semester_id = :semester_id
            AND (jm.berlaku_mulai IS NULL OR jm.berlaku_mulai <= CURRENT_DATE())
            AND (jm.berlaku_sampai IS NULL OR jm.berlaku_sampai >= CURRENT_DATE())
          ORDER BY jm.hari, jm.jam_mulai, k.nama'
@@ -94,7 +98,7 @@ function guruActiveSchedules(int $guruId, int $semesterId): array
     $schedules = $statement->fetchAll();
 
     foreach ($schedules as &$schedule) {
-        $schedule['day_label'] = 'Hari ' . $schedule['day_number'];
+        $schedule['day_label'] = guruDayLabel((int) $schedule['day_number']);
         $schedule['valid_from'] = $schedule['valid_from'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_from']));
         $schedule['valid_until'] = $schedule['valid_until'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_until']));
     }
@@ -108,11 +112,15 @@ function guruOwnedActiveClass(int $guruId, int $semesterId, int $classId): ?arra
 {
     $statement = guruDb()->prepare(
         'SELECT pg.id AS assignment_id, k.id, k.kode AS code, k.nama AS name,
-                k.tingkat AS level, s.id AS semester_id, s.nama AS semester
+                k.tingkat AS level, s.id AS semester_id, s.nama AS semester,
+                pg.mata_pelajaran_id AS subject_id, mp.kode AS subject_code,
+                mp.nama AS subject_name
          FROM penugasan_guru pg
          INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
-         INNER JOIN semester s ON s.id = pg.semester_id
-         WHERE pg.guru_id = :guru_id AND pg.semester_id = :semester_id AND k.id = :class_id
+         INNER JOIN semester s ON s.id = k.semester_id
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
+         WHERE pg.guru_id = :guru_id AND k.semester_id = :semester_id AND k.id = :class_id
+         ORDER BY pg.id
          LIMIT 1'
     );
     $statement->execute([
@@ -123,6 +131,38 @@ function guruOwnedActiveClass(int $guruId, int $semesterId, int $classId): ?arra
     $class = $statement->fetch();
 
     return is_array($class) ? $class : null;
+}
+
+/** Find one specific active assignment owned by a teacher. */
+function guruOwnedActiveAssignment(int $guruId, int $semesterId, int $assignmentId): ?array
+{
+    $statement = guruDb()->prepare(
+        'SELECT pg.id AS assignment_id, pg.guru_id, pg.kelas_id AS id,
+                pg.mata_pelajaran_id AS subject_id, mp.kode AS subject_code,
+                mp.nama AS subject_name, k.kode AS code, k.nama AS name,
+                k.tingkat AS level, k.semester_id, s.nama AS semester
+         FROM penugasan_guru pg
+         INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
+         INNER JOIN semester s ON s.id = k.semester_id AND s.status = :active_status
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
+         WHERE pg.id = :assignment_id AND pg.guru_id = :guru_id
+           AND k.semester_id = :semester_id
+         LIMIT 1'
+    );
+    $statement->execute([
+        'active_status' => 'aktif', 'assignment_id' => $assignmentId,
+        'guru_id' => $guruId, 'semester_id' => $semesterId,
+    ]);
+    $assignment = $statement->fetch();
+
+    return is_array($assignment) ? $assignment : null;
+}
+
+/** Translate the SQL weekday number (1=Monday ... 7=Sunday) to Indonesian. */
+function guruDayLabel(int $dayNumber): string
+{
+    return [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis',
+        5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'][$dayNumber] ?? 'Hari tidak valid';
 }
 
 /** Fetch active students assigned to a class in the specified semester. */
@@ -155,7 +195,7 @@ function guruClassSchedules(int $assignmentId): array
     $statement->execute(['assignment_id' => $assignmentId]);
     $schedules = $statement->fetchAll();
     foreach ($schedules as &$schedule) {
-        $schedule['day_label'] = 'Hari ' . $schedule['day_number'];
+        $schedule['day_label'] = guruDayLabel((int) $schedule['day_number']);
         $schedule['valid_from'] = $schedule['valid_from'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_from']));
         $schedule['valid_until'] = $schedule['valid_until'] === null ? 'Tidak dibatasi' : date('d M Y', strtotime($schedule['valid_until']));
     }
@@ -263,17 +303,21 @@ function guruStartSession(int $classId, int $scheduleId): int
 function guruOwnedSession(int $sessionId): ?array
 {
     $statement = guruDb()->prepare(
-        'SELECT sp.id, sp.penugasan_guru_id AS assignment_id, sp.jadwal_mengajar_id AS schedule_id,
-                sp.tanggal, sp.waktu_mulai, sp.waktu_selesai, sp.status,
+        'SELECT sp.id, pg.id AS assignment_id, jm.id AS schedule_id,
+                DATE(sp.mulai_at) AS tanggal, sp.mulai_at AS waktu_mulai,
+                sp.selesai_at AS waktu_selesai, sp.mulai_at, sp.selesai_at,
+                sp.jumlah_tap, sp.tap_terakhir_at, sp.status,
                 k.id AS class_id, k.kode AS class_code, k.nama AS class_name,
                 sem.id AS semester_id, sem.nama AS semester, sem.status AS semester_status,
+                mp.id AS subject_id, mp.nama AS subject_name,
                 jm.hari AS day_number, jm.jam_mulai AS scheduled_start, jm.jam_selesai AS scheduled_end
          FROM sesi_pembelajaran sp
-         INNER JOIN penugasan_guru pg ON pg.id = sp.penugasan_guru_id
+         INNER JOIN jadwal_mengajar jm ON jm.id = sp.jadwal_mengajar_id
+         INNER JOIN penugasan_guru pg ON pg.id = jm.penugasan_guru_id
          INNER JOIN guru g ON g.id = pg.guru_id
          INNER JOIN kelas k ON k.id = pg.kelas_id
-         INNER JOIN semester sem ON sem.id = pg.semester_id
-         LEFT JOIN jadwal_mengajar jm ON jm.id = sp.jadwal_mengajar_id
+         INNER JOIN semester sem ON sem.id = k.semester_id
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
          WHERE sp.id = :session_id AND g.user_id = :user_id
          LIMIT 1'
     );
@@ -284,7 +328,7 @@ function guruOwnedSession(int $sessionId): ?array
         return null;
     }
 
-    $session['day_label'] = $session['day_number'] === null ? null : 'Hari ' . $session['day_number'];
+    $session['day_label'] = $session['day_number'] === null ? null : guruDayLabel((int) $session['day_number']);
     return $session;
 }
 

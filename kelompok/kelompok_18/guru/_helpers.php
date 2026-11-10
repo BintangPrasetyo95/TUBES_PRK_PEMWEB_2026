@@ -714,121 +714,197 @@ function guruArchiveDetail(int $sessionId): ?array
     return $session;
 }
 
-/** Fetch semester-scoped groups for one active class assignment. */
-function guruGroupsForClass(int $guruId, int $classId, int $semesterId): array
+/** Fetch groups for one teacher-owned active assignment. */
+function guruGroupsForAssignment(int $guruId, int $assignmentId): array
 {
     $statement = guruDb()->prepare(
         'SELECT kg.id, kg.nama AS name, COUNT(ak.siswa_id) AS member_count
          FROM kelompok kg
-         INNER JOIN penugasan_guru pg ON pg.kelas_id = kg.kelas_id AND pg.semester_id = kg.semester_id
+         INNER JOIN penugasan_guru pg ON pg.id = kg.penugasan_guru_id
          LEFT JOIN anggota_kelompok ak ON ak.kelompok_id = kg.id
-         WHERE pg.guru_id = :guru_id AND pg.kelas_id = :class_id AND pg.semester_id = :semester_id
+         WHERE pg.id = :assignment_id AND pg.guru_id = :guru_id
          GROUP BY kg.id, kg.nama
          ORDER BY kg.nama, kg.id'
     );
-    $statement->execute(['guru_id' => $guruId, 'class_id' => $classId, 'semester_id' => $semesterId]);
+    $statement->execute(['assignment_id' => $assignmentId, 'guru_id' => $guruId]);
 
     return $statement->fetchAll();
 }
 
-/** Fetch current eligible students and whether each belongs to a specific group. */
-function guruGroupStudents(int $classId, int $semesterId, ?int $groupId = null): array
+/** Fetch active assignment roster, gender and membership in one of its groups. */
+function guruGroupStudents(int $assignmentId, ?int $groupId = null): array
 {
     $statement = guruDb()->prepare(
         'SELECT sis.id, sis.nomor_induk AS number, sis.nama AS name,
+                sis.jenis_kelamin AS gender,
                 CASE WHEN ag.kelompok_id IS NULL THEN 0 ELSE 1 END AS is_member
-         FROM anggota_kelas ak
+         FROM penugasan_guru pg
+         INNER JOIN kelas k ON k.id = pg.kelas_id
+         INNER JOIN anggota_kelas ak ON ak.kelas_id = k.id AND ak.semester_id = k.semester_id
          INNER JOIN siswa sis ON sis.id = ak.siswa_id AND sis.is_active = 1
          LEFT JOIN anggota_kelompok ag ON ag.siswa_id = sis.id AND ag.kelompok_id = :group_id
-         WHERE ak.kelas_id = :class_id AND ak.semester_id = :semester_id
+         WHERE pg.id = :assignment_id
          ORDER BY sis.nama, sis.id'
     );
-    $statement->execute(['group_id' => $groupId, 'class_id' => $classId, 'semester_id' => $semesterId]);
+    $statement->execute(['group_id' => $groupId, 'assignment_id' => $assignmentId]);
 
     return $statement->fetchAll();
 }
 
-/** Create semester-scoped groups after validating a complete class roster partition. */
-function guruCreateGroups(int $classId, string $namePrefix, array $memberGroups): void
-{
+/** Validate and transactionally save a complete, gender-balanced roster partition. */
+function guruCreateGroups(
+    int $assignmentId,
+    string $namePrefix,
+    array $memberGroups,
+    string $groupRule,
+    int $groupValue
+): void {
     $namePrefix = trim($namePrefix);
-    if ($namePrefix === '' || (function_exists('mb_strlen') ? mb_strlen($namePrefix, 'UTF-8') : strlen($namePrefix)) > 80) {
+    $length = function_exists('mb_strlen') ? mb_strlen($namePrefix, 'UTF-8') : strlen($namePrefix);
+    if ($namePrefix === '' || $length > 80) {
         throw new DomainException('Nama kelompok wajib diisi dan maksimal 80 karakter.');
     }
-    if ($memberGroups === [] || count($memberGroups) > 20) {
-        throw new DomainException('Jumlah kelompok harus antara 1 sampai 20.');
+    if (!in_array($groupRule, ['groups', 'members'], true) || $groupValue < 1 || $groupValue > 20) {
+        throw new DomainException('Kriteria pembagian kelompok tidak valid.');
     }
 
-    $profile = guruProfile();
+    $user = currentUser();
     $semester = guruActiveSemester();
-    if ($profile === null || $semester === null) {
-        throw new DomainException('Profil Guru atau semester aktif tidak tersedia.');
+    if ($user === null || $semester === null) {
+        throw new DomainException('Akun Guru atau semester aktif tidak tersedia.');
     }
 
     $pdo = guruDb();
     $pdo->beginTransaction();
     try {
-        $assignment = $pdo->prepare(
-            'SELECT pg.id
+        $assignmentQuery = $pdo->prepare(
+            'SELECT pg.id, pg.kelas_id, k.semester_id
              FROM penugasan_guru pg
+             INNER JOIN guru g ON g.id = pg.guru_id
              INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
-             INNER JOIN semester sem ON sem.id = pg.semester_id AND sem.status = :active_status
-             WHERE pg.guru_id = :guru_id AND pg.kelas_id = :class_id AND pg.semester_id = :semester_id
+             INNER JOIN semester sem ON sem.id = k.semester_id AND sem.status = :active_status
+             WHERE pg.id = :assignment_id AND g.user_id = :user_id
+               AND k.semester_id = :semester_id
              LIMIT 1 FOR UPDATE'
         );
-        $assignment->execute([
-            'active_status' => 'aktif', 'guru_id' => $profile['id'],
-            'class_id' => $classId, 'semester_id' => $semester['id'],
+        $assignmentQuery->execute([
+            'active_status' => 'aktif', 'assignment_id' => $assignmentId,
+            'user_id' => $user['id'], 'semester_id' => $semester['id'],
         ]);
-        if ($assignment->fetchColumn() === false) {
-            throw new DomainException('Kelas tidak ditugaskan kepada Anda pada semester aktif.');
+        $assignment = $assignmentQuery->fetch();
+        if (!is_array($assignment)) {
+            throw new DomainException('Penugasan tidak ditemukan atau bukan milik Anda pada semester aktif.');
+        }
+
+        $existingGroupsQuery = $pdo->prepare(
+            'SELECT id FROM kelompok WHERE penugasan_guru_id = :assignment_id LIMIT 1 FOR UPDATE'
+        );
+        $existingGroupsQuery->execute(['assignment_id' => $assignmentId]);
+        if ($existingGroupsQuery->fetchColumn() !== false) {
+            throw new DomainException('Kelompok untuk penugasan ini sudah tersedia. Edit kelompok yang ada untuk mempertahankan satu pembagian roster.');
         }
 
         $rosterQuery = $pdo->prepare(
-            'SELECT ak.siswa_id
+            'SELECT sis.id, sis.jenis_kelamin
              FROM anggota_kelas ak
              INNER JOIN siswa sis ON sis.id = ak.siswa_id AND sis.is_active = 1
-             WHERE ak.kelas_id = :class_id AND ak.semester_id = :semester_id'
+             WHERE ak.kelas_id = :class_id AND ak.semester_id = :semester_id
+             ORDER BY sis.id
+             FOR UPDATE'
         );
-        $rosterQuery->execute(['class_id' => $classId, 'semester_id' => $semester['id']]);
-        $roster = array_map('intval', $rosterQuery->fetchAll(PDO::FETCH_COLUMN));
-        $submitted = [];
-        foreach ($memberGroups as $members) {
+        $rosterQuery->execute([
+            'class_id' => $assignment['kelas_id'], 'semester_id' => $assignment['semester_id'],
+        ]);
+        $rosterRows = $rosterQuery->fetchAll();
+        $roster = [];
+        $genderTotals = ['L' => 0, 'P' => 0];
+        foreach ($rosterRows as $row) {
+            $id = (int) $row['id'];
+            $gender = (string) $row['jenis_kelamin'];
+            if (!isset($genderTotals[$gender])) {
+                throw new DomainException('Jenis kelamin siswa tidak valid pada roster.');
+            }
+            $roster[$id] = $gender;
+            $genderTotals[$gender]++;
+        }
+
+        $studentCount = count($roster);
+        if ($studentCount < 1) {
+            throw new DomainException('Roster aktif penugasan ini belum memiliki siswa.');
+        }
+        $groupCount = $groupRule === 'groups'
+            ? $groupValue
+            : (int) ceil($studentCount / $groupValue);
+        if ($groupCount > $studentCount || ($groupRule === 'groups' && $groupCount > 20)) {
+            throw new DomainException('Jumlah kelompok tidak boleh melebihi siswa dan maksimal 20 kelompok.');
+        }
+        if (count($memberGroups) !== $groupCount) {
+            throw new DomainException('Jumlah hasil kelompok tidak sesuai dengan kriteria yang dipilih.');
+        }
+
+        $seen = [];
+        $groupSizes = [];
+        $genderCounts = [];
+        foreach ($memberGroups as $groupIndex => $members) {
             if (!is_array($members) || $members === []) {
                 throw new DomainException('Setiap kelompok harus memiliki anggota.');
             }
+            $groupSizes[$groupIndex] = count($members);
+            $genderCounts[$groupIndex] = ['L' => 0, 'P' => 0];
             foreach ($members as $studentId) {
-                if (!is_int($studentId) || !in_array($studentId, $roster, true) || isset($submitted[$studentId])) {
-                    throw new DomainException('Anggota kelompok tidak sesuai dengan siswa kelas aktif.');
+                if (!is_int($studentId) || !isset($roster[$studentId]) || isset($seen[$studentId])) {
+                    throw new DomainException('Hasil kelompok mengandung siswa di luar roster atau anggota ganda.');
                 }
-                $submitted[$studentId] = true;
+                $seen[$studentId] = true;
+                $genderCounts[$groupIndex][$roster[$studentId]]++;
             }
         }
-        sort($roster);
-        $submittedIds = array_map('intval', array_keys($submitted));
-        sort($submittedIds);
-        if ($roster === [] || $submittedIds !== $roster) {
+        if (count($seen) !== $studentCount) {
             throw new DomainException('Semua siswa aktif harus masuk tepat ke satu kelompok.');
         }
+        if (max($groupSizes) - min($groupSizes) > 1) {
+            throw new DomainException('Ukuran kelompok harus seimbang dengan selisih maksimal satu siswa.');
+        }
+        if ($groupRule === 'members' && max($groupSizes) > $groupValue) {
+            throw new DomainException('Jumlah anggota melebihi batas per kelompok yang dipilih.');
+        }
 
+        foreach (['L', 'P'] as $gender) {
+            $minimum = (int) floor($genderTotals[$gender] / $groupCount);
+            $maximum = (int) ceil($genderTotals[$gender] / $groupCount);
+            foreach ($genderCounts as $counts) {
+                if ($counts[$gender] < $minimum || $counts[$gender] > $maximum) {
+                    throw new DomainException('Sebaran gender belum seimbang. Acak ulang hasil kelompok.');
+                }
+            }
+        }
+
+
+        $duplicateName = $pdo->prepare(
+            'SELECT id FROM kelompok WHERE penugasan_guru_id = :assignment_id AND nama = :name LIMIT 1'
+        );
         $insertGroup = $pdo->prepare(
-            'INSERT INTO kelompok (kelas_id, semester_id, nama) VALUES (:class_id, :semester_id, :name)'
+            'INSERT INTO kelompok (penugasan_guru_id, nama) VALUES (:assignment_id, :name)'
         );
         $insertMember = $pdo->prepare(
             'INSERT INTO anggota_kelompok (kelompok_id, siswa_id) VALUES (:group_id, :student_id)'
         );
         foreach (array_values($memberGroups) as $index => $members) {
             $groupName = $namePrefix . ' ' . ($index + 1);
-            if ((function_exists('mb_strlen') ? mb_strlen($groupName, 'UTF-8') : strlen($groupName)) > 100) {
+            $groupLength = function_exists('mb_strlen') ? mb_strlen($groupName, 'UTF-8') : strlen($groupName);
+            if ($groupLength > 100) {
                 throw new DomainException('Nama kelompok melebihi batas database.');
             }
-            $insertGroup->execute(['class_id' => $classId, 'semester_id' => $semester['id'], 'name' => $groupName]);
-            $groupId = (int) $pdo->lastInsertId();
+            $duplicateName->execute(['assignment_id' => $assignmentId, 'name' => $groupName]);
+            if ($duplicateName->fetchColumn() !== false) {
+                throw new DomainException('Nama kelompok sudah digunakan pada penugasan ini.');
+            }
+            $insertGroup->execute(['assignment_id' => $assignmentId, 'name' => $groupName]);
+            $newGroupId = (int) $pdo->lastInsertId();
             foreach ($members as $studentId) {
-                $insertMember->execute(['group_id' => $groupId, 'student_id' => $studentId]);
+                $insertMember->execute(['group_id' => $newGroupId, 'student_id' => $studentId]);
             }
         }
-
         $pdo->commit();
     } catch (Throwable $exception) {
         if ($pdo->inTransaction()) {
@@ -838,70 +914,84 @@ function guruCreateGroups(int $classId, string $namePrefix, array $memberGroups)
     }
 }
 
-/** Return an editable group only when it belongs to the teacher's active semester class. */
+/** Return a group only when its owning assignment belongs to this active-semester teacher. */
 function guruOwnedActiveGroup(int $groupId): ?array
 {
-    $profile = guruProfile();
+    $user = currentUser();
     $semester = guruActiveSemester();
-    if ($profile === null || $semester === null) {
+    if ($user === null || $semester === null) {
         return null;
     }
 
     $statement = guruDb()->prepare(
-        'SELECT kg.id, kg.kelas_id AS class_id, kg.semester_id,
-                kg.nama AS name, k.nama AS class_name, sem.nama AS semester
+        'SELECT kg.id, kg.penugasan_guru_id AS assignment_id,
+                pg.kelas_id AS class_id, k.semester_id,
+                kg.nama AS name, k.nama AS class_name, sem.nama AS semester,
+                mp.nama AS subject_name
          FROM kelompok kg
-         INNER JOIN penugasan_guru pg ON pg.kelas_id = kg.kelas_id AND pg.semester_id = kg.semester_id
-         INNER JOIN kelas k ON k.id = kg.kelas_id
-         INNER JOIN semester sem ON sem.id = kg.semester_id AND sem.status = :active_status
-         WHERE kg.id = :group_id AND pg.guru_id = :guru_id
-           AND kg.semester_id = :semester_id
+         INNER JOIN penugasan_guru pg ON pg.id = kg.penugasan_guru_id
+         INNER JOIN guru g ON g.id = pg.guru_id
+         INNER JOIN kelas k ON k.id = pg.kelas_id
+         INNER JOIN semester sem ON sem.id = k.semester_id AND sem.status = :active_status
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
+         WHERE kg.id = :group_id AND g.user_id = :user_id
+           AND k.semester_id = :semester_id AND k.is_active = 1
          LIMIT 1'
     );
     $statement->execute([
         'active_status' => 'aktif', 'group_id' => $groupId,
-        'guru_id' => $profile['id'], 'semester_id' => $semester['id'],
+        'user_id' => $user['id'], 'semester_id' => $semester['id'],
     ]);
     $group = $statement->fetch();
 
     return is_array($group) ? $group : null;
 }
 
-/** Update a group name and member set transactionally in the active semester. */
+/** Update one active-assignment group and its member set transactionally. */
 function guruUpdateGroup(int $groupId, string $name, array $studentIds): void
 {
     $name = trim($name);
-    if ($name === '' || (function_exists('mb_strlen') ? mb_strlen($name, 'UTF-8') : strlen($name)) > 100) {
+    $nameLength = function_exists('mb_strlen') ? mb_strlen($name, 'UTF-8') : strlen($name);
+    if ($name === '' || $nameLength > 100) {
         throw new DomainException('Nama kelompok wajib diisi dan maksimal 100 karakter.');
     }
     if ($studentIds === [] || count(array_unique($studentIds)) !== count($studentIds)) {
-        throw new DomainException('Pilih satu atau lebih siswa tanpa duplikasi.');
+        throw new DomainException('Kelompok tidak boleh kosong dan anggota tidak boleh ganda.');
+    }
+    foreach ($studentIds as $studentId) {
+        if (!is_int($studentId) || $studentId < 1) {
+            throw new DomainException('Daftar anggota tidak valid.');
+        }
     }
 
-    $profile = guruProfile();
+    $user = currentUser();
     $semester = guruActiveSemester();
-    if ($profile === null || $semester === null) {
-        throw new DomainException('Profil Guru atau semester aktif tidak tersedia.');
+    if ($user === null || $semester === null) {
+        throw new DomainException('Akun Guru atau semester aktif tidak tersedia.');
     }
 
     $pdo = guruDb();
     $pdo->beginTransaction();
     try {
         $groupQuery = $pdo->prepare(
-            'SELECT kg.id, kg.kelas_id, kg.semester_id
+            'SELECT kg.id, kg.penugasan_guru_id AS assignment_id,
+                    pg.kelas_id AS class_id, k.semester_id
              FROM kelompok kg
-             INNER JOIN penugasan_guru pg ON pg.kelas_id = kg.kelas_id AND pg.semester_id = kg.semester_id
-             INNER JOIN semester sem ON sem.id = kg.semester_id AND sem.status = :active_status
-             WHERE kg.id = :group_id AND pg.guru_id = :guru_id AND kg.semester_id = :semester_id
+             INNER JOIN penugasan_guru pg ON pg.id = kg.penugasan_guru_id
+             INNER JOIN guru g ON g.id = pg.guru_id
+             INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
+             INNER JOIN semester sem ON sem.id = k.semester_id AND sem.status = :active_status
+             WHERE kg.id = :group_id AND g.user_id = :user_id
+               AND k.semester_id = :semester_id
              LIMIT 1 FOR UPDATE'
         );
         $groupQuery->execute([
             'active_status' => 'aktif', 'group_id' => $groupId,
-            'guru_id' => $profile['id'], 'semester_id' => $semester['id'],
+            'user_id' => $user['id'], 'semester_id' => $semester['id'],
         ]);
         $group = $groupQuery->fetch();
         if (!is_array($group)) {
-            throw new DomainException('Kelompok tidak ditemukan atau semester tidak aktif.');
+            throw new DomainException('Kelompok tidak ditemukan atau tidak dapat dikelola pada semester ini.');
         }
 
         $rosterQuery = $pdo->prepare(
@@ -910,12 +1000,56 @@ function guruUpdateGroup(int $groupId, string $name, array $studentIds): void
              INNER JOIN siswa sis ON sis.id = ak.siswa_id AND sis.is_active = 1
              WHERE ak.kelas_id = :class_id AND ak.semester_id = :semester_id'
         );
-        $rosterQuery->execute(['class_id' => $group['kelas_id'], 'semester_id' => $group['semester_id']]);
+        $rosterQuery->execute([
+            'class_id' => $group['class_id'], 'semester_id' => $group['semester_id'],
+        ]);
         $roster = array_map('intval', $rosterQuery->fetchAll(PDO::FETCH_COLUMN));
         foreach ($studentIds as $studentId) {
-            if (!is_int($studentId) || !in_array($studentId, $roster, true)) {
-                throw new DomainException('Anggota kelompok harus siswa aktif di kelas dan semester ini.');
+            if (!in_array($studentId, $roster, true)) {
+                throw new DomainException('Anggota kelompok harus berasal dari roster aktif penugasan ini.');
             }
+        }
+
+        $otherMembersQuery = $pdo->prepare(
+            'SELECT ag.siswa_id
+             FROM anggota_kelompok ag
+             INNER JOIN kelompok other_group ON other_group.id = ag.kelompok_id
+             WHERE other_group.penugasan_guru_id = :assignment_id
+               AND other_group.id <> :group_id'
+        );
+        $otherMembersQuery->execute([
+            'assignment_id' => $group['assignment_id'], 'group_id' => $groupId,
+        ]);
+        $membersInOtherGroups = array_map('intval', $otherMembersQuery->fetchAll(PDO::FETCH_COLUMN));
+        if (array_intersect($studentIds, $membersInOtherGroups) !== []) {
+            throw new DomainException('Siswa yang dipilih sudah menjadi anggota kelompok lain pada penugasan ini.');
+        }
+
+        if (count(array_unique($membersInOtherGroups)) !== count($membersInOtherGroups)) {
+            throw new DomainException('Pembagian kelompok saat ini memiliki anggota ganda. Perbaiki data kelompok terlebih dahulu.');
+        }
+        $allAssigned = array_fill_keys($membersInOtherGroups, true);
+        foreach ($studentIds as $studentId) {
+            $allAssigned[$studentId] = true;
+        }
+        if (count($allAssigned) !== count($roster)) {
+            throw new DomainException('Perubahan harus mempertahankan seluruh roster dalam tepat satu kelompok.');
+        }
+        $missing = array_diff($roster, array_keys($allAssigned));
+        if ($missing !== []) {
+            throw new DomainException('Perubahan harus mempertahankan seluruh roster dalam tepat satu kelompok.');
+        }
+
+        $duplicateName = $pdo->prepare(
+            'SELECT id FROM kelompok
+             WHERE penugasan_guru_id = :assignment_id AND nama = :name AND id <> :group_id
+             LIMIT 1'
+        );
+        $duplicateName->execute([
+            'assignment_id' => $group['assignment_id'], 'name' => $name, 'group_id' => $groupId,
+        ]);
+        if ($duplicateName->fetchColumn() !== false) {
+            throw new DomainException('Nama kelompok sudah digunakan pada penugasan ini.');
         }
 
         $update = $pdo->prepare('UPDATE kelompok SET nama = :name WHERE id = :group_id');
@@ -936,7 +1070,6 @@ function guruUpdateGroup(int $groupId, string $name, array $studentIds): void
         throw $exception;
     }
 }
-
 /** Update one snapshot attendance row during its owned session. */
 function guruSaveAttendance(int $sessionId, int $studentId, string $status, ?string $note): void
 {

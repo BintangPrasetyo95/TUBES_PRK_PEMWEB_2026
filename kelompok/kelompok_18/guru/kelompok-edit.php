@@ -17,7 +17,7 @@ try {
         http_response_code(404);
         exit('Kelompok tidak ditemukan.');
     }
-    $students = guruGroupStudents((int) $group['class_id'], (int) $group['semester_id'], $groupId);
+    $students = guruGroupStudents((int) $group['assignment_id'], $groupId);
     $groupName = $group['name'];
     foreach ($students as $student) {
         if ((int) $student['is_member'] === 1) {
@@ -51,7 +51,7 @@ try {
             $groupName = $postedName;
             if ($pageError === '') {
                 guruUpdateGroup($groupId, $groupName, $selectedStudentIds);
-                header('Location: kelompok.php?class_id=' . (int) $group['class_id']);
+                header('Location: kelompok.php?assignment_id=' . (int) $group['assignment_id']);
                 exit;
             }
         }
@@ -77,7 +77,7 @@ guru_page_start('Edit Kelompok', 'kelas.php');
                 <label class="flex items-center gap-3 px-3 py-2.5"><input type="checkbox" name="member_ids[]" value="<?= (int) $student['id'] ?>"<?= isset($selectedLookup[(int) $student['id']]) ? ' checked' : '' ?> class="h-4 w-4 rounded border-[#bac9ba] text-[#1e5638] focus:ring-[#376c4d]"><span class="text-sm text-slate-700"><?= attendara_ui_escape($student['name'] . ' · ' . $student['number']) ?></span></label>
             <?php endforeach; ?>
         </div></fieldset>
-        <div class="flex flex-wrap gap-2"><button id="save-group-edit" type="submit" class="min-h-10 rounded-lg bg-[#1e5638] px-4 text-sm font-semibold text-white">Simpan Perubahan</button><a href="kelompok.php?class_id=<?= (int) $group['class_id'] ?>" class="inline-flex min-h-10 items-center rounded-lg border border-[#d8e2d8] px-4 text-sm font-semibold text-[#284b35]">Batal</a></div>
+        <div class="flex flex-wrap gap-2"><button id="save-group-edit" type="submit" class="min-h-10 rounded-lg bg-[#1e5638] px-4 text-sm font-semibold text-white">Simpan Perubahan</button><a href="kelompok.php?assignment_id=<?= (int) $group['assignment_id'] ?>" class="inline-flex min-h-10 items-center rounded-lg border border-[#d8e2d8] px-4 text-sm font-semibold text-[#284b35]">Batal</a></div>
     </form>
 </section>
 <?php guru_page_end(); ?>

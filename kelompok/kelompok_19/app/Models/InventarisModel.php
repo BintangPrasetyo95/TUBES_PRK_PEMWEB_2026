@@ -39,11 +39,11 @@ class InventarisModel
         
         $stmt = $this->conn->prepare($query);
 
-        $stmt->bindParam(':nama', htmlspecialchars(strip_tags($data['nama'])));
-        $stmt->bindParam(':kategori', htmlspecialchars(strip_tags($data['kategori'])));
-        $stmt->bindParam(':stok', htmlspecialchars(strip_tags($data['stok'])));
-        $stmt->bindParam(':satuan', htmlspecialchars(strip_tags($data['satuan'])));
-        $stmt->bindParam(':harga_satuan', htmlspecialchars(strip_tags($data['harga_satuan'])));
+        $stmt->bindParam(':nama', $data['nama']);
+        $stmt->bindParam(':kategori', $data['kategori']);
+        $stmt->bindParam(':stok', $data['stok']);
+        $stmt->bindParam(':satuan', $data['satuan']);
+        $stmt->bindParam(':harga_satuan', $data['harga_satuan']);
 
         return $stmt->execute();
     }
@@ -56,11 +56,11 @@ class InventarisModel
         
         $stmt = $this->conn->prepare($query);
 
-        $stmt->bindParam(':nama', htmlspecialchars(strip_tags($data['nama'])));
-        $stmt->bindParam(':kategori', htmlspecialchars(strip_tags($data['kategori'])));
-        $stmt->bindParam(':stok', htmlspecialchars(strip_tags($data['stok'])));
-        $stmt->bindParam(':satuan', htmlspecialchars(strip_tags($data['satuan'])));
-        $stmt->bindParam(':harga_satuan', htmlspecialchars(strip_tags($data['harga_satuan'])));
+        $stmt->bindParam(':nama', $data['nama']);
+        $stmt->bindParam(':kategori', $data['kategori']);
+        $stmt->bindParam(':stok', $data['stok']);
+        $stmt->bindParam(':satuan', $data['satuan']);
+        $stmt->bindParam(':harga_satuan', $data['harga_satuan']);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
         return $stmt->execute();
@@ -91,24 +91,60 @@ class InventarisModel
         return $stmt;
     }
 
-    // method createTransaksi($data) -> INSERT INTO transaksi_inventaris
+    // method createTransaksi($data) -> catat transaksi lalu sesuaikan stok master
     public function createTransaksi($data)
     {
-        $query = "INSERT INTO transaksi_inventaris 
-                  (inventaris_id, siklus_id, jenis, jumlah, tanggal) 
-                  VALUES (:inventaris_id, :siklus_id, :jenis, :jumlah, :tanggal)";
-        
-        $stmt = $this->conn->prepare($query);
+        $jenis = $data['jenis'] ?? '';
+        $jumlah = (float) ($data['jumlah'] ?? 0);
+        $inventarisId = (int) ($data['inventaris_id'] ?? 0);
 
-        $stmt->bindParam(':inventaris_id', $data['inventaris_id'], PDO::PARAM_INT);
-        $stmt->bindParam(':jenis', htmlspecialchars(strip_tags($data['jenis'])));
-        $stmt->bindParam(':jumlah', htmlspecialchars(strip_tags($data['jumlah'])));
-        $stmt->bindParam(':tanggal', htmlspecialchars(strip_tags($data['tanggal'])));
+        if (!in_array($jenis, ['Masuk', 'Keluar'], true) || $jumlah <= 0 || $inventarisId < 1) {
+            return false;
+        }
 
-        // Logika khusus untuk membiarkan siklus_id berisi NULL saat barang "Masuk" (Kulakan)
-        $siklus_id = !empty($data['siklus_id']) ? htmlspecialchars(strip_tags($data['siklus_id'])) : null;
-        $stmt->bindParam(':siklus_id', $siklus_id, $siklus_id ? PDO::PARAM_INT : PDO::PARAM_NULL);
+        try {
+            $this->conn->beginTransaction();
 
-        return $stmt->execute();
+            $query = "INSERT INTO transaksi_inventaris 
+                      (inventaris_id, siklus_id, jenis, jumlah, tanggal) 
+                      VALUES (:inventaris_id, :siklus_id, :jenis, :jumlah, :tanggal)";
+
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->bindParam(':inventaris_id', $inventarisId, PDO::PARAM_INT);
+            $stmt->bindParam(':jenis', $jenis);
+            $stmt->bindParam(':jumlah', $jumlah);
+            $tanggal = htmlspecialchars(strip_tags($data['tanggal'] ?? ''));
+            $stmt->bindParam(':tanggal', $tanggal);
+
+            // Logika khusus untuk membiarkan siklus_id berisi NULL saat barang "Masuk" (Kulakan)
+            $siklus_id = !empty($data['siklus_id']) ? htmlspecialchars(strip_tags($data['siklus_id'])) : null;
+            $stmt->bindParam(':siklus_id', $siklus_id, $siklus_id ? PDO::PARAM_INT : PDO::PARAM_NULL);
+
+            if (!$stmt->execute()) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $delta = $jenis === 'Masuk' ? $jumlah : -$jumlah;
+            $update = "UPDATE inventaris SET stok = stok + :delta WHERE id = :id AND stok + :delta >= 0";
+            $stmtStok = $this->conn->prepare($update);
+            $stmtStok->bindParam(':delta', $delta);
+            $stmtStok->bindParam(':id', $inventarisId, PDO::PARAM_INT);
+            $stmtStok->execute();
+
+            if ($stmtStok->rowCount() === 0) {
+                $this->conn->rollBack();
+                return false;
+            }
+
+            $this->conn->commit();
+            return true;
+        } catch (Throwable $e) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
+            return false;
+        }
     }
 }

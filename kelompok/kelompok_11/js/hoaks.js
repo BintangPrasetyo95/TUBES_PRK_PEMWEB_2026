@@ -1,6 +1,5 @@
 
 function renderHoaks(contentArea) {
-    // Menampilkan halaman form Lapor Hoaks
     contentArea.innerHTML = `
         <section class="max-w-3xl mx-auto">
 
@@ -102,12 +101,10 @@ function renderHoaks(contentArea) {
         </section>
     `;
 
-    // Mengambil elemen form
     const form = document.getElementById('form-lapor-hoaks');
     const message = document.getElementById('hoaks-message');
     const submitButton = document.getElementById('btn-submit-hoaks');
 
-    // Fungsi menampilkan notifikasi
     function showMessage(text, success) {
         message.textContent = text;
         message.classList.remove(
@@ -137,22 +134,18 @@ function renderHoaks(contentArea) {
         }
     }
 
-    // Menangani pengiriman form
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        // Mengambil nilai input
         const judul = document.getElementById('judul_isu').value.trim();
         const link = document.getElementById('link_sumber').value.trim();
         const keterangan = document.getElementById('keterangan').value.trim();
 
-        // Validasi input
         if (!judul || !link || !keterangan) {
             showMessage('Semua kolom wajib diisi.', false);
             return;
         }
 
-        // Validasi URL
         try {
             const parsedUrl = new URL(link);
 
@@ -164,12 +157,10 @@ function renderHoaks(contentArea) {
             return;
         }
 
-        // Mengubah tombol menjadi loading
         submitButton.disabled = true;
         submitButton.textContent = 'Mengirim laporan...';
 
         try {
-            // Mengirim data ke backend menggunakan Fetch API
             const response = await fetch('api/hoaks.php', {
                 method: 'POST',
                 headers: {
@@ -191,13 +182,11 @@ function renderHoaks(contentArea) {
                 );
             }
 
-            // Menampilkan notifikasi berhasil
             showMessage(
                 result.message + ' Status laporan: ' + result.data.status,
                 true
             );
 
-            // Mengosongkan form
             form.reset();
 
         } catch (error) {
@@ -207,13 +196,11 @@ function renderHoaks(contentArea) {
             );
 
         } finally {
-            // Mengaktifkan kembali tombol
             submitButton.disabled = false;
             submitButton.textContent = 'Kirim Laporan';
         }
     });
 
-    // BLOK TAMBAHAN FARHAN: Menarik dan menampilkan feedback admin
     async function loadHoaksFeedback() {
         const listContainer = document.getElementById('hoaks-feedback-list');
         if (!listContainer) return;
@@ -228,7 +215,6 @@ function renderHoaks(contentArea) {
                 let html = '<h3 class="text-xl font-bold text-slate-800 border-b-2 border-slate-200 pb-2 mb-4">Papan Klarifikasi Isu</h3><div class="grid gap-3">';
 
                 result.data.forEach(item => {
-                    // Penentuan warna badge otomatis
                     const badgeStyle = item.status === 'fakta'
                         ? 'bg-green-100 text-green-700 border-green-300'
                         : 'bg-red-100 text-red-700 border-red-300';
@@ -255,6 +241,5 @@ function renderHoaks(contentArea) {
         }
     }
 
-    // Panggil fungsinya biar langsung jalan pas halaman dibuka
     setTimeout(loadHoaksFeedback, 100);
 }

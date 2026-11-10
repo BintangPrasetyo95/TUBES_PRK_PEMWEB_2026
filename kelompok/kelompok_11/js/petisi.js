@@ -124,7 +124,6 @@ async function tanganiKlikDukung(e, list) {
     const json = await res.json();
     if (!res.ok || !json.success) throw new Error(json.message || 'Gagal mendukung petisi.');
 
-    // Perbarui tampilan kartu tanpa reload
     const p = json.data;
     const kartu = list.querySelector(`[data-petisi-id="${id}"]`);
     const persen = p.target_tanda_tangan > 0

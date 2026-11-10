@@ -1,10 +1,8 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-// Menghubungkan ke database PDO
 require_once '../config/database.php';
 
-// BLOK TAMBAHAN FARHAN: Mengambil data verifikasi (Selain 'pending')
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         $stmt = $pdo->query("SELECT judul_isu, link_sumber, status, created_at FROM lapor_hoaks WHERE status != 'pending' ORDER BY created_at DESC");
@@ -17,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 }
 
-// Memastikan request menggunakan POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
@@ -27,10 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Mengambil data JSON dari Fetch API
 $data = json_decode(file_get_contents('php://input'), true);
 
-// Memeriksa kelengkapan input
 $judul = trim($data['judul_isu'] ?? '');
 $link = trim($data['link_sumber'] ?? '');
 $keterangan = trim($data['keterangan'] ?? '');
@@ -44,7 +39,6 @@ if ($judul === '' || $link === '' || $keterangan === '') {
     exit;
 }
 
-// Memvalidasi format URL
 if (!filter_var($link, FILTER_VALIDATE_URL)) {
     http_response_code(400);
     echo json_encode([
@@ -55,7 +49,6 @@ if (!filter_var($link, FILTER_VALIDATE_URL)) {
 }
 
 try {
-    // Query INSERT menggunakan prepared statement
     $sql = "INSERT INTO lapor_hoaks
             (judul_isu, link_sumber, keterangan)
             VALUES (:judul, :link, :keterangan)";

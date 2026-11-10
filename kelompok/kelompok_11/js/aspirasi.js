@@ -22,7 +22,6 @@ function renderAspirasi(container) {
     </section>
   `;
 
-  // Fungsi untuk menarik dan menampilkan data aspirasi
   async function loadAspirasi() {
     const listContainer = document.getElementById('aspirasi-list');
     if (!listContainer) return;
@@ -57,10 +56,8 @@ function renderAspirasi(container) {
     }
   }
 
-  // Panggil fungsi saat halaman pertama dimuat
   loadAspirasi();
 
-  // Menangani pengiriman form Gigih
   document.getElementById('form-aspirasi').addEventListener('submit', async (e) => {
     e.preventDefault();
     const body = Object.fromEntries(new FormData(e.target));
@@ -78,13 +75,11 @@ function renderAspirasi(container) {
       });
       const json = await res.json();
       
-      // Kasih warna biar jelas sukses/gagalnya
       notif.textContent = json.message;
       notif.className = json.status === 'success' ? 'text-sm font-medium mt-2 text-green-600' : 'text-sm font-medium mt-2 text-red-600';
       
       if (json.status === 'success') {
           e.target.reset();
-          // Langsung panggil loadAspirasi biar list-nya otomatis ke-update tanpa refresh page!
           loadAspirasi(); 
       }
     } catch {

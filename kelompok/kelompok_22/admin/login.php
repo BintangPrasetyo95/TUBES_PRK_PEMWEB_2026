@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Login Admin - KlikObat</title>
-    <link rel="stylesheet" href="../assets/css/style.css"> <!-- Sesuaikan jika ada CSS -->
-</head>
+<link rel="stylesheet" href="../frontend/assets/css/style.css">
+<link rel="stylesheet" href="../frontend/assets/css/admin.css"></head>
 <body>
     <div class="login-container" style="max-width: 400px; margin: 80px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
         <h2>Login Admin KlikObat</h2>

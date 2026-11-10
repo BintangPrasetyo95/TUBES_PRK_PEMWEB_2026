@@ -141,6 +141,8 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
                             <small>Data pada ringkasan mengikuti hak akses akun yang sedang masuk.</small>
                         </section>
                     </div>
+                <?php elseif ($page === 'penilaian'): ?>
+                <?php include __DIR__ . '/views/penilaian.php'; ?>
                 <?php elseif ($page === 'klasifikasi'): ?>
                 <?php include __DIR__ . '/views/klasifikasi.php'; ?>
                 <?php elseif ($page === 'laporan'): ?>

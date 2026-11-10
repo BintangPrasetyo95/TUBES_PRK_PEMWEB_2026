@@ -109,7 +109,18 @@ jobs:
 
           echo "✅ Seluruh file PHP bebas dari syntax error."
 
-      - name: 6. Auto-Merge PR Jika Lolos Semua Validasi
+      - name: 6. Buat & Kirim Rekapitulasi Kontribusi Anggota ke PR
+        if: success()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.base_ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          php scripts/pr_rekap_kontribusi.php
+
+      - name: 7. Auto-Merge PR Jika Lolos Semua Validasi
         if: success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -117,7 +128,7 @@ jobs:
           echo "✅ Seluruh validasi lolos! Melakukan Auto-Merge Pull Request #${{ github.event.pull_request.number }}..."
           gh pr merge ${{ github.event.pull_request.number }} --merge --repo ${{ github.repository }}
 
-      - name: 7. Auto-Close PR Jika Gagal Validasi CI/CD
+      - name: 8. Auto-Close PR Jika Gagal Validasi CI/CD
         if: failure()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

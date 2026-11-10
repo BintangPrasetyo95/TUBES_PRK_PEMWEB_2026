@@ -149,7 +149,7 @@
             daftarPenugasan.forEach((p, idx) => {
                 const opt = document.createElement('option');
                 opt.value = p.id_penugasan;
-                opt.textContent = `${p.nama_kelas} (${p.tingkat}) — ${p.nama_mapel} [${p.tahun_ajaran} ${p.semester}]`;
+                opt.textContent = `${p.nama_kelas} (${p.tingkat}) ${p.nama_mapel} [${p.tahun_ajaran} ${p.semester}]`;
                 selectPenugasan.appendChild(opt);
             });
 
@@ -349,7 +349,7 @@
             tampilkanNotifikasi(error.message, true);
         } finally {
             btnHitungUlang.disabled = false;
-            btnHitungUlang.innerHTML = '<span>⚡</span> Hitung nilai akhir';
+            btnHitungUlang.innerHTML = 'Hitung nilai akhir';
         }
     }
 

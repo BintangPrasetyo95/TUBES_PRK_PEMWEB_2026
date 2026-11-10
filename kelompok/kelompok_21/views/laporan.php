@@ -18,10 +18,10 @@
         </div>
         <div class="heading-actions no-print">
             <button id="btn-hitung-ulang" class="primary" type="button">
-                <span>⚡</span> Hitung nilai akhir
+             Hitung nilai akhir
             </button>
             <button id="btn-cetak-laporan" type="button">
-                <span>🖨️</span> Cetak rekap (PDF/Print)
+                Cetak rekap (PDF)
             </button>
         </div>
     </div>

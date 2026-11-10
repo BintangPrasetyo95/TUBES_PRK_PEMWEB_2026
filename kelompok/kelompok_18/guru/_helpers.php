@@ -767,7 +767,9 @@ function guruCreateGroups(
     string $namePrefix,
     array $memberGroups,
     string $groupRule,
-    int $groupValue
+    int $groupValue,
+    int $minimumMale,
+    int $minimumFemale
 ): void {
     $namePrefix = trim($namePrefix);
     $length = function_exists('mb_strlen') ? mb_strlen($namePrefix, 'UTF-8') : strlen($namePrefix);
@@ -776,6 +778,9 @@ function guruCreateGroups(
     }
     if (!in_array($groupRule, ['groups', 'members'], true) || $groupValue < 1 || $groupValue > 20) {
         throw new DomainException('Kriteria pembagian kelompok tidak valid.');
+    }
+    if ($minimumMale < 0 || $minimumMale > 20 || $minimumFemale < 0 || $minimumFemale > 20) {
+        throw new DomainException('Jumlah minimum gender harus berada dalam rentang 0 sampai 20.');
     }
 
     $user = currentUser();
@@ -851,6 +856,10 @@ function guruCreateGroups(
         if (count($memberGroups) !== $groupCount) {
             throw new DomainException('Jumlah hasil kelompok tidak sesuai dengan kriteria yang dipilih.');
         }
+        $minimumTogether = $minimumMale + $minimumFemale;
+        if ($minimumTogether > (int) ceil($studentCount / $groupCount)) {
+            throw new DomainException('Jumlah minimum laki-laki dan perempuan melebihi kapasitas kelompok terbesar.');
+        }
 
         $seen = [];
         $groupSizes = [];
@@ -879,14 +888,25 @@ function guruCreateGroups(
             throw new DomainException('Jumlah anggota melebihi batas per kelompok yang dipilih.');
         }
 
-        foreach (['L', 'P'] as $gender) {
-            $minimum = (int) floor($genderTotals[$gender] / $groupCount);
-            $maximum = (int) ceil($genderTotals[$gender] / $groupCount);
-            foreach ($genderCounts as $counts) {
-                if ($counts[$gender] < $minimum || $counts[$gender] > $maximum) {
-                    throw new DomainException('Sebaran gender belum seimbang. Acak ulang hasil kelompok.');
-                }
+        $possibleSatisfied = $groupCount;
+        if ($minimumMale > 0) {
+            $possibleSatisfied = min($possibleSatisfied, intdiv($genderTotals['L'], $minimumMale));
+        }
+        if ($minimumFemale > 0) {
+            $possibleSatisfied = min($possibleSatisfied, intdiv($genderTotals['P'], $minimumFemale));
+        }
+        $possibleSatisfied = min($possibleSatisfied, count(array_filter(
+            $groupSizes,
+            static fn (int $size): bool => $size >= $minimumTogether
+        )));
+        $satisfied = 0;
+        foreach ($genderCounts as $counts) {
+            if ($counts['L'] >= $minimumMale && $counts['P'] >= $minimumFemale) {
+                $satisfied++;
             }
+        }
+        if ($satisfied < $possibleSatisfied) {
+            throw new DomainException('Hasil pengacakan belum memenuhi jumlah maksimum kelompok untuk minimum gender. Acak ulang.');
         }
 
 

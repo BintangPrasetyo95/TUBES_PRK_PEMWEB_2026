@@ -1,5 +1,4 @@
 <?php
-// Gunakan koneksi database langsung tanpa header JSON
 if (!isset($pdo) || !$pdo) {
     if (file_exists(__DIR__ . '/../includes/db.php')) {
         require_once __DIR__ . '/../includes/db.php';
@@ -10,7 +9,6 @@ if (!isset($pdo) || !$pdo) {
     }
 }
 
-// Ambil daftar kelas langsung dari database
 $daftarKelas = [];
 try {
     if (isset($pdo) && $pdo) {
@@ -18,7 +16,7 @@ try {
         $daftarKelas = $stmtKls->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (Exception $e) {
-    // Abaikan jika error agar tampilan tetap muncul
+
 }
 ?>
 
@@ -51,7 +49,6 @@ try {
     </div>
 
     <div class="quadrant-layout">
-        <!-- Kuadran 1: Jarang kumpul & Nilai tinggi -->
         <div class="quadrant-card q-bakat">
             <div class="q-card-header">
                 <h3>Jarang kumpul & nilai tinggi</h3>
@@ -61,7 +58,6 @@ try {
             <div class="student-container" id="list-bakat"></div>
         </div>
 
-        <!-- Kuadran 2: Rajin & Nilai tinggi -->
         <div class="quadrant-card q-bintang">
             <div class="q-card-header">
                 <h3>Rajin & nilai tinggi</h3>
@@ -71,7 +67,6 @@ try {
             <div class="student-container" id="list-bintang"></div>
         </div>
 
-        <!-- Kuadran 3: Jarang kumpul & Nilai rendah -->
         <div class="quadrant-card q-bahaya">
             <div class="q-card-header">
                 <h3>Jarang kumpul & nilai rendah</h3>
@@ -81,7 +76,6 @@ try {
             <div class="student-container" id="list-bahaya"></div>
         </div>
 
-        <!-- Kuadran 4: Rajin & Nilai rendah -->
         <div class="quadrant-card q-butuh">
             <div class="q-card-header">
                 <h3>Rajin & nilai rendah</h3>

@@ -43,5 +43,7 @@ INSERT INTO NILAI_DAN_PENGUMPULAN (id_siswa, id_penilaian, waktu_pengumpulan, st
 (8, 1, '2026-10-16 15:00:00', 'Terlambat', 60),
 (8, 2, '2026-11-20 10:15:00', 'Tepat Waktu', 88)
 ON DUPLICATE KEY UPDATE nilai = VALUES(nilai);
+select * from penilaian;
+
 
 COMMIT;

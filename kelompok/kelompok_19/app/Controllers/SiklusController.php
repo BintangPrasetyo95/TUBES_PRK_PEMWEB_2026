@@ -1,8 +1,6 @@
-
 <?php
 // app/Controllers/SiklusController.php
-// Tugas: Menerima request, memanggil Model Siklus, mengembalikan JSON atau halaman web.
-// Diisi oleh: Hengky.
+// Tugas: Menerima request, memanggil Model Siklus, mengembalikan JSON.
 
 require_once __DIR__ . "/../Config/Database.php";
 require_once __DIR__ . "/../Models/SiklusModel.php";
@@ -18,35 +16,59 @@ class SiklusController
         $this->model = new SiklusModel($db);
     }
 
-    // TODO: method index() - ambil semua data siklus
     public function index()
     {
         try {
-            $data = $this->model->read();
+            $filters = [
+                'q' => $this->param('q'),
+                'status' => $this->param('status'),
+                'lahan_id' => $this->param('lahan_id'),
+                'dari' => $this->param('dari'),
+                'sampai' => $this->param('sampai'),
+            ];
 
+            if ($filters['dari'] !== null && !$this->tanggalValid($filters['dari'])) {
+                $this->sendResponse(422, [
+                    'status' => 'error',
+                    'message' => 'Tanggal "dari" tidak valid (format YYYY-MM-DD).',
+                    'data' => null,
+                ]);
+                return;
+            }
+            if ($filters['sampai'] !== null && !$this->tanggalValid($filters['sampai'])) {
+                $this->sendResponse(422, [
+                    'status' => 'error',
+                    'message' => 'Tanggal "sampai" tidak valid (format YYYY-MM-DD).',
+                    'data' => null,
+                ]);
+                return;
+            }
+
+            $data = $this->model->read($filters);
             $this->sendResponse(200, [
-                'success' => true,
+                'status' => 'success',
                 'message' => 'Data siklus berhasil diambil.',
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (PDOException $e) {
             error_log($e->getMessage());
-
             $this->sendResponse(500, [
-                'success' => false,
-                'message' => 'Gagal mengambil data siklus.'
+                'status' => 'error',
+                'message' => 'Gagal mengambil data siklus.',
+                'data' => null,
             ]);
         }
+        return;
     }
 
-    // TODO: method show($id) - ambil satu siklus berdasarkan id
     public function show($id)
     {
         try {
             if (!filter_var($id, FILTER_VALIDATE_INT) || $id <= 0) {
                 $this->sendResponse(400, [
-                    'success' => false,
-                    'message' => 'ID siklus tidak valid.'
+                    'status' => 'error',
+                    'message' => 'ID siklus tidak valid.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -55,28 +77,29 @@ class SiklusController
 
             if (!$data) {
                 $this->sendResponse(404, [
-                    'success' => false,
-                    'message' => 'Data siklus tidak ditemukan.'
+                    'status' => 'error',
+                    'message' => 'Data siklus tidak ditemukan.',
+                    'data' => null,
                 ]);
                 return;
             }
 
             $this->sendResponse(200, [
-                'success' => true,
+                'status' => 'success',
                 'message' => 'Data siklus berhasil ditemukan.',
-                'data' => $data
+                'data' => $data,
             ]);
         } catch (PDOException $e) {
             error_log($e->getMessage());
-
             $this->sendResponse(500, [
-                'success' => false,
-                'message' => 'Gagal mengambil detail siklus.'
+                'status' => 'error',
+                'message' => 'Gagal mengambil detail siklus.',
+                'data' => null,
             ]);
         }
+        return;
     }
 
-    // TODO: method create() - tambah data siklus baru
     public function create()
     {
         try {
@@ -90,8 +113,9 @@ class SiklusController
                 empty($data['tanggal_tanam'])
             ) {
                 $this->sendResponse(400, [
-                    'success' => false,
-                    'message' => 'Lahan, nama tanaman, dan tanggal tanam wajib diisi.'
+                    'status' => 'error',
+                    'message' => 'Lahan, nama tanaman, dan tanggal tanam wajib diisi.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -103,8 +127,9 @@ class SiklusController
 
             if (!in_array($data['status'], $statusValid, true)) {
                 $this->sendResponse(400, [
-                    'success' => false,
-                    'message' => 'Status siklus tidak valid.'
+                    'status' => 'error',
+                    'message' => 'Status siklus tidak valid.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -113,34 +138,36 @@ class SiklusController
 
             if ($result) {
                 $this->sendResponse(201, [
-                    'success' => true,
+                    'status' => 'success',
                     'message' => 'Siklus tanam berhasil ditambahkan.',
-                    'id' => $result
+                    'data' => ['id' => $result],
                 ]);
             } else {
                 $this->sendResponse(500, [
-                    'success' => false,
-                    'message' => 'Gagal menambahkan siklus tanam.'
+                    'status' => 'error',
+                    'message' => 'Gagal menambahkan siklus tanam.',
+                    'data' => null,
                 ]);
             }
         } catch (PDOException $e) {
             error_log($e->getMessage());
-
             $this->sendResponse(500, [
-                'success' => false,
-                'message' => 'Terjadi kesalahan database saat menambahkan siklus.'
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan database saat menambahkan siklus.',
+                'data' => null,
             ]);
         }
+        return;
     }
 
-    // TODO: method update($id) - ubah data siklus
     public function update($id)
     {
         try {
             if (!filter_var($id, FILTER_VALIDATE_INT) || $id <= 0) {
                 $this->sendResponse(400, [
-                    'success' => false,
-                    'message' => 'ID siklus tidak valid.'
+                    'status' => 'error',
+                    'message' => 'ID siklus tidak valid.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -149,8 +176,9 @@ class SiklusController
 
             if (!$existingData) {
                 $this->sendResponse(404, [
-                    'success' => false,
-                    'message' => 'Data siklus tidak ditemukan.'
+                    'status' => 'error',
+                    'message' => 'Data siklus tidak ditemukan.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -166,8 +194,9 @@ class SiklusController
                 !isset($data['status'])
             ) {
                 $this->sendResponse(400, [
-                    'success' => false,
-                    'message' => 'Data siklus belum lengkap.'
+                    'status' => 'error',
+                    'message' => 'Data siklus belum lengkap.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -178,8 +207,9 @@ class SiklusController
 
             if (!in_array($data['status'], $statusValid, true)) {
                 $this->sendResponse(400, [
-                    'success' => false,
-                    'message' => 'Status siklus tidak valid.'
+                    'status' => 'error',
+                    'message' => 'Status siklus tidak valid.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -188,33 +218,36 @@ class SiklusController
 
             if ($result) {
                 $this->sendResponse(200, [
-                    'success' => true,
-                    'message' => 'Data siklus berhasil diperbarui.'
+                    'status' => 'success',
+                    'message' => 'Data siklus berhasil diperbarui.',
+                    'data' => $data,
                 ]);
             } else {
                 $this->sendResponse(500, [
-                    'success' => false,
-                    'message' => 'Gagal memperbarui data siklus.'
+                    'status' => 'error',
+                    'message' => 'Gagal memperbarui data siklus.',
+                    'data' => null,
                 ]);
             }
         } catch (PDOException $e) {
             error_log($e->getMessage());
-
             $this->sendResponse(500, [
-                'success' => false,
-                'message' => 'Terjadi kesalahan database saat memperbarui siklus.'
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan database saat memperbarui siklus.',
+                'data' => null,
             ]);
         }
+        return;
     }
 
-    // TODO: method delete($id) - hapus data siklus
     public function delete($id)
     {
         try {
             if (!filter_var($id, FILTER_VALIDATE_INT) || $id <= 0) {
                 $this->sendResponse(400, [
-                    'success' => false,
-                    'message' => 'ID siklus tidak valid.'
+                    'status' => 'error',
+                    'message' => 'ID siklus tidak valid.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -223,8 +256,9 @@ class SiklusController
 
             if (!$existingData) {
                 $this->sendResponse(404, [
-                    'success' => false,
-                    'message' => 'Data siklus tidak ditemukan.'
+                    'status' => 'error',
+                    'message' => 'Data siklus tidak ditemukan.',
+                    'data' => null,
                 ]);
                 return;
             }
@@ -233,23 +267,26 @@ class SiklusController
 
             if ($result) {
                 $this->sendResponse(200, [
-                    'success' => true,
-                    'message' => 'Data siklus berhasil dihapus.'
+                    'status' => 'success',
+                    'message' => 'Data siklus berhasil dihapus.',
+                    'data' => null,
                 ]);
             } else {
                 $this->sendResponse(500, [
-                    'success' => false,
-                    'message' => 'Gagal menghapus data siklus.'
+                    'status' => 'error',
+                    'message' => 'Gagal menghapus data siklus.',
+                    'data' => null,
                 ]);
             }
         } catch (PDOException $e) {
             error_log($e->getMessage());
-
             $this->sendResponse(500, [
-                'success' => false,
-                'message' => 'Terjadi kesalahan database saat menghapus siklus.'
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan database saat menghapus siklus.',
+                'data' => null,
             ]);
         }
+        return;
     }
 
     private function getRequestData()
@@ -259,13 +296,26 @@ class SiklusController
 
         if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
             $this->sendResponse(400, [
-                'success' => false,
-                'message' => 'Format JSON tidak valid.'
+                'status' => 'error',
+                'message' => 'Format JSON tidak valid.',
+                'data' => null,
             ]);
             exit;
         }
 
         return $data;
+    }
+
+    private function param($nama)
+    {
+        $nilai = $_GET[$nama] ?? null;
+        return $nilai !== null && $nilai !== '' ? $nilai : null;
+    }
+
+    private function tanggalValid($tanggal)
+    {
+        $d = DateTime::createFromFormat('Y-m-d', $tanggal);
+        return $d && $d->format('Y-m-d') === $tanggal;
     }
 
     private function sendResponse($statusCode, $data)

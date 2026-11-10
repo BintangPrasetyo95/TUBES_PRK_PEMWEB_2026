@@ -1,104 +1,133 @@
-
 <?php
 // app/Views/siklus.php
-// Tugas: CRUD Siklus (tabel + form modal).
-// Diisi oleh: Hengky.
-
+// CRUD Siklus Tanam: satu tabel, satu dialog. Progres memakai <progress> dan urutan fase.
 $title = "Manajemen Siklus Tanam";
 require_once __DIR__ . "/layouts/header.php";
-require_once __DIR__ . "/layouts/sidebar.php";
 ?>
+<header class="page-header">
+    <h1 id="judul-siklus">Siklus tanam</h1>
+    <p class="top-label">Catatan siklus · <time datetime="<?= date('Y-m-d') ?>"><?= htmlspecialchars($tanggalPanjang) ?></time></p>
+    <p class="intro">Dari pembibitan sampai panen. Tanggal tanam dan estimasi panen menentukan sisa hari serta status siap panen.</p>
+    <p class="actions">
+        <button class="btn" type="button" data-modal-open="#modalSiklus">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah siklus
+        </button>
+    </p>
+</header>
 
-            <div class="container-fluid p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1>Data Siklus Tanam</h1>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalSiklus" onclick="resetFormSiklus()">
-                        Tambah Siklus
-                    </button>
-                </div>
+<section class="pita-siap-panen" id="pitaSiapPanen" aria-live="polite" hidden>
+    <span id="teksSiapPanen"></span>
+    <a href="/panen">Catat panen</a>
+</section>
 
-                <div id="alertSiklus"></div>
+<section class="filter-panel" aria-labelledby="label-filter-siklus">
+    <h2 id="label-filter-siklus">Filter siklus</h2>
+    <fieldset class="filter-grid">
+        <legend class="sr-only">Filter siklus tanam</legend>
+        <div class="form-group">
+            <label for="filterSiklusQ">Pencarian</label>
+            <input type="text" class="form-control" id="filterSiklusQ" placeholder="Nama tanaman atau lokasi...">
+        </div>
+        <div class="form-group">
+            <label for="filterSiklusStatus">Status</label>
+            <select class="form-select" id="filterSiklusStatus">
+                <option value="">Semua status</option>
+                <option value="Aktif">Aktif</option>
+                <option value="Panen">Panen</option>
+                <option value="Selesai">Selesai</option>
+                <option value="Gagal">Gagal</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="filterSiklusDari">Dari tanggal</label>
+            <input type="date" class="form-control" id="filterSiklusDari">
+        </div>
+        <div class="form-group">
+            <label for="filterSiklusSampai">Sampai tanggal</label>
+            <input type="date" class="form-control" id="filterSiklusSampai">
+        </div>
+        <div class="form-group">
+            <label for="filterSiklusLahan">Petak / lokasi</label>
+            <select class="form-select" id="filterSiklusLahan">
+                <option value="">Semua petak</option>
+            </select>
+        </div>
+        <p class="filter-buttons">
+            <button class="btn btn--secondary" type="button" id="btnResetSiklus">Reset</button>
+            <button class="btn" type="button" id="btnTerapkanSiklus">Terapkan</button>
+        </p>
+    </fieldset>
+</section>
 
-                <div class="card">
-                    <div class="card-body">
-                        <table class="table table-striped" id="tabelSiklus">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Nama Tanaman</th>
-                                    <th>Lahan</th>
-                                    <th>Tanggal Tanam</th>
-                                    <th>Tanggal Panen Estimasi</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- TODO: Isi data via JS fetch ke API -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<div class="table-wrap">
+    <table id="tabelSiklus">
+        <caption class="sr-only">Daftar siklus tanam per petak, fase, dan progres menuju panen</caption>
+        <thead>
+            <tr>
+                <th scope="col">No</th>
+                <th scope="col">Petak &amp; tanaman</th>
+                <th scope="col">Fase saat ini</th>
+                <th scope="col">Progres</th>
+                <th scope="col">Estimasi panen</th>
+                <th scope="col">Status</th>
+                <th scope="col">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="7" class="text-center">Memuat data siklus...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<dialog class="modal" id="modalSiklus" aria-labelledby="modalSiklusTitle">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalSiklusTitle">Tambah Siklus</h2>
+            <button class="btn-close" type="button" data-modal-close aria-label="Tutup">&times;</button>
+        </div>
+        <form id="formSiklus" class="modal-form">
+            <input type="hidden" name="id" id="siklusId">
+            <p id="siklusError" class="form-error" role="alert" hidden></p>
+            <div class="form-group">
+                <label for="siklusNamaTanaman">Nama tanaman</label>
+                <input type="text" class="form-control" name="nama_tanaman" id="siklusNamaTanaman" maxlength="100" autocomplete="off" required>
+                <span class="form-hint">Contoh: Cabai rawit, tomat cherry.</span>
             </div>
-
-            <!-- Modal Form Siklus -->
-            <div class="modal fade" id="modalSiklus" tabindex="-1" aria-labelledby="modalSiklusTitle" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalSiklusTitle">Tambah Siklus</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-                        </div>
-
-                        <form id="formSiklus">
-                            <input type="hidden" name="id" id="siklusId">
-
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label" for="siklusNamaTanaman">Nama Tanaman</label>
-                                    <input type="text" class="form-control" name="nama_tanaman" id="siklusNamaTanaman" maxlength="100" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label" for="siklusLahanId">Lahan</label>
-                                    <select class="form-select" name="lahan_id" id="siklusLahanId" required>
-                                        <option value="">Pilih Lahan...</option>
-                                        <!-- TODO: Isi option via JS fetch lahan -->
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label" for="siklusTanggalTanam">Tanggal Tanam</label>
-                                    <input type="date" class="form-control" name="tanggal_tanam" id="siklusTanggalTanam" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label" for="siklusTanggalPanenEstimasi">Tanggal Panen Estimasi</label>
-                                    <input type="date" class="form-control" name="tanggal_panen_estimasi" id="siklusTanggalPanenEstimasi">
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label" for="siklusStatus">Status</label>
-                                    <select class="form-select" name="status" id="siklusStatus" required>
-                                        <option value="Aktif">Aktif</option>
-                                        <option value="Panen">Panen</option>
-                                        <option value="Selesai">Selesai</option>
-                                        <option value="Gagal">Gagal</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-primary">Simpan</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="siklusLahanId">Petak lahan</label>
+                <select class="form-select" name="lahan_id" id="siklusLahanId" required>
+                    <option value="">Pilih lahan...</option>
+                </select>
             </div>
+            <div class="form-group">
+                <label for="siklusTanggalTanam">Tanggal tanam</label>
+                <input type="date" class="form-control" name="tanggal_tanam" id="siklusTanggalTanam" required>
+            </div>
+            <div class="form-group">
+                <label for="siklusTanggalPanenEstimasi">Perkiraan tanggal panen</label>
+                <input type="date" class="form-control" name="tanggal_panen_estimasi" id="siklusTanggalPanenEstimasi">
+                <span class="form-hint">Boleh dikosongkan bila belum tahu.</span>
+            </div>
+            <div class="form-group">
+                <label for="siklusStatus">Status</label>
+                <select class="form-select" name="status" id="siklusStatus" required>
+                    <option value="Aktif">Aktif</option>
+                    <option value="Panen">Panen</option>
+                    <option value="Selesai">Selesai</option>
+                    <option value="Gagal">Gagal</option>
+                </select>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button class="btn btn--secondary" type="button" data-modal-close>Batal</button>
+            <button class="btn" type="submit" form="formSiklus">Simpan siklus</button>
+        </div>
+    </div>
+</dialog>
 
-            <script src="/assets/js/siklus.js"></script>
-
+<script src="/assets/js/siklus.js"></script>
 <?php
 require_once __DIR__ . "/layouts/footer.php";
 ?>
+

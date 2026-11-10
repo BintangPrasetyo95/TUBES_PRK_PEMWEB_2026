@@ -105,7 +105,10 @@ if ($isPost) {
         $assignment = null;
         if ($penugasanId > 0) {
             $statement = $pdo->prepare(
-                'SELECT id, guru_id, kelas_id, semester_id FROM penugasan_guru WHERE id = :id LIMIT 1'
+                'SELECT p.id, p.guru_id, p.kelas_id, k.semester_id
+                 FROM penugasan_guru p
+                 INNER JOIN kelas k ON k.id = p.kelas_id
+                 WHERE p.id = :id LIMIT 1'
             );
             $statement->execute(['id' => $penugasanId]);
             $assignment = $statement->fetch() ?: null;
@@ -145,10 +148,11 @@ if ($isPost) {
                 'SELECT COUNT(*)
                  FROM jadwal_mengajar j
                  INNER JOIN penugasan_guru p ON p.id = j.penugasan_guru_id
+                 INNER JOIN kelas k ON k.id = p.kelas_id
                  WHERE j.hari = :hari
                    AND j.jam_mulai < :jam_selesai
                    AND j.jam_selesai > :jam_mulai
-                   AND p.semester_id = :semester_id
+                   AND k.semester_id = :semester_id
                    AND (p.kelas_id = :kelas_id OR p.guru_id = :guru_id)
                    AND j.id <> :id'
             );
@@ -279,11 +283,13 @@ if ($filterSemesterId > 0 && !$semesterExists) {
 
 // Assignments available for the form (all semesters; the schedule inherits them).
 $assignmentOptions = $pdo->query(
-    'SELECT p.id, g.nama AS guru_nama, k.nama AS kelas_nama, s.nama AS semester_nama
+    'SELECT p.id, g.nama AS guru_nama, mp.nama AS mapel_nama,
+            k.nama AS kelas_nama, s.nama AS semester_nama
      FROM penugasan_guru p
      INNER JOIN guru g ON g.id = p.guru_id
+     INNER JOIN mata_pelajaran mp ON mp.id = p.mata_pelajaran_id
      INNER JOIN kelas k ON k.id = p.kelas_id
-     INNER JOIN semester s ON s.id = p.semester_id
+     INNER JOIN semester s ON s.id = k.semester_id
      ORDER BY s.tanggal_mulai DESC, k.nama, g.nama'
 )->fetchAll();
 
@@ -332,15 +338,17 @@ $isEditing = $formValues['id'] > 0;
 // Schedule list for the selected semester (0 = all semesters).
 $listSql = 'SELECT j.id, j.hari, j.jam_mulai, j.jam_selesai, j.berlaku_mulai, j.berlaku_sampai,
                    p.id AS penugasan_id,
-                   g.nama AS guru_nama, k.nama AS kelas_nama, s.nama AS semester_nama
+                   g.nama AS guru_nama, mp.nama AS mapel_nama,
+                   k.nama AS kelas_nama, s.nama AS semester_nama
             FROM jadwal_mengajar j
             INNER JOIN penugasan_guru p ON p.id = j.penugasan_guru_id
             INNER JOIN guru g ON g.id = p.guru_id
+            INNER JOIN mata_pelajaran mp ON mp.id = p.mata_pelajaran_id
             INNER JOIN kelas k ON k.id = p.kelas_id
-            INNER JOIN semester s ON s.id = p.semester_id';
+            INNER JOIN semester s ON s.id = k.semester_id';
 $listParams = [];
 if ($filterSemesterId > 0) {
-    $listSql .= ' WHERE p.semester_id = :semester_id';
+    $listSql .= ' WHERE k.semester_id = :semester_id';
     $listParams['semester_id'] = $filterSemesterId;
 }
 $listSql .= ' ORDER BY s.tanggal_mulai DESC, j.hari, j.jam_mulai';
@@ -394,6 +402,7 @@ admin_page_start('Jadwal Mengajar', 'jadwal-mengajar.php');
                 <tr>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Guru</th>
+                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Mata Pelajaran</th>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kelas</th>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Semester</th>
                     <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Hari</th>
@@ -404,7 +413,7 @@ admin_page_start('Jadwal Mengajar', 'jadwal-mengajar.php');
             </thead>
             <tbody class="divide-y divide-[#edf1ec] text-slate-700">
                 <?php if ($scheduleList === []): ?>
-                    <tr><td colspan="8" class="px-4 py-9 text-center text-slate-500">Belum ada jadwal mengajar.</td></tr>
+                    <tr><td colspan="9" class="px-4 py-9 text-center text-slate-500">Belum ada jadwal mengajar.</td></tr>
                 <?php else: ?>
                     <?php foreach ($scheduleList as $index => $schedule): ?>
                         <?php
@@ -419,6 +428,7 @@ admin_page_start('Jadwal Mengajar', 'jadwal-mengajar.php');
                         <tr class="hover:bg-[#f8faf7]">
                             <td class="px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
                             <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['guru_nama']) ?></td>
+                            <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['mapel_nama']) ?></td>
                             <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['kelas_nama']) ?></td>
                             <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['semester_nama']) ?></td>
                             <td class="px-4 py-3.5 sm:px-5"><?= h($dayLabel . ' (' . $dayNumber . ')') ?></td>
@@ -467,7 +477,7 @@ admin_page_start('Jadwal Mengajar', 'jadwal-mengajar.php');
                     <option value="0">Pilih penugasan</option>
                     <?php foreach ($assignmentOptions as $option): ?>
                         <option value="<?= h((string) $option['id']) ?>" <?= (int) $option['id'] === $formValues['penugasan_guru_id'] ? 'selected' : '' ?>>
-                            #<?= h((string) $option['id']) ?> · <?= h((string) $option['guru_nama']) ?> · <?= h((string) $option['kelas_nama']) ?> · <?= h((string) $option['semester_nama']) ?>
+                            #<?= h((string) $option['id']) ?> · <?= h((string) $option['guru_nama']) ?> · <?= h((string) $option['mapel_nama']) ?> · <?= h((string) $option['kelas_nama']) ?> · <?= h((string) $option['semester_nama']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>

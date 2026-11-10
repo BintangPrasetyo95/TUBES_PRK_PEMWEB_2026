@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($id === 0) {
                     $statement = $pdo->prepare(
                         "INSERT INTO semester (kode, nama, tanggal_mulai, tanggal_selesai, status)
-                         VALUES (:kode, :nama, :tanggal_mulai, :tanggal_selesai, 'belum_aktif')"
+                         VALUES (:kode, :nama, :tanggal_mulai, :tanggal_selesai, 'direncanakan')"
                     );
                     $statement->execute([
                         'kode' => $kode,
@@ -293,7 +293,7 @@ admin_page_start($isEditing ? 'Edit Semester' : 'Data Semester', 'semester.php')
 <section id="form-semester" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
     <h2 class="text-base font-semibold text-[#20392a]"><?= $isEditing ? 'Edit Semester' : 'Tambah Semester' ?></h2>
     <p class="mt-1 text-sm text-slate-600">
-        Semester baru dibuat dengan status belum aktif. Riwayat semester lama tetap tersimpan.
+        Semester baru dibuat dengan status direncanakan. Riwayat semester lama tetap tersimpan.
     </p>
 
     <?php if ($errors !== []): ?>

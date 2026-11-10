@@ -30,6 +30,9 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
             <script src="js/kualitatif.js" defer></script>
         <?php else: ?>
             <script src="js/app.js" defer></script>
+            <?php if ($page === 'profil' && isAdmin()): ?>
+            <script src="js/akun_guru.js" defer></script>
+            <?php endif; ?>
         <?php endif; ?>
     </head>
     <body data-page="<?= e($page) ?>" data-role="<?= e($_SESSION['guru']['peran']) ?>" data-guru="<?= e($_SESSION['guru']['id_guru']) ?>">
@@ -186,6 +189,9 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
                             <button class="primary" type="submit">Simpan profil</button>
                         </form>
                     </section>
+                    <?php if (isAdmin()): ?>
+                    <?php include __DIR__ . '/views/akun_guru.php'; ?>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="page-heading">
                         <div>

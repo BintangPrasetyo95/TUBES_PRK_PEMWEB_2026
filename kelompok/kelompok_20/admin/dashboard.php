@@ -1,11 +1,9 @@
 <?php
-// admin/dashboard.php
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
 
 wajibAdmin();
-
 
 $q_total = $pdo->query("SELECT COUNT(*) FROM laporan");
 $total_laporan = $q_total->fetchColumn();
@@ -19,85 +17,148 @@ $total_diproses = $q_diproses->fetchColumn();
 $q_selesai = $pdo->query("SELECT COUNT(*) FROM laporan WHERE status = 'selesai'");
 $total_selesai = $q_selesai->fetchColumn();
 
+$q_pengaduan = $pdo->query("SELECT COUNT(*) FROM laporan WHERE jenis = 'pengaduan'");
+$total_pengaduan = $q_pengaduan->fetchColumn();
+
+$q_aspirasi = $pdo->query("SELECT COUNT(*) FROM laporan WHERE jenis = 'aspirasi'");
+$total_aspirasi = $q_aspirasi->fetchColumn();
+
+$persen_pengaduan = 0;
+$persen_aspirasi = 0;
+
+if ($total_laporan > 0) {
+    $persen_pengaduan = round(($total_pengaduan / $total_laporan) * 100);
+    $persen_aspirasi = round(($total_aspirasi / $total_laporan) * 100);
+}
+
+$q_kategori = $pdo->query("SELECT kategori.nama_kategori, COUNT(laporan.id) AS total 
+                           FROM kategori 
+                           LEFT JOIN laporan ON kategori.id = laporan.kategori_id 
+                           GROUP BY kategori.id");
+$data_kategori = $q_kategori->fetchAll(PDO::FETCH_ASSOC);
 
 $q_terbaru = $pdo->query("SELECT laporan.*, users.nama AS nama_pelapor 
                           FROM laporan 
                           JOIN users ON laporan.user_id = users.id 
-                          ORDER BY laporan.created_at DESC 
-                          LIMIT 5");
+                          ORDER BY laporan.created_at DESC LIMIT 5");
 $list_terbaru = $q_terbaru->fetchAll(PDO::FETCH_ASSOC);
 
-// Judul halaman untuk header
 $title = "Dashboard Admin - Aspiraku";
 include '../includes/header.php';
 ?>
 
 <main class="container" style="padding: 30px 20px;">
     
-
-    <?php if (function_exists('getFlash')): ?>
-        <?= getFlash() ?>
-    <?php endif; ?>
-
     <div style="margin-bottom: 25px;">
         <h1 style="color: #1E3B2F; font-size: 26px; margin-bottom: 6px;">Dashboard Admin</h1>
         <p style="color: #5F6B4E; font-size: 15px;">
-            Selamat datang, <strong><?= sanitize($_SESSION['nama'] ?? 'Admin') ?></strong>! Berikut adalah ringkasan aspirasi & pengaduan kampus saat ini.
+            Selamat datang, <strong><?= sanitize($_SESSION['nama'] ?? 'Admin') ?></strong>! Berikut adalah ringkasan pengaduan dan aspirasi kampus saat ini.
         </p>
     </div>
 
-
-    <div style="margin-bottom: 30px; display: flex; gap: 10px; flex-wrap: wrap;">
-        <a href="kelola.php" class="btn" style="background: #1E3B2F; color: #F5F0E6; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">
+    <!-- Tombol menu admin -->
+    <div style="margin-bottom: 25px;">
+        <a href="kelola.php" class="btn" style="background: #1E3B2F; color: #F5F0E6; padding: 10px 18px; border-radius: 6px; text-decoration: none; margin-right: 8px;">
             Kelola Semua Laporan &rarr;
         </a>
-        <a href="kategori.php" class="btn btn-secondary" style="background: transparent; color: #1E3B2F; border: 1px solid #7F8C6A; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">
+        <a href="kategori.php" class="btn" style="background: transparent; color: #1E3B2F; border: 1px solid #7F8C6A; padding: 10px 18px; border-radius: 6px; text-decoration: none;">
             Kelola Kategori
         </a>
     </div>
 
-
+    <!-- Kotak Angka Statistik -->
     <h3 style="color: #1E3B2F; margin-bottom: 15px; font-size: 18px;">Statistik Laporan</h3>
-    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 35px;">
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px;">
         
         <div class="card" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 20px; text-align: center;">
             <div style="font-size: 32px; font-weight: bold; color: #1E3B2F; margin-bottom: 4px;">
-                <?= (int)$total_laporan ?>
+                <?= $total_laporan ?>
             </div>
-            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E; letter-spacing: 0.5px;">
-                TOTAL LAPORAN
-            </div>
+            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E;">TOTAL LAPORAN</div>
         </div>
 
         <div class="card" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 20px; text-align: center;">
             <div style="font-size: 32px; font-weight: bold; color: #6B5420; margin-bottom: 4px;">
-                <?= (int)$total_menunggu ?>
+                <?= $total_menunggu ?>
             </div>
-            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E; letter-spacing: 0.5px;">
-                MENUNGGU
-            </div>
+            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E;">MENUNGGU</div>
         </div>
 
         <div class="card" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 20px; text-align: center;">
             <div style="font-size: 32px; font-weight: bold; color: #34402A; margin-bottom: 4px;">
-                <?= (int)$total_diproses ?>
+                <?= $total_diproses ?>
             </div>
-            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E; letter-spacing: 0.5px;">
-                DIPROSES
-            </div>
+            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E;">DIPROSES</div>
         </div>
 
         <div class="card" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 20px; text-align: center;">
             <div style="font-size: 32px; font-weight: bold; color: #1E3B2F; margin-bottom: 4px;">
-                <?= (int)$total_selesai ?>
+                <?= $total_selesai ?>
             </div>
-            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E; letter-spacing: 0.5px;">
-                SELESAI
-            </div>
+            <div style="font-size: 12px; font-weight: bold; color: #5F6B4E;">SELESAI</div>
         </div>
 
     </div>
 
+    <!-- Grafik Batang -->
+    <h3 style="color: #1E3B2F; margin-bottom: 15px; font-size: 18px;">Grafik Laporan</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        
+        <!-- Jenis Laporan -->
+        <div class="card" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 20px;">
+            <h4 style="color: #1E3B2F; margin-bottom: 15px; font-size: 15px;">Perbandingan Jenis Laporan</h4>
+            
+            <!-- Pengaduan -->
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
+                    <span>Pengaduan (<?= $total_pengaduan ?>)</span>
+                    <strong><?= $persen_pengaduan ?>%</strong>
+                </div>
+                <div style="background: #EEE5D0; border-radius: 5px; height: 14px;">
+                    <div style="background: #8B2E2E; height: 14px; width: <?= $persen_pengaduan ?>%; border-radius: 5px;"></div>
+                </div>
+            </div>
+
+            <!-- Aspirasi -->
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
+                    <span>Aspirasi (<?= $total_aspirasi ?>)</span>
+                    <strong><?= $persen_aspirasi ?>%</strong>
+                </div>
+                <div style="background: #EEE5D0; border-radius: 5px; height: 14px;">
+                    <div style="background: #7F8C6A; height: 14px; width: <?= $persen_aspirasi ?>%; border-radius: 5px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kategori -->
+        <div class="card" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 20px;">
+            <h4 style="color: #1E3B2F; margin-bottom: 15px; font-size: 15px;">Laporan Berdasarkan Kategori</h4>
+            
+            <?php if (empty($data_kategori)): ?>
+                <p style="color: #5F6B4E; font-size: 13px;">Belum ada data kategori.</p>
+            <?php else: ?>
+                <?php foreach ($data_kategori as $kat): ?>
+                    <?php 
+                        $persen_kat = 0;
+                        if ($total_laporan > 0) {
+                            $persen_kat = round(($kat['total'] / $total_laporan) * 100);
+                        }
+                    ?>
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+                            <span><?= sanitize($kat['nama_kategori']) ?> (<?= $kat['total'] ?>)</span>
+                            <strong><?= $persen_kat ?>%</strong>
+                        </div>
+                        <div style="background: #EEE5D0; border-radius: 5px; height: 10px;">
+                            <div style="background: #1E3B2F; height: 10px; width: <?= $persen_kat ?>%; border-radius: 5px;"></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+    </div>
 
     <h3 style="color: #1E3B2F; margin-bottom: 15px; font-size: 18px;">5 Laporan Terbaru</h3>
     <div class="table-responsive" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 15px; overflow-x: auto;">
@@ -125,9 +186,7 @@ include '../includes/header.php';
                                 <?= sanitize($row['nama_pelapor']) ?>
                             </td>
                             <td style="padding: 10px 8px;">
-                                <a href="../detail.php?id=<?= (int)$row['id'] ?>" style="color: #1E3B2F; text-decoration: underline;">
-                                    <?= sanitize($row['judul']) ?>
-                                </a>
+                                <?= sanitize($row['judul']) ?>
                             </td>
                             <td style="padding: 10px 8px;">
                                 <?= ucfirst(sanitize($row['jenis'])) ?>
@@ -142,7 +201,7 @@ include '../includes/header.php';
                                 <?php endif; ?>
                             </td>
                             <td style="padding: 10px 8px; color: #5F6B4E; white-space: nowrap;">
-                                <?= date('d M Y H:i', strtotime($row['created_at'])) ?>
+                                <?= sanitize($row['created_at']) ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

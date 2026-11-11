@@ -133,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Cek apakah pengajar menekan tombol lanjut kelola soal
                 $tujuan = isset($_POST['lanjut_soal'])
-                    ? 'soal.php?kuis_id=' . $kuisId
+                    ? 'kelola-soal.php?kuis_id=' . $kuisId
                     : 'kuis.php';
 
                 if (function_exists('redirect')) {
@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Setelah buat kuis baru, mengarah ke halaman kelola soal
-                $tujuan = 'soal.php?kuis_id=' . $idBaru;
+                $tujuan = 'kelola-soal.php?kuis_id=' . $idBaru;
                 if (function_exists('redirect')) {
                     redirect('pengajar/' . $tujuan);
                 }

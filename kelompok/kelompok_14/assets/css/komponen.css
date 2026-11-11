@@ -736,3 +736,139 @@
   color: var(--teks-2);
   margin-bottom: 20px;
 }
+
+/* --- 12. Papan Peringkat / Leaderboard (.podium-grid, .tabel-clay) --- */
+.filter-peringkat {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .filter-peringkat {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .filter-peringkat .form-group {
+    min-width: 300px;
+    margin-bottom: 0;
+  }
+}
+
+.posisi-saya-card {
+  border: 2px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+@media (min-width: 768px) {
+  .posisi-saya-card {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.posisi-angka {
+  font-family: var(--font-judul);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--teks);
+}
+
+.podium-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 768px) {
+  .podium-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.podium-card {
+  text-align: center;
+  padding: 28px 20px;
+  margin-bottom: 0;
+}
+
+.podium-juara-1 {
+  border: 2px solid var(--accent);
+}
+
+.podium-medali {
+  font-size: 2.4rem;
+  margin-bottom: 8px;
+}
+
+.podium-nama {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.podium-poin {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--teks);
+  margin-bottom: 4px;
+}
+
+.podium-meta {
+  font-size: 0.875rem;
+  color: var(--teks-2);
+  margin: 0;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabel-clay {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  min-width: 520px;
+}
+
+.tabel-clay th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: var(--teks-2);
+  font-weight: 700;
+}
+
+.tabel-clay td {
+  padding: 14px;
+  background-color: var(--latar);
+  font-weight: 600;
+}
+
+.tabel-clay tr td:first-child {
+  border-top-left-radius: var(--radius-s);
+  border-bottom-left-radius: var(--radius-s);
+}
+
+.tabel-clay tr td:last-child {
+  border-top-right-radius: var(--radius-s);
+  border-bottom-right-radius: var(--radius-s);
+}
+
+.tabel-clay tr.baris-saya td {
+  background-color: var(--primary);
+  box-shadow: var(--clay-tekan);
+  font-weight: 700;
+}
+
+.teks-kanan {
+  text-align: right;
+}

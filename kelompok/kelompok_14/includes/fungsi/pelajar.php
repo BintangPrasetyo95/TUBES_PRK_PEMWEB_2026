@@ -86,3 +86,71 @@ function ambilRiwayatPelajar($pdo, $pelajarId, $topikId = 0, $tanggalMulai = '',
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+
+// 4. Ambil data papan peringkat Pelajar berdasarkan rumus KT-03 & BR-15:
+// Total poin dari skor terbaik tiap kuis per Pelajar. Tie-breaker: total waktu tercepat.
+function ambilPeringkatPelajar($pdo, $topikId = 0) {
+    $filterTopikSql = '';
+    $params = [];
+
+    if ($topikId > 0) {
+        $filterTopikSql = ' AND k.topik_id = ?';
+        $params[] = (int) $topikId;
+    }
+
+    $sql = "SELECT
+                u.id AS pelajar_id,
+                u.nama,
+                SUM(best.skor_terbaik) AS total_poin,
+                COUNT(best.kuis_id) AS jumlah_kuis,
+                SUM(best.waktu_tercepat_detik) AS total_waktu_detik
+            FROM (
+                SELECT
+                    pk.pelajar_id,
+                    pk.kuis_id,
+                    MAX(pk.skor) AS skor_terbaik,
+                    MIN(GREATEST(0, TIMESTAMPDIFF(SECOND, pk.waktu_mulai, COALESCE(pk.waktu_selesai, pk.waktu_mulai)))) AS waktu_tercepat_detik
+                FROM percobaan_kuis pk
+                JOIN kuis k ON pk.kuis_id = k.id
+                WHERE pk.status IN ('selesai', 'waktu_habis')
+                {$filterTopikSql}
+                GROUP BY pk.pelajar_id, pk.kuis_id
+            ) AS best
+            JOIN user u ON best.pelajar_id = u.id
+            WHERE u.peran = 'pelajar'
+            GROUP BY u.id, u.nama
+            ORDER BY total_poin DESC, total_waktu_detik ASC, u.id ASC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $daftar = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Tambahkan nomor peringkat secara berurutan
+    $peringkat = 1;
+    foreach ($daftar as $index => $baris) {
+        $daftar[$index]['peringkat'] = $peringkat;
+        $daftar[$index]['pelajar_id'] = (int) $baris['pelajar_id'];
+        $daftar[$index]['total_poin'] = (int) $baris['total_poin'];
+        $daftar[$index]['jumlah_kuis'] = (int) $baris['jumlah_kuis'];
+        $daftar[$index]['total_waktu_detik'] = (int) $baris['total_waktu_detik'];
+        $peringkat++;
+    }
+
+    return $daftar;
+}
+
+// 5. Ubah detik menjadi format durasi yang mudah dibaca (mis. "12m 30d")
+function formatDurasiSingkat($totalDetik) {
+    $totalDetik = max(0, (int) $totalDetik);
+    $jam = floor($totalDetik / 3600);
+    $menit = floor(($totalDetik % 3600) / 60);
+    $detik = $totalDetik % 60;
+
+    if ($jam > 0) {
+        return $jam . 'j ' . $menit . 'm';
+    } elseif ($menit > 0) {
+        return $menit . 'm ' . $detik . 'd';
+    }
+    return $detik . 'd';
+}

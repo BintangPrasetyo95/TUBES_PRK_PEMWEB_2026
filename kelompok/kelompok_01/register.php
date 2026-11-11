@@ -8,43 +8,102 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrasi - SaveSmart</title>
+    <link rel="stylesheet" href="assets/css/register.css">
 </head>
 <body>
 
-    <h2>Registrasi SaveSmart</h2>
+    <div class="register-container">
+        <div class="register-card">
 
-    <?php if (isset($_SESSION['error'])): ?>
-        <p><?= htmlspecialchars($_SESSION['error']) ?></p>
-        <?php unset($_SESSION['error']); ?>
-    <?php endif; ?>
+            <div class="brand">
+                <div class="brand-icon">S</div>
+                <span>Save<span>Smart</span></span>
+            </div>
 
-    <form action="backend/auth/register_process.php" method="POST">
+            <div class="register-heading">
+                <h1>Buat Akun Baru</h1>
+                <p>Mulai kelola keuangan keluargamu bersama SaveSmart.</p>
+            </div>
 
-        <label>Nama Keluarga</label><br>
-        <input type="text" name="nama_keluarga" required>
-        <br><br>
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="alert-error">
+                    <?= htmlspecialchars($_SESSION['error']) ?>
+                </div>
+                <?php unset($_SESSION['error']); ?>
+            <?php endif; ?>
 
-        <label>Nama Lengkap</label><br>
-        <input type="text" name="nama_lengkap" required>
-        <br><br>
+            <form action="backend/auth/register_process.php" method="POST">
 
-        <label>Email</label><br>
-        <input type="email" name="email" required>
-        <br><br>
+                <div class="form-group">
+                    <label for="nama_keluarga">Nama Keluarga</label>
+                    <input
+                        type="text"
+                        id="nama_keluarga"
+                        name="nama_keluarga"
+                        placeholder="Masukkan nama keluarga"
+                        required
+                    >
+                </div>
 
-        <label>Password</label><br>
-        <input type="password" name="password" required>
-        <br><br>
+                <div class="form-group">
+                    <label for="nama_lengkap">Nama Lengkap</label>
+                    <input
+                        type="text"
+                        id="nama_lengkap"
+                        name="nama_lengkap"
+                        placeholder="Masukkan nama lengkap"
+                        required
+                    >
+                </div>
 
-        <label>Konfirmasi Password</label><br>
-        <input type="password" name="konfirmasi_password" required>
-        <br><br>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="contoh@email.com"
+                        required
+                    >
+                </div>
 
-        <button type="submit">Daftar</button>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Masukkan password"
+                        required
+                    >
+                </div>
 
-    </form>
+                <div class="form-group">
+                    <label for="konfirmasi_password">Konfirmasi Password</label>
+                    <input
+                        type="password"
+                        id="konfirmasi_password"
+                        name="konfirmasi_password"
+                        placeholder="Masukkan ulang password"
+                        required
+                    >
+                </div>
 
-    <p>Sudah punya akun? <a href="login.php">Login di sini</a></p>
+                <button type="submit" class="btn-register">
+                    Daftar Sekarang
+                </button>
+
+            </form>
+
+            <div class="login-link">
+                Sudah punya akun?
+                <a href="login.php">Login di sini</a>
+            </div>
+
+        </div>
+
+        <p class="footer-text">© 2026 SaveSmart. Kelola keuangan lebih bijak.</p>
+    </div>
 
 </body>
 </html>

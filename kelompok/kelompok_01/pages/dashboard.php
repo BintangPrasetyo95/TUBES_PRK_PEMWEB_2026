@@ -10,13 +10,17 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
-// Dashboard ini khusus Kepala Keluarga
-if (($_SESSION['user']['role'] ?? '') !== 'kepala_keluarga') {
-    if (($_SESSION['user']['role'] ?? '') === 'admin') {
-        header('Location: admin_dashboard.php');
-    } else {
-        header('Location: ../login.php');
-    }
+// Cek hak akses berdasarkan role
+$role = $_SESSION['user']['role'] ?? '';
+
+if ($role === 'admin') {
+    header('Location: admin_dashboard.php');
+    exit;
+}
+
+// Dashboard dapat diakses Kepala Keluarga dan Anggota Keluarga
+if (!in_array($role, ['kepala_keluarga', 'anggota_keluarga'], true)) {
+    header('Location: ../login.php');
     exit;
 }
 
@@ -142,7 +146,7 @@ $pageTitle = 'SaveSmart';
     </div>
 
     <!-- JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src=""></script>
     <script src="../assets/js/chart.js"></script>
     <script src="../assets/js/script.js"></script>
 

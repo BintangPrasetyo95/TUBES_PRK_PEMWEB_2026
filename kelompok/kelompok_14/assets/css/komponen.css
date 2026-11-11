@@ -606,3 +606,133 @@
   font-size: 0.875rem;
   color: var(--teks-2);
 }
+
+/* --- 11. Utilitas Halaman Riwayat, Filter & Pagination --- */
+.page-header {
+  margin: 28px 0 24px;
+}
+
+.page-header h1 {
+  font-size: 1.9rem;
+  margin-bottom: 8px;
+}
+
+.page-header p {
+  color: var(--teks-2);
+  margin: 0;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: end;
+}
+
+@media (min-width: 768px) {
+  .filter-grid {
+    grid-template-columns: repeat(3, 1fr) auto;
+  }
+}
+
+.filter-grid .form-group {
+  margin-bottom: 0;
+}
+
+.aksi-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.badge-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.riwayat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .riwayat-card {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.riwayat-info {
+  flex: 1;
+}
+
+.riwayat-judul {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.riwayat-meta {
+  font-size: 0.92rem;
+  color: var(--teks-2);
+  margin: 0;
+}
+
+.riwayat-skor {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--teks);
+  margin-bottom: 8px;
+}
+
+.riwayat-kanan {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .riwayat-kanan {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 24px 0 40px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 24px;
+}
+
+.empty-state-ikon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  color: var(--teks-2);
+  margin-bottom: 20px;
+}

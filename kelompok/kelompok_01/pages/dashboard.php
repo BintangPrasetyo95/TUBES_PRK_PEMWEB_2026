@@ -1,9 +1,6 @@
 <?php
 session_start();
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
 // Cek apakah pengguna sudah login
 if (!isset($_SESSION['user'])) {
     header('Location: ../login.php');
@@ -20,7 +17,7 @@ if (($_SESSION['user']['role'] ?? '') !== 'kepala_keluarga') {
     exit;
 }
 
-$pageTitle = 'SaveSmart';
+$pageTitle = 'Dashboard';
 ?>
 
 <!DOCTYPE html>
@@ -66,28 +63,28 @@ $pageTitle = 'SaveSmart';
                     <div class="summary-card">
                         <div class="summary-icon income">↙</div>
                         <p>Total Pemasukan</p>
-                        <h3>Rp 0</h3>
-                        <small>Bulan ini</small>
+                        <h3 id="cardPemasukan">Rp 0</h3>
+                        <small>Semua waktu</small>
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-icon expense">↗</div>
                         <p>Total Pengeluaran</p>
-                        <h3>Rp 0</h3>
-                        <small>Bulan ini</small>
+                        <h3 id="cardPengeluaran">Rp 0</h3>
+                        <small>Semua waktu</small>
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-icon balance">▣</div>
                         <p>Total Saldo</p>
-                        <h3>Rp 0</h3>
-                        <small>Bulan ini</small>
+                        <h3 id="cardSaldo">Rp 0</h3>
+                        <small>Semua waktu</small>
                     </div>
 
                     <div class="summary-card">
                         <div class="summary-icon saving">◎</div>
                         <p>Total Tabungan</p>
-                        <h3>Rp 0</h3>
+                        <h3 id="cardTabungan">Rp 0</h3>
                         <small>Akumulasi tabungan</small>
                     </div>
 
@@ -101,7 +98,7 @@ $pageTitle = 'SaveSmart';
 
                         <div class="panel-heading">
                             <h3>Grafik Keuangan</h3>
-                            <p>Ringkasan pemasukan dan pengeluaran</p>
+                            <p>Pemasukan dan pengeluaran 6 bulan terakhir</p>
                         </div>
 
                         <div style="height: 280px; position: relative;">
@@ -115,22 +112,27 @@ $pageTitle = 'SaveSmart';
 
                         <div class="panel-heading">
                             <h3>Informasi Keuangan</h3>
-                            <p>Ringkasan kondisi keuangan</p>
+                            <p>Ringkasan kondisi keuangan keseluruhan</p>
                         </div>
 
                         <div class="info-item">
                             <span>Pemasukan</span>
-                            <strong>Rp 0</strong>
+                            <strong id="infoPemasukan">Rp 0</strong>
                         </div>
 
                         <div class="info-item">
                             <span>Pengeluaran</span>
-                            <strong>Rp 0</strong>
+                            <strong id="infoPengeluaran">Rp 0</strong>
+                        </div>
+
+                        <div class="info-item">
+                            <span>Setoran Tabungan</span>
+                            <strong id="infoSetoran">Rp 0</strong>
                         </div>
 
                         <div class="info-item">
                             <span>Saldo</span>
-                            <strong>Rp 0</strong>
+                            <strong id="infoSaldo">Rp 0</strong>
                         </div>
 
                     </div>
@@ -143,8 +145,8 @@ $pageTitle = 'SaveSmart';
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="../assets/js/chart.js"></script>
     <script src="../assets/js/script.js"></script>
+    <script src="../assets/js/dashboard.js"></script>
 
 </body>
 </html>

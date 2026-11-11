@@ -36,11 +36,11 @@
                 <span>▦</span> Dashboard
             </a>
 
-            <a href="pemasukan.php" class="menu-item">
+            <a href="pemasukan.php" class="menu-item <?= ($pageTitle ?? '') === 'Pemasukan' ? 'active' : '' ?>">
                 <span>↙</span> Pemasukan
             </a>
 
-            <a href="pengeluaran.php" class="menu-item">
+            <a href="pengeluaran.php" class="menu-item <?= ($pageTitle ?? '') === 'Pengeluaran' ? 'active' : '' ?>">
                 <span>↗</span> Pengeluaran
             </a>
 
@@ -62,8 +62,21 @@
 
     </nav>
 
-    <a href="../logout.php" class="sidebar-logout">
+    <a href="../logout.php" class="sidebar-logout" id="logoutBtn">
         <span>↪</span>
         <span>Logout</span>
     </a>
 </aside>
+
+<div class="modal-overlay" id="logoutModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+        <div class="modal-icon">↪</div>
+        <h3 id="logoutTitle">Keluar dari SaveSmart?</h3>
+        <p>Anda perlu login kembali untuk mengakses data keuangan keluarga.</p>
+
+        <div class="modal-actions">
+            <button type="button" class="modal-btn modal-btn-cancel" id="logoutCancel">Batal</button>
+            <a href="../logout.php" class="modal-btn modal-btn-danger">Ya, Keluar</a>
+        </div>
+    </div>
+</div>

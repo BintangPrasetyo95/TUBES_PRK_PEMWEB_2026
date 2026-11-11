@@ -39,111 +39,123 @@ $linkKeluar   = 'kuis.php';
 require_once __DIR__ . '/../includes/partials/header-fokus.php';
 ?>
 
-<!-- Banner Penanda Mode Pratinjau -->
+<!-- Banner Pemberitahuan Mode Pratinjau -->
 <div class="alert alert-info" role="status" style="margin-top: 20px;">
-    <strong>Mode Pratinjau:</strong> Anda sedang mencoba tampilan kuis ini sebagai pengajar. Jawaban dinilai langsung di browser dan tidak disimpan ke database.
+    <strong>👁️ Mode Pratinjau Pengajar:</strong>
+    Anda sedang mencoba tampilan pengerjaan kuis milik sendiri (status: <strong><?= e(ucfirst($kuis['status'])) ?></strong>).
+    Hasil pratinjau tidak akan disimpan ke database.
 </div>
 
 <?php if ($totalSoal === 0): ?>
-    <!-- Tampilan jika kuis belum memiliki soal -->
+    <!-- Jika Kuis Belum Memiliki Soal -->
     <div class="card" style="text-align: center; padding: 40px;">
         <h2 style="margin-bottom: 12px;">Belum Ada Soal</h2>
         <p class="text-secondary" style="margin-bottom: 20px;">
-            Kuis ini belum memiliki soal. Tambahkan minimal 1 soal terlebih dahulu untuk melihat pratinjau.
+            Kuis ini belum memiliki soal untuk dipratinjau. Silakan tambahkan soal terlebih dahulu.
         </p>
-        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
             <a href="kelola-soal.php?kuis_id=<?= e($kuisId) ?>" class="btn btn-primary">Kelola Soal</a>
-            <a href="kuis.php" class="btn btn-batal">Kembali ke Kuis Saya</a>
+            <a href="kuis.php" class="btn btn-secondary">Kembali ke Kuis Saya</a>
         </div>
     </div>
 <?php else: ?>
-    <!-- Informasi Progress Nomor Soal -->
-    <p id="teksProgress" class="text-secondary" style="font-weight: bold; margin-bottom: 16px;">
-        Soal 1 dari <?= e($totalSoal) ?>
-    </p>
 
-    <!-- Area Kartu Soal (Satu Soal per Layar) -->
-    <div id="wadahKuis" data-durasi-menit="<?= e($kuis['durasi_menit']) ?>" data-total-soal="<?= e($totalSoal) ?>">
+    <!-- Area Pengerjaan Pratinjau (Satu Soal per Layar) -->
+    <div id="areaPratinjau" data-durasi="<?= e((int) $kuis['durasi_menit']) ?>" data-total-soal="<?= e($totalSoal) ?>">
+        
+        <!-- Keterangan Nomor Soal -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <span id="infoNomorSoal" style="font-weight: bold;">Soal 1 dari <?= e($totalSoal) ?></span>
+            <span class="badge badge-sedang" id="infoPoinSoal">10 Poin</span>
+        </div>
+
+        <!-- Daftar Kartu Soal (Hanya soal yang aktif yang ditampilkan) -->
         <?php foreach ($daftarSoal as $index => $soal): ?>
             <div class="card kartu-soal-pratinjau"
-                 id="kartu-soal-<?= e($index) ?>"
+                 id="soal-<?= e($index) ?>"
                  data-index="<?= e($index) ?>"
-                 data-poin="<?= e($soal['poin']) ?>"
+                 data-poin="<?= e((int) $soal['poin']) ?>"
                  data-pembahasan="<?= e($soal['pembahasan'] ?? '') ?>"
                  <?= $index > 0 ? 'hidden' : '' ?>>
-
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <span class="badge badge-sedang">Soal <?= e($index + 1) ?></span>
-                    <span class="text-secondary" style="font-size: 14px; font-weight: 700;">
-                        <?= e($soal['poin']) ?> Poin
-                    </span>
-                </div>
-
-                <!-- Teks Pertanyaan -->
-                <h2 style="font-size: 1.2rem; margin-bottom: 20px; line-height: 1.5;">
+                
+                <h2 style="font-size: 1.25rem; margin-bottom: 20px; line-height: 1.5;">
                     <?= e($soal['pertanyaan']) ?>
                 </h2>
 
-                <!-- Daftar Pilihan Jawaban (A - E) -->
+                <!-- Pilihan Jawaban A - E -->
                 <div class="daftar-opsi-pratinjau" style="display: flex; flex-direction: column; gap: 12px;">
                     <?php foreach ($soal['opsi'] as $opsi): ?>
                         <button type="button"
-                                class="btn btn-outline btn-block tombol-opsi-pratinjau"
+                                class="btn btn-outline tombol-opsi-pratinjau"
                                 data-soal-index="<?= e($index) ?>"
                                 data-label="<?= e($opsi['label']) ?>"
-                                data-benar="<?= (int) $opsi['benar'] ?>"
+                                data-benar="<?= e((int) $opsi['benar']) ?>"
                                 style="justify-content: flex-start; text-align: left; padding: 14px 18px;">
-                            <span class="badge badge-sedang" style="min-width: 32px; justify-content: center;">
-                                <?= e($opsi['label']) ?>
-                            </span>
+                            <span class="badge badge-sedang" style="margin-right: 10px;"><?= e($opsi['label']) ?></span>
                             <span><?= e($opsi['teks']) ?></span>
                         </button>
                     <?php endforeach; ?>
                 </div>
 
-                <!-- Kotak Umpan Balik & Pembahasan (Muncul setelah opsi diklik oleh JS) -->
-                <div class="kotak-umpan-balik alert" id="umpan-balik-<?= e($index) ?>" hidden style="margin-top: 20px; flex-direction: column; align-items: flex-start;">
-                    <strong class="judul-umpan-balik"></strong>
-                    <p class="isi-pembahasan" style="margin: 0; font-weight: 400;"></p>
-                </div>
-
-                <!-- Tombol Navigasi Bawah Kartu -->
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; flex-wrap: wrap;">
-                    <?php if ($index < $totalSoal - 1): ?>
-                        <button type="button" class="btn btn-primary tombol-lanjut-pratinjau" data-target="<?= e($index + 1) ?>">
-                            Soal Berikutnya &rarr;
-                        </button>
-                    <?php else: ?>
-                        <button type="button" class="btn btn-accent" id="tombolSelesaiPratinjau">
-                            Lihat Hasil Pratinjau
-                        </button>
+                <!-- Kotak Umpan Balik & Pembahasan (Muncul setelah pengajar memilih opsi) -->
+                <div class="kotak-umpan-balik" id="umpan-balik-<?= e($index) ?>" hidden style="margin-top: 20px;">
+                    <div class="alert isi-status-jawaban" style="margin-bottom: 10px;"></div>
+                    <?php if (!empty($soal['pembahasan'])): ?>
+                        <div class="card card-sm" style="background-color: var(--latar);">
+                            <strong>💡 Pembahasan:</strong>
+                            <p style="margin-top: 6px;"><?= e($soal['pembahasan']) ?></p>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>
-    </div>
 
-    <!-- Grid Navigasi Nomor Soal -->
-    <div class="card" style="padding: 20px;">
-        <h3 class="card-title" style="font-size: 1rem; margin-bottom: 12px;">Navigasi Nomor Soal</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px;" id="gridNomorSoal">
-            <?php foreach ($daftarSoal as $index => $soal): ?>
-                <button type="button"
-                        class="btn btn-sm btn-outline tombol-nomor-pratinjau"
-                        data-target="<?= e($index) ?>">
-                    <?= e($index + 1) ?>
+        <!-- Grid Nomor Soal & Tombol Navigasi -->
+        <div class="card card-sm" style="margin-top: 20px;">
+            <p style="font-weight: bold; margin-bottom: 12px;">Navigasi Nomor Soal:</p>
+            <div id="gridNomorSoal" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+                <?php foreach ($daftarSoal as $index => $soal): ?>
+                    <button type="button"
+                            class="btn btn-sm btn-outline tombol-grid-soal"
+                            data-target-index="<?= e($index) ?>"
+                            style="min-width: 44px; min-height: 44px;">
+                        <?= e($index + 1) ?>
+                    </button>
+                <?php endforeach; ?>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <button type="button" id="tombolSebelumnya" class="btn btn-secondary" disabled>
+                    &larr; Sebelumnya
                 </button>
-            <?php endforeach; ?>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" id="tombolBerikutnya" class="btn btn-primary">
+                        Lanjut &rarr;
+                    </button>
+                    <button type="button" id="tombolSelesaiPratinjau" class="btn btn-accent">
+                        Selesai Pratinjau
+                    </button>
+                </div>
+            </div>
         </div>
+
     </div>
 
-    <!-- Ringkasan Hasil Akhir Pratinjau (Disembunyikan sampai tombol Selesai diklik) -->
-    <div class="card" id="kartuHasilPratinjau" hidden style="text-align: center; padding: 36px 24px;">
-        <span class="badge badge-sedang" style="margin-bottom: 12px;">Hasil Pratinjau (Tidak Disimpan)</span>
-        <h2 style="margin-bottom: 12px;">Simulasi Selesai!</h2>
-        <p style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;" id="hasilPersenPratinjau">0%</p>
-        <p class="text-secondary" style="margin-bottom: 24px;" id="hasilRincianPratinjau">
-            Skor: 0 / 0 &bull; Benar: 0 &bull; Salah: 0
+    <!-- Ringkasan Hasil Akhir Pratinjau (Disembunyikan sampai Selesai diklik) -->
+    <div id="hasilPratinjau" class="card" hidden style="text-align: center; padding: 36px 24px;">
+        <span class="badge badge-sedang" style="margin-bottom: 12px;">Ringkasan Mode Pratinjau</span>
+        <h2 style="font-size: 2rem; margin-bottom: 8px;">
+            Skor Anda: <span id="hasilSkorAkhir">0</span> / <span id="hasilSkorMaks">0</span>
+        </h2>
+        <p id="hasilPersenAkhir" style="font-size: 1.2rem; font-weight: bold; margin-bottom: 20px;">0%</p>
+
+        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 24px;">
+            <span class="badge badge-terbit">&#10003; Benar: <strong id="hasilJumlahBenar">0</strong></span>
+            <span class="badge badge-ditolak">&#10007; Salah / Kosong: <strong id="hasilJumlahSalah">0</strong></span>
+        </div>
+
+        <p class="text-secondary" style="margin-bottom: 24px;">
+            Catatan: Ini hanyalah simulasi pratinjau pengajar. Data pengerjaan ini tidak disimpan ke database.
         </p>
 
         <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
@@ -152,11 +164,12 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
             <a href="kuis.php" class="btn btn-batal">Kembali ke Kuis Saya</a>
         </div>
     </div>
+
 <?php endif; ?>
 
-<?php
-// Muat skrip pratinjau dan template penutup mode fokus
-?>
+<!-- Muat skrip interaktif mode pratinjau -->
 <script src="<?= $root ?>assets/js/pratinjau.js"></script>
+
 <?php
+// Muat template footer mode fokus
 require_once __DIR__ . '/../includes/partials/footer-fokus.php';

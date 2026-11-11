@@ -135,8 +135,7 @@ function renderAspirasi(list = [], keyword = '') {
                 ['menunggu', 'Menunggu'],
                 ['ditolak', 'Ditolak'],
                 ['publikasi', 'Publikasi'],
-                ['ditinjau', 'Ditinjau'],
-                ['selesai', 'Selesai']
+
             ];
             if (!statuses.some(([value]) => value === item.status)) {
                 statuses.push([item.status, `${item.status} (status lama)`]);

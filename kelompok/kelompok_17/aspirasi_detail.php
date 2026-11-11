@@ -1,27 +1,33 @@
 <?php
 require_once __DIR__ . '/config/database.php';
-include_once __DIR__ . '/components/header.php';
+require_once __DIR__ . '/includes/csrf.php';
+
 
 $id_aspirasi = $_GET['id'] ?? null;
 
 if (!$id_aspirasi || !is_numeric($id_aspirasi)) {
-    echo "<script>window.location.href='index.php';</script>";
+    header('Location: index.php', true, 303);
     exit();
 }
 
 // PROSES SIMPAN TANGGAPAN / KOMENTAR
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_tanggapan'])) {
-    $user_id_session = $_SESSION['id_user'] ?? $_SESSION['user_id'] ?? null;
-    $isi_tanggapan   = trim($_POST['isi_tanggapan'] ?? '');
+$komentarError = null;
 
-    if ($user_id_session && !empty($isi_tanggapan)) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_tanggapan'])) {
+    csrf_verify();
+    $idUser = $_SESSION['id_user'] ?? null;
+    $isi    = trim($_POST['isi_tanggapan'] ?? '');
+    $anonim = isset($_POST['is_anonim']) ? 1 : 0;
+
+    if ($idUser && $isi !== '') {
         try {
-            $stmtInsert = $pdo->prepare("INSERT INTO komentar (id_aspirasi, id_user, isi_komentar) VALUES (?, ?, ?)");
-            $stmtInsert->execute([$id_aspirasi, $user_id_session, $isi_tanggapan]);
-            echo "<script>window.location.href='aspirasi_detail.php?id=" . (int)$id_aspirasi . "#diskusi';</script>";
+            $stmt = $pdo->prepare("INSERT INTO komentar (id_aspirasi, id_user, isi_komentar, is_anonim) VALUES (?, ?, ?, ?)");
+            $stmt->execute([(int)$id_aspirasi, $idUser, $isi, $anonim]);
+            header('Location: aspirasi_detail.php?id=' . (int)$id_aspirasi . '#diskusi', true, 303);
             exit();
         } catch (PDOException $e) {
             error_log('Gagal menyimpan tanggapan aspirasi: ' . $e->getMessage());
+            $komentarError = 'Tanggapan gagal disimpan. Silakan coba lagi.';
         }
     }
 }
@@ -37,7 +43,7 @@ try {
     $aspirasi = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$aspirasi) {
-        echo "<script>window.location.href='index.php';</script>";
+        header('Location: index.php', true, 303);
         exit();
     }
 
@@ -51,9 +57,12 @@ try {
     $tanggapanList = $stmtTanggapan->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    echo "<script>window.location.href='index.php';</script>";
+    error_log('Gagal mengambil aspirasi: ' . $e->getMessage());
+    header('Location: index.php', true, 303);
     exit();
 }
+
+include_once __DIR__ . '/components/header.php';
 ?>
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -68,8 +77,8 @@ try {
             
             <?php
             $statusClass = match(strtolower($aspirasi['status'] ?? '')) {
-                'ditinjau' => 'bg-blue-100 text-blue-800',
-                'selesai'  => 'bg-green-100 text-green-800',
+                'menunggu' => 'bg-blue-100 text-blue-800',
+                'publikasi'  => 'bg-green-100 text-green-800',
                 default    => 'bg-amber-50 text-amber-700',
             };
             ?>
@@ -95,6 +104,11 @@ try {
 
     <!-- SECTION DISKUSI & TANGGAPAN -->
     <div id="diskusi" class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8">
+        <?php if ($komentarError): ?>
+            <p class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+                <?= htmlspecialchars($komentarError); ?>
+            </p>
+        <?php endif; ?>
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-xl font-bold text-gray-900">Diskusi / Tanggapan</h3>
             <span class="text-xs bg-gray-100 text-gray-600 font-semibold px-2.5 py-1 rounded-full">
@@ -130,13 +144,17 @@ try {
         </div>
 
         <!-- FORM INPUT TANGGAPAN -->
-        <?php if (isset($_SESSION['id_user']) || isset($_SESSION['user_id']) || isset($_SESSION['user'])): ?>
+        <?php if (isset($_SESSION['id_user'])): ?>
             <form action="aspirasi_detail.php?id=<?= (int)$id_aspirasi ?>" method="POST" class="space-y-4 border-t border-gray-100 pt-6">
                 <div>
+                    <?= csrf_field() ?>
                     <label class="block text-xs font-semibold text-gray-700 mb-2">Berikan Tanggapan Anda:</label>
                     <textarea name="isi_tanggapan" rows="3" required
                         class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                         placeholder="Tuliskan pendapat atau masukan tambahan mengenai aspirasi ini..."></textarea>
+                    <label class="flex items-center gap-2 text-xs text-gray-600">
+                        <input type="checkbox" name="is_anonim" value="1"> Tanggapan sebagai Anonim
+                    </label>
                 </div>
 
                 <button type="submit" name="submit_tanggapan"
@@ -146,8 +164,8 @@ try {
             </form>
         <?php else: ?>
             <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs flex justify-between items-center flex-wrap gap-2">
-                <span class="text-amber-800 font-medium">🔒 Silakan login terlebih dahulu untuk memberikan tanggapan.</span>
-                <a href="login.php" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-xs transition-colors">
+                <span class="text-amber-800 font-medium"> Silakan login terlebih dahulu untuk memberikan tanggapan.</span>
+                <a href="auth/login.php" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-xs transition-colors">
                     Login Sekarang
                 </a>
             </div>

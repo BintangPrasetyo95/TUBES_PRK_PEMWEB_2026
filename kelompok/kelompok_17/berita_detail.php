@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/csrf.php'; // sekalian start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -8,19 +9,23 @@ $id_berita = $_GET['id'] ?? null;
 $komentarError = null;
 
 if (!$id_berita || !is_numeric($id_berita)) {
+    
     header('Location: index.php', true, 303);
     exit();
 }
 
-// PROSES SIMPAN KOMENTAR BERITA
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_komentar'])) {
-    $user_id_session = $_SESSION['id_user'] ?? $_SESSION['user_id'] ?? null;
-    $isi_komentar    = trim($_POST['isi_komentar'] ?? '');
 
-    if ($user_id_session && !empty($isi_komentar)) {
+//simpan komen berita
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_komentar'])) {
+    csrf_verify();
+    $idUser = $_SESSION['id_user'] ?? null;
+    $isi    = trim($_POST['isi_komentar'] ?? '');
+    $anonim = isset($_POST['is_anonim']) ? 1 : 0;
+
+    if ($idUser && $isi !== '') {
         try {
-            $stmtInsert = $pdo->prepare("INSERT INTO komentar (id_berita, id_user, isi_komentar) VALUES (?, ?, ?)");
-            $stmtInsert->execute([$id_berita, $user_id_session, $isi_komentar]);
+            $stmt = $pdo->prepare("INSERT INTO komentar (id_berita, id_user, isi_komentar, is_anonim) VALUES (?, ?, ?, ?)");
+            $stmt->execute([(int)$id_berita, $idUser, $isi, $anonim]);
             header('Location: berita_detail.php?id=' . (int)$id_berita . '#komentar', true, 303);
             exit();
         } catch (PDOException $e) {
@@ -71,7 +76,7 @@ include_once __DIR__ . '/components/header.php';
 ?>
 
 <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <a href="index.php" class="text-blue-600 hover:underline text-sm font-medium">&larr; Kembali ke Beranda</a>
+    <a href="index.php" class="text-blue-600 hover:underline text-sm font-medium"> Kembali ke Beranda</a>
     
     <!-- CARD DETAIL BERITA -->
     <article class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8 mt-4">
@@ -119,7 +124,7 @@ include_once __DIR__ . '/components/header.php';
                     <div class="p-4 rounded-lg bg-gray-50 border border-gray-100">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs font-bold text-gray-800">
-                                🎓 <?= htmlspecialchars($k['nama_lengkap'] ?? 'Mahasiswa') ?>
+                                <?= $k['is_anonim'] ? '👤 Anonim' : '🎓 ' . htmlspecialchars($k['nama_lengkap'] ?? 'Mahasiswa') ?>
                             </span>
                             <span class="text-[11px] text-gray-400">
                                 <?= date('d M Y, H:i', strtotime($k['tanggal_komentar'])) ?> WIB
@@ -137,11 +142,15 @@ include_once __DIR__ . '/components/header.php';
             <?php endif; ?>
         </div>
 
+
         <!-- FORM INPUT KOMENTAR -->
-        <?php if (isset($_SESSION['id_user']) || isset($_SESSION['user_id']) || isset($_SESSION['user'])): ?>
-            <form action="berita_detail.php?id=<?= (int)$id_berita ?>" method="POST" class="space-y-4 border-t border-gray-100 pt-6">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-2">Tulis Komentar Anda:</label>
+        <?php if (isset($_SESSION['id_user'])): ?>
+    <form action="berita_detail.php?id=<?= (int)$id_berita ?>" method="POST" class="space-y-4 border-t border-gray-100 pt-6">
+        <?= csrf_field() ?>
+        <div>
+                    <label class="flex items-center gap-2 text-xs text-gray-600">
+            <input type="checkbox" name="is_anonim" value="1"> Komentar sebagai Anonim
+        </label>
                     <textarea name="isi_komentar" rows="3" required
                         class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                         placeholder="Tuliskan komentar atau tanggapan mengenai berita ini..."></textarea>
@@ -152,10 +161,12 @@ include_once __DIR__ . '/components/header.php';
                     Kirim Komentar
                 </button>
             </form>
+
+
         <?php else: ?>
             <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs flex justify-between items-center flex-wrap gap-2">
                 <span class="text-amber-800 font-medium">🔒 Silakan login terlebih dahulu untuk memberikan komentar.</span>
-                <a href="login.php" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-xs transition-colors">
+                <a href="auth/login.php" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-xs transition-colors">
                     Login Sekarang
                 </a>
             </div>

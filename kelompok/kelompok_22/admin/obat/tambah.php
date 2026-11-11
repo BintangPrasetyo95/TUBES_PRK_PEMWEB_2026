@@ -98,66 +98,106 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tambah Obat - Admin KlikObat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Obat - KlikObat</title>
+    <!-- Hubungkan CSS UI Admin -->
+    <link rel="stylesheet" href="../../frontend/assets/css/style.css">
+    <link rel="stylesheet" href="../../frontend/assets/css/admin.css">
     <style>
-        body { font-family: Arial, sans-serif; margin: 24px; max-width: 640px; }
-        label { display: block; margin-top: 12px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; margin-top: 4px; }
-        textarea { min-height: 80px; }
-        .hint { font-size: 12px; color: #6c757d; font-weight: normal; }
-        .err { background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
-        .btn { display: inline-block; padding: 8px 14px; background: #0d6efd; color: #fff; text-decoration: none; border: 0; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 16px; }
-        .btn.batal { background: #6c757d; }
+        .obat-notif { padding: 12px 15px; margin-bottom: 20px; border-radius: 10px; font-weight: 600; font-size: 14px; }
+        .obat-notif.ok { background: #d1e7dd; color: #0f5132; }
+        .obat-notif.err { background: #fee2e2; color: #b91c1c; }
+        .obat-notif ul { margin-left: 18px; }
+        .obat-link { color: var(--admin-primary); font-weight: 600; text-decoration: none; }
+        .obat-link-hapus { background: none; border: none; color: #ef4444; font-weight: 600; cursor: pointer; padding: 0; font: inherit; font-weight: 600; }
+        .obat-thumb { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
+        .obat-badge { color: #fff; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .obat-form label { display: block; font-weight: 600; margin: 18px 0 8px; color: var(--admin-text); }
+        .obat-form label:first-child { margin-top: 0; }
+        .obat-form textarea { min-height: 90px; }
+        .obat-hint { font-size: 12px; color: var(--admin-secondary); font-weight: 400; }
+        .obat-preview { display: block; width: 120px; height: 120px; object-fit: cover; border: 1px solid var(--admin-border); border-radius: 10px; }
+        .obat-aksi { display: flex; gap: 12px; align-items: center; margin-top: 24px; }
+        .obat-batal { color: var(--admin-secondary); text-decoration: none; font-weight: 600; font-size: 14px; padding: 11px 19px; }
     </style>
 </head>
 <body>
-    <h1>Tambah Obat</h1>
-
-    <?php if ($errors): ?>
-        <div class="err">
-            <ul>
-                <?php foreach ($errors as $e): ?>
-                    <li><?= htmlspecialchars($e) ?></li>
-                <?php endforeach; ?>
+    <div class="admin-container">
+        <!-- Sidebar Admin -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">KlikObat</div>
+            <ul class="admin-menu">
+                <li><a href="../kategori/index.php">Kelola Kategori</a></li>
+                <li><a href="index.php" class="active">Kelola Obat</a></li>
+                <li><a href="../logout.php" style="color: #ef4444;">Logout</a></li>
             </ul>
-        </div>
-    <?php endif; ?>
+        </aside>
 
-    <form method="post" enctype="multipart/form-data">
-        <label for="nama_obat">Nama Obat</label>
-        <input type="text" id="nama_obat" name="nama_obat" maxlength="150"
-               value="<?= htmlspecialchars($data['nama_obat']) ?>">
+        <!-- Konten Utama Admin -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Tambah Obat</h1>
+                <div class="admin-user">Admin Panel</div>
+            </header>
 
-        <label for="id_kategori">Kategori</label>
-        <select id="id_kategori" name="id_kategori">
-            <option value="">-- Pilih kategori --</option>
-            <?php foreach ($kategori as $k): ?>
-                <option value="<?= (int)$k['id_kategori'] ?>"
-                    <?= (string)$k['id_kategori'] === $data['id_kategori'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($k['nama_kategori']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <div class="admin-content">
+                <h2>Form Tambah Obat</h2>
 
-        <label for="stok">Stok</label>
-        <input type="number" id="stok" name="stok" min="0"
-               value="<?= htmlspecialchars($data['stok']) ?>">
+                <?php if ($errors): ?>
+                    <div class="obat-notif err">
+                        <ul>
+                            <?php foreach ($errors as $e): ?>
+                                <li><?= htmlspecialchars($e) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
 
-        <label for="gambar">Gambar Obat <span class="hint">(opsional, JPG/PNG, maks. 2 MB)</span></label>
-        <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png">
+                <div class="admin-table-container" style="max-width: 680px; padding: 25px;">
+                    <form method="post" enctype="multipart/form-data" class="obat-form">
+                        <label for="nama_obat">Nama Obat</label>
+                        <input type="text" id="nama_obat" name="nama_obat" maxlength="150"
+                               value="<?= htmlspecialchars($data['nama_obat']) ?>">
 
-        <label for="indikasi">Deskripsi & Indikasi</label>
-        <textarea id="indikasi" name="indikasi"><?= htmlspecialchars($data['indikasi']) ?></textarea>
+                        <label for="id_kategori">Kategori</label>
+                        <select id="id_kategori" name="id_kategori">
+                            <option value="">-- Pilih kategori --</option>
+                            <?php foreach ($kategori as $k): ?>
+                                <option value="<?= (int)$k['id_kategori'] ?>"
+                                    <?= (string)$k['id_kategori'] === $data['id_kategori'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($k['nama_kategori']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
 
-        <label for="aturan_pakai">Aturan Pakai & Dosis</label>
-        <textarea id="aturan_pakai" name="aturan_pakai"><?= htmlspecialchars($data['aturan_pakai']) ?></textarea>
+                        <label for="stok">Stok</label>
+                        <input type="number" id="stok" name="stok" min="0"
+                               value="<?= htmlspecialchars($data['stok']) ?>">
 
-        <label for="peringatan">Peringatan / Kontraindikasi</label>
-        <textarea id="peringatan" name="peringatan"><?= htmlspecialchars($data['peringatan']) ?></textarea>
+                        <label for="gambar">Gambar Obat <span class="obat-hint">(opsional, JPG/PNG, maks. 2 MB)</span></label>
+                        <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png">
 
-        <button type="submit" class="btn">Simpan</button>
-        <a href="index.php" class="btn batal">Batal</a>
-    </form>
+                        <label for="indikasi">Deskripsi &amp; Indikasi</label>
+                        <textarea id="indikasi" name="indikasi"><?= htmlspecialchars($data['indikasi']) ?></textarea>
+
+                        <label for="aturan_pakai">Aturan Pakai &amp; Dosis</label>
+                        <textarea id="aturan_pakai" name="aturan_pakai"><?= htmlspecialchars($data['aturan_pakai']) ?></textarea>
+
+                        <label for="peringatan">Peringatan / Kontraindikasi</label>
+                        <textarea id="peringatan" name="peringatan"><?= htmlspecialchars($data['peringatan']) ?></textarea>
+
+                        <div class="obat-aksi">
+                            <button type="submit" class="admin-btn">Simpan Obat</button>
+                            <a href="index.php" class="obat-batal">Batal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <footer class="admin-footer">
+                <p>&copy; 2026 KlikObat. Sistem Informasi Katalog Farmasi & Edukasi.</p>
+            </footer>
+        </main>
+    </div>
 </body>
 </html>

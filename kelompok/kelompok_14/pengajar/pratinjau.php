@@ -155,5 +155,8 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
 <?php endif; ?>
 
 <?php
-// Muat template penutup mode fokus
+// Muat skrip pratinjau dan template penutup mode fokus
+?>
+<script src="<?= $root ?>assets/js/pratinjau.js"></script>
+<?php
 require_once __DIR__ . '/../includes/partials/footer-fokus.php';

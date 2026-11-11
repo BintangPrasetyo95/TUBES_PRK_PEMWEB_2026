@@ -62,6 +62,10 @@ jobs:
 
           echo "✅ Lolos uji isolasi: Perubahan hanya dilakukan pada folder kelompok/$GROUPS_TOUCHED/"
 
+          # 3. Sinkronkan folder .github/ resmi dari repo utama agar skrip validator selalu tersedia
+          echo "Memuat skrip validator dan mapping resmi dari origin/${{ github.base_ref }}..."
+          git checkout origin/${{ github.base_ref }} -- .github/
+
       - name: 3. Cek Ukuran File (Maksimal 5MB per file)
         run: |
           CHANGED_FILES=$(git diff --name-only --diff-filter=d origin/${{ github.base_ref }}...HEAD)

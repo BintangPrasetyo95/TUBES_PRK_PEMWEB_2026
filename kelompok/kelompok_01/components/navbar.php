@@ -1,4 +1,3 @@
-
 <header class="navbar">
     <div class="navbar-left">
         <button class="menu-toggle" id="menuToggle" type="button">
@@ -12,10 +11,12 @@
     </div>
 
     <div class="navbar-right">
-        <div class="user-avatar">Z</div>
+        <div class="user-avatar">
+            <?= strtoupper(substr($_SESSION['user']['nama_lengkap'] ?? 'P', 0, 1)) ?>
+        </div>
         <div class="user-info">
-            <strong>Pengguna</strong>
-            <small>Family Member</small>
+            <strong><?= htmlspecialchars($_SESSION['user']['nama_lengkap'] ?? 'Pengguna') ?></strong>
+            <small><?= htmlspecialchars(ucwords(str_replace('_', ' ', $_SESSION['user']['role'] ?? 'pengguna'))) ?></small>
         </div>
     </div>
-</header> 
+</header>

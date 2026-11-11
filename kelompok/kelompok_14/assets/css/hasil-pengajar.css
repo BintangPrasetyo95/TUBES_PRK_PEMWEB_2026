@@ -19,3 +19,7 @@
 .tabel-hasil th {
     font-weight: 700;
 }
+
+.sembunyi {
+    display: none;
+}

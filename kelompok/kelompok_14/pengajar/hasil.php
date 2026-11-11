@@ -35,6 +35,8 @@ $root = '../';
 require_once __DIR__ . '/../includes/partials/header-panel.php';
 ?>
 
+<link rel="stylesheet" href="<?= e($root) ?>assets/css/hasil-pengajar.css">
+
 <!-- Judul dan Info Kuis -->
 <div class="card">
     <h1 class="card-title">Hasil Kuis: <?= e($kuis['judul']) ?></h1>
@@ -76,8 +78,13 @@ require_once __DIR__ . '/../includes/partials/header-panel.php';
     <?php if (empty($daftarNilai)): ?>
         <p class="form-helper">Belum ada pelajar yang menyelesaikan kuis ini.</p>
     <?php else: ?>
+        <div class="form-group">
+            <label for="cariPelajar" class="form-label">Cari Nama Pelajar</label>
+            <input type="text" id="cariPelajar" class="form-input" placeholder="Ketik nama pelajar...">
+        </div>
+
         <div class="tabel-wadah">
-            <table class="tabel-hasil">
+            <table id="tabelNilai" class="tabel-hasil">
                 <thead>
                     <tr>
                         <th>No</th>
@@ -121,6 +128,8 @@ require_once __DIR__ . '/../includes/partials/header-panel.php';
                 </tbody>
             </table>
         </div>
+
+        <p id="pesanKosongCari" class="form-helper sembunyi">Nama pelajar tidak ditemukan.</p>
     <?php endif; ?>
 </section>
 
@@ -156,5 +165,6 @@ require_once __DIR__ . '/../includes/partials/header-panel.php';
     <?php endif; ?>
 </section>
 
+<script src="<?= e($root) ?>assets/js/hasil-pengajar.js"></script>
 <?php
 require_once __DIR__ . '/../includes/partials/footer-panel.php';

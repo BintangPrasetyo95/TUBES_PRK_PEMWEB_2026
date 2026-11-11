@@ -36,11 +36,11 @@
                 <span>▦</span> Dashboard
             </a>
 
-            <a href="pemasukan.php" class="menu-item">
+            <a href="pemasukan.php" class="menu-item <?= ($pageTitle ?? '') === 'Pemasukan' ? 'active' : '' ?>">
                 <span>↙</span> Pemasukan
             </a>
 
-            <a href="pengeluaran.php" class="menu-item">
+            <a href="pengeluaran.php" class="menu-item <?= ($pageTitle ?? '') === 'Pengeluaran' ? 'active' : '' ?>">
                 <span>↗</span> Pengeluaran
             </a>
 

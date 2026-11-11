@@ -1,6 +1,19 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['user'])) {
+    $_SESSION['error'] = 'Silakan login terlebih dahulu.';
+    header('Location: ../login.php');
+    exit;
+}
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+// Pesan dari backend (flash message)
+$success = $_SESSION['success'] ?? null;
+$error   = $_SESSION['error'] ?? null;
+unset($_SESSION['success'], $_SESSION['error']);
 
 $pageTitle = 'Pemasukan';
 ?>
@@ -29,7 +42,7 @@ $pageTitle = 'Pemasukan';
 
         <?php include __DIR__ . '/../components/navbar.php'; ?>
 
-        <div class="transaction-content">
+        <div class="transaction-content" data-jenis="pemasukan">
 
             <section class="welcome-section">
                 <div>
@@ -38,82 +51,81 @@ $pageTitle = 'Pemasukan';
                 </div>
             </section>
 
+            <?php if ($success): ?>
+                <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
+            <?php endif; ?>
+
+            <?php if ($error): ?>
+                <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+            <?php endif; ?>
+
             <!-- Ringkasan -->
             <section class="transaction-summary">
 
                 <div class="summary-card">
                     <div class="summary-icon income">↙</div>
                     <p>Total Pemasukan</p>
-                    <h3>Rp 0</h3>
+                    <h3 id="totalBulanIni">Rp 0</h3>
                     <small>Bulan ini</small>
                 </div>
 
                 <div class="summary-card">
                     <div class="summary-icon balance">▣</div>
                     <p>Jumlah Transaksi</p>
-                    <h3>0</h3>
+                    <h3 id="jumlahTransaksi">0</h3>
                     <small>Transaksi tercatat</small>
                 </div>
 
             </section>
 
-            <!-- Form Pemasukan -->
+            <!-- Form (dipakai untuk tambah & ubah) -->
             <section class="transaction-panel">
 
                 <div class="panel-heading">
-                    <h3>Tambah Pemasukan</h3>
+                    <h3 id="formTitle">Tambah Pemasukan</h3>
                     <p>Masukkan informasi pemasukan keluarga.</p>
                 </div>
 
-                <form id="incomeForm">
+                <form id="transaksiForm"
+                      action="../backend/transaksi/pemasukan_process.php"
+                      method="POST">
+
+                    <input type="hidden" name="aksi" id="formAksi" value="tambah">
+                    <input type="hidden" name="id" id="formId" value="">
 
                     <div class="form-grid">
 
                         <div class="form-group">
-                            <label for="incomeName">Nama Pemasukan</label>
-                            <input type="text" id="incomeName"
-                                placeholder="Contoh: Gaji bulanan" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="incomeAmount">Nominal</label>
-                            <input type="number" id="incomeAmount"
-                                placeholder="Contoh: 5000000"
-                                min="1" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="incomeCategory">Kategori</label>
-                            <select id="incomeCategory" required>
-                                <option value="">Pilih kategori</option>
-                                <option value="Gaji">Gaji</option>
-                                <option value="Bisnis">Bisnis</option>
-                                <option value="Investasi">Investasi</option>
-                                <option value="Hadiah">Hadiah</option>
-                                <option value="Lainnya">Lainnya</option>
+                            <label for="kategori">Kategori</label>
+                            <select id="kategori" name="id_kategori" required>
+                                <option value="">Memuat kategori...</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="incomeDate">Tanggal</label>
-                            <input type="date" id="incomeDate" required>
+                            <label for="jumlah">Nominal</label>
+                            <input type="number" id="jumlah" name="jumlah"
+                                   placeholder="Contoh: 5000000"
+                                   min="1" step="any" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="tanggal">Tanggal</label>
+                            <input type="date" id="tanggal" name="tanggal" required>
                         </div>
 
                         <div class="form-group full-width">
-                            <label for="incomeDescription">Keterangan</label>
-                            <textarea id="incomeDescription"
-                                placeholder="Tambahkan keterangan (opsional)"
-                                rows="3"></textarea>
+                            <label for="keterangan">Keterangan</label>
+                            <textarea id="keterangan" name="keterangan"
+                                      placeholder="Contoh: Gaji bulanan"
+                                      maxlength="255" rows="3"></textarea>
                         </div>
 
                     </div>
 
                     <div class="form-actions">
-                        <button type="reset" class="btn-reset">
-                            Reset
-                        </button>
-
-                        <button type="submit" class="btn-primary">
+                        <button type="reset" class="btn-reset">Reset</button>
+                        <button type="submit" class="btn-primary" id="btnSubmit">
                             + Simpan Pemasukan
                         </button>
                     </div>
@@ -136,18 +148,17 @@ $pageTitle = 'Pemasukan';
                         <thead>
                             <tr>
                                 <th>Tanggal</th>
-                                <th>Nama</th>
                                 <th>Kategori</th>
+                                <th>Dicatat oleh</th>
                                 <th>Nominal</th>
                                 <th>Keterangan</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
 
-                        <tbody id="incomeTable">
+                        <tbody id="transaksiTable">
                             <tr>
-                                <td colspan="5" class="table-empty">
-                                    Belum ada data pemasukan.
-                                </td>
+                                <td colspan="6" class="table-empty">Memuat data...</td>
                             </tr>
                         </tbody>
 
@@ -155,6 +166,14 @@ $pageTitle = 'Pemasukan';
                 </div>
 
             </section>
+
+            <!-- Form hapus (dipakai semua baris) -->
+            <form id="formHapus"
+                  action="../backend/transaksi/pemasukan_process.php"
+                  method="POST" hidden>
+                <input type="hidden" name="aksi" value="hapus">
+                <input type="hidden" name="id" id="hapusId">
+            </form>
 
         </div>
 

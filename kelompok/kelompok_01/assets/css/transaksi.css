@@ -234,3 +234,60 @@
         width: 100%;
     }
 }
+
+/* ALERT (flash message) */
+.alert {
+    padding: 13px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+}
+
+.alert-success {
+    background: var(--success-light);
+    color: var(--success);
+    border-color: #cdeadc;
+}
+
+.alert-error {
+    background: var(--danger-light);
+    color: var(--danger);
+    border-color: #f7d4d6;
+}
+
+/* AKSI TABEL */
+.cell-actions {
+    display: flex;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-table {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+.btn-table:hover {
+    background: var(--primary-soft);
+    border-color: var(--primary);
+}
+
+.btn-table.danger {
+    color: var(--danger);
+}
+
+.btn-table.danger:hover {
+    background: var(--danger-light);
+    border-color: var(--danger);
+}
+
+.amount-income  { color: var(--success); font-weight: 700; }
+.amount-expense { color: var(--danger);  font-weight: 700; }

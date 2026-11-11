@@ -258,6 +258,13 @@ $riwayatList = $stmtRiwayat->fetchAll();
                                 <div class="text-muted small mt-3 pt-2 border-top">
                                     Didaftarkan pukul: <strong><?= $tiket['waktu_daftar'] ?> WIB</strong>
                                 </div>
+
+                                <?php if ($tiket['status'] === 'menunggu'): ?>
+                                    <form action="batal_antrian.php" method="POST" class="mt-3" onsubmit="return confirm('Batalkan antrean #<?= (int) $tiket['nomor'] ?> ke <?= htmlspecialchars($tiket['nama_dokter'], ENT_QUOTES, 'UTF-8') ?>?');">
+                                        <input type="hidden" name="antrian_id" value="<?= (int) $tiket['id'] ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Batalkan Antrean</button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

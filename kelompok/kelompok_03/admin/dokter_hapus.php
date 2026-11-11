@@ -16,24 +16,38 @@ if (empty($id)) {
 }
 
 try {
-    $stmt = $pdo->prepare('SELECT COUNT(*) as total FROM antrian WHERE dokter_id = ?');
+    $pdo->beginTransaction();
+
+    $stmt = $pdo->prepare(
+        "SELECT COUNT(*) AS total FROM antrian
+         WHERE dokter_id = ? AND status IN ('menunggu', 'dipanggil')"
+    );
     $stmt->execute([$id]);
     $result = $stmt->fetch();
 
     if ($result['total'] > 0) {
-        header('Location: dokter_list.php?error=' . urlencode('Dokter tidak dapat dihapus karena memiliki data antrian.'));
+        $pdo->rollBack();
+        header('Location: dokter_list.php?error=' . urlencode('Dokter tidak dapat dihapus karena masih memiliki antrian yang belum selesai.'));
         exit;
     }
+
+    $stmt = $pdo->prepare("DELETE FROM antrian WHERE dokter_id = ? AND status = 'selesai'");
+    $stmt->execute([$id]);
 
     $stmt = $pdo->prepare('DELETE FROM dokter WHERE id = ?');
     $stmt->execute([$id]);
 
     if ($stmt->rowCount() > 0) {
+        $pdo->commit();
         header('Location: dokter_list.php?success=' . urlencode('Dokter berhasil dihapus.'));
     } else {
+        $pdo->rollBack();
         header('Location: dokter_list.php?error=' . urlencode('Dokter tidak ditemukan.'));
     }
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('[Dokter Hapus] ' . $e->getMessage());
     header('Location: dokter_list.php?error=' . urlencode('Gagal menghapus dokter.'));
 }

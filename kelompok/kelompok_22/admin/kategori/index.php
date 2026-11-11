@@ -9,34 +9,66 @@ $result = $conn->query("SELECT * FROM kategori ORDER BY id_kategori DESC");
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Kategori - KlikObat</title>
+    <!-- Hubungkan CSS dari folder frontend/assets/css -->
+    <link rel="stylesheet" href="../../frontend/assets/css/style.css">
+    <link rel="stylesheet" href="../../frontend/assets/css/admin.css">
 </head>
-<body style="font-family: Arial, sans-serif; margin: 20px;">
-    <h2>Manajemen Kategori Obat</h2>
-    <a href="tambah.php">+ Tambah Kategori Baru</a> | 
-<a href="../obat/index.php">Kelola Obat</a> | 
-<a href="../logout.php" style="color: red;">Logout</a>
-    <hr>
-    <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; margin-top: 15px;">
-        <thead>
-            <tr style="background: #f4f4f4;">
-                <th>No</th>
-                <th>Nama Kategori</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php $no = 1; while ($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?= $no++; ?></td>
-                <td><?= htmlspecialchars($row['nama_kategori']); ?></td>
-                <td>
-                    <a href="ubah.php?id=<?= $row['id_kategori']; ?>">Ubah</a> | 
-                    <a href="hapus.php?id=<?= $row['id_kategori']; ?>" onclick="return confirm('Yakin ingin menghapus kategori ini?');">Hapus</a>
-                </td>
-            </tr>
-            <?php endwhile; ?>
-        </tbody>
-    </table>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar Admin -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">KlikObat</div>
+            <ul class="admin-menu">
+                <li><a href="index.php" class="active">Kelola Kategori</a></li>
+                <li><a href="../obat/index.php">Kelola Obat</a></li>
+                <li><a href="../logout.php" style="color: #ef4444;">Logout</a></li>
+            </ul>
+        </aside>
+
+        <!-- Konten Utama Admin -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Manajemen Kategori Obat</h1>
+                <div class="admin-user">Admin Panel</div>
+            </header>
+
+            <div class="admin-content">
+                <div style="margin-bottom: 20px;">
+                    <a href="tambah.php" class="admin-btn">+ Tambah Kategori Baru</a>
+                </div>
+
+                <!-- Tabel Data Kategori -->
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Kategori</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $no = 1; while ($row = $result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= $no++; ?></td>
+                                <td><?= htmlspecialchars($row['nama_kategori']); ?></td>
+                                <td>
+                                    <a href="ubah.php?id=<?= $row['id_kategori']; ?>" style="color: var(--admin-primary); font-weight: 600; margin-right: 10px;">Ubah</a>
+                                    <a href="hapus.php?id=<?= $row['id_kategori']; ?>" onclick="return confirm('Yakin ingin menghapus kategori ini?');" style="color: #ef4444; font-weight: 600;">Hapus</a>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <footer class="admin-footer">
+                <p>&copy; 2026 KlikObat. Sistem Informasi Katalog Farmasi & Edukasi.</p>
+            </footer>
+        </main>
+    </div>
 </body>
 </html>

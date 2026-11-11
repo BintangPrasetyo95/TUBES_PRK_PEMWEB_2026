@@ -667,3 +667,130 @@ function ambilCatatanStatusTerakhir($kuisId) {
 
     return $catatan ? $catatan : '';
 }
+
+// ============================================================================
+// FUNGSI ADMIN: ANTRIAN PERSETUJUAN & TINJAU KUIS (Jobdesk Nanda - Sesi 4)
+// ============================================================================
+
+// 1. Hitung jumlah kuis yang sedang menunggu persetujuan admin (ADM-01, ADM-02)
+function jumlahAntrian() {
+    global $pdo;
+
+    $sql = "SELECT COUNT(*) FROM kuis WHERE status = 'menunggu'";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return (int) $stmt->fetchColumn();
+}
+
+// 2. Ambil daftar kuis yang berstatus 'menunggu' (antrian terlama di paling atas, ADM-02)
+function daftarAntrianKuis() {
+    global $pdo;
+
+    $sql = "SELECT kuis.*,
+                   topik.nama AS nama_topik,
+                   tingkat.nama AS nama_tingkat,
+                   user.nama AS nama_pengajar,
+                   user.email AS email_pengajar,
+                   COUNT(soal.id) AS jumlah_soal
+            FROM kuis
+            JOIN topik ON kuis.topik_id = topik.id
+            JOIN tingkat ON kuis.tingkat_id = tingkat.id
+            JOIN user ON kuis.pengajar_id = user.id
+            LEFT JOIN soal ON soal.kuis_id = kuis.id
+            WHERE kuis.status = 'menunggu'
+            GROUP BY kuis.id
+            ORDER BY kuis.diperbarui_pada ASC, kuis.id ASC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// 3. Ambil data kuis lengkap beserta seluruh soal, opsi jawaban (kunci terlihat), dan pembahasan
+// Khusus untuk halaman Tinjau Admin (ADM-03, SEC-07)
+function ambilDetailKuisUntukTinjau($kuisId) {
+    global $pdo;
+
+    $kuis = ambilKuisById($kuisId);
+    if (!$kuis) {
+        return null;
+    }
+
+    $sqlSoal = "SELECT * FROM soal WHERE kuis_id = ? ORDER BY urutan ASC, id ASC";
+    $stmtSoal = $pdo->prepare($sqlSoal);
+    $stmtSoal->execute([$kuisId]);
+    $daftarSoal = $stmtSoal->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($daftarSoal as &$soal) {
+        $sqlOpsi = "SELECT * FROM opsi_jawaban WHERE soal_id = ? ORDER BY label ASC, id ASC";
+        $stmtOpsi = $pdo->prepare($sqlOpsi);
+        $stmtOpsi->execute([$soal['id']]);
+        $soal['opsi'] = $stmtOpsi->fetchAll(PDO::FETCH_ASSOC);
+    }
+    unset($soal);
+
+    $kuis['daftar_soal'] = $daftarSoal;
+    return $kuis;
+}
+
+// 4. Proses keputusan Admin: Setujui (terbit) atau Tolak (ditolak) (ADM-03, BR-16)
+// Menggunakan transaksi dan fungsi ubahStatusKuis() buatan Zalfa
+function keputusanKuisAdmin($kuisId, $keputusan, $catatan, $adminId) {
+    global $pdo;
+
+    // Pastikan kuis masih berstatus 'menunggu' (mencegah keputusan ganda oleh dua admin, BR-16, AC-11)
+    $stmtCek = $pdo->prepare("SELECT status FROM kuis WHERE id = ? FOR UPDATE");
+    $stmtCek->execute([$kuisId]);
+    $statusSekarang = $stmtCek->fetchColumn();
+
+    if ($statusSekarang !== 'menunggu') {
+        return [
+            'berhasil' => false,
+            'pesan'    => 'Kuis ini sudah diputuskan atau statusnya bukan lagi menunggu persetujuan.'
+        ];
+    }
+
+    // Jika ditolak, catatan wajib diisi minimal 10 karakter (ADM-03, batas validasi 7.3)
+    $catatan = trim($catatan ?? '');
+    if ($keputusan === 'ditolak') {
+        if ($catatan === '') {
+            return [
+                'berhasil' => false,
+                'pesan'    => 'Catatan alasan penolakan wajib diisi agar pengajar mengetahui hal yang perlu direvisi.'
+            ];
+        }
+        if (strlen($catatan) < 10) {
+            return [
+                'berhasil' => false,
+                'pesan'    => 'Catatan penolakan minimal 10 karakter.'
+            ];
+        }
+
+        // Panggil fungsi ubahStatusKuis() buatan Zalfa
+        $ubah = ubahStatusKuis($kuisId, 'menunggu', 'ditolak', $adminId, $catatan);
+        if ($ubah) {
+            return [
+                'berhasil' => true,
+                'pesan'    => 'Kuis berhasil ditolak dan catatan telah dikirim ke pengajar.'
+            ];
+        }
+    } elseif ($keputusan === 'terbit') {
+        // Jika disetujui, catatan bersifat opsional
+        $catatanSimpan = $catatan !== '' ? $catatan : null;
+
+        $ubah = ubahStatusKuis($kuisId, 'menunggu', 'terbit', $adminId, $catatanSimpan);
+        if ($ubah) {
+            return [
+                'berhasil' => true,
+                'pesan'    => 'Kuis berhasil disetujui dan kini telah terbit di katalog.'
+            ];
+        }
+    }
+
+    return [
+        'berhasil' => false,
+        'pesan'    => 'Gagal memproses keputusan kuis. Silakan coba lagi.'
+    ];
+}
+
+

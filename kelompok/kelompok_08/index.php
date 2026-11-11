@@ -133,13 +133,8 @@
             <p class="text-muted">Pilih produk segar dan hubungi petaninya secara langsung</p>
         </div>
 
-        <!-- AREA UNTUK ZAHRA (Fitur Pencarian & Filter) -->
-        <div class="row justify-content-center mb-4">
-            <div class="col-md-8 text-center border border-dashed p-3 text-muted">
-                <!-- Zahra akan menyisipkan form pencarian dan filternya di area ini -->
-                <em>[Area Form Pencarian dan Filter oleh Zahra]</em>
-            </div>
-        </div>
+        <!-- FITUR PENCARIAN DAN FILTER PRODUK - ZAHRA -->
+<?php include 'produk/filter-search.php'; ?>
 
         <!-- TAMPILAN PRODUK (Kartu/Card Bootstrap) -->
         <div class="row g-4">

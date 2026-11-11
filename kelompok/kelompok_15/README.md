@@ -59,7 +59,7 @@ Tujuan pengembangan Pena Kampus adalah:
 
 ## 5. Fitur Utama Sistem
 
-### A. Beranda dan Landing Page (ORANG 1)
+### A. Beranda dan Landing Page 
 
 - Menampilkan halaman utama portal.
 - Menyediakan navbar dan informasi portal.
@@ -69,7 +69,7 @@ Tujuan pengembangan Pena Kampus adalah:
 - Menyediakan halaman Tentang Kami dan Kontak.
 - Mengelola informasi fakultas (admin).
 
-### B. Daftar Berita, Kategori, dan Pencarian (ORANG 2)
+### B. Daftar Berita, Kategori, dan Pencarian 
 
 - Menampilkan katalog berita.
 - Mencari berita berdasarkan kata kunci.
@@ -80,7 +80,7 @@ Tujuan pengembangan Pena Kampus adalah:
 - Menampilkan halaman berita per fakultas.
 - Mengelola kategori (admin).
 
-### C. Detail Berita dan Interaksi Pembaca (ORANG 3)
+### C. Detail Berita dan Interaksi Pembaca 
 
 - Menampilkan halaman detail artikel.
 - Menampilkan berita terkait.
@@ -88,7 +88,7 @@ Tujuan pengembangan Pena Kampus adalah:
 - Menerima dan menampilkan komentar yang dimoderasi.
 - Menyediakan formulir kontak dan inbox pesan (admin).
 
-### D. Autentikasi dan Admin Dashboard (ORANG 4)
+### D. Autentikasi dan Admin Dashboard 
 
 - Login dan logout administrator/editor.
 - Mengelola session pengguna.
@@ -97,7 +97,7 @@ Tujuan pengembangan Pena Kampus adalah:
 - Mengelola akun pengguna.
 - Memoderasi komentar.
 
-### E. Manajemen Berita (CMS) (ORANG 5)
+### E. Manajemen Berita (CMS) 
 
 - CRUD berita.
 - Editor artikel.

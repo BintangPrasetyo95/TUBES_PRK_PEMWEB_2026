@@ -3,8 +3,9 @@
 
 require_once __DIR__ . '/../includes/init.php';
 
+// Jika pengguna sudah login, langsung alihkan sesuai role (admin atau pasien)
 if (isset($_SESSION['user_id'])) {
-    $redirect = $_SESSION['role'] === 'admin' ? '../admin/dokter_list.php' : '../pasien/daftar_dokter.php';
+    $redirect = $_SESSION['role'] === 'admin' ? '../admin/dokter_list.php' : '../pasien/pasien.php';
     header("Location: $redirect");
     exit;
 }

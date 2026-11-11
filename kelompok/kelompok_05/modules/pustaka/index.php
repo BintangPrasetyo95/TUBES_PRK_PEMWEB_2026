@@ -39,7 +39,23 @@ require __DIR__ . '/../../includes/header.php';
             autocomplete="off"
         >
     </div>
-    <a href="index.php" class="btn">Reset</a>
+
+    <div class="form-group">
+        <label for="type-filter">Filter Jenis Dokumen</label>
+        <select id="type-filter">
+            <option value="0">Semua Jenis Dokumen</option>
+            <?php foreach ($jenis_dokumen as $jenis): ?>
+                <option value="<?= (int) $jenis['id'] ?>">
+                    <?= e($jenis['nama']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <button type="button" class="btn" id="reset-filter">
+        Reset Filter
+    </button>
+
     <p id="search-status" aria-live="polite"></p>
 </div>
 

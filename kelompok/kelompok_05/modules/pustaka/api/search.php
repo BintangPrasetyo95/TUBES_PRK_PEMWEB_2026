@@ -9,9 +9,14 @@ if (current_user() === null) {
 }
 
 $search = trim((string) ($_GET['search'] ?? ''));
+$type_id = (int) ($_GET['type_id'] ?? 0);
 
 if (mb_strlen($search) > 100) {
     api_error('Pencarian maksimal 100 karakter.', 400);
+}
+
+if ($type_id < 0) {
+    api_error('Filter jenis dokumen tidak valid.', 400);
 }
 
 $sql = 'SELECT t.id AS type_id, t.nama AS jenis, t.deskripsi,
@@ -22,6 +27,11 @@ $sql = 'SELECT t.id AS type_id, t.nama AS jenis, t.deskripsi,
 
 $params = [];
 
+if ($type_id > 0) {
+    $sql .= ' AND t.id = ?';
+    $params[] = $type_id;
+}
+
 if ($search !== '') {
     $sql .= ' AND (
         t.nama LIKE ? OR t.deskripsi LIKE ?
@@ -29,7 +39,13 @@ if ($search !== '') {
     )';
 
     $term = '%' . addcslashes($search, '%_\\') . '%';
-    $params = [$term, $term, $term, $term];
+
+    $params = array_merge($params, [
+        $term,
+        $term,
+        $term,
+        $term
+    ]);
 }
 
 $sql .= ' ORDER BY t.nama, r.urutan, r.id';

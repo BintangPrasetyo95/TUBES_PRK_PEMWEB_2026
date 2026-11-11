@@ -25,11 +25,18 @@ document.addEventListener('DOMContentLoaded', function () {
   var totalSoal = parseInt(wadahApp.getAttribute('data-total-soal'), 10) || 0;
   var sisaDetik = parseInt(wadahApp.getAttribute('data-sisa-detik'), 10) || 0;
   var jumlahTerjawab = parseInt(wadahApp.getAttribute('data-terjawab-awal'), 10) || 0;
+  var modeHalaman = wadahApp.getAttribute('data-mode') || 'kerjakan';
+  var isModePratinjau = (modeHalaman === 'pratinjau');
+  var skorMaksPratinjau = parseInt(wadahApp.getAttribute('data-skor-maks'), 10) || 0;
   var tokenCsrf = document.getElementById('tokenCsrf') ? document.getElementById('tokenCsrf').value : '';
 
   var nomorAktif = 1;
   var intervalTimer = null;
   var sedangMengirim = false;
+
+  // Variabel penghitung simulasi khusus modus pratinjau (sisi klien)
+  var skorPratinjau = 0;
+  var benarPratinjau = 0;
 
   // Elemen DOM Penting
   var timerDisplay = document.getElementById('timerDisplay');
@@ -106,7 +113,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Fungsi pengiriman otomatis ketika waktu habis
   function waktuHabisOtomatis() {
-    alert('Waktu pengerjaan kuis telah habis! Jawaban kamu akan disimpan.');
+    if (isModePratinjau) {
+      alert('Waktu simulasi pratinjau telah habis!');
+    } else {
+      alert('Waktu pengerjaan kuis telah habis! Jawaban kamu akan disimpan.');
+    }
     kirimSelesaiKuis('waktu_habis');
   }
 
@@ -215,6 +226,59 @@ document.addEventListener('DOMContentLoaded', function () {
   // --------------------------------------------------------------------------
   // 5. Pemilihan Jawaban & Pengiriman AJAX ke api/jawab.php (KRJ-04, KRJ-05)
   // --------------------------------------------------------------------------
+  function terapkanUmpanBalikJawaban(btnOpsi, daftarOpsiSoal, nomorIni, isBenar, kunciOpsiId, kunciLabel, pembahasanTeks) {
+    if (isBenar) {
+      btnOpsi.classList.add('opsi-benar');
+    } else {
+      btnOpsi.classList.add('opsi-salah');
+
+      // Tampilkan garis penanda pada opsi kunci jawaban yang benar
+      daftarOpsiSoal.forEach(function (item) {
+        var idItem = parseInt(item.getAttribute('data-opsi-id'), 10);
+        if (idItem === kunciOpsiId) {
+          item.classList.add('opsi-kunci');
+        }
+      });
+    }
+
+    // Tampilkan Kotak Umpan Balik dan Pembahasan (ACC-03)
+    var boxUmpanBalik = document.getElementById('umpanBalik-' + nomorIni);
+    if (boxUmpanBalik) {
+      boxUmpanBalik.className = 'umpan-balik-box ' + (isBenar ? 'benar' : 'salah');
+      boxUmpanBalik.style.display = 'block';
+
+      var wadahStatus = boxUmpanBalik.querySelector('.umpan-balik-status');
+      if (wadahStatus) {
+        if (isBenar) {
+          wadahStatus.innerHTML = '<span aria-hidden="true">&#10004;</span> <span>Benar! Jawaban kamu tepat.</span>';
+        } else {
+          wadahStatus.innerHTML = '<span aria-hidden="true">&#10008;</span> <span>Belum tepat. Kunci jawaban: ' + (kunciLabel || 'lihat opsi bertanda') + '</span>';
+        }
+      }
+
+      var wadahTeks = boxUmpanBalik.querySelector('.teks-pembahasan');
+      if (wadahTeks) {
+        wadahTeks.textContent = pembahasanTeks || 'Tidak ada pembahasan tambahan.';
+      }
+    }
+
+    // Update Tombol Nomor pada Grid Soal
+    var btnGrid = document.getElementById('btnNomor-' + nomorIni);
+    if (btnGrid) {
+      btnGrid.classList.add('nomor-terjawab');
+      btnGrid.classList.add(isBenar ? 'nomor-benar' : 'nomor-salah');
+    }
+
+    // Perbarui jumlah soal terjawab dan progress bar
+    jumlahTerjawab++;
+    perbaruiProgressBar();
+
+    // Aktifkan tombol selesai cepat
+    if (btnSelesaiCepat) {
+      btnSelesaiCepat.style.display = 'inline-block';
+    }
+  }
+
   var semuaOpsi = document.querySelectorAll('.opsi-item');
   semuaOpsi.forEach(function (btnOpsi) {
     btnOpsi.addEventListener('click', function () {
@@ -225,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var soalId = parseInt(btnOpsi.getAttribute('data-soal-id'), 10);
       var opsiId = parseInt(btnOpsi.getAttribute('data-opsi-id'), 10);
-      var labelPilihan = btnOpsi.getAttribute('data-label') || '';
 
       var slideInduk = btnOpsi.closest('.soal-slide');
       var nomorIni = parseInt(slideInduk.getAttribute('data-nomor'), 10);
@@ -239,6 +302,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Beri tanda bahwa opsi ini yang dipilih
       btnOpsi.classList.add('opsi-terpilih');
+
+      // Jika sedang dalam Modus Pratinjau, nilai langsung di sisi klien tanpa API
+      if (isModePratinjau) {
+        var isBenarPratinjau = btnOpsi.getAttribute('data-benar') === '1';
+        var poinSoal = parseInt(slideInduk.getAttribute('data-poin'), 10) || 0;
+        var pembahasanPratinjau = slideInduk.getAttribute('data-pembahasan') || '';
+
+        var kunciOpsiIdPratinjau = 0;
+        var kunciLabelPratinjau = '';
+        daftarOpsiSoal.forEach(function (item) {
+          if (item.getAttribute('data-benar') === '1') {
+            kunciOpsiIdPratinjau = parseInt(item.getAttribute('data-opsi-id'), 10) || 0;
+            kunciLabelPratinjau = item.getAttribute('data-label') || '';
+          }
+        });
+
+        if (isBenarPratinjau) {
+          skorPratinjau += poinSoal;
+          benarPratinjau++;
+        }
+
+        terapkanUmpanBalikJawaban(
+          btnOpsi,
+          daftarOpsiSoal,
+          nomorIni,
+          isBenarPratinjau,
+          kunciOpsiIdPratinjau,
+          kunciLabelPratinjau,
+          pembahasanPratinjau
+        );
+        return;
+      }
 
       sedangMengirim = true;
 
@@ -285,11 +380,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 3. Jawaban Berhasil Diterima (200 OK)
-        var isBenar = data.benar;
-        var kunciOpsiId = data.opsi_benar_id;
-        var pembahasanTeks = data.pembahasan;
-
-        // Sinkronkan sisa waktu dari server jika ada
         if (typeof data.sisa_detik === 'number') {
           sisaDetik = data.sisa_detik;
           if (timerDisplay) {
@@ -297,57 +387,15 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
 
-        // Update tampilan opsi yang diklik (Benar atau Salah)
-        if (isBenar) {
-          btnOpsi.classList.add('opsi-benar');
-        } else {
-          btnOpsi.classList.add('opsi-salah');
-
-          // Tampilkan garis penanda pada opsi kunci jawaban yang benar
-          daftarOpsiSoal.forEach(function (item) {
-            var idItem = parseInt(item.getAttribute('data-opsi-id'), 10);
-            if (idItem === kunciOpsiId) {
-              item.classList.add('opsi-kunci');
-            }
-          });
-        }
-
-        // Tampilkan Kotak Umpan Balik dan Pembahasan (ACC-03)
-        var boxUmpanBalik = document.getElementById('umpanBalik-' + nomorIni);
-        if (boxUmpanBalik) {
-          boxUmpanBalik.className = 'umpan-balik-box ' + (isBenar ? 'benar' : 'salah');
-          boxUmpanBalik.style.display = 'block';
-
-          var wadahStatus = boxUmpanBalik.querySelector('.umpan-balik-status');
-          if (wadahStatus) {
-            if (isBenar) {
-              wadahStatus.innerHTML = '<span aria-hidden="true">&#10004;</span> <span>Benar! Jawaban kamu tepat.</span>';
-            } else {
-              wadahStatus.innerHTML = '<span aria-hidden="true">&#10008;</span> <span>Belum tepat. Kunci jawaban: ' + (data.kunci_label || 'lihat opsi bertanda') + '</span>';
-            }
-          }
-
-          var wadahTeks = boxUmpanBalik.querySelector('.teks-pembahasan');
-          if (wadahTeks) {
-            wadahTeks.textContent = pembahasanTeks || 'Tidak ada pembahasan tambahan.';
-          }
-        }
-
-        // Update Tombol Nomor pada Grid Soal
-        var btnGrid = document.getElementById('btnNomor-' + nomorIni);
-        if (btnGrid) {
-          btnGrid.classList.add('nomor-terjawab');
-          btnGrid.classList.add(isBenar ? 'nomor-benar' : 'nomor-salah');
-        }
-
-        // Perbarui jumlah soal terjawab dan progress bar
-        jumlahTerjawab++;
-        perbaruiProgressBar();
-
-        // Aktifkan tombol selesai cepat
-        if (btnSelesaiCepat) {
-          btnSelesaiCepat.style.display = 'inline-block';
-        }
+        terapkanUmpanBalikJawaban(
+          btnOpsi,
+          daftarOpsiSoal,
+          nomorIni,
+          Boolean(data.benar),
+          data.opsi_benar_id,
+          data.kunci_label,
+          data.pembahasan
+        );
       })
       .catch(function (err) {
         sedangMengirim = false;
@@ -424,13 +472,45 @@ document.addEventListener('DOMContentLoaded', function () {
   // 8. Pengiriman Selesai Kuis ke api/selesai.php (KRJ-07, REL-02)
   // --------------------------------------------------------------------------
   function kirimSelesaiKuis(statusAkhir) {
+    if (intervalTimer) {
+      clearInterval(intervalTimer);
+    }
+
+    // Jika sedang Modus Pratinjau, tampilkan ringkasan di sisi klien tanpa memanggil api/selesai.php
+    if (isModePratinjau) {
+      if (modalSelesai) {
+        modalSelesai.classList.remove('aktif');
+      }
+
+      var wadahSlide = document.getElementById('wadahSlideSoal');
+      var gridNomor = document.querySelector('.grid-nomor-wrapper');
+      var navKerjakan = document.querySelector('.nav-kerjakan');
+      if (wadahSlide) wadahSlide.style.display = 'none';
+      if (gridNomor) gridNomor.style.display = 'none';
+      if (navKerjakan) navKerjakan.style.display = 'none';
+
+      var persen = skorMaksPratinjau > 0 ? Math.round((skorPratinjau / skorMaksPratinjau) * 100) : 0;
+      var salahAtauKosong = Math.max(0, totalSoal - benarPratinjau);
+
+      var elSkor = document.getElementById('pratinjauSkor');
+      var elMaks = document.getElementById('pratinjauMaks');
+      var elPersen = document.getElementById('pratinjauPersen');
+      var elBenar = document.getElementById('pratinjauBenar');
+      var elSalah = document.getElementById('pratinjauSalah');
+      var boxHasil = document.getElementById('hasilPratinjauBox');
+
+      if (elSkor) elSkor.textContent = skorPratinjau;
+      if (elMaks) elMaks.textContent = skorMaksPratinjau;
+      if (elPersen) elPersen.textContent = persen + '%';
+      if (elBenar) elBenar.textContent = benarPratinjau;
+      if (elSalah) elSalah.textContent = salahAtauKosong;
+      if (boxHasil) boxHasil.style.display = 'block';
+      return;
+    }
+
     if (btnKonfirmasiKumpul) {
       btnKonfirmasiKumpul.disabled = true;
       btnKonfirmasiKumpul.textContent = 'Menyimpan...';
-    }
-
-    if (intervalTimer) {
-      clearInterval(intervalTimer);
     }
 
     fetch('../api/selesai.php', {

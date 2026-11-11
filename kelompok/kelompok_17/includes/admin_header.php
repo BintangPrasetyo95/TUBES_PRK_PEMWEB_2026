@@ -40,14 +40,14 @@ if (!function_exists('ikon')) {
     }
 }
 
-// Badge status aspirasi: menunggu = amber, ditinjau = biru, selesai = emerald.
+// Badge status aspirasi: menunggu = amber, ditolak = merah, publikasi = emerald.
 if (!function_exists('badge_status')) {
     function badge_status(string $status): string
     {
         $peta = [
             'menunggu' => ['Menunggu', 'bg-amber-100 text-amber-800'],
-            'ditinjau' => ['Ditinjau', 'bg-blue-100 text-blue-800'],
-            'selesai'  => ['Selesai', 'bg-emerald-100 text-emerald-800'],
+            'ditolak'   => ['Ditolak', 'bg-red-100 text-red-800'],
+            'publikasi' => ['Publikasi', 'bg-emerald-100 text-emerald-800'],
         ];
         [$label, $kelas] = $peta[$status] ?? [$status, 'bg-slate-100 text-slate-700'];
         return '<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ' . $kelas . '">'

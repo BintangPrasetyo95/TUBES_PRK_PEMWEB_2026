@@ -5,7 +5,7 @@ require_once __DIR__ . '/../config/database.php'; // harus menyediakan $pdo (PDO
 $totalBerita = (int) $pdo->query('SELECT COUNT(*) FROM berita')->fetchColumn();
 $totalUser   = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'mahasiswa'")->fetchColumn();
 
-$status = ['menunggu' => 0, 'ditinjau' => 0, 'selesai' => 0];
+$status = ['menunggu' => 0, 'ditolak' => 0, 'publikasi' => 0];
 foreach ($pdo->query('SELECT status, COUNT(*) AS n FROM aspirasi GROUP BY status') as $r) {
     $status[$r['status']] = (int) $r['n'];
 }

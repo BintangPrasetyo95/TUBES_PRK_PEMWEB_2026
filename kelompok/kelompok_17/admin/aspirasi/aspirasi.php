@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../includes/csrf.php';
 require_once __DIR__ . '/../../config/database.php'; // menyediakan $pdo
 
 // Daftar status yang diizinkan, sama dengan nilai ENUM di kabarsi.sql.
-$daftarStatus = ['menunggu' => 'Menunggu', 'ditinjau' => 'Ditinjau', 'selesai' => 'Selesai'];
+$daftarStatus = ['menunggu' => 'Menunggu', 'ditolak' => 'Ditolak', 'publikasi' => 'Publikasi'];
 
 // Pesan singkat setelah status diubah.
 $pesan = isset($_GET['pesan']) && $_GET['pesan'] === 'status' ? 'Status aspirasi berhasil diubah.' : '';

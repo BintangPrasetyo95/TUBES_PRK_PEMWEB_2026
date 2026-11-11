@@ -1729,3 +1729,133 @@ textarea:focus {
         padding-top: 22px;
     }
 }
+
+/* LOGOUT COMPACT */
+
+a.sidebar-logout {
+    display: flex !important;
+    align-items: center;
+    gap: 11px;
+
+    width: 100%;
+    padding: 8px 14px;
+    margin-top: auto;
+    flex-shrink: 0;
+
+    background: rgba(201, 79, 88, 0.12) !important;
+    border: 1px solid rgba(201, 79, 88, 0.25) !important;
+    border-radius: 10px;
+
+    color: #f08b91 !important;
+    font-size: 12.5px;
+    font-weight: 600;
+
+    box-shadow: none !important;
+    transition: 0.2s ease;
+}
+
+a.sidebar-logout span {
+    color: #f08b91 !important;
+}
+
+a.sidebar-logout span:first-child {
+    width: 22px;
+    font-size: 16px;
+    text-align: center;
+}
+
+a.sidebar-logout:hover {
+    background: rgba(201, 79, 88, 0.25) !important;
+    border-color: rgba(201, 79, 88, 0.4) !important;
+}
+
+/* LOGOUT MODAL */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(8, 36, 25, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 380px;
+    padding: 30px 28px 26px;
+    background: #fff;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 30px 70px rgba(8, 36, 25, 0.35);
+    animation: modalPop 0.25s ease;
+}
+
+.modal-icon {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: #fcecec;
+    color: #dc6464;
+    font-size: 24px;
+}
+
+.modal-box h3 {
+    font-size: 18px;
+    color: #145c43;
+    margin-bottom: 8px;
+}
+
+.modal-box p {
+    font-size: 13px;
+    color: #84918a;
+    margin-bottom: 24px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 11px 16px;
+    border-radius: 10px;
+    border: 1px solid #e8ede9;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.modal-btn-cancel {
+    background: #fff;
+    color: #26352e;
+}
+
+.modal-btn-danger {
+    background: #d9535b;
+    border-color: #d9535b;
+    color: #fff;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: translateY(10px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}

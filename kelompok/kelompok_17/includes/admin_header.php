@@ -1,12 +1,11 @@
 <?php
-// Layout atas halaman admin (desain baru). Dipakai halaman yang sudah dimigrasikan.
+// Layout atas halaman admin. Dipakai semua halaman admin.
 // Pemakaian di halaman admin:
 //   require_once __DIR__ . '/../includes/auth_admin.php';   (baris pertama, seperti biasa)
 //   $judulTab   = 'Dashboard';
 //   $breadcrumb = [['Dashboard', null]];   // tiap item: [label, path atau null]
 //   include __DIR__ . '/../includes/admin_header.php';
 //   ... isi halaman ...
-//   include __DIR__ . '/../includes/admin_footer.php';
 
 require_once __DIR__ . '/auth_admin.php'; // memastikan e() dan admin_url() tersedia
 
@@ -74,6 +73,10 @@ $inisial   = mb_strtoupper(mb_substr($namaAdmin, 0, 1));
             tailwind.config = {
                 theme: {
                     extend: {
+                        colors: {
+                            sage: { 50:'#f3f7f4', 100:'#e3ebe5', 200:'#c4d5ca', 300:'#9fb9a8', 400:'#77977f', 500:'#5a7a64', 600:'#476352', 700:'#3a5043', 800:'#2e4036', 900:'#1f2d25' },
+                            clay: { 50:'#fdf4ef', 100:'#fae5d8', 200:'#f5c6ab', 300:'#eea07a', 400:'#e7875a', 500:'#e07a4f', 600:'#d0643a', 700:'#b3502c', 800:'#8f3f23' }
+                        },
                         fontFamily: {
                             sans: ['Inter', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
                         }
@@ -83,46 +86,20 @@ $inisial   = mb_strtoupper(mb_substr($namaAdmin, 0, 1));
         }
     </script>
     <style>
-        .kaca { background: rgba(255,255,255,0.55); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.75); box-shadow: 0 8px 32px rgba(120,53,15,0.08); }
+        html { background: radial-gradient(circle at 0% 0%, rgba(224,122,79,0.18) 0, transparent 36%), radial-gradient(circle at 100% 100%, rgba(90,122,100,0.24) 0, transparent 42%), #e3ebe5; min-height: 100%; }
+        .kaca { background: rgba(255,255,255,0.58); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 10px 30px rgba(31,45,37,0.07); }
     </style>
 </head>
-<body class="font-sans text-slate-900 antialiased" style="min-height:100vh;background:radial-gradient(circle at 0% 0%,#fed7aa 0,transparent 38%),radial-gradient(circle at 100% 100%,#fdba74 0,transparent 35%),#faf7f2;">
-<a href="#konten" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-orange-700 focus:shadow">Lewati ke konten utama</a>
+<body class="flex gap-4 rounded-[2rem] bg-white/40 p-3 font-sans text-slate-900 antialiased sm:p-4 md:gap-6 md:p-5" style="width:94%;margin:1.5rem auto;min-height:calc(100vh - 3rem);">
+<a href="#konten" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-clay-700 focus:shadow">Lewati ke konten utama</a>
 
 <?php include __DIR__ . '/admin_sidebar.php'; ?>
 
-<div class="min-h-screen md:pl-16 lg:pl-64">
-    <header class="kaca sticky top-0 z-20">
-        <div class="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
-            <button type="button" id="admin-sidebar-buka"
-                    class="-ml-1 rounded-lg p-2 text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 md:hidden"
-                    aria-controls="admin-sidebar" aria-expanded="false" aria-label="Buka menu navigasi">
-                <?= ikon('menu', 'h-6 w-6') ?>
-            </button>
+<div class="min-w-0 flex-1">
+    <button type="button" id="admin-sidebar-buka"
+            class="mb-3 inline-flex items-center gap-2 rounded-xl bg-white/70 px-3 py-2 text-sm font-medium text-sage-800 shadow-sm hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-600 md:hidden"
+            aria-controls="admin-sidebar" aria-expanded="false">
+        <?= ikon('menu', 'h-5 w-5') ?> Menu
+    </button>
 
-            <nav aria-label="Breadcrumb" class="min-w-0 flex-1">
-                <ol class="flex items-center gap-1.5 truncate text-sm text-slate-500">
-                    <?php foreach ($breadcrumb as $i => [$labelCrumb, $pathCrumb]): ?>
-                        <?php if ($i > 0): ?><li aria-hidden="true"><?= ikon('panah', 'h-3.5 w-3.5') ?></li><?php endif; ?>
-                        <li class="<?= $pathCrumb === null ? 'font-medium text-slate-900' : '' ?> truncate">
-                            <?php if ($pathCrumb !== null): ?>
-                                <a href="<?= e(admin_url($pathCrumb)) ?>" class="rounded hover:text-orange-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600"><?= e($labelCrumb) ?></a>
-                            <?php else: ?>
-                                <span aria-current="page"><?= e($labelCrumb) ?></span>
-                            <?php endif; ?>
-                        </li>
-                    <?php endforeach; ?>
-                </ol>
-            </nav>
-
-            <div class="flex items-center gap-3">
-                <div class="hidden text-right sm:block">
-                    <p class="text-sm font-medium leading-tight text-slate-900"><?= e($namaAdmin) ?></p>
-                    <p class="text-xs text-slate-500">Administrator</p>
-                </div>
-                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-orange-600 text-sm font-semibold text-white" aria-hidden="true"><?= e($inisial) ?></span>
-            </div>
-        </div>
-    </header>
-
-    <main id="konten" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <main id="konten" class="w-full">

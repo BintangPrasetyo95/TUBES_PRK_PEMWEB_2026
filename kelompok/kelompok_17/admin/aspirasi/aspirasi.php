@@ -60,14 +60,14 @@ include __DIR__ . '/../../includes/admin_header.php';
                         <form method="POST" action="ubah_status.php" class="flex flex-wrap items-center gap-2">
                             <?= csrf_field() ?>
                             <input type="hidden" name="id_aspirasi" value="<?= (int) $a['id_aspirasi'] ?>">
-                            <select name="status" class="rounded-lg border border-slate-300 bg-white/80 px-2 py-1.5 text-sm focus:border-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-600/30">
+                            <select name="status" class="rounded-lg border border-slate-300 bg-white/80 px-2 py-1.5 text-sm focus:border-clay-600 focus:outline-none focus:ring-2 focus:ring-clay-600/30">
                                 <?php foreach ($daftarStatus as $nilaiStatus => $labelStatus): ?>
                                     <option value="<?= e($nilaiStatus) ?>" <?= $a['status'] === $nilaiStatus ? 'selected' : '' ?>>
                                         <?= e($labelStatus) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <button type="submit" class="rounded-lg bg-orange-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-600 focus-visible:ring-offset-2">Simpan</button>
+                            <button type="submit" class="rounded-lg bg-clay-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-clay-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay-600 focus-visible:ring-offset-2">Simpan</button>
                         </form>
                     </td>
                 </tr>

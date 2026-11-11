@@ -241,3 +241,135 @@ function ubahPasswordPengguna($id, $passwordLama, $passwordBaru, $konfirmasiBaru
     ];
 }
 
+// ============================================================================
+// FUNGSI ADMIN: KELOLA PENGGUNA & RESET SANDI (Jobdesk Nanda - Sesi 5)
+// ============================================================================
+
+// Pastikan kolom 'aktif' dan 'wajib_ganti_sandi' tersedia di tabel user
+function pastikanKolomKelolaPengguna() {
+    global $pdo;
+
+    try {
+        $stmt = $pdo->query("SHOW COLUMNS FROM user LIKE 'aktif'");
+        if (!$stmt->fetch()) {
+            $pdo->exec("ALTER TABLE user ADD COLUMN aktif TINYINT(1) NOT NULL DEFAULT 1 AFTER peran");
+        }
+
+        $stmt2 = $pdo->query("SHOW COLUMNS FROM user LIKE 'wajib_ganti_sandi'");
+        if (!$stmt2->fetch()) {
+            $pdo->exec("ALTER TABLE user ADD COLUMN wajib_ganti_sandi TINYINT(1) NOT NULL DEFAULT 0 AFTER aktif");
+        }
+    } catch (PDOException $e) {
+        // Biarkan jika user tidak punya izin ALTER
+    }
+}
+
+// 8. Ambil daftar semua pengguna dengan filter peran, status aktif, dan pencarian (ADM-04)
+function daftarSemuaPengguna($filterPeran = '', $filterStatus = '', $kataKunci = '') {
+    global $pdo;
+    pastikanKolomKelolaPengguna();
+
+    $sql = "SELECT id, nama, email, peran, aktif, wajib_ganti_sandi, dibuat_pada
+            FROM user
+            WHERE 1=1";
+    $params = [];
+
+    if ($filterPeran !== '' && in_array($filterPeran, ['pelajar', 'pengajar', 'admin'], true)) {
+        $sql .= " AND peran = ?";
+        $params[] = $filterPeran;
+    }
+
+    if ($filterStatus === 'aktif') {
+        $sql .= " AND aktif = 1";
+    } elseif ($filterStatus === 'nonaktif') {
+        $sql .= " AND aktif = 0";
+    }
+
+    $kataKunci = trim($kataKunci);
+    if ($kataKunci !== '') {
+        $sql .= " AND (nama LIKE ? OR email LIKE ?)";
+        $cari = '%' . $kataKunci . '%';
+        $params[] = $cari;
+        $params[] = $cari;
+    }
+
+    $sql .= " ORDER BY dibuat_pada DESC, id DESC";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// 9. Aktifkan atau nonaktifkan akun pengguna (ADM-04, ADM-08)
+function ubahStatusAktifPengguna($targetUserId, $statusBaru, $adminId) {
+    global $pdo;
+    pastikanKolomKelolaPengguna();
+
+    // Admin tidak boleh menonaktifkan akunnya sendiri (ADM-08)
+    if ((int)$targetUserId === (int)$adminId && (int)$statusBaru === 0) {
+        return [
+            'berhasil' => false,
+            'pesan'    => 'Anda tidak dapat menonaktifkan akun Anda sendiri.'
+        ];
+    }
+
+    $user = ambilPenggunaById($targetUserId);
+    if (!$user) {
+        return [
+            'berhasil' => false,
+            'pesan'    => 'Pengguna tidak ditemukan.'
+        ];
+    }
+
+    $nilaiAktif = ((int)$statusBaru === 1) ? 1 : 0;
+    $sql = "UPDATE user SET aktif = ? WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$nilaiAktif, $targetUserId]);
+
+    $teksStatus = ($nilaiAktif === 1) ? 'diaktifkan' : 'dinonaktifkan';
+    return [
+        'berhasil' => true,
+        'pesan'    => 'Akun ' . $user['nama'] . ' berhasil ' . $teksStatus . '.'
+    ];
+}
+
+// 10. Reset sandi pengguna oleh Admin (ADM-05, BR-17, AC-21)
+// Menghasilkan sandi sementara acak 10 karakter yang hanya dikembalikan satu kali
+function resetSandiSementara($targetUserId) {
+    global $pdo;
+    pastikanKolomKelolaPengguna();
+
+    $user = ambilPenggunaById($targetUserId);
+    if (!$user) {
+        return [
+            'berhasil' => false,
+            'pesan'    => 'Pengguna tidak ditemukan.'
+        ];
+    }
+
+    // Buat sandi sementara acak tanpa karakter yang membingungkan (0, O, 1, I, l)
+    $karakter = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz';
+    $panjang = strlen($karakter) - 1;
+    $sandiSementara = '';
+
+    for ($i = 0; $i < 10; $i++) {
+        $sandiSementara .= $karakter[random_int(0, $panjang)];
+    }
+
+    $hashBaru = password_hash($sandiSementara, PASSWORD_DEFAULT);
+
+    // Simpan hash baru dan set wajib_ganti_sandi = 1
+    $sql = "UPDATE user SET password = ?, wajib_ganti_sandi = 1 WHERE id = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$hashBaru, $targetUserId]);
+
+    return [
+        'berhasil'        => true,
+        'pesan'           => 'Sandi sementara berhasil dibuat untuk ' . $user['nama'] . '.',
+        'sandi_sementara' => $sandiSementara,
+        'nama_pengguna'   => $user['nama'],
+        'email_pengguna'  => $user['email']
+    ];
+}
+
+

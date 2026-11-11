@@ -160,14 +160,15 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
 
         <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
             <a href="pratinjau.php?id=<?= e($kuisId) ?>" class="btn btn-primary">Ulangi Pratinjau</a>
-            <a href="kuis.php" class="btn btn-secondary">Kembali ke Kuis Saya</a>
+            <a href="kelola-soal.php?kuis_id=<?= e($kuisId) ?>" class="btn btn-secondary">Kelola Soal</a>
+            <a href="kuis.php" class="btn btn-batal">Kembali ke Kuis Saya</a>
         </div>
     </div>
 
 <?php endif; ?>
 
 <!-- Muat skrip interaktif mode pratinjau -->
-<script src="../assets/js/pratinjau.js"></script>
+<script src="<?= $root ?>assets/js/pratinjau.js"></script>
 
 <?php
 // Muat template footer mode fokus

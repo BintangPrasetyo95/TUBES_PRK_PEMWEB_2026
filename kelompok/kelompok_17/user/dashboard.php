@@ -1,4 +1,3 @@
-
 <?php
 
 // 1. Memanggil koneksi database
@@ -67,13 +66,13 @@ $stmt->execute($params);
 
 $aspirasiList = $stmt->fetchAll();
 
-// 10. Menghitung jumlah aspirasi berdasarkan status
+// 10. Menghitung jumlah aspirasi berdasarkan status (Total, Pending, Ditolak, Publikasi)
 $queryJumlah = $pdo->prepare("
     SELECT
         COUNT(*) AS total,
-        SUM(status = 'menunggu') AS menunggu,
-        SUM(status = 'ditinjau') AS ditinjau,
-        SUM(status = 'selesai') AS selesai
+        SUM(status = 'menunggu') AS pending,
+        SUM(status = 'ditolak') AS ditolak,
+        SUM(status = 'selesai') AS publikasi
 
     FROM aspirasi
 
@@ -97,9 +96,10 @@ function e($data) {
 
 // 12. Mengatur warna status
 $warnaStatus = [
-    'menunggu' => 'bg-amber-50 text-amber-700 border-amber-100',
-    'ditinjau' => 'bg-blue-50 text-blue-700 border-blue-100',
-    'selesai' => 'bg-emerald-50 text-emerald-700 border-emerald-100'
+    'menunggu' => 'bg-amber-50 text-amber-700 border-amber-200',
+    'ditinjau' => 'bg-orange-50 text-orange-700 border-orange-200',
+    'ditolak'  => 'bg-red-50 text-red-700 border-red-200',
+    'selesai'  => 'bg-emerald-50 text-emerald-700 border-emerald-200'
 ];
 
 ?>
@@ -129,7 +129,7 @@ $warnaStatus = [
         }
 
         .gradient-bg {
-            background: linear-gradient(135deg, #172554 0%, #1d4ed8 55%, #3b82f6 100%);
+            background: linear-gradient(135deg, #ea580c 0%, #ff5a1f 55%, #f97316 100%);
         }
 
         .card-hover {
@@ -147,13 +147,13 @@ $warnaStatus = [
 
         .btn-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 8px 18px rgba(234, 88, 12, 0.25);
         }
 
         .input-field:focus {
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.10);
+            border-color: #ff5a1f;
+            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
         }
 
     </style>
@@ -172,13 +172,13 @@ $warnaStatus = [
             <div class="flex items-center gap-3">
 
                 <div class="gradient-bg w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-md">
-                    K
+                    KS
                 </div>
 
                 <div>
 
                     <h1 class="text-lg font-extrabold text-slate-800">
-                        KabarSih
+                        KabarSi <span class="text-[#FF5A1F]">FISIP</span>
                     </h1>
 
                     <p class="text-xs text-slate-400">
@@ -205,7 +205,7 @@ $warnaStatus = [
 
                 </div>
 
-                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                <div class="w-10 h-10 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center font-bold">
 
                     <?= e(strtoupper(substr($nama, 0, 1))); ?>
 
@@ -227,7 +227,7 @@ $warnaStatus = [
 
             <div>
 
-                <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-bold mb-4">
+                <div class="inline-flex items-center gap-2 bg-orange-50 text-[#FF5A1F] px-3 py-1.5 rounded-full text-xs font-bold mb-4">
 
                     <span>✦</span>
                     STUDENT DASHBOARD
@@ -242,7 +242,7 @@ $warnaStatus = [
 
                 <p class="text-slate-500 text-sm mt-2">
 
-                    Selamat datang kembali di KabarSih.
+                    Selamat datang kembali di KabarSi FISIP.
                     Yuk, pantau perkembangan aspirasi kamu!
 
                 </p>
@@ -253,8 +253,8 @@ $warnaStatus = [
             <a href="aspirasi_tambah.php"
                class="btn-hover gradient-bg text-white px-6 py-3.5 rounded-xl font-bold text-sm shadow-md inline-flex items-center gap-2">
 
-                <span class="text-lg"></span>
-                Buat Aspirasi
+                <span class="text-lg">+</span>
+                Kirim Aspirasi
 
             </a>
 
@@ -277,7 +277,7 @@ $warnaStatus = [
                     </p>
 
                     <p class="text-xs text-emerald-600 mt-1">
-                        Terima kasih telah menyampaikan aspirasi melalui KabarSih.
+                        Terima kasih telah menyampaikan aspirasi melalui KabarSi FISIP.
                     </p>
 
                 </div>
@@ -291,16 +291,16 @@ $warnaStatus = [
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-9">
 
 
-            <!-- TOTAL -->
+            <!-- TOTAL ASPIRASI -->
             <div class="card-hover bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
 
                 <div class="flex justify-between items-center">
 
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-2xl">
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl">
                         📋
                     </div>
 
-                    <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                    <span class="text-xs font-semibold text-[#FF5A1F] bg-orange-50 px-3 py-1 rounded-full">
                         Keseluruhan
                     </span>
 
@@ -311,7 +311,7 @@ $warnaStatus = [
                 </p>
 
                 <h3 class="text-3xl font-extrabold text-slate-800 mt-1">
-                    <?= (int) $jumlah['total']; ?>
+                    <?= (int) ($jumlah['total'] ?? 0); ?>
                 </h3>
 
                 <p class="text-xs text-slate-400 mt-2">
@@ -321,7 +321,7 @@ $warnaStatus = [
             </div>
 
 
-            <!-- MENUNGGU -->
+            <!-- PENDING -->
             <div class="card-hover bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
 
                 <div class="flex justify-between items-center">
@@ -337,11 +337,11 @@ $warnaStatus = [
                 </div>
 
                 <p class="text-sm text-slate-500 mt-5">
-                    Menunggu
+                    Pending
                 </p>
 
                 <h3 class="text-3xl font-extrabold text-amber-600 mt-1">
-                    <?= (int) $jumlah['menunggu']; ?>
+                    <?= (int) ($jumlah['pending'] ?? 0); ?>
                 </h3>
 
                 <p class="text-xs text-slate-400 mt-2">
@@ -351,61 +351,61 @@ $warnaStatus = [
             </div>
 
 
-            <!-- DITINJAU -->
+            <!-- DITOLAK -->
             <div class="card-hover bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
 
                 <div class="flex justify-between items-center">
 
-                    <div class="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center text-2xl">
-                        🔍
+                    <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl">
+                        ❌
                     </div>
 
-                    <span class="text-xs font-semibold text-sky-600 bg-sky-50 px-3 py-1 rounded-full">
-                        Proses
+                    <span class="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                        Ditolak
                     </span>
 
                 </div>
 
                 <p class="text-sm text-slate-500 mt-5">
-                    Ditinjau
+                    Ditolak
                 </p>
 
-                <h3 class="text-3xl font-extrabold text-sky-600 mt-1">
-                    <?= (int) $jumlah['ditinjau']; ?>
+                <h3 class="text-3xl font-extrabold text-red-600 mt-1">
+                    <?= (int) ($jumlah['ditolak'] ?? 0); ?>
                 </h3>
 
                 <p class="text-xs text-slate-400 mt-2">
-                    Sedang dalam proses peninjauan
+                    Aspirasi tidak disetujui
                 </p>
 
             </div>
 
 
-            <!-- SELESAI -->
+            <!-- PUBLIKASI -->
             <div class="card-hover bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
 
                 <div class="flex justify-between items-center">
 
                     <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-2xl">
-                        ✓
+                        📢
                     </div>
 
                     <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                        Selesai
+                        Publikasi
                     </span>
 
                 </div>
 
                 <p class="text-sm text-slate-500 mt-5">
-                    Selesai
+                    Publikasi
                 </p>
 
                 <h3 class="text-3xl font-extrabold text-emerald-600 mt-1">
-                    <?= (int) $jumlah['selesai']; ?>
+                    <?= (int) ($jumlah['publikasi'] ?? 0); ?>
                 </h3>
 
                 <p class="text-xs text-slate-400 mt-2">
-                    Aspirasi telah diselesaikan
+                    Aspirasi dipublikasikan
                 </p>
 
             </div>
@@ -418,7 +418,7 @@ $warnaStatus = [
 
             <div class="flex items-center gap-3 mb-5">
 
-                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-xl">
+                <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-xl">
                     🔎
                 </div>
 
@@ -468,7 +468,7 @@ $warnaStatus = [
 
                     <button
                         type="submit"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl text-sm font-bold transition"
+                        class="bg-[#FF5A1F] hover:bg-orange-600 text-white px-7 py-3 rounded-xl text-sm font-bold transition shadow-sm"
                     >
 
                         Terapkan Filter
@@ -505,7 +505,7 @@ $warnaStatus = [
 
             </div>
 
-            <span class="hidden sm:inline-block text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+            <span class="hidden sm:inline-block text-xs font-semibold text-[#FF5A1F] bg-orange-50 px-3 py-2 rounded-lg border border-orange-100">
 
                 <?= count($aspirasiList); ?> Aspirasi
 
@@ -523,7 +523,7 @@ $warnaStatus = [
 
                     <?php
 
-                    $status = $aspirasi['status'];
+                    $status = strtolower($aspirasi['status']);
 
                     $warna = $warnaStatus[$status]
                         ?? 'bg-slate-100 text-slate-600 border-slate-200';
@@ -536,7 +536,7 @@ $warnaStatus = [
                         <!-- CARD TOP -->
                         <div class="flex justify-between items-center gap-3 mb-5">
 
-                            <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold">
+                            <span class="bg-orange-50 text-[#FF5A1F] px-3 py-1.5 rounded-lg text-xs font-bold border border-orange-100">
 
                                 <?= e($aspirasi['nama_kategori']); ?>
 
@@ -620,7 +620,7 @@ $warnaStatus = [
             <!-- EMPTY STATE -->
             <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-12 text-center">
 
-                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-5 text-3xl">
+                <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-5 text-3xl">
                     📝
                 </div>
 
@@ -633,7 +633,7 @@ $warnaStatus = [
                 <p class="text-sm text-slate-400 max-w-md mx-auto leading-relaxed mb-7">
 
                     Kamu belum memiliki riwayat aspirasi pada kategori ini.
-                    Yuk, mulai sampaikan ide, kritik, atau saranmu melalui KabarSih!
+                    Yuk, mulai sampaikan ide, kritik, atau saranmu melalui KabarSi FISIP!
 
                 </p>
 
@@ -657,7 +657,7 @@ $warnaStatus = [
             <div class="border-t border-slate-200 pt-6">
 
                 <p class="text-sm font-bold text-slate-600">
-                    KabarSih
+                    KabarSi <span class="text-[#FF5A1F]">FISIP</span>
                 </p>
 
                 <p class="text-xs text-slate-400 mt-2">
@@ -665,7 +665,7 @@ $warnaStatus = [
                 </p>
 
                 <p class="text-xs text-slate-400 mt-2">
-                    © <?= date('Y'); ?> KabarSih. All rights reserved.
+                    © <?= date('Y'); ?> KabarSi FISIP. All rights reserved.
                 </p>
 
             </div>

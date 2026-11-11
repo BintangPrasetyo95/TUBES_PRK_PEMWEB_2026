@@ -1,4 +1,3 @@
-
 <?php
 
 require_once '../config/database.php';
@@ -28,7 +27,7 @@ function e($data) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Kirim Aspirasi - KabarSih</title>
+    <title>Kirim Aspirasi - KabarSi FISIP</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -42,7 +41,7 @@ function e($data) {
         }
 
         .gradient-bg {
-            background: linear-gradient(135deg, #172554 0%, #1d4ed8 55%, #3b82f6 100%);
+            background: linear-gradient(135deg, #ea580c 0%, #ff5a1f 55%, #f97316 100%);
         }
 
         .input-field {
@@ -50,8 +49,8 @@ function e($data) {
         }
 
         .input-field:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.10);
+            border-color: #ff5a1f;
+            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
             outline: none;
         }
 
@@ -61,7 +60,7 @@ function e($data) {
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 8px 20px rgba(234, 88, 12, 0.25);
         }
     </style>
 
@@ -77,12 +76,12 @@ function e($data) {
             <div class="flex items-center gap-3">
 
                 <div class="gradient-bg w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
-                    K
+                    KS
                 </div>
 
                 <div>
                     <h1 class="text-lg font-extrabold text-slate-800">
-                        KabarSih
+                        KabarSi <span class="text-[#FF5A1F]">FISIP</span>
                     </h1>
 
                     <p class="text-xs text-slate-400">
@@ -104,7 +103,7 @@ function e($data) {
                     </p>
                 </div>
 
-                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                <div class="w-10 h-10 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center font-bold">
                     <?= strtoupper(substr($nama, 0, 1)); ?>
                 </div>
 
@@ -122,7 +121,7 @@ function e($data) {
         <div class="mb-7">
 
             <a href="dashboard.php"
-               class="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+               class="inline-flex items-center gap-2 text-sm font-semibold text-[#FF5A1F] hover:text-orange-700 transition">
 
                 <span>←</span>
                 Kembali ke Dashboard
@@ -135,7 +134,7 @@ function e($data) {
         <!-- PAGE HEADER -->
         <div class="mb-8">
 
-            <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-xs font-bold mb-4">
+            <div class="inline-flex items-center gap-2 bg-orange-50 text-[#FF5A1F] px-4 py-2 rounded-full text-xs font-bold mb-4 border border-orange-100">
 
                 <span>✦</span>
                 RUANG ASPIRASI MAHASISWA
@@ -146,7 +145,7 @@ function e($data) {
 
                 Suaramu Berarti.
 
-                <span class="text-blue-600">
+                <span class="text-[#FF5A1F]">
                     Sampaikan Sekarang!
                 </span>
 
@@ -156,7 +155,7 @@ function e($data) {
 
                 Setiap pendapat memiliki arti. Sampaikan ide, kritik,
                 maupun saran untuk menciptakan lingkungan FISIP yang
-                lebih baik bersama KabarSih.
+                lebih baik bersama KabarSi.
 
             </p>
 
@@ -170,7 +169,7 @@ function e($data) {
             <!-- LEFT INFORMATION -->
             <div class="space-y-5">
 
-                <!-- BLUE INFORMATION CARD -->
+                <!-- ORANGE INFORMATION CARD -->
                 <div class="gradient-bg rounded-2xl p-7 text-white shadow-lg relative overflow-hidden">
 
                     <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
@@ -187,7 +186,7 @@ function e($data) {
                             Satu Suara, Banyak Perubahan
                         </h3>
 
-                        <p class="text-blue-100 text-sm leading-relaxed">
+                        <p class="text-orange-100 text-sm leading-relaxed">
                             Aspirasi yang kamu sampaikan menjadi bagian
                             dari langkah untuk membangun lingkungan
                             kampus yang lebih baik.
@@ -209,7 +208,7 @@ function e($data) {
 
                         <div class="flex gap-3">
 
-                            <div class="w-9 h-9 shrink-0 rounded-lg bg-blue-50 flex items-center justify-center">
+                            <div class="w-9 h-9 shrink-0 rounded-lg bg-orange-50 flex items-center justify-center">
                                 📝
                             </div>
 
@@ -228,7 +227,7 @@ function e($data) {
 
                         <div class="flex gap-3">
 
-                            <div class="w-9 h-9 shrink-0 rounded-lg bg-blue-50 flex items-center justify-center">
+                            <div class="w-9 h-9 shrink-0 rounded-lg bg-orange-50 flex items-center justify-center">
                                 🎯
                             </div>
 
@@ -247,7 +246,7 @@ function e($data) {
 
                         <div class="flex gap-3">
 
-                            <div class="w-9 h-9 shrink-0 rounded-lg bg-blue-50 flex items-center justify-center">
+                            <div class="w-9 h-9 shrink-0 rounded-lg bg-orange-50 flex items-center justify-center">
                                 🤝
                             </div>
 
@@ -269,7 +268,7 @@ function e($data) {
 
 
                 <!-- PRIVACY CARD -->
-                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+                <div class="bg-orange-50 border border-orange-100 rounded-2xl p-5">
 
                     <div class="flex gap-3">
 
@@ -278,11 +277,11 @@ function e($data) {
                         </div>
 
                         <div>
-                            <h4 class="text-sm font-bold text-blue-900">
+                            <h4 class="text-sm font-bold text-orange-900">
                                 Privasi Terjaga
                             </h4>
 
-                            <p class="text-xs text-blue-700 leading-relaxed mt-2">
+                            <p class="text-xs text-orange-700 leading-relaxed mt-2">
                                 Kamu dapat memilih opsi anonim.
                                 Identitas tetap tercatat di database
                                 untuk keperluan pengelolaan admin.
@@ -306,7 +305,7 @@ function e($data) {
 
                         <div class="flex items-center gap-3">
 
-                            <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-xl">
+                            <div class="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center text-xl">
                                 📋
                             </div>
 
@@ -421,13 +420,13 @@ function e($data) {
                         <!-- ANONIM -->
                         <div class="mb-7">
 
-                            <label class="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-blue-50 hover:border-blue-200 transition">
+                            <label class="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-orange-50 hover:border-orange-200 transition">
 
                                 <input
                                     type="checkbox"
                                     name="is_anonim"
                                     value="1"
-                                    class="w-5 h-5 mt-0.5 accent-blue-600 shrink-0"
+                                    class="w-5 h-5 mt-0.5 accent-[#FF5A1F] shrink-0"
                                 >
 
                                 <div>
@@ -481,7 +480,7 @@ function e($data) {
         <footer class="text-center mt-12 pb-5">
 
             <p class="text-xs text-slate-400">
-                © <?= date('Y'); ?> KabarSih.
+                © <?= date('Y'); ?> KabarSi FISIP.
                 Suara Mahasiswa, Perubahan Bersama.
             </p>
 
@@ -491,5 +490,3 @@ function e($data) {
 
 </body>
 </html>
-
-

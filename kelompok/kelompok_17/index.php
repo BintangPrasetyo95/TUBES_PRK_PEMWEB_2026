@@ -28,148 +28,194 @@ $stmt = $pdo->prepare("SELECT a.*, k.nama_kategori, u.nama_lengkap
         FROM aspirasi a
         LEFT JOIN kategori k ON a.id_kategori = k.id_kategori
         LEFT JOIN users u ON a.id_user = u.id_user
-        WHERE a.status = 'publikasi'
         ORDER BY a.tanggal_kirim DESC
         LIMIT 6");
 $stmt->execute();
 $aspirasiList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
-$steps  = ['menunggu' => 'Terkirim', 'ditolak' => 'Ditolak', 'publikasi' => 'Publikasi'];
 $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terintegrasi', 'Layanan Publikasi Resmi', 'FISIP Universitas Lampung'];
 ?>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
-
-:root{ --ink:#141414; --paper:#F6F2E9; --card:#FFFDF8; --or:#FF5A1F; --or-soft:#FFD9C7; --hl:#FFE24A; --muted:#6B655B; }
-.kb *{box-sizing:border-box}
-.kb{font-family:'Space Grotesk',system-ui,sans-serif;color:var(--ink);background:var(--paper);overflow-x:hidden}
-.kb .mono{font-family:'Space Mono',ui-monospace,monospace}
-.kb h1,.kb h2,.kb h3{letter-spacing:-.03em}
-.kb a{color:inherit;text-decoration:none}
-.kb a:focus-visible,.kb button:focus-visible{outline:3px solid var(--or);outline-offset:3px}
-.clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.clamp3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.hide{display:none !important}
-.eyebrow{font:700 .72rem 'Space Mono',monospace;color:var(--muted);margin-bottom:.6rem;letter-spacing:0.04em}
-
-/* Kotak bergaya cetak Neo-Brutalism */
-.box{background:var(--card);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);transition:transform .15s,box-shadow .15s;position:relative}
-.box.hov:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--or)}
-.box.hov:hover .ttl{color:var(--or)}
-.box.hov:hover .num{color:var(--or)}
-.tag{display:inline-block;background:var(--card);color:var(--ink);border:2px solid var(--ink);font:700 .65rem 'Space Mono',monospace;padding:.12rem .5rem;text-transform:uppercase;letter-spacing:.04em}
-.tag-or{background:var(--or);color:#fff}
-.tape{position:absolute;top:-11px;left:46%;width:72px;height:20px;background:var(--hl);opacity:.9;transform:rotate(-3deg);pointer-events:none}
-
-/* Tombol dengan Teks Terang Presisi */
-.btn{display:inline-block;font:700 .8rem 'Space Mono',monospace;text-transform:uppercase;letter-spacing:.04em;padding:.85rem 1.3rem;border:2px solid var(--ink);cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:4px 4px 0 var(--ink)}
-.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--or)}
-.btn:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--ink)}
-.btn-or{background:var(--or);color:#ffffff !important;} 
-.btn-light{background:var(--card);color:var(--ink) !important;} 
-.btn-ink{background:var(--ink);color:var(--paper) !important;}
-
-/* Hero */
-.hero-h{font-size:clamp(3rem,8.5vw,6.2rem);line-height:.95;font-weight:700}
-.hero-h .soft{color:#8a857b;display:block}
-.scribble{position:relative;display:inline-block;z-index:1}
-.scribble svg{position:absolute;left:-5%;top:-10%;width:110%;height:120%;pointer-events:none;overflow:visible;z-index:-1}
-.scribble path{fill:none;stroke:var(--or);stroke-width:4.5;stroke-linecap:round;stroke-dasharray:700;stroke-dashoffset:700;animation:draw 1.1s .5s ease-out forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
-.hero-card{transform:rotate(1.5deg)}
-
-/* Running Ticker */
-.ticker{background:var(--ink);color:var(--paper);overflow:hidden;white-space:nowrap}
-.ticker-track{display:inline-flex;gap:2.2rem;padding:.9rem 0;animation:marq 28s linear infinite}
-.ticker:hover .ticker-track{animation-play-state:paused}
-.ticker-track span{font:400 .85rem 'Space Mono',monospace;display:inline-flex;align-items:center;gap:2.2rem}
-.ticker-track span::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--or)}
-@keyframes marq{to{transform:translateX(-50%)}}
-
-/* Judul Section */
-.sec-h{font-size:clamp(1.9rem,4.5vw,3rem);font-weight:700;line-height:1}
-.sec-h span{color:#8a857b}
-
-/* Chip Filter */
-.chip{font:700 .7rem 'Space Mono',monospace;text-transform:uppercase;border:2px solid var(--ink);background:var(--card);padding:.4rem .8rem;cursor:pointer;transition:background .15s}
-.chip:hover{background:var(--or-soft)}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
-
-/* Berita Bernomor */
-.num{font:400 1.7rem 'Space Grotesk',sans-serif;color:var(--or);transition:color .15s}
-.hov .go{transition:transform .15s}
-.hov:hover .go{transform:translateX(5px)}
-
-.more{background:none;border:0;padding:0;font:700 .72rem 'Space Mono',monospace;text-decoration:underline;cursor:pointer;color:var(--ink)}
-
-@media (prefers-reduced-motion:reduce){
-  .ticker-track{animation:none}
-  .scribble path{animation:none;stroke-dashoffset:0}
-  .box,.btn,.go{transition:none}
+:root { 
+  --ink: #141414; 
+  --paper: #F6F2E9; 
+  --card: #FFFDF8; 
+  --or: #FF5A1F; 
+  --or-soft: #FFD9C7; 
+  --muted: #6B655B; 
+  --border-line: #141414;
 }
+
+.kb * { box-sizing: border-box; }
+.kb { 
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+  color: var(--ink); 
+  background: var(--paper); 
+  overflow-x: hidden; 
+}
+
+.kb a { color: inherit; text-decoration: none; }
+.kb a:focus-visible, .kb button:focus-visible { outline: 2px solid var(--or); outline-offset: 2px; }
+
+.clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.clamp3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.hide { display: none !important; }
+
+/* Clean Border Card */
+.ed-card {
+  background: var(--card);
+  border: 1px solid var(--border-line);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.ed-card:hover {
+  border-color: var(--or);
+}
+.ed-card:hover .ttl-card {
+  color: var(--or);
+}
+
+/* Badge Kategori */
+.ed-tag {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-line);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 4px;
+}
+.ed-tag-or {
+  background: var(--or);
+  color: #ffffff;
+  border-color: var(--or);
+}
+
+/* Tombol Standard */
+.btn-ed {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.75rem 1.4rem;
+  border: 1px solid var(--border-line);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.btn-ed-or { background: var(--or); color: #ffffff !important; border-color: var(--or); }
+.btn-ed-or:hover { background: var(--ink); border-color: var(--ink); }
+.btn-ed-light { background: var(--card); color: var(--ink) !important; }
+.btn-ed-light:hover { background: var(--or-soft); }
+.btn-ed-ink { background: var(--ink); color: var(--paper) !important; }
+.btn-ed-ink:hover { background: var(--or); border-color: var(--or); }
+
+/* Hero Header */
+.hero-title {
+  font-size: clamp(2.8rem, 7vw, 5.2rem);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.hero-title span {
+  color: var(--or);
+}
+
+/* Ticker running line */
+.ticker { border-top: 1px solid var(--border-line); border-bottom: 1px solid var(--border-line); background: var(--card); color: var(--ink); overflow: hidden; white-space: nowrap; }
+.ticker-track { display: inline-flex; gap: 2.5rem; padding: 0.75rem 0; animation: marq 30s linear infinite; }
+.ticker-track span { font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 2.5rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.ticker-track span::after { content: "•"; color: var(--or); }
+@keyframes marq { to { transform: translateX(-50%); } }
+
+/* Section Header */
+.sec-title {
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.sec-title span {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* Filter Chips */
+.chip {
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  border: 1px solid var(--border-line);
+  background: var(--card);
+  padding: 0.4rem 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.chip:hover { background: var(--or-soft); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+.more-btn { background: none; border: 0; padding: 0; font-weight: 700; font-size: 0.75rem; text-decoration: underline; cursor: pointer; color: var(--ink); }
 </style>
 
 <div class="kb">
 
-<!-- ===== HERO ===== -->
-<section class="max-w-6xl mx-auto px-4 pt-12 pb-16 md:pt-20 grid lg:grid-cols-12 gap-12 items-center">
+<!-- ===== HERO SECTION ===== -->
+<section class="max-w-6xl mx-auto px-4 pt-14 pb-16 md:pt-20 grid lg:grid-cols-12 gap-12 items-center">
   <div class="lg:col-span-7">
-    <h1 class="hero-h">
-      Suara
-      <span class="scribble">Kritis.
-        <svg viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true">
-          <path d=" M 15 50 C 10 20, 130 8, 235 15 C 285 22, 290 60, 205 74 C 120 84, 15 75, 25 45 C 32 25, 95 18, 160 20"/>
-        </svg>
-      </span>
-      <span class="soft">Kabar Terbuka.</span>
+    <div class="text-xs uppercase font-bold text-slate-500 mb-3 tracking-wider">Portal Resmi FISIP Unila</div>
+    <h1 class="hero-title">
+      Suara <span>Kritis.</span><br>
+      Kabar Terbuka.
     </h1>
-    <p class="mt-8 max-w-md text-slate-700 leading-relaxed font-normal">
-      Wadah resmi civitas akademika untuk menyampaikan aspirasi dan mengakses publikasi berita kampus.
-      <b>Pengiriman anonim dapat dilakukan secara aman dan transparan.</b>
+    <p class="mt-6 max-w-md text-slate-700 leading-relaxed text-base font-normal">
+      Wadah resmi civitas akademika untuk menyampaikan aspirasi dan mengakses publikasi berita kampus secara transparan dan terintegrasi.
     </p>
     <div class="mt-8 flex flex-wrap gap-4">
-      <a href="user/dashboard.php" class="btn btn-or">Sampaikan Aspirasi &rarr;</a>
-      <a href="#aspirasi" class="btn btn-light">Pantau Isu Kampus</a>
+      <a href="user/dashboard.php" class="btn-ed btn-ed-or">Sampaikan Aspirasi &rarr;</a>
+      <a href="#aspirasi" class="btn-ed btn-ed-light">Pantau Isu Kampus</a>
     </div>
   </div>
 
   <div class="lg:col-span-5">
     <?php if ($heroBerita): ?>
-      <a href="berita_detail.php?id=<?= (int)$heroBerita['id_berita'] ?>" class="box hov hero-card block p-6">
-        <span class="tape" aria-hidden="true"></span>
-        <div class="flex justify-between items-center mb-4">
-          <span class="tag tag-or"><?= e($heroBerita['nama_kategori'] ?? 'Umum') ?></span>
-          <span class="mono text-xs" style="color:var(--muted)"><?= date('d/m/Y', strtotime($heroBerita['tanggal_publikasi'])) ?></span>
+      <a href="berita_detail.php?id=<?= (int)$heroBerita['id_berita'] ?>" class="ed-card block p-7 rounded-xl">
+        <div class="flex justify-between items-center mb-4 border-b border-stone-200 pb-3">
+          <span class="ed-tag ed-tag-or"><?= e($heroBerita['nama_kategori'] ?? 'Umum') ?></span>
+          <span class="text-xs text-stone-500 font-medium"><?= date('d M Y', strtotime($heroBerita['tanggal_publikasi'])) ?></span>
         </div>
-        <h2 class="ttl text-2xl font-bold leading-tight clamp3 mb-2"><?= e($heroBerita['judul_berita']) ?></h2>
-        <p class="text-sm mt-3 clamp3" style="color:var(--muted)"><?= e(strip_tags($heroBerita['isi_berita'])) ?></p>
-        <div class="mono text-xs mt-5 flex justify-between items-center pt-3 border-t-2 border-dashed border-slate-900">
-          <span><?= e($heroBerita['nama_kategori'] ?? 'Umum') ?></span>
-          <b style="color:var(--or)">Baca Selengkapnya <span class="go inline-block">&rarr;</span></b>
+        <h2 class="ttl-card text-2xl font-bold leading-snug clamp3 mb-3 transition-colors"><?= e($heroBerita['judul_berita']) ?></h2>
+        <p class="text-xs text-stone-600 leading-relaxed clamp3 mb-6"><?= e(strip_tags($heroBerita['isi_berita'])) ?></p>
+        <div class="text-xs flex justify-between items-center pt-3 border-t border-stone-200">
+          <span class="text-stone-500 font-medium">Berita Terbaru</span>
+          <b style="color:var(--or)">Baca Selengkapnya &rarr;</b>
         </div>
       </a>
     <?php else: ?>
-      <div class="box hero-card p-6 text-center" style="color:var(--muted)">Belum ada berita yang diterbitkan.</div>
+      <div class="ed-card p-6 text-center text-xs text-stone-500 rounded-xl">Belum ada berita yang diterbitkan.</div>
     <?php endif; ?>
   </div>
 </section>
 
-<!-- ===== TICKER ===== -->
+<!-- ===== RUNNING TICKER ===== -->
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track">
     <?php for ($r = 0; $r < 4; $r++) foreach ($ticker as $t): ?><span><?= e($t) ?></span><?php endforeach; ?>
   </div>
 </div>
 
-<main class="max-w-6xl mx-auto px-4 py-16 space-y-24">
+<main class="max-w-6xl mx-auto px-4 py-16 space-y-20">
 
   <!-- ===== BERITA ===== -->
   <section id="berita" class="scroll-mt-6">
-    <div class="flex justify-between items-end mb-8 flex-wrap gap-4">
+    <div class="flex justify-between items-end mb-8 flex-wrap gap-4 border-b border-stone-300 pb-4">
       <div>
-        <h2 class="sec-h">Kabar Kilat <span><?= e($singkatan) ?>.</span></h2>
+        <h2 class="sec-title">Kabar Kilat <span><?= e($singkatan) ?></span></h2>
       </div>
       <?php if (count($kategoriBerita) > 1): ?>
         <div class="flex flex-wrap gap-2" role="group" aria-label="Filter kategori berita" data-group="berita">
@@ -182,21 +228,21 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
     </div>
 
     <?php if (empty($daftarBerita)): ?>
-      <div class="box p-10 text-center" style="color:var(--muted)">Belum ada publikasi berita lainnya.</div>
+      <div class="ed-card p-10 text-center text-xs text-stone-500 rounded-xl">Belum ada publikasi berita lainnya.</div>
     <?php else: ?>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-7">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <?php foreach ($daftarBerita as $berita): ?>
           <a href="berita_detail.php?id=<?= (int)$berita['id_berita'] ?>"
-            class="box hov p-5 flex flex-col gap-3 item" data-group="berita" data-val="<?= e($berita['nama_kategori'] ?? 'Umum') ?>">
-            <div class="flex justify-between items-start">
-              <span class="num">00</span>
-              <span class="tag"><?= e($berita['nama_kategori'] ?? 'Umum') ?></span>
+            class="ed-card p-6 flex flex-col gap-4 item rounded-xl" data-group="berita" data-val="<?= e($berita['nama_kategori'] ?? 'Umum') ?>">
+            <div class="flex justify-between items-center border-b border-stone-200 pb-2">
+              <span class="text-xs font-semibold text-stone-400">BERITA</span>
+              <span class="ed-tag"><?= e($berita['nama_kategori'] ?? 'Umum') ?></span>
             </div>
-            <h3 class="ttl text-xl font-bold leading-snug clamp2 transition"><?= e($berita['judul_berita']) ?></h3>
-            <p class="text-sm clamp3" style="color:var(--muted)"><?= e(strip_tags($berita['isi_berita'])) ?></p>
-            <div class="mono text-xs flex justify-between mt-auto pt-3" style="border-top:2px dashed var(--ink)">
-              <span style="color:var(--muted)"><?= date('d/m/Y', strtotime($berita['tanggal_publikasi'])) ?></span>
-              <span class="go font-bold">&rarr;</span>
+            <h3 class="ttl-card text-lg font-bold leading-snug clamp2 transition-colors"><?= e($berita['judul_berita']) ?></h3>
+            <p class="text-xs text-stone-600 leading-relaxed clamp3"><?= e(strip_tags($berita['isi_berita'])) ?></p>
+            <div class="text-xs flex justify-between mt-auto pt-3 border-t border-stone-200">
+              <span class="text-stone-500 font-medium"><?= date('d/m/Y', strtotime($berita['tanggal_publikasi'])) ?></span>
+              <span class="font-bold" style="color:var(--or)">&rarr;</span>
             </div>
           </a>
         <?php endforeach; ?>
@@ -206,15 +252,15 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 
   <!-- ===== ASPIRASI ===== -->
   <section id="aspirasi" class="scroll-mt-6">
-    <div class="flex justify-between items-end mb-8 flex-wrap gap-4">
+    <div class="flex justify-between items-end mb-8 flex-wrap gap-4 border-b border-stone-300 pb-4">
       <div>
-        <h2 class="sec-h">Daftar Aspirasi <span>Mahasiswa.</span></h2>
+        <h2 class="sec-title">Daftar Aspirasi <span>Mahasiswa</span></h2>
       </div>
-      <a href="user/dashboard.php" class="btn btn-ink">+ Buat Aspirasi</a>
+      <a href="user/dashboard.php" class="btn-ed btn-ed-ink">+ Buat Laporan</a>
     </div>
 
     <?php if (empty($aspirasiList)): ?>
-      <div class="box p-10 text-center" style="color:var(--muted)">Belum ada data aspirasi yang masuk. Silakan sampaikan aspirasi pertama Anda.</div>
+      <div class="ed-card p-10 text-center text-xs text-stone-500 rounded-xl">Belum ada data aspirasi yang masuk. Silakan sampaikan aspirasi pertama Anda.</div>
     <?php else: ?>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <?php foreach ($aspirasiList as $aspirasi):
@@ -222,27 +268,25 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
             $isi    = strip_tags($aspirasi['isi_aspirasi']);
             $idAsp  = (int)($aspirasi['id_aspirasi'] ?? 0);
         ?>
-          <article class="box hov p-5 pt-6 flex flex-col gap-4 item" data-group="asp" data-val="<?= e($status) ?>">
-            <span class="tape" aria-hidden="true"></span>
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="tag"><?= e($aspirasi['nama_kategori'] ?? 'Umum') ?></span>
-              <span class="mono text-xs font-bold"><?= $aspirasi['is_anonim'] ? '👤 Anonim' : '🎓 ' . e($aspirasi['nama_lengkap'] ?? 'Mahasiswa') ?></span>
-              <span class="mono text-xs ml-auto" style="color:var(--muted)"><?= date('d/m/Y', strtotime($aspirasi['tanggal_kirim'])) ?></span>
+          <article class="ed-card p-6 flex flex-col gap-4 item rounded-xl" data-group="asp" data-val="<?= e($status) ?>">
+            <div class="flex flex-wrap items-center gap-2 border-b border-stone-200 pb-3">
+              <span class="ed-tag"><?= e($aspirasi['nama_kategori'] ?? 'Umum') ?></span>
+              <span class="text-xs font-semibold text-stone-700"><?= $aspirasi['is_anonim'] ? '👤 Anonim' : '🎓 ' . e($aspirasi['nama_lengkap'] ?? 'Mahasiswa') ?></span>
+              <span class="text-xs ml-auto text-stone-500"><?= date('d/m/Y', strtotime($aspirasi['tanggal_kirim'])) ?></span>
             </div>
 
             <div class="flex-1">
-              <h3 class="ttl text-xl font-bold leading-snug mb-2 clamp2">
+              <h3 class="ttl-card text-lg font-bold leading-snug mb-2 clamp2">
                 <a href="aspirasi_detail.php?id=<?= $idAsp ?>"><?= e($aspirasi['judul_aspirasi']) ?></a>
               </h3>
-              <p class="text-sm clamp3 body" style="color:var(--muted)"><?= e($isi) ?></p>
+              <p class="text-xs text-stone-600 leading-relaxed clamp3 body"><?= e($isi) ?></p>
               <?php if (mb_strlen($isi) > 140): ?>
-                <button type="button" class="more mt-2" aria-expanded="false">Tampilkan Selengkapnya</button>
+                  <button type="button" class="more-btn mt-2" aria-expanded="false">Tampilkan Selengkapnya</button>
               <?php endif; ?>
             </div>
 
-            <div class="mono text-xs flex justify-between pt-3" style="border-top:2px dashed var(--ink)">
-              <span style="color:var(--muted)">ID: ASP-<?= $idAsp ?></span>
-              <a href="aspirasi_detail.php?id=<?= $idAsp ?>" class="font-bold" style="color:var(--or)">Rincian Status <span class="go inline-block">&rarr;</span></a>
+            <div class="text-xs flex justify-end pt-3 border-t border-stone-200">
+                <a href="aspirasi_detail.php?id=<?= $idAsp ?>" class="font-bold" style="color:var(--or)">Lihat Detail &rarr;</a>
             </div>
           </article>
         <?php endforeach; ?>
@@ -250,13 +294,13 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
     <?php endif; ?>
   </section>
 
-  <!-- ===== CTA ===== -->
-  <section class="box p-8 md:p-12" style="background:var(--or)">
-    <h2 class="text-3xl md:text-5xl font-bold leading-none max-w-2xl text-white">Ingin Menyampaikan Aspirasi atau Pengaduan Kampus?</h2>
-    <p class="mt-4 max-w-lg text-amber-100">Sampaikan masukan Anda secara rinci. Laporan dapat disampaikan dengan nama terang maupun secara anonim, dan status tindak lanjutnya dapat dipantau berkala.</p>
-    <div class="mt-7 flex flex-wrap gap-4">
-      <a href="user/dashboard.php" class="btn btn-ink">Sampaikan Aspirasi Sekarang &rarr;</a>
-      <a href="#berita" class="btn btn-light">Baca Berita Kampus</a>
+  <!-- ===== CTA BANNER ===== -->
+  <section class="ed-card p-8 md:p-12 rounded-xl" style="background:var(--or); border-color:var(--or);">
+    <h2 class="text-2xl md:text-4xl font-extrabold leading-tight max-w-2xl text-white">Ingin Menyampaikan Aspirasi atau Pengaduan Kampus?</h2>
+    <p class="mt-3 max-w-lg text-amber-100 text-sm leading-relaxed">Sampaikan masukan Anda secara rinci. Laporan dapat disampaikan dengan nama terang maupun secara anonim, dan status tindak lanjutnya dapat dipantau berkala.</p>
+    <div class="mt-8 flex flex-wrap gap-4">
+      <a href="user/dashboard.php" class="btn-ed btn-ed-ink">Sampaikan Aspirasi Sekarang &rarr;</a>
+      <a href="#berita" class="btn-ed btn-ed-light">Pelajari Berita Kampus</a>
     </div>
   </section>
 
@@ -265,19 +309,7 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
 
 <script>
 (function () {
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Nomor berita (01, 02, ...)
-  function renumber() {
-    let n = 0;
-    document.querySelectorAll('.item[data-group="berita"]').forEach(function (it) {
-      if (it.classList.contains('hide')) return;
-      it.querySelector('.num').textContent = String(++n).padStart(2, '0');
-    });
-  }
-  renumber();
-
-  // Filter generik
+  // Filter generik kategori
   document.querySelectorAll('[data-group][role="group"]').forEach(function (bar) {
     const group = bar.dataset.group;
     const chips = bar.querySelectorAll('.chip');
@@ -291,15 +323,12 @@ $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terinte
           it.classList.toggle('hide', !ok);
           if (ok) shown++;
         });
-        const empty = document.getElementById('empty-' + group);
-        if (empty) empty.classList.toggle('hide', shown > 0);
-        if (group === 'berita') renumber();
       });
     });
   });
 
-  // Buka/tutup isi aspirasi
-  document.querySelectorAll('.more').forEach(function (btn) {
+  // Buka/tutup ringkasan isi aspirasi
+  document.querySelectorAll('.more-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       const body = btn.parentElement.querySelector('.body');
       const open = !body.classList.toggle('clamp3');

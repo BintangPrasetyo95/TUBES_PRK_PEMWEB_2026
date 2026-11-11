@@ -9,10 +9,8 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once __DIR__ . '/../config/database.php';
 
-// Mengambil kata kunci pencarian
 $keyword = trim($_GET['cari'] ?? '');
 
-// Query pencarian menggunakan prepared statement
 $sql = "
     SELECT products.*, categories.name AS nama_kategori
     FROM products
@@ -33,27 +31,20 @@ $stmt->execute();
 
 $query = $stmt->get_result();
 
-// Judul halaman
 $pageTitle = 'Data Produk';
 
-// Memanggil komponen utama
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/helper.php';
 ?>
 
-<!-- Navbar -->
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-<!-- Layout utama -->
 <div class="app-layout d-flex flex-grow-1">
 
-    <!-- Sidebar -->
     <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
-    <!-- Konten utama -->
     <main class="main-content flex-grow-1 p-4">
 
-        <!-- Judul halaman -->
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
             <div>
                 <h3 class="fw-bold mb-1">Data Produk</h3>
@@ -63,7 +54,6 @@ require_once __DIR__ . '/../includes/helper.php';
             </div>
         </div>
 
-        <!-- Notifikasi -->
         <?php if (isset($_GET['status'])): ?>
 
             <?php
@@ -88,12 +78,10 @@ require_once __DIR__ . '/../includes/helper.php';
 
         <?php endif; ?>
 
-        <!-- Card Data Produk -->
         <div class="card border-0 shadow-sm">
 
             <div class="card-body p-4">
 
-                <!-- Bagian atas tabel -->
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
                     <div>
@@ -118,7 +106,6 @@ require_once __DIR__ . '/../includes/helper.php';
                     </div>
                 </div>
 
-                <!-- Form pencarian -->
                 <form method="GET" class="mb-4">
 
                     <div class="input-group" style="max-width: 420px;">
@@ -144,7 +131,6 @@ require_once __DIR__ . '/../includes/helper.php';
 
                 </form>
 
-                <!-- Tabel produk -->
                 <div class="table-responsive">
 
                     <table class="table table-hover table-bordered align-middle">
@@ -287,7 +273,6 @@ require_once __DIR__ . '/../includes/helper.php';
 
 </div>
 
-<!-- Footer -->
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 
 <?php

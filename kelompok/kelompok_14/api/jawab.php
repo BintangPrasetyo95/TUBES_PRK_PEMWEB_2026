@@ -97,9 +97,11 @@ if (!$dataOpsi) {
 }
 
 // Ambil info kunci jawaban yang benar untuk umpan balik
-$stmtKunci = $pdo->prepare("SELECT id FROM opsi_jawaban WHERE soal_id = ? AND benar = 1 LIMIT 1");
+$stmtKunci = $pdo->prepare("SELECT id, label FROM opsi_jawaban WHERE soal_id = ? AND benar = 1 LIMIT 1");
 $stmtKunci->execute([$soalId]);
-$opsiKunciId = (int) $stmtKunci->fetchColumn();
+$dataKunci = $stmtKunci->fetch(PDO::FETCH_ASSOC);
+$opsiKunciId = $dataKunci ? (int) $dataKunci['id'] : 0;
+$opsiKunciLabel = $dataKunci ? (string) $dataKunci['label'] : '';
 
 // Hitung total seluruh soal pada kuis ini
 $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM soal WHERE kuis_id = ?");
@@ -171,6 +173,7 @@ if ($peran === 'pelajar') {
         'ok' => true,
         'benar' => $isBenar,
         'opsi_benar_id' => $opsiKunciId,
+        'kunci_label' => $opsiKunciLabel,
         'pembahasan' => $pembahasan,
         'terjawab' => $jumlahTerjawab,
         'total' => $totalSoalKuis,
@@ -230,6 +233,7 @@ if ($peran === 'guest') {
         'ok' => true,
         'benar' => $isBenar,
         'opsi_benar_id' => $opsiKunciId,
+        'kunci_label' => $opsiKunciLabel,
         'pembahasan' => $pembahasan,
         'terjawab' => $jumlahTerjawab,
         'total' => $totalSoalKuis,

@@ -364,3 +364,72 @@
   margin-top: 24px;
   flex-wrap: wrap;
 }
+
+.modal-aksi .btn {
+  min-height: 44px; /* Target sentuh minimal 44px (AC-24, ACC-06) */
+  min-width: 44px;
+}
+
+/* --- 8. Penguatan Responsif 360px & Target Sentuh Minimal 44px (AC-24) --- */
+.kerjakan-wrapper {
+  overflow-x: clip;
+}
+
+.soal-pertanyaan,
+.umpan-balik-pembahasan,
+.opsi-teks {
+  overflow-wrap: anywhere;
+}
+
+.focus-bar .focus-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.focus-bar .focus-judul {
+  display: block;
+  overflow-wrap: break-word;
+}
+
+#tombolKeluarFokus {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .focus-bar {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .soal-card {
+    padding: 20px 16px;
+  }
+
+  .opsi-item {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .nav-kerjakan {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .nav-kerjakan > div {
+    display: flex;
+    width: 100%;
+  }
+
+  .nav-kerjakan .btn {
+    flex: 1 1 auto;
+    min-height: 44px;
+  }
+
+  .modal-aksi .btn {
+    flex: 1 1 120px;
+  }
+}

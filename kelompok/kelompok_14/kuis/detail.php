@@ -175,7 +175,7 @@ $riwayatSebelumnya = [];
 
 if (!$isGuest && $pelajarId !== null) {
     // Skor terbaik
-    $stmtSkor = $pdo->prepare("SELECT MAX(skor) AS skor_tertinggi, skor_maksimal, COUNT(*) AS total_tes
+    $stmtSkor = $pdo->prepare("SELECT MAX(skor) AS skor_tertinggi, MAX(skor_maksimal) AS skor_maksimal, COUNT(*) AS total_tes
                                FROM percobaan_kuis 
                                WHERE kuis_id = ? AND pelajar_id = ? AND status IN ('selesai', 'waktu_habis')
                                GROUP BY kuis_id");

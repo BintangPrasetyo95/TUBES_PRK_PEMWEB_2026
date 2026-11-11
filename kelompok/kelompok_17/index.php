@@ -28,13 +28,14 @@ $stmt = $pdo->prepare("SELECT a.*, k.nama_kategori, u.nama_lengkap
         FROM aspirasi a
         LEFT JOIN kategori k ON a.id_kategori = k.id_kategori
         LEFT JOIN users u ON a.id_user = u.id_user
+        WHERE a.status = 'publikasi'
         ORDER BY a.tanggal_kirim DESC
         LIMIT 6");
 $stmt->execute();
 $aspirasiList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 function e($v) { return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8'); }
-$steps  = ['menunggu' => 'Terkirim', 'ditinjau' => 'Ditinjau', 'selesai' => 'Selesai'];
+$steps  = ['menunggu' => 'Terkirim', 'ditolak' => 'Ditolak', 'publikasi' => 'Publikasi'];
 $ticker = ['Transparansi Informasi', 'Suara Aspirasi Mahasiswa', 'Respon Terintegrasi', 'Layanan Publikasi Resmi', 'FISIP Universitas Lampung'];
 ?>
 

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/auth_admin.php';
 require_once __DIR__ . '/../config/database.php'; // harus menyediakan $pdo (PDO)
 
+$status = ['menunggu' => 0, 'ditolak' => 0, 'publikasi' => 0];
 $totalBerita = (int) $pdo->query('SELECT COUNT(*) FROM berita')->fetchColumn();
 $totalUser   = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'mahasiswa'")->fetchColumn();
 
@@ -25,7 +26,7 @@ $kartu = [
     ['Total Berita', $totalBerita, 'bg-teal-600'],
     ['Total Aspirasi', $totalAspirasi, 'bg-indigo-600'],
     ['Menunggu', $status['menunggu'], 'bg-amber-500'],
-    ['Ditolak', $status['ditolak'], 'bg-sky-600'],
+    ['Ditolak', $status['ditolak'], 'bg-rose-600'],
     ['Publikasi', $status['publikasi'], 'bg-emerald-600'],
     ['Mahasiswa', $totalUser, 'bg-slate-600'],
 ];

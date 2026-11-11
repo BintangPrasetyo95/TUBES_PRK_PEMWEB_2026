@@ -128,7 +128,7 @@ function handlePut(PDO $pdo, ?int $id): void {
     // Status can only use values supported by the aspirasi schema.
     if (isset($input['status'])) {
         $status = is_string($input['status']) ? trim($input['status']) : '';
-        $statusValid = ['menunggu', 'ditolak', 'publikasi', 'ditinjau', 'selesai'];
+        $statusValid = ['menunggu', 'ditolak', 'publikasi',];
         if (!in_array($status, $statusValid, true)) {
             http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Status aspirasi tidak valid.']);

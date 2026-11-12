@@ -2,6 +2,8 @@
 (function () {
     const $ = id => document.getElementById(id);
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const idGuruAktif = document.body.dataset.guru || '0';
+    const STORAGE_KEY = 'arunika_pn_konteks_' + idGuruAktif;
     const URL_API = 'api/penilaian.php';
     const JENIS = ['Tugas', 'Kuis', 'UTS', 'UAS'];
 
@@ -9,6 +11,25 @@
     let daftar = [];
     let editingId = null;
     let idNilaiAktif = null;
+
+    function simpanSesiLokal(id_kelas, id_mapel, id_periode) {
+        try {
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+                id_kelas: String(id_kelas || ''),
+                id_mapel: String(id_mapel || ''),
+                id_periode: String(id_periode || '')
+            }));
+        } catch { /* abaikan bila storage diblokir */ }
+    }
+
+    function bacaSesiLokal() {
+        try {
+            const raw = sessionStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    }
 
     async function req(url, method = 'GET', data = null) {
         const options = { method, headers: { 'X-CSRF-Token': csrfToken } };
@@ -81,7 +102,7 @@
     /* ---------- Konteks (Kelas, Mapel, Periode) ---------- */
     async function loadKonteks() {
         const result = await req(URL_API + '?aksi=konteks');
-        const { kelas = [], mapel = [], periode = [] } = result.data || {};
+        const { kelas = [], mapel = [], periode = [], pilihan = null } = result.data || {};
         const collator = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
 
         // Urutkan Kelas (X -> XI -> XII lalu nama kelas secara natural)
@@ -98,9 +119,13 @@
         const selMapel = $('pn-mapel');
         const selPeriode = $('pn-periode');
 
-        const prevKelas = selKelas.value;
-        const prevMapel = selMapel.value;
-        const prevPeriode = selPeriode.value;
+        const root = $('pn-root');
+        const lokal = bacaSesiLokal();
+
+        // Prioritas pemulihan pilihan: nilai dropdown saat ini -> sessionStorage -> $_SESSION PHP
+        const prevKelas = selKelas.value || lokal?.id_kelas || (pilihan?.id_kelas ? String(pilihan.id_kelas) : '') || root?.dataset.kelas || '';
+        const prevMapel = selMapel.value || lokal?.id_mapel || (pilihan?.id_mapel ? String(pilihan.id_mapel) : '') || root?.dataset.mapel || '';
+        const prevPeriode = selPeriode.value || lokal?.id_periode || (pilihan?.id_periode ? String(pilihan.id_periode) : '') || root?.dataset.periode || '';
 
         selKelas.replaceChildren(new Option(kelas.length ? 'Pilih kelas' : 'Belum ada kelas', ''));
         kelas.forEach(k => selKelas.add(new Option(k.nama_kelas, k.id_kelas)));
@@ -116,15 +141,20 @@
             selPeriode.add(new Option(p.tahun_ajaran + ' · ' + p.semester + (aktif ? ' (aktif)' : ''), p.id_periode));
         });
 
-        selKelas.value = prevKelas;
-        selMapel.value = prevMapel;
-        selPeriode.value = prevPeriode || defaultPeriode || (periode[0] ? String(periode[0].id_periode) : '');
+        // Set kembali hanya jika opsi masih ada di dalam daftar
+        if ([...selKelas.options].some(o => o.value === String(prevKelas))) selKelas.value = String(prevKelas);
+        if ([...selMapel.options].some(o => o.value === String(prevMapel))) selMapel.value = String(prevMapel);
+
+        const targetPeriode = prevPeriode || defaultPeriode || (periode[0] ? String(periode[0].id_periode) : '');
+        if ([...selPeriode.options].some(o => o.value === String(targetPeriode))) selPeriode.value = String(targetPeriode);
     }
 
     async function pilihKonteks() {
         const id_kelas = $('pn-kelas').value;
         const id_mapel = $('pn-mapel').value;
         const id_periode = $('pn-periode').value;
+
+        simpanSesiLokal(id_kelas, id_mapel, id_periode);
 
         if (!id_kelas || !id_mapel || !id_periode) {
             idPenugasan = '';
@@ -321,6 +351,11 @@
             $('pn-form').onsubmit = submitForm;
             $('pn-nilai-form').onsubmit = submitNilai;
             $('pn-nilai-tutup').onclick = tutupNilai;
+
+            // Jika sesi konteks sebelumnya sudah lengkap, langsung muat daftar penilaiannya
+            if ($('pn-kelas').value && $('pn-mapel').value && $('pn-periode').value) {
+                await pilihKonteks();
+            }
         } catch (error) { info(error.message, true); }
     }
     init();

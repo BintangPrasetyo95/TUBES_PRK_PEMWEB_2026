@@ -22,80 +22,100 @@ try {
 }
 ?>
 
+<!-- Breadcrumb Navigasi -->
 <nav aria-label="breadcrumb">
-    <ol class="jejak">
-        <li><a href="admin.php">Dashboard</a></li>
-        <li aria-current="page">Kelola Dokter</li>
+    <ol class="breadcrumb mb-2 small">
+         <li class="breadcrumb-item"><a href="admin.php" class="text-decoration-underline fw-medium" style="color: #0f766e;">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Kelola Dokter</li>
     </ol>
 </nav>
 
-<div class="baris-judul">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="judul">Kelola Dokter</h2>
-        <p class="muted small">Kelola daftar dokter praktik, spesialisasi, kuota harian, dan hari praktik.</p>
+        <h2 class="text-primary fw-bold mb-1">Kelola Dokter</h2>
+        <p class="text-muted small mb-0">Kelola daftar dokter praktik, spesialisasi, kuota harian, dan hari praktik.</p>
     </div>
-    <a href="dokter_form.php" class="tombol tombol-utama">+ Tambah Dokter</a>
+    <a href="dokter_form.php" class="btn btn-primary px-3 shadow-sm">
+        + Tambah Dokter
+    </a>
 </div>
 
+<!-- Alert Notifikasi Sesuai Tema -->
 <?php if ($success): ?>
-    <div class="peringatan peringatan-sukses" role="alert">
-        <span><?= htmlspecialchars($success) ?></span>
-        <button type="button" class="tutup" data-tutup aria-label="Tutup">&times;</button>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= htmlspecialchars($success) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
 
 <?php if ($error): ?>
-    <div class="peringatan peringatan-bahaya" role="alert">
-        <span><?= htmlspecialchars($error) ?></span>
-        <button type="button" class="tutup" data-tutup aria-label="Tutup">&times;</button>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?= htmlspecialchars($error) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
 
-<div class="kartu">
-    <div class="kartu-isi">
+<!-- Container Card Tabel -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
         <?php if (empty($dokterList)): ?>
-            <p class="muted tengah">Belum ada data dokter.</p>
+            <p class="text-muted p-4 text-center mb-0">Belum ada data dokter.</p>
         <?php else: ?>
-        <div class="baris-filter">
-            <input type="text" id="cari-admin" class="masukan masukan-kecil" placeholder="Cari nama dokter atau spesialis...">
-            <select id="filter-status-admin" class="masukan masukan-kecil">
-                <option value="">Semua Hari Praktik</option>
-                <option value="senin">Senin</option>
-                <option value="selasa">Selasa</option>
-                <option value="rabu">Rabu</option>
-                <option value="kamis">Kamis</option>
-                <option value="jumat">Jumat</option>
-                <option value="sabtu">Sabtu</option>
-                <option value="minggu">Minggu</option>
+        <!-- Kotak Pencarian & Filter Dokter -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <input type="text" id="cari-admin" class="form-control form-control-sm" style="max-width: 280px;" placeholder="Cari nama dokter atau spesialis...">
+            <select id="filter-status-admin" class="form-select form-select-sm" style="max-width: 180px;">
+                 <option value="">Semua Hari Praktik</option>
+                 <option value="senin">Senin</option>
+                 <option value="selasa">Selasa</option>
+                 <option value="rabu">Rabu</option>
+                 <option value="kamis">Kamis</option>
+                 <option value="jumat">Jumat</option>
+                 <option value="sabtu">Sabtu</option>
+                 <option value="minggu">Minggu</option>
             </select>
-        </div>
-        <div class="bungkus-tabel">
-            <table class="tabel">
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Spesialis</th>
-                        <th>Kuota/Hari</th>
-                        <th>Hari Praktik</th>
-                        <th class="tengah">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($dokterList as $dokter): ?>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 w-100">
+                    <thead class="table-dark">
                         <tr>
-                            <td class="tebal"><?= htmlspecialchars($dokter['nama']) ?></td>
-                            <td><span class="lencana lencana-info"><?= htmlspecialchars($dokter['spesialis']) ?></span></td>
-                            <td><span class="sedang"><?= htmlspecialchars($dokter['kuota_per_hari']) ?></span> Pasien</td>
-                            <td><span class="lencana lencana-netral"><?= htmlspecialchars(str_replace(',', ', ', $dokter['hari_praktik'])) ?></span></td>
-                            <td class="tengah">
-                                <a href="dokter_form.php?id=<?= $dokter['id'] ?>" class="tombol tombol-garis tombol-kecil-btn">Edit</a>
-                                <a href="dokter_hapus.php?id=<?= $dokter['id'] ?>" class="tombol tombol-garis-merah tombol-kecil-btn" onclick="return confirm('Yakin ingin menghapus dokter ini?')">Hapus</a>
-                            </td>
+                            <th class="ps-4">Nama</th>
+                            <th>Spesialis</th>
+                            <th>Kuota/Hari</th>
+                            <th>Hari Praktik</th>
+                            <th class="text-center" style="width: 160px;">Aksi</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($dokterList as $dokter): ?>
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark"><?= htmlspecialchars($dokter['nama']) ?></td>
+                                <td>
+                                    <span class="badge bg-info text-dark">
+                                        <?= htmlspecialchars($dokter['spesialis']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold"><?= htmlspecialchars($dokter['kuota_per_hari']) ?></span> Pasien
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        <?= htmlspecialchars(str_replace(',', ', ', $dokter['hari_praktik'])) ?>
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="dokter_form.php?id=<?= $dokter['id'] ?>" 
+                                       class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                    <a href="dokter_hapus.php?id=<?= $dokter['id'] ?>" 
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Yakin ingin menghapus dokter ini?')">Hapus</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif; ?>
     </div>
 </div>

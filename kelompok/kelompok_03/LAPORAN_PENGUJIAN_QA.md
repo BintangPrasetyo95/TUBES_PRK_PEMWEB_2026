@@ -1,10 +1,10 @@
-# 📋 LAPORAN PENGUJIAN & QUALITY ASSURANCE (QA)
-## Praktikum Pemrograman Web 2026 — Kelompok 03 (Fakultas Kedokteran)
+# LAPORAN PENGUJIAN & QUALITY ASSURANCE (QA)
+## Praktikum Pemrograman Web 2026 - Kelompok 03 (Fakultas Kedokteran)
 ### Sistem Antrian Pasien Klinik
 
 ---
 
-## 📌 1. Identitas & Informasi Proyek
+## 1. Identitas & Informasi Proyek
 - **Kelompok:** Kelompok 03
 - **Tema Fakultas:** Fakultas Kedokteran
 - **Judul Sistem:** Sistem Antrian Klinik Berbasis Web
@@ -13,7 +13,7 @@
 
 ---
 
-## 🎯 2. Ruang Lingkup Pengujian (Scope of Testing)
+## 2. Ruang Lingkup Pengujian (Scope of Testing)
 Pengujian dilakukan secara menyeluruh (End-to-End) mencakup aspek fungsionalitas, validasi input, konkurensi data, dan keamanan:
 1. **Modul Autentikasi & Hak Akses:** Registrasi akun pasien baru, validasi formulir, hashing password bcrypt, login berbasis peran (Admin & Pasien), regenerasi sesi, dan pencegahan akses tanpa izin (*unauthorized access*).
 2. **Modul Tampilan Jadwal Dokter Hari Ini (`index.php`):** Pengambilan data dinamis dari database, penyesuaian jadwal praktik dengan hari berjalan (WIB), kalkulasi sisa kuota, serta filter spesialis/poli berbasis JavaScript.
@@ -23,11 +23,11 @@ Pengujian dilakukan secara menyeluruh (End-to-End) mencakup aspek fungsionalitas
 
 ---
 
-## 🧪 3. Matriks Hasil Pengujian (Test Matrix)
+## 3. Matriks Hasil Pengujian (Test Matrix)
 
 | ID Uji | Fitur / Skenario | Langkah Pengujian | Data Uji | Hasil yang Diharapkan | Hasil Aktual | Status |
 | :---: | :--- | :--- | :--- | :--- | :--- | :---: |
-| **TC-01** | **Registrasi Pasien Baru** | Buka `auth/register.php`, masukkan nama, email, password $\ge$ 6 karakter, konfirmasi password sama. | Nama: `Pasien Baru`, Email: `baru@klinik.local`, Pass: `Rahasia#2026` | Akun tersimpan dengan password hash di tabel `users` (role: `pasien`), muncul notifikasi sukses registrasi. | Akun tersimpan, password ter-hash bcrypt, redirect ke login sukses. | **PASS** |
+| **TC-01** | **Registrasi Pasien Baru** | Buka `auth/register.php`, masukkan nama, email, password >= 6 karakter, konfirmasi password sama. | Nama: `Pasien Baru`, Email: `baru@klinik.local`, Pass: `Rahasia#2026` | Akun tersimpan dengan password hash di tabel `users` (role: `pasien`), muncul notifikasi sukses registrasi. | Akun tersimpan, password ter-hash bcrypt, redirect ke login sukses. | **PASS** |
 | **TC-02** | **Validasi Format Registrasi** | Masukkan email tidak valid atau password kurang dari 6 karakter. | Email: `bukan-email`, Pass: `123` | Sistem menolak proses registrasi dan memunculkan pesan error validasi di layar. | Muncul error format email tidak valid dan password minimal 6 karakter. | **PASS** |
 | **TC-03** | **Login Pasien Valid** | Buka `auth/login.php`, input email dan password yang benar. | `andi.pasien@klinik.local` / `Pasien01#2026` | Login sukses, regenerasi ID sesi (`session_regenerate_id`), diarahkan otomatis ke `pasien/pasien.php`. | Berhasil masuk ke portal pasien, sesi tercatat dengan role `pasien`. | **PASS** |
 | **TC-04** | **Login Password Salah** | Input email terdaftar dengan password salah. | `andi.pasien@klinik.local` / `SalahPass123` | Login ditolak dengan notifikasi *"Email atau password salah"*, sesi tidak dibuat. | Muncul pesan error, sesi tidak terbuat. | **PASS** |
@@ -42,7 +42,7 @@ Pengujian dilakukan secara menyeluruh (End-to-End) mencakup aspek fungsionalitas
 
 ---
 
-## 🔒 4. Kepatuhan Aturan Implementasi & Keamanan (Rule Compliance)
+## 4. Kepatuhan Aturan Implementasi & Keamanan (Rule Compliance)
 
 Berdasarkan ketentuan Bab 7 pada aturan tugas besar, berikut evaluasi pemenuhan sistem:
 
@@ -60,7 +60,7 @@ Berdasarkan ketentuan Bab 7 pada aturan tugas besar, berikut evaluasi pemenuhan 
 
 ---
 
-## 📊 5. Kesimpulan Hasil QA
+## 5. Kesimpulan Hasil QA
 Seluruh fitur yang ditugaskan pada bagian **Frontend Pasien & Quality Assurance**:
 1. Halaman Login & Register
 2. Halaman Depan Jadwal Dokter Hari Ini & Filter Poli (`index.php`)

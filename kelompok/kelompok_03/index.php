@@ -69,7 +69,7 @@ foreach ($semuaDokter as $doc) {
     // Menentukan status praktik dan label warna badge
     if (!$apakahPraktikHariIni) {
         $statusKode  = 'belum';
-        $statusLabel = 'Tidak Praktik Hari Ini';
+        $statusLabel = 'Tidak Praktik';
     } elseif ($sisaKuota <= 0) {
         $statusKode  = 'penuh';
         $statusLabel = 'Kuota Penuh';
@@ -119,7 +119,7 @@ foreach ($semuaDokter as $doc) {
 
 <!-- Navigasi Atas (Topbar) -->
 <header class="topbar">
-    <a href="index.php" class="brand">Klinik FK Unila</a>
+    <a href="index.php" class="brand fw-bold">Klinik FK Unila</a>
     <nav aria-label="Menu utama">
         <?php if ($sudahLogin): ?>
             <?php if ($userRole === 'admin'): ?>
@@ -171,7 +171,7 @@ foreach ($semuaDokter as $doc) {
                 <th scope="col">Nama Dokter</th>
                 <th scope="col">Spesialis / Poli</th>
                 <th scope="col">Jadwal Praktik</th>
-                <th scope="col">Sisa Kuota Hari Ini</th>
+                <th scope="col">Sisa Kuota</th>
                 <th scope="col">Status</th>
                 <th scope="col"><span class="sr-only">Aksi</span></th>
             </tr>
@@ -191,7 +191,7 @@ foreach ($semuaDokter as $doc) {
 
                 <!-- Kolom Jadwal Hari Praktik -->
                 <td data-label="Jadwal Praktik">
-                    <?= htmlspecialchars($d['hari_praktik'], ENT_QUOTES, 'UTF-8') ?>
+                    <?= htmlspecialchars(str_replace(',', ', ', $d['hari_praktik']), ENT_QUOTES, 'UTF-8') ?>
                 </td>
 
                 <!-- Kolom Sisa Kuota -->

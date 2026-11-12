@@ -23,25 +23,6 @@ try {
     guruReportBackendError($exception);
 }
 
-$archiveRows = [];
-foreach ($sessions as $session) {
-    if ($session['waktu_mulai'] !== null && $session['waktu_selesai'] !== null) {
-        $time = date('H:i', strtotime($session['waktu_mulai'])) . '–' . date('H:i', strtotime($session['waktu_selesai']));
-    } elseif ($session['scheduled_start'] !== null && $session['scheduled_end'] !== null) {
-        $time = substr((string) $session['scheduled_start'], 0, 5) . '–' . substr((string) $session['scheduled_end'], 0, 5);
-    } else {
-        $time = '—';
-    }
-    $archiveRows[] = [
-        date('d M Y', strtotime($session['tanggal'])),
-        $session['class_name'],
-        $session['semester'],
-        $time,
-        (string) $session['student_count'] . ' siswa',
-        ucfirst((string) $session['status']),
-    ];
-}
-
 guru_page_start('Arsip Pembelajaran', 'arsip-pembelajaran.php');
 ?>
 <section class="space-y-4">
@@ -52,9 +33,22 @@ guru_page_start('Arsip Pembelajaran', 'arsip-pembelajaran.php');
         <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Terapkan Filter</button>
         <a href="arsip-pembelajaran.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Reset</a>
     </form>
-    <?php guru_render_table(['Tanggal', 'Kelas', 'Semester', 'Waktu', 'Jumlah Siswa', 'Status'], $archiveRows, 'Belum ada sesi pembelajaran.'); ?>
-    <?php foreach ($sessions as $session): ?>
-        <a href="arsip-detail.php?id=<?= (int) $session['id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Lihat Detail Sesi #<?= (int) $session['id'] ?></a>
-    <?php endforeach; ?>
+    <div class="overflow-x-auto rounded-2xl border border-[#dfe6de] bg-white shadow-[0_2px_8px_rgba(48,56,50,0.05)]">
+        <table class="min-w-full divide-y divide-[#e6ebe5] text-left text-sm">
+            <thead class="bg-[#eff3ee] text-xs uppercase tracking-wide text-slate-500"><tr><th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Tanggal</th><th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kelas</th><th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Semester</th><th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Waktu</th><th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Jumlah Siswa</th><th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Status</th><th scope="col" class="whitespace-nowrap px-4 py-3.5 text-right font-semibold sm:px-5">Aksi</th></tr></thead>
+            <tbody class="divide-y divide-[#e6ebe5] text-slate-700">
+                <?php if ($sessions === []): ?><tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">Belum ada sesi pembelajaran.</td></tr>
+                <?php else: foreach ($sessions as $session):
+                    if ($session['waktu_mulai'] !== null && $session['waktu_selesai'] !== null) {
+                        $time = date('H:i', strtotime($session['waktu_mulai'])) . '–' . date('H:i', strtotime($session['waktu_selesai']));
+                    } elseif ($session['scheduled_start'] !== null && $session['scheduled_end'] !== null) {
+                        $time = substr((string) $session['scheduled_start'], 0, 5) . '–' . substr((string) $session['scheduled_end'], 0, 5);
+                    } else { $time = '—'; }
+                ?>
+                    <tr class="transition-colors hover:bg-[#fafbf9]"><td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= attendara_ui_escape(date('d M Y', strtotime($session['tanggal']))) ?></td><td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= attendara_ui_escape($session['class_name']) ?></td><td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= attendara_ui_escape($session['semester']) ?></td><td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= attendara_ui_escape($time) ?></td><td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= (int) $session['student_count'] ?> siswa</td><td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= attendara_ui_escape(ucfirst((string) $session['status'])) ?></td><td class="whitespace-nowrap px-4 py-3.5 text-right sm:px-5"><a href="arsip-detail.php?id=<?= (int) $session['id'] ?>" class="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-3 text-xs font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Lihat Detail</a></td></tr>
+                <?php endforeach; endif; ?>
+            </tbody>
+        </table>
+    </div>
 </section>
 <?php guru_page_end(); ?>

@@ -97,30 +97,21 @@ $csrfJson = json_encode(csrfToken(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP
 
 guru_page_start('Tap Kehadiran', 'kelas.php');
 ?>
-<nav aria-label="Menu sesi" class="flex flex-wrap gap-2">
-    <a href="tap-sesi.php?session_id=<?= (int) $sessionId ?>" aria-current="page" class="rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Tap Kehadiran</a>
-    <a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Data Siswa &amp; Poin</a>
-    <a href="kelompok.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Kelompok</a>
-</nav>
+<?php guru_session_header($session, 'tap'); ?>
 <?php if ($pageError !== ''): ?><p class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert"><?= attendara_ui_escape($pageError) ?></p><?php elseif (($_GET['correction'] ?? '') === 'saved'): ?><p class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">Jumlah tap berhasil dikoreksi.</p><?php endif; ?>
-<section class="flex flex-col gap-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-    <div><h2 class="text-lg font-semibold text-[#303832]">Tap Anonim · <?= attendara_ui_escape($session['class_name']) ?></h2><p class="mt-1 text-sm text-slate-600">Setiap tap menambah hitungan sesi. Cooldown 2 detik berlaku untuk seluruh sesi.</p></div>
-    <div class="rounded-xl bg-[#e8f0e9] px-4 py-3 text-center"><p class="text-xs font-medium text-[#526257]">Tap tercatat pada sesi ini</p><p class="mt-1 text-2xl font-semibold text-[#173e2b]"><span id="tap-count"><?= (int) $tapCount ?></span> / <span id="roster-count"><?= (int) $rosterCount ?></span></p></div>
-</section>
-<section class="space-y-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
-    <h2 class="text-lg font-semibold text-[#303832]">Catat Tap Kehadiran</h2>
-    <button id="anonymous-tap" type="button"<?= $tapCount >= $rosterCount ? ' disabled' : '' ?> class="min-h-12 rounded-lg bg-[#4e7a5d] px-5 text-sm font-semibold text-white hover:bg-[#41684f] disabled:cursor-not-allowed disabled:bg-slate-400"><?= $tapCount >= $rosterCount ? 'Batas Tap Tercapai' : 'Tap Kehadiran' ?></button>
-    <p id="tap-feedback" class="text-sm text-slate-600" aria-live="polite"></p>
-</section>
-<section class="space-y-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
-    <div><h2 class="text-lg font-semibold text-[#303832]">Koreksi Jumlah Tap</h2><p class="mt-1 text-sm text-slate-600">Jumlah harus berada dalam rentang 0 sampai jumlah siswa pada snapshot sesi.</p></div>
-    <form method="post" action="tap-sesi.php?session_id=<?= (int) $sessionId ?>" class="flex flex-wrap items-end gap-3">
+<section class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <button id="anonymous-tap" type="button"<?= $tapCount >= $rosterCount ? ' disabled' : '' ?> aria-label="Catat satu tap kehadiran" class="flex min-h-[19rem] flex-col items-center justify-center rounded-3xl bg-[#4e7a5d] px-6 text-white shadow-sm transition hover:bg-[#41684f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#b6d2ba] disabled:cursor-not-allowed disabled:bg-slate-400 lg:min-h-[26rem]"><span class="text-3xl font-semibold sm:text-4xl"><?= $tapCount >= $rosterCount ? 'Batas Tap Tercapai' : 'TAP KEHADIRAN' ?></span><span class="mt-3 text-sm text-white/80">Tekan tombol ini atau gunakan Space</span></button>
+    <aside class="grid grid-cols-2 content-start gap-3">
+        <div class="rounded-2xl border border-[#dfe6de] bg-white p-3 text-center"><p class="text-xs font-semibold uppercase tracking-wide text-[#526257]">Tap tercatat</p><p class="mt-2 text-3xl font-bold tabular-nums text-[#173e2b]"><span id="tap-count"><?= (int) $tapCount ?></span><span class="text-base font-medium text-slate-400"> / <span id="roster-count"><?= (int) $rosterCount ?></span></span></p></div>
+        <form method="post" action="tap-sesi.php?session_id=<?= (int) $sessionId ?>" class="rounded-2xl border border-[#dfe6de] bg-white p-3">
         <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
         <input type="hidden" name="action" value="correct_count">
         <input type="hidden" name="session_id" value="<?= (int) $sessionId ?>">
-        <div><label for="tap-count-input" class="mb-1.5 block text-sm font-medium text-slate-700">Jumlah tap</label><input id="tap-count-input" name="tap_count" type="number" min="0" max="<?= (int) $rosterCount ?>" value="<?= (int) $requestedTapCount ?>" required class="min-h-10 w-32 rounded-lg border border-[#dfe6de] px-3 text-sm"></div>
-        <button type="submit" class="min-h-10 rounded-lg border border-[#dfe6de] bg-white px-4 text-sm font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Simpan Koreksi</button>
-    </form>
+        <label for="tap-count-input" class="mb-2 block text-sm font-semibold text-[#303832]">Ubah jumlah</label>
+        <div class="flex gap-2"><input id="tap-count-input" name="tap_count" type="number" min="0" max="<?= (int) $rosterCount ?>" value="<?= (int) $requestedTapCount ?>" required class="min-h-10 min-w-0 flex-1 rounded-lg border border-[#dfe6de] px-3 text-sm"><button type="submit" aria-label="Simpan koreksi hitungan tap" class="min-h-10 rounded-lg border border-[#dfe6de] bg-white px-3 text-sm font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Ubah</button></div>
+        </form>
+        <p id="tap-feedback" class="col-span-2 min-h-10 text-sm text-slate-600" aria-live="polite">Cooldown antar-tap: 2 detik.</p>
+    </aside>
 </section>
 <div class="flex flex-wrap gap-2"><a href="sesi-aktif.php?id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Kembali ke Sesi</a><a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Lanjut ke Data Siswa</a></div>
 <script>
@@ -134,7 +125,7 @@ function applyCooldown(seconds) {
     window.clearInterval(cooldownTimer);
     let remaining = Math.max(1, Math.ceil(seconds));
     tapButton.disabled = true;
-    tapButton.textContent = 'Tunggu ' + remaining + ' detik';
+    tapButton.querySelector('span').textContent = 'Tunggu ' + remaining + ' detik';
     cooldownTimer = window.setInterval(() => {
         remaining -= 1;
         if (remaining <= 0) {
@@ -143,16 +134,16 @@ function applyCooldown(seconds) {
             const count = Number(document.getElementById('tap-count').textContent);
             const roster = Number(document.getElementById('roster-count').textContent);
             tapButton.disabled = count >= roster;
-            tapButton.textContent = count >= roster ? 'Batas Tap Tercapai' : 'Tap Kehadiran';
+            tapButton.querySelector('span').textContent = count >= roster ? 'Batas Tap Tercapai' : 'TAP KEHADIRAN';
             return;
         }
-        tapButton.textContent = 'Tunggu ' + remaining + ' detik';
+        tapButton.querySelector('span').textContent = 'Tunggu ' + remaining + ' detik';
     }, 1000);
 }
 tapButton.addEventListener('click', async () => {
     if (tapButton.disabled) return;
     tapButton.disabled = true;
-    tapButton.textContent = 'Memproses tap…';
+    tapButton.querySelector('span').textContent = 'Memproses…';
     tapFeedback.textContent = '';
     const body = new FormData();
     body.set('_csrf_token', tapToken);
@@ -173,9 +164,14 @@ tapButton.addEventListener('click', async () => {
         tapFeedback.textContent = error.message;
         if (cooldownTimer === null) {
             tapButton.disabled = false;
-            tapButton.textContent = 'Tap Kehadiran';
+            tapButton.querySelector('span').textContent = 'TAP KEHADIRAN';
         }
     }
+});
+document.addEventListener('keydown', event => {
+    if (event.code !== 'Space' || event.repeat || !(event.target instanceof Element) || event.target.closest('input, textarea, select, button, a, [contenteditable="true"]')) return;
+    event.preventDefault();
+    tapButton.click();
 });
 </script>
 <?php guru_page_end(); ?>

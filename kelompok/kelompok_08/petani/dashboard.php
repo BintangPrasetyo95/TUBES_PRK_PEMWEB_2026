@@ -187,7 +187,7 @@ $nama_petani = $_SESSION['nama'] ?? 'Petani';
 
                 <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
                     <a class="btn btn-light btn-sm px-3"
-                       href="../config/logout.php"
+                       href="../auth/logout.php"
                        onclick="return confirm('Yakin ingin logout?')">
 
                         <i class="bi bi-box-arrow-right"></i>

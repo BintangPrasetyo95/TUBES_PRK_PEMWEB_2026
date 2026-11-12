@@ -9,19 +9,127 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KabarSi FISIP - Portal Berita & Aspirasi Mahasiswa</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Font Sans-Serif Default Sistem (Tailwind UI Standard) */
-        body, .nav-kb {
+        /* Reset & Base */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background-color: #F6F2E9;
+            color: #141414;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
 
+        .main-content {
+            margin-bottom: auto;
+        }
+
+        /* Container Shared */
+        .layout-container {
+            max-width: 72rem;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        @media (min-width: 640px) {
+            .layout-container { padding-left: 1.5rem; padding-right: 1.5rem; }
+        }
+        @media (min-width: 1024px) {
+            .layout-container { padding-left: 2rem; padding-right: 2rem; }
+        }
+
+        /* Navbar */
         .nav-kb {
             background-color: #141414;
             border-bottom: 1px solid #141414;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            color: #F6F2E9;
+            font-family: inherit;
         }
-        
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4rem;
+        }
+
+        .nav-brand-wrap {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+            letter-spacing: 0.025em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .nav-badge {
+            background-color: #FF5A1F;
+            color: #FFFDF8;
+            padding: 0.125rem 0.625rem;
+            font-weight: 800;
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+            transition: opacity 0.15s ease;
+        }
+        .nav-brand:hover .nav-badge {
+            opacity: 0.9;
+        }
+
+        .nav-title {
+            font-weight: 800;
+            font-size: 1.125rem;
+            color: #F6F2E9;
+            letter-spacing: -0.025em;
+        }
+        .nav-title-accent {
+            color: #FF5A1F;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        @media (min-width: 640px) {
+            .nav-links { gap: 1.5rem; }
+        }
+
+        .nav-link {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #F6F2E9;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .nav-link:hover {
+            color: #FF5A1F;
+        }
+
+        .nav-link-desktop {
+            display: none;
+        }
+        @media (min-width: 640px) {
+            .nav-link-desktop { display: inline-block; }
+        }
+
         .nav-btn {
             font-weight: 700;
             text-transform: uppercase;
@@ -30,9 +138,11 @@ if (session_status() === PHP_SESSION_NONE) {
             padding: 0.5rem 1rem;
             border: 1px solid transparent;
             border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
             transition: all 0.2s ease;
         }
-        
+
         .nav-btn-or {
             background-color: #FF5A1F;
             color: #ffffff !important;
@@ -42,7 +152,7 @@ if (session_status() === PHP_SESSION_NONE) {
             background-color: #e04a13;
             border-color: #e04a13;
         }
-        
+
         .nav-btn-dark {
             background-color: #FFFDF8;
             color: #141414 !important;
@@ -60,43 +170,97 @@ if (session_status() === PHP_SESSION_NONE) {
             background-color: #dc2626;
         }
 
-        .nav-link {
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
+        .site-footer {
+            background-color: #141414;
             color: #F6F2E9;
-            transition: color 0.15s ease;
+            border-top: 1px solid #141414;
+            margin-top: 5rem;
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
         }
-        .nav-link:hover {
-            color: #FF5A1F;
+
+        .footer-inner {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+            .footer-inner { flex-direction: row; }
+        }
+
+        .footer-brand-row {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .footer-badge {
+            background-color: #FF5A1F;
+            color: #FFFDF8;
+            padding: 0.125rem 0.5rem;
+            font-weight: 700;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+        }
+
+        .footer-title {
+            margin: 0;
+            font-weight: 800;
+            font-size: 1.125rem;
+            color: #F6F2E9;
+            letter-spacing: -0.025em;
+        }
+
+        .footer-tagline {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #a8a296;
+            font-weight: 500;
+        }
+
+        .footer-copy-wrap {
+            text-align: center;
+        }
+        @media (min-width: 640px) {
+            .footer-copy-wrap { text-align: right; }
+        }
+
+        .footer-copy {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #F6F2E9;
+            font-weight: 500;
+        }
+        @media (min-width: 640px) {
+            .footer-copy { font-size: 0.875rem; }
         }
     </style>
 </head>
-<body class="bg-[#F6F2E9] text-[#141414] min-h-screen flex flex-col justify-between font-sans">
+<body>
 
-    <!-- Navigation Bar Clean Modern Style -->
-    <nav class="nav-kb sticky top-0 z-50 text-[#F6F2E9]">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
+    <!-- Navigation Bar -->
+    <nav class="nav-kb">
+        <div class="layout-container">
+            <div class="nav-inner">
                 
                 <!-- Logo KabarSi -->
-                <div class="flex items-center space-x-3">
-                    <a href="index.php" class="font-bold text-xl tracking-wide flex items-center space-x-2 group">
-                        <span class="bg-[#FF5A1F] text-[#FFFDF8] px-2.5 py-0.5 font-extrabold text-sm rounded transition-opacity group-hover:opacity-90">
-                            KS
-                        </span>
-                        <span class="font-extrabold text-lg text-[#F6F2E9] tracking-tight">
-                            KabarSi <span class="text-[#FF5A1F]">FISIP</span>
+                <div class="nav-brand-wrap">
+                    <a href="index.php" class="nav-brand">
+                        <span class="nav-badge">KS</span>
+                        <span class="nav-title">
+                            KabarSi <span class="nav-title-accent">FISIP</span>
                         </span>
                     </a>
                 </div>
 
-                <!-- Nav Links -->
-                <div class="flex items-center space-x-4 sm:space-x-6">
+                <!-- Navigation Links -->
+                <div class="nav-links">
                     <a href="index.php" class="nav-link">Beranda</a>
-                    <a href="index.php#berita" class="nav-link hidden sm:inline-block">Berita</a>
-                    <a href="index.php#aspirasi" class="nav-link hidden sm:inline-block">Aspirasi</a>
+                    <a href="index.php#berita" class="nav-link nav-link-desktop">Berita</a>
+                    <a href="index.php#aspirasi" class="nav-link nav-link-desktop">Aspirasi</a>
                     
                     <?php if (isset($_SESSION['id_user']) || isset($_SESSION['user_id'])): ?>
                         <?php if (isset($_SESSION['role']) && strtolower($_SESSION['role']) === 'admin'): ?>
@@ -117,4 +281,4 @@ if (session_status() === PHP_SESSION_NONE) {
     </nav>
 
     <!-- Main Container -->
-    <main class="mb-auto">
+    <main class="main-content">

@@ -101,7 +101,7 @@ function daftarPenggunaBaru($nama, $email, $password, $peran) {
     return $berhasil;
 }
 
-// 5. Fungsi verifikasi login (Sesi 3)
+// 5. Fungsi verifikasi login (Sesi 3 + Pembatasan Login Gagal Sesi 8)
 // Mengecek email dan password waktu user login
 // Mengembalikan array hasil: ['berhasil' => true/false, 'pesan' => '...', 'pengguna' => data/null]
 function verifikasiLogin($email, $password) {
@@ -112,6 +112,7 @@ function verifikasiLogin($email, $password) {
     ];
 
     $email = trim($email);
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 
     // 1. Cek apakah email atau password kosong
     if ($email === '' || $password === '') {
@@ -119,24 +120,31 @@ function verifikasiLogin($email, $password) {
         return $hasil;
     }
 
-    // 2. Cari user berdasarkan email
+    // 2. Cek apakah email + IP ini sedang dibatasi karena terlalu banyak gagal (AUT-10, KT-07)
+    if (cekBatasLogin($email, $ip)) {
+        $hasil['pesan'] = 'Terlalu banyak percobaan login gagal. Silakan tunggu 15 menit sebelum mencoba lagi.';
+        return $hasil;
+    }
+
+    // 3. Cari user berdasarkan email
     $pengguna = cariPenggunaByEmail($email);
 
-    // 3. Kalau email tidak ditemukan
+    // 4. Kalau email tidak ditemukan
     // Pesan dibuat sama dengan password salah (AUT-02, SEC-05)
     if (!$pengguna) {
+        catatLoginGagal($email, $ip);
         $hasil['pesan'] = 'Email atau password salah.';
         return $hasil;
     }
 
-    // 4. Cek password dengan password_verify()
+    // 5. Cek password dengan password_verify()
     if (!password_verify($password, $pengguna['password'])) {
+        catatLoginGagal($email, $ip);
         $hasil['pesan'] = 'Email atau password salah.';
         return $hasil;
     }
 
-    // 5. Cek apakah akun dinonaktifkan admin (AUT-02, AUT-07)
-    // Kalau ada kolom 'aktif' atau 'status' di tabel user
+    // 6. Cek apakah akun dinonaktifkan admin (AUT-02, AUT-07)
     if (isset($pengguna['aktif']) && (int)$pengguna['aktif'] === 0) {
         $hasil['pesan'] = 'Akun Anda telah dinonaktifkan oleh Admin.';
         return $hasil;
@@ -146,7 +154,9 @@ function verifikasiLogin($email, $password) {
         return $hasil;
     }
 
-    // 6. Login berhasil
+    // 7. Login berhasil -> bersihkan catatan gagal untuk email dan IP ini
+    hapusLogLogin($email, $ip);
+
     $hasil['berhasil'] = true;
     $hasil['pengguna'] = $pengguna;
     return $hasil;
@@ -225,15 +235,14 @@ function ubahPasswordPengguna($id, $passwordLama, $passwordBaru, $konfirmasiBaru
     // Enkripsi password baru
     $hashBaru = password_hash($passwordBaru, PASSWORD_DEFAULT);
 
-    // Update database (dan reset wajib_ganti_sandi jika ada kolomnya)
-    $sql = "UPDATE user SET password = ? WHERE id = ?";
+    // Update database (dan reset wajib_ganti_sandi = 0)
+    pastikanKolomKelolaPengguna();
+    $sql = "UPDATE user SET password = ?, wajib_ganti_sandi = 0 WHERE id = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$hashBaru, $id]);
 
     // Reset status wajib_ganti_sandi di session jika sebelumnya diwajibkan
-    if (isset($_SESSION['user']['wajib_ganti_sandi'])) {
-        $_SESSION['user']['wajib_ganti_sandi'] = 0;
-    }
+    $_SESSION['user']['wajib_ganti_sandi'] = 0;
 
     return [
         'berhasil' => true,
@@ -371,5 +380,54 @@ function resetSandiSementara($targetUserId) {
         'email_pengguna'  => $user['email']
     ];
 }
+
+// ============================================================================
+// FUNGSI KEAMANAN: PEMBATASAN PERCOBAAN LOGIN GAGAL (Jobdesk Nanda - Sesi 8)
+// ============================================================================
+
+// 11. Cek apakah email dan IP ini sudah gagal login >= 5 kali dalam 15 menit terakhir (AUT-10, KT-07)
+function cekBatasLogin($email, $ip) {
+    global $pdo;
+
+    try {
+        $sql = "SELECT COUNT(*) FROM log_login
+                WHERE email = ? AND alamat_ip = ?
+                AND waktu >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$email, $ip]);
+        $jumlahGagal = (int)$stmt->fetchColumn();
+
+        return $jumlahGagal >= 5;
+    } catch (PDOException $e) {
+        return false;
+    }
+}
+
+// 12. Catat percobaan login yang gagal ke tabel log_login
+function catatLoginGagal($email, $ip) {
+    global $pdo;
+
+    try {
+        $sql = "INSERT INTO log_login (email, alamat_ip, waktu) VALUES (?, ?, NOW())";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$email, $ip]);
+    } catch (PDOException $e) {
+        // Abaikan jika tabel belum tersedia
+    }
+}
+
+// 13. Hapus catatan gagal setelah pengguna berhasil login
+function hapusLogLogin($email, $ip) {
+    global $pdo;
+
+    try {
+        $sql = "DELETE FROM log_login WHERE email = ? AND alamat_ip = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$email, $ip]);
+    } catch (PDOException $e) {
+        // Abaikan jika tabel belum tersedia
+    }
+}
+
 
 

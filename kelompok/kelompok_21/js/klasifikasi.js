@@ -17,13 +17,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const modBadge = document.getElementById('modalBadgeKuadran');
     const modRekomendasi = document.getElementById('modalRekomendasi');
 
-    async function muatDataKlasifikasi() {
+async function muatDataKlasifikasi() {
         const filterKelas = document.getElementById('filter-kelas').value;
+        const filterMapel = document.getElementById('filter-mapel').value;
         const batasKKM = parseFloat(document.getElementById('input-kkm').value) || 75;
         const batasDisiplin = 80;
 
         try {
-            const response = await fetch(`api/klasifikasi.php?kelas_id=${encodeURIComponent(filterKelas)}`);
+            const response = await fetch(`api/klasifikasi.php?kelas_id=${encodeURIComponent(filterKelas)}&mapel_id=${encodeURIComponent(filterMapel)}`);
             const res = await response.json();
 
             if (res && res.data) {

@@ -245,6 +245,10 @@ function pageUrl($pageNumber, $search, $category_id, $status) {
     <a href="article-add.php" class="add-button">
         + Tambah Artikel
     </a>
+    <a href="dashboard.php">Dashboard</a>
+    <a href="articles.php">Artikel</a>
+    <a href="categories.php">Kategori</a>
+    <a href="tips.php">Tips Kesehatan</a>
 
     <!-- Form pencarian dan filter -->
     <form method="GET" class="filter-form">

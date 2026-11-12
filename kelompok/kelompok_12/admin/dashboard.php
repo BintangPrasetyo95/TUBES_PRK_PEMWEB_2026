@@ -45,21 +45,66 @@ $maks = max(1, ...array_map(fn($k) => (int)$k['total'], $per_kategori ?: [['tota
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dashboard Admin - SehatIn</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  <link rel="stylesheet" href="../assets/css/admin-theme.css?v=1">
   :root { --g1:#0f9d58; --g2:#7ddc9b; --g3:#e8f8ee; --ink:#12372a; --muted:#5f7d6f; --warn:#f5a623; }
   * { box-sizing: border-box; }
   body { margin:0; font-family:'Plus Jakarta Sans', system-ui, sans-serif; background:#f6fbf8; color:var(--ink); }
   nav { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 6vw; background:#fff; position:sticky; top:0; z-index:5; box-shadow:0 1px 12px rgba(15,157,88,.08); }
   nav b { font-size:20px; color:var(--g1); }
   .menu { display:flex; gap:8px; flex-wrap:wrap; }
-  .menu span, .menu a { font-size:14px; padding:8px 14px; border-radius:999px; text-decoration:none; }
+  .menu a {
+    color: var(--ink);
+    transition: 0.2s;
+}
+
+.menu a:hover {
+    background: var(--g3);
+    color: var(--g1);
+}
+
+.menu .aktif {
+    background: var(--g3);
+    color: var(--g1);
+    font-weight: 600;
+}
+
+.menu .logout {
+    background: var(--ink);
+    color: white;
+}
   .menu .aktif { background:var(--g3); color:var(--g1); font-weight:600; }
   .menu .off { color:#9db5a8; border:1px dashed #cfe3d7; cursor:not-allowed; }
   .menu .logout { background:var(--ink); color:#fff; }
-  .hero { margin:24px 6vw 0; padding:28px 32px; border-radius:28px; color:#fff; background:linear-gradient(135deg,var(--g1),#2bc16b 60%,var(--g2)); }
-  .hero h1 { margin:0 0 6px; font-size:clamp(22px,4vw,32px); font-weight:800; }
-  .hero p { margin:0; opacity:.92; }
+  
+.hero {
+    margin: 24px 6vw 0;
+    padding: 28px 32px;
+    border-radius: 24px;
+    color: #ffffff !important;
+    background: linear-gradient(
+        135deg,
+        #146c43,
+        #198754 65%,
+        #75bd8c
+    ) !important;
+    box-shadow: 0 5px 18px rgba(25, 135, 84, 0.12);
+}
+
+.hero h1 {
+    margin: 0 0 8px;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 800;
+    color: #ffffff !important;
+}
+
+.hero p {
+    margin: 0;
+    color: #ffffff !important;
+    opacity: 0.95;
+}
+
   main { padding:0 6vw 48px; }
   h2 { font-size:20px; margin:32px 0 14px; }
   .stats { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); margin-top:24px; }
@@ -91,14 +136,16 @@ $maks = max(1, ...array_map(fn($k) => (int)$k['total'], $per_kategori ?: [['tota
 <body>
 <nav>
   <b>🌿 SehatIn Admin</b>
+
   <div class="menu">
-    <span class="aktif">Dashboard</span>
-    <span class="off" title="Segera hadir">Artikel (segera)</span>
-    <span class="off" title="Segera hadir">Kategori (segera)</span>
-    <span class="off" title="Segera hadir">Tips (segera)</span>
-    <a class="logout" href="logout.php">Logout</a>
+    <a href="dashboard.php" class="aktif">Dashboard</a>
+    <a href="articles.php">Artikel</a>
+    <a href="categories.php">Kategori</a>
+    <a href="tips.php">Tips Kesehatan</a>
+    <a href="logout.php" class="logout">Logout</a>
   </div>
 </nav>
+
 
 <section class="hero">
   <h1>Halo, <?= $e($_SESSION['admin_username']) ?>! 👋</h1>

@@ -56,10 +56,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../assets/style.css">
 </head>
-<body class="halaman-auth bg-light">
+<body class="halaman-auth">
     <header class="topbar">
         <a href="../index.php" class="brand">Klinik FK Unila</a>
         <nav aria-label="Menu utama">
@@ -67,56 +66,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="login.php" class="tombol-kecil">Masuk</a>
         </nav>
     </header>
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4 p-md-5">
-                        <p class="text-muted small mb-1">Sistem Antrian Klinik</p>
-                        <h3 class="text-center mb-4">Daftar Akun</h3>
-                        
-                        <?php if ($error): ?>
-                            <div class="alert alert-danger" role="alert">
-                                <?= htmlspecialchars($error) ?>
-                            </div>
-                        <?php endif; ?>
+    <main class="wadah-sempit">
+        <div class="kartu">
+            <div class="kartu-isi">
+                <p class="muted small">Sistem Antrian Klinik</p>
+                <h3 class="tengah">Daftar Akun</h3>
 
-                        <?php if ($success): ?>
-                            <div class="alert alert-success" role="alert">
-                                <?= htmlspecialchars($success) ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <form method="POST" action="">
-                            <div class="mb-3">
-                                <label for="nama" class="form-label">Nama Lengkap</label>
-                                <input type="text" class="form-control" id="nama" name="nama" 
-                                       value="<?= htmlspecialchars($_POST['nama'] ?? '') ?>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                                <small class="text-muted">Minimal 6 karakter</small>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password_confirm" class="form-label">Konfirmasi Password</label>
-                                <input type="password" class="form-control" id="password_confirm" name="password_confirm" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Register</button>
-                        </form>
-
-                        <div class="text-center mt-3">
-                            <p>Sudah punya akun? <a href="login.php">Login di sini</a></p>
-                        </div>
+                <?php if ($error): ?>
+                    <div class="peringatan peringatan-bahaya" role="alert">
+                        <?= htmlspecialchars($error) ?>
                     </div>
-                </div>
+                <?php endif; ?>
+
+                <?php if ($success): ?>
+                    <div class="peringatan peringatan-sukses" role="alert">
+                        <?= htmlspecialchars($success) ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" action="">
+                    <div class="grup-form">
+                        <label for="nama">Nama Lengkap</label>
+                        <input type="text" class="masukan" id="nama" name="nama"
+                               value="<?= htmlspecialchars($_POST['nama'] ?? '') ?>" required>
+                    </div>
+                    <div class="grup-form">
+                        <label for="email">Email</label>
+                        <input type="email" class="masukan" id="email" name="email"
+                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+                    </div>
+                    <div class="grup-form">
+                        <label for="password">Password</label>
+                        <input type="password" class="masukan" id="password" name="password" required>
+                        <small class="muted">Minimal 6 karakter</small>
+                    </div>
+                    <div class="grup-form">
+                        <label for="password_confirm">Konfirmasi Password</label>
+                        <input type="password" class="masukan" id="password_confirm" name="password_confirm" required>
+                    </div>
+                    <button type="submit" class="tombol tombol-utama tombol-penuh">Register</button>
+                </form>
+
+                <p class="tengah spasi-atas">Sudah punya akun? <a href="login.php">Login di sini</a></p>
             </div>
         </div>
-    </div>
+    </main>
 </body>
 </html>

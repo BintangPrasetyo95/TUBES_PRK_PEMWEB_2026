@@ -126,7 +126,11 @@ const GAMBAR_OBAT = {
 
 function visualObat(o, warna, besar = false) {
     const fallback = botol(warna, o.nama_obat, o.nama_kategori, besar);
-    const gambar = GAMBAR_OBAT[o.id_obat];
+    const namaFile = String(o.gambar ?? '').trim();
+    const gambarApi = namaFile && namaFile !== 'default.jpg' && !/[\\/]/.test(namaFile)
+        ? `../assets/images/obat/${encodeURIComponent(namaFile)}`
+        : null;
+    const gambar = gambarApi || GAMBAR_OBAT[o.id_obat];
     return gambar
         ? `<img class="gambar-obat" src="${gambar}" alt="Kemasan ${escapeHTML(o.nama_obat)}"><span class="gambar-fallback" hidden>${fallback}</span>`
         : fallback;

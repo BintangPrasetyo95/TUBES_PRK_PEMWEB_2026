@@ -40,26 +40,60 @@ $isGuest = ($peran === 'guest');
 $pelajarId = isset($_SESSION['user']['id']) ? (int)$_SESSION['user']['id'] : null;
 
 $kuisId = (int) ($_GET['id'] ?? 0);
+$isModePratinjau = (isset($_GET['mode']) && $_GET['mode'] === 'pratinjau');
 
 // ----------------------------------------------------------------------------
-// 1. Ambil Data Kuis & Validasi Status (KAT-05)
+// 1. Validasi Mode Pratinjau & Ambil Data Kuis (KAT-05 / PJ-05)
 // ----------------------------------------------------------------------------
 global $pdo;
 
-$stmtKuis = $pdo->prepare("SELECT * FROM kuis WHERE id = ? AND status = 'terbit' LIMIT 1");
-$stmtKuis->execute([$kuisId]);
-$kuis = $stmtKuis->fetch(PDO::FETCH_ASSOC);
+if ($isModePratinjau) {
+    // Hanya pengajar (pemilik kuis) atau admin yang boleh mengakses modus pratinjau
+    if ($peran !== 'pengajar' && $peran !== 'admin') {
+        http_response_code(403);
+        flash('galat', 'Modus pratinjau hanya dapat diakses oleh pengajar atau admin.');
+        redirect('katalog.php');
+    }
 
-if (!$kuis) {
-    http_response_code(404);
-    flash('galat', 'Kuis tidak ditemukan atau belum dipublikasikan.');
-    redirect('katalog.php');
+    // Modus pratinjau bisa melihat kuis dengan status apa pun (draft, menunggu, terbit, dll.)
+    $stmtKuis = $pdo->prepare("SELECT * FROM kuis WHERE id = ? LIMIT 1");
+    $stmtKuis->execute([$kuisId]);
+    $kuis = $stmtKuis->fetch(PDO::FETCH_ASSOC);
+
+    if (!$kuis) {
+        http_response_code(404);
+        flash('galat', 'Kuis tidak ditemukan.');
+        redirect($peran === 'admin' ? '../admin/dashboard.php' : '../pengajar/kuis.php');
+    }
+
+    // Pengajar hanya boleh mempratinjau kuis miliknya sendiri
+    if ($peran === 'pengajar' && (int)$kuis['pengajar_id'] !== (int)$_SESSION['user']['id']) {
+        http_response_code(403);
+        flash('galat', 'Anda tidak memiliki izin untuk mempratinjau kuis milik pengajar lain.');
+        redirect('../pengajar/kuis.php');
+    }
+} else {
+    // Pelajar dan Guest hanya dapat mengerjakan kuis yang sudah terbit
+    if ($peran !== 'pelajar' && $peran !== 'guest') {
+        flash('info', 'Gunakan modus pratinjau untuk melihat tampilan kuis tanpa menyimpan percobaan.');
+        redirect('detail.php?id=' . $kuisId);
+    }
+
+    $stmtKuis = $pdo->prepare("SELECT * FROM kuis WHERE id = ? AND status = 'terbit' LIMIT 1");
+    $stmtKuis->execute([$kuisId]);
+    $kuis = $stmtKuis->fetch(PDO::FETCH_ASSOC);
+
+    if (!$kuis) {
+        http_response_code(404);
+        flash('galat', 'Kuis tidak ditemukan atau belum dipublikasikan.');
+        redirect('katalog.php');
+    }
 }
 
 // ----------------------------------------------------------------------------
 // 2. Validasi Hak Akses Kuis Privat (KAT-05, BR-12, BR-14, AC-17)
 // ----------------------------------------------------------------------------
-if ($kuis['akses'] === 'privat') {
+if (!$isModePratinjau && $kuis['akses'] === 'privat') {
     if ($isGuest) {
         http_response_code(404);
         flash('galat', 'Pengguna tamu tidak dapat mengakses kuis privat.');
@@ -87,6 +121,9 @@ $daftarSoal = $stmtSoal->fetchAll(PDO::FETCH_ASSOC);
 
 if (empty($daftarSoal)) {
     flash('galat', 'Kuis ini belum memiliki daftar pertanyaan.');
+    if ($isModePratinjau) {
+        redirect($peran === 'admin' ? '../admin/tinjau.php?id=' . $kuisId : '../pengajar/kuis.php');
+    }
     redirect('detail.php?id=' . $kuisId);
 }
 
@@ -100,12 +137,15 @@ foreach ($daftarSoal as $s) {
 
 // ----------------------------------------------------------------------------
 // 4. Inisialisasi atau Lanjutkan Sesi Percobaan (KRJ-01, KRJ-08)
+//    Pada modus pratinjau, tidak membuat baris percobaan_kuis di database
 // ----------------------------------------------------------------------------
 $percobaanId = null;
 $sisaDetik = 0;
 $jawabanTersimpan = [];
 
-if ($peran === 'pelajar') {
+if ($isModePratinjau) {
+    $sisaDetik = (int) $kuis['durasi_menit'] * 60;
+} elseif ($peran === 'pelajar') {
     // Mulai percobaan baru atau lanjutkan yang sedang aktif
     $percobaan = mulaiPercobaanKuis($kuisId, $pelajarId);
 
@@ -150,8 +190,14 @@ if ($peran === 'pelajar') {
 
 // ----------------------------------------------------------------------------
 // 5. Muat Pilihan Opsi untuk Setiap Soal (Aman dari Bocor Kunci Jawaban, SEC-07)
+//    Pada modus pratinjau (khusus pengajar/admin), kolom 'benar' ikut dimuat
+//    agar simulasi penilaian bisa berjalan di sisi klien tanpa menyimpan ke DB.
 // ----------------------------------------------------------------------------
-$stmtOpsi = $pdo->prepare("SELECT id, soal_id, label, teks FROM opsi_jawaban WHERE soal_id = ? ORDER BY label ASC");
+if ($isModePratinjau) {
+    $stmtOpsi = $pdo->prepare("SELECT id, soal_id, label, teks, benar FROM opsi_jawaban WHERE soal_id = ? ORDER BY label ASC");
+} else {
+    $stmtOpsi = $pdo->prepare("SELECT id, soal_id, label, teks FROM opsi_jawaban WHERE soal_id = ? ORDER BY label ASC");
+}
 $stmtKunci = $pdo->prepare("SELECT id, label FROM opsi_jawaban WHERE soal_id = ? AND benar = 1 LIMIT 1");
 
 $jumlahTerjawabAwal = 0;
@@ -167,8 +213,8 @@ foreach ($daftarSoal as $idx => $s) {
     $kunciOpsiId = null;
     $kunciLabel = '';
 
-    // Cek apakah soal ini sudah dijawab di database atau sesi guest
-    if ($peran === 'pelajar' && isset($jawabanTersimpan[$soalId])) {
+    // Cek apakah soal ini sudah dijawab di database atau sesi guest (hanya mode kerjakan biasa)
+    if (!$isModePratinjau && $peran === 'pelajar' && isset($jawabanTersimpan[$soalId])) {
         $sudahDijawab = true;
         $opsiTerpilihId = (int) $jawabanTersimpan[$soalId]['opsi_id'];
         $statusBenar = ((int) $jawabanTersimpan[$soalId]['benar'] === 1);
@@ -182,7 +228,7 @@ foreach ($daftarSoal as $idx => $s) {
             $kunciLabel = $kunci['label'];
         }
 
-    } elseif ($peran === 'guest' && isset($jawabanTersimpan[$soalId])) {
+    } elseif (!$isModePratinjau && $peran === 'guest' && isset($jawabanTersimpan[$soalId])) {
         $sudahDijawab = true;
         $opsiTerpilihId = (int) $jawabanTersimpan[$soalId]['opsi_id'];
         $statusBenar = (bool) $jawabanTersimpan[$soalId]['benar'];
@@ -208,10 +254,16 @@ foreach ($daftarSoal as $idx => $s) {
 // 6. Konfigurasi Template Mode Fokus (header-fokus.php)
 // ----------------------------------------------------------------------------
 $root = '../';
-$judulHalaman = 'Mengerjakan Kuis - ' . $kuis['judul'];
-$judulKuis = $kuis['judul'];
+if ($isModePratinjau) {
+    $judulHalaman = 'Pratinjau Kuis - ' . $kuis['judul'];
+    $judulKuis = '[Pratinjau] ' . $kuis['judul'];
+    $linkKeluar = ($peran === 'admin') ? '../admin/tinjau.php?id=' . $kuisId : '../pengajar/kuis.php';
+} else {
+    $judulHalaman = 'Mengerjakan Kuis - ' . $kuis['judul'];
+    $judulKuis = $kuis['judul'];
+    $linkKeluar = 'detail.php?id=' . $kuisId;
+}
 $sisaWaktu = sprintf('%02d:%02d', floor($sisaDetik / 60), $sisaDetik % 60);
-$linkKeluar = 'detail.php?id=' . $kuisId;
 
 require_once __DIR__ . '/../includes/partials/header-fokus.php';
 ?>
@@ -229,9 +281,26 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
   data-sisa-detik="<?= (int)$sisaDetik ?>"
   data-peran="<?= e($peran) ?>"
   data-terjawab-awal="<?= $jumlahTerjawabAwal ?>"
+  data-mode="<?= $isModePratinjau ? 'pratinjau' : 'kerjakan' ?>"
+  data-skor-maks="<?= (int)$skorMaksimal ?>"
 >
   <!-- Token CSRF untuk Pengiriman Jawaban via AJAX/Fetch API -->
   <input type="hidden" id="tokenCsrf" value="<?= e(ambilTokenCsrf()) ?>">
+
+  <?php if ($isModePratinjau): ?>
+    <!-- Penanda Modus Pratinjau (Tidak Menyimpan Percobaan ke Database) -->
+    <div id="bannerPratinjau" style="background: #fff8e6; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div>
+        <strong style="color: #92400e;">Modus Pratinjau Aktif</strong>
+        <span style="display: block; font-size: 0.9rem; color: #78350f;">
+          Status kuis: <strong><?= e(strtoupper($kuis['status'])) ?></strong>. Simulasi ini tidak mencatat percobaan maupun jawaban ke database.
+        </span>
+      </div>
+      <a href="<?= e($linkKeluar) ?>" class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 12px;">
+        Keluar Pratinjau
+      </a>
+    </div>
+  <?php endif; ?>
 
   <!-- ========================================================================
        KARTU SOAL (SLIDE PERTANYAAN SATU PER LAYAR - KRJ-02)
@@ -248,6 +317,10 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
         id="slideSoal-<?= $nomorSoal ?>" 
         data-nomor="<?= $nomorSoal ?>" 
         data-soal-id="<?= (int)$soal['id'] ?>"
+        <?php if ($isModePratinjau): ?>
+          data-poin="<?= (int)$soal['poin'] ?>"
+          data-pembahasan="<?= e($soal['pembahasan'] ?? '') ?>"
+        <?php endif; ?>
         style="<?= $isSlidePertama ? 'display: block;' : 'display: none;' ?>"
         aria-label="Soal nomor <?= $nomorSoal ?>"
       >
@@ -289,6 +362,9 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
                 data-soal-id="<?= (int)$soal['id'] ?>"
                 data-opsi-id="<?= $opsiId ?>"
                 data-label="<?= e($opsi['label']) ?>"
+                <?php if ($isModePratinjau): ?>
+                  data-benar="<?= (int)($opsi['benar'] ?? 0) ?>"
+                <?php endif; ?>
                 <?= $sudah ? 'disabled aria-disabled="true"' : '' ?>
                 role="radio"
                 aria-checked="<?= $isPilihanUser ? 'true' : 'false' ?>"
@@ -386,6 +462,49 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
       </button>
     </div>
   </div>
+
+  <?php if ($isModePratinjau): ?>
+    <!-- ======================================================================
+         RINGKASAN HASIL MODUS PRATINJAU (DIHITUNG DI SISI KLIEN)
+         ====================================================================== -->
+    <div id="hasilPratinjauBox" class="soal-card" style="display: none; text-align: center; padding: 32px 24px;">
+      <div style="font-size: 2.5rem; margin-bottom: 10px;" aria-hidden="true">&#127942;</div>
+      <h2 style="margin-bottom: 8px;">Simulasi Pratinjau Selesai</h2>
+      <p style="color: var(--teks-2); margin-bottom: 22px;">
+        Berikut adalah simulasi hasil pengerjaan kuis <strong><?= e($kuis['judul']) ?></strong>. Data ini tidak disimpan ke database.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px;">
+        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+          <div style="font-size: 0.85rem; color: var(--teks-2);">Skor Simulasi</div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: var(--primer);">
+            <span id="pratinjauSkor">0</span> / <span id="pratinjauMaks"><?= (int)$skorMaksimal ?></span>
+          </div>
+        </div>
+        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+          <div style="font-size: 0.85rem; color: var(--teks-2);">Persentase</div>
+          <div style="font-size: 1.4rem; font-weight: 700;" id="pratinjauPersen">0%</div>
+        </div>
+        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+          <div style="font-size: 0.85rem; color: var(--teks-2);">Jawaban Benar</div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: #15803d;" id="pratinjauBenar">0</div>
+        </div>
+        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+          <div style="font-size: 0.85rem; color: var(--teks-2);">Belum Tepat / Kosong</div>
+          <div style="font-size: 1.4rem; font-weight: 700; color: #b91c1c;" id="pratinjauSalah">0</div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <a href="kerjakan.php?id=<?= $kuisId ?>&mode=pratinjau" class="btn btn-primary" style="text-decoration: none;">
+          Ulangi Pratinjau
+        </a>
+        <a href="<?= e($linkKeluar) ?>" class="btn btn-outline" style="text-decoration: none;">
+          Kembali
+        </a>
+      </div>
+    </div>
+  <?php endif; ?>
 </div>
 
 <!-- ========================================================================
@@ -394,15 +513,19 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
 <div class="modal-backdrop" id="modalKeluar" role="dialog" aria-modal="true" aria-labelledby="judulModalKeluar">
   <div class="modal-card">
     <div style="font-size: 2.8rem; margin-bottom: 12px;" aria-hidden="true">&#9888;</div>
-    <h2 id="judulModalKeluar" style="font-size: 1.35rem; margin-bottom: 8px;">Keluar dari Kuis?</h2>
+    <h2 id="judulModalKeluar" style="font-size: 1.35rem; margin-bottom: 8px;">Keluar dari <?= $isModePratinjau ? 'Pratinjau' : 'Kuis' ?>?</h2>
     <p style="color: var(--teks-2); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px;">
-      Jawaban yang sudah kamu kirim tetap tersimpan aman. Namun, waktu pengerjaan akan terus berjalan di server!
+      <?php if ($isModePratinjau): ?>
+        Anda sedang berada di modus pratinjau. Jawaban simulasi tidak disimpan ke database.
+      <?php else: ?>
+        Jawaban yang sudah kamu kirim tetap tersimpan aman. Namun, waktu pengerjaan akan terus berjalan di server!
+      <?php endif; ?>
     </p>
     <div class="modal-aksi">
       <button type="button" class="btn btn-outline" id="btnBatalKeluar">
         Lanjut Mengerjakan
       </button>
-      <a href="detail.php?id=<?= $kuisId ?>" class="btn btn-batal" style="text-decoration: none;">
+      <a href="<?= e($linkKeluar) ?>" class="btn btn-batal" style="text-decoration: none;">
         Ya, Keluar
       </a>
     </div>

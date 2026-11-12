@@ -53,15 +53,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Sistem Antrian Klinik</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
-<body class="bg-light">
-    <div class="container">
-        <div class="row justify-content-center align-items-center min-vh-100">
+<body class="halaman-auth bg-light">
+    <header class="topbar">
+        <a href="../index.php" class="brand">Klinik FK Unila</a>
+        <nav aria-label="Menu utama">
+            <a href="../index.php">Jadwal</a>
+            <a href="login.php" class="tombol-kecil">Masuk</a>
+        </nav>
+    </header>
+    <div class="container py-4">
+        <div class="row justify-content-center">
             <div class="col-md-5">
-                <div class="card shadow">
-                    <div class="card-body p-5">
-                        <h3 class="text-center mb-4">Register</h3>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4 p-md-5">
+                        <p class="text-muted small mb-1">Sistem Antrian Klinik</p>
+                        <h3 class="text-center mb-4">Daftar Akun</h3>
                         
                         <?php if ($error): ?>
                             <div class="alert alert-danger" role="alert">

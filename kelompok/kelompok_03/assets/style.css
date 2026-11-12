@@ -42,8 +42,12 @@ h2.text-primary {
     background: var(--bg-white) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius) !important;
-    box-shadow: none !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
     margin-bottom: 24px;
+}
+
+.navbar.bg-primary {
+    background-color: var(--utama) !important;
 }
 
 .card-body {
@@ -167,7 +171,22 @@ h2.text-primary {
     border-color: #fecaca !important;
 }
 
-/* Halaman depan pasien (index.php). Memakai variabel warna dari pasien.css */
+/* Halaman depan pasien (index.php) */
+
+body.halaman-depan,
+body.halaman-auth {
+    margin: 0;
+    font-family: "Figtree", "Segoe UI", sans-serif !important;
+    background: var(--bg-body) !important;
+    color: var(--tinta);
+}
+
+.halaman-depan h1,
+.halaman-depan .brand,
+.halaman-auth h3 {
+    font-family: "Bricolage Grotesque", "Segoe UI", sans-serif;
+    letter-spacing: -0.02em;
+}
 
 .sr-only {
     position: absolute;
@@ -190,6 +209,7 @@ h2.text-primary {
 .topbar .brand {
     color: #fff;
     text-decoration: none;
+    font-weight: 700;
 }
 
 .topbar nav {
@@ -274,10 +294,29 @@ h2.text-primary {
     outline-offset: 2px;
 }
 
+.kosong {
+    margin-top: 16px;
+    padding: 28px 16px;
+    text-align: center;
+    color: var(--tinta-lembut);
+    background: var(--permukaan);
+    border: 1px dashed var(--garis);
+    border-radius: var(--radius);
+}
+
 .tabel-dokter {
     width: 100%;
     border-collapse: collapse;
     background: var(--permukaan);
+    border: 1px solid var(--garis);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+form .tombol-kecil {
+    border: none;
+    cursor: pointer;
+    font: inherit;
 }
 
 .tabel-dokter th {
@@ -368,22 +407,6 @@ h2.text-primary {
     .tabel-dokter td.aksi::before {
         content: none;
     }
-}
-
-/* Animasi kedip lembut untuk badge status saat antrean sedang dipanggil */
-@keyframes denyutStatus {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.85;
-        transform: scale(1.03);
-    }
-}
-
-.animate-pulse {
-    animation: denyutStatus 1.5s infinite ease-in-out;
 }
 
 /* Animasi kedip lembut untuk badge status saat antrean sedang dipanggil */

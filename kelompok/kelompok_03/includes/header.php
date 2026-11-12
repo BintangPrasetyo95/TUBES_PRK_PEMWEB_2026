@@ -24,7 +24,7 @@ $namaPengguna = $_SESSION['nama'] ?? '';
 
 <body class="bg-light d-flex flex-column min-vh-100">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
     <div class="container d-flex justify-content-between align-items-center">
 
         <a class="navbar-brand fw-bold" href="admin.php">

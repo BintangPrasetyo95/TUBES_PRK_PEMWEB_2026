@@ -226,7 +226,7 @@ foreach ($semuaDokter as $doc) {
                             <!-- Pasien sudah login: form POST langsung ke script backend ambil_antrian.php -->
                             <form action="pasien/ambil_antrian.php" method="POST" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin mengambil nomor antrean untuk <?= htmlspecialchars($d['nama'], ENT_QUOTES, 'UTF-8') ?>?');">
                                 <input type="hidden" name="dokter_id" value="<?= (int) $d['id'] ?>">
-                                <button type="submit" class="tombol-kecil" style="border:none; cursor:pointer;">Ambil Nomor</button>
+                                <button type="submit" class="tombol-kecil">Ambil Nomor</button>
                             </form>
                         <?php else: ?>
                             <!-- Admin login: tautan menuju dashboard admin -->

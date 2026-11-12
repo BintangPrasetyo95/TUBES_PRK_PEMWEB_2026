@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data[$key] = trim($_POST[$key] ?? '');
     }
 
-
     if ($data['nama_obat'] === '') {
         $errors[] = 'Nama obat wajib diisi.';
     } elseif (mb_strlen($data['nama_obat']) > 150) {
@@ -100,11 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Layout bersama (Rachel): header.php memuat <head>, sidebar, dan header halaman
+// Layout bersama: header.php memuat <head>, sidebar, dan header halaman
 $judulHalaman = 'Tambah Obat';
 require_once '../../backend/admin/layout/header.php';
 ?>
-<!-- CSS dipasang ulang dengan path relatif supaya tetap termuat walau path di header.php beda -->
+
+<!-- CSS dipasang ulang dengan path relatif supaya tetap termuat -->
 <link rel="stylesheet" href="../../frontend/assets/css/style.css">
 <link rel="stylesheet" href="../../frontend/assets/css/admin.css">
 <style>
@@ -141,40 +141,39 @@ require_once '../../backend/admin/layout/header.php';
     <div class="admin-table-container" style="max-width: 680px; padding: 25px;">
         <form method="post" enctype="multipart/form-data" class="obat-form">
             <label for="nama_obat">Nama Obat</label>
-                <input type="text" id="nama_obat" name="nama_obat" maxlength="150"
-                       value="<?= htmlspecialchars($data['nama_obat']) ?>">
+            <input type="text" id="nama_obat" name="nama_obat" maxlength="150"
+                   value="<?= htmlspecialchars($data['nama_obat']) ?>">
 
-                <label for="id_kategori">Kategori</label>
-                <select id="id_kategori" name="id_kategori">
-                    <option value="">-- Pilih kategori --</option>
-                    <?php foreach ($kategori as $k): ?>
-                        <option value="<?= (int)$k['id_kategori'] ?>"
-                            <?= (string)$k['id_kategori'] === $data['id_kategori'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($k['nama_kategori']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+            <label for="id_kategori">Kategori</label>
+            <select id="id_kategori" name="id_kategori">
+                <option value="">-- Pilih kategori --</option>
+                <?php foreach ($kategori as $k): ?>
+                    <option value="<?= (int)$k['id_kategori'] ?>"
+                        <?= (string)$k['id_kategori'] === $data['id_kategori'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($k['nama_kategori']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
             <label for="harga">Harga (Rp)</label>
             <input type="number" id="harga" name="harga" min="0" step="100"
                    value="<?= htmlspecialchars($data['harga']) ?>">
 
             <label for="stok">Stok</label>
-                <input type="number" id="stok" name="stok" min="0"
-                       value="<?= htmlspecialchars($data['stok']) ?>">
+            <input type="number" id="stok" name="stok" min="0"
+                   value="<?= htmlspecialchars($data['stok']) ?>">
 
+            <label for="gambar">Gambar Obat <span class="obat-hint">(opsional, JPG/PNG, maks. 2 MB)</span></label>
+            <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png">
 
-                <label for="gambar">Gambar Obat <span class="obat-hint">(opsional, JPG/PNG, maks. 2 MB)</span></label>
-                <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png">
+            <label for="indikasi">Deskripsi &amp; Indikasi</label>
+            <textarea id="indikasi" name="indikasi"><?= htmlspecialchars($data['indikasi']) ?></textarea>
 
-                <label for="indikasi">Deskripsi &amp; Indikasi</label>
-                <textarea id="indikasi" name="indikasi"><?= htmlspecialchars($data['indikasi']) ?></textarea>
+            <label for="aturan_pakai">Aturan Pakai &amp; Dosis</label>
+            <textarea id="aturan_pakai" name="aturan_pakai"><?= htmlspecialchars($data['aturan_pakai']) ?></textarea>
 
-                <label for="aturan_pakai">Aturan Pakai &amp; Dosis</label>
-                <textarea id="aturan_pakai" name="aturan_pakai"><?= htmlspecialchars($data['aturan_pakai']) ?></textarea>
-
-                <label for="peringatan">Peringatan / Kontraindikasi</label>
-                <textarea id="peringatan" name="peringatan"><?= htmlspecialchars($data['peringatan']) ?></textarea>
+            <label for="peringatan">Peringatan / Kontraindikasi</label>
+            <textarea id="peringatan" name="peringatan"><?= htmlspecialchars($data['peringatan']) ?></textarea>
 
             <div class="obat-aksi">
                 <button type="submit" class="admin-btn">Simpan Obat</button>

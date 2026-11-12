@@ -15,6 +15,8 @@ erDiagram
         int id_obat PK "AUTO_INCREMENT"
         varchar_150 nama_obat "NOT NULL"
         int id_kategori FK "ON DELETE RESTRICT"
+        varchar_255 gambar "DEFAULT 'default.png'"
+        decimal harga "DEFAULT 0.00"
         int stok "NOT NULL, DEFAULT 0"
         text indikasi "NOT NULL"
         text aturan_pakai "NOT NULL"

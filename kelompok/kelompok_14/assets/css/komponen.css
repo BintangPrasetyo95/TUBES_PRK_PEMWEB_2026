@@ -1028,3 +1028,220 @@
   justify-content: space-between;
   gap: 12px;
 }
+
+
+/* --- 14. Komponen Halaman Publik, Guest, & Error (PB-01, PB-05, PB-06, PL-02) --- */
+.landing-hero {
+  text-align: center;
+  margin: 32px 0;
+  padding: 48px 24px;
+}
+
+.landing-badge {
+  margin-bottom: 16px;
+}
+
+.landing-judul {
+  font-size: 2.25rem;
+  margin-bottom: 16px;
+}
+
+.landing-deskripsi {
+  font-size: 1.125rem;
+  max-width: 680px;
+  margin: 0 auto 28px;
+  color: var(--teks);
+}
+
+.landing-cta {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.section-fitur {
+  margin-bottom: 40px;
+}
+
+.fitur-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.fitur-judul {
+  font-size: 1.75rem;
+  margin-bottom: 8px;
+}
+
+.fitur-deskripsi {
+  color: var(--teks);
+  margin: 0;
+}
+
+.fitur-ikon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.cta-bawah {
+  text-align: center;
+  padding: 36px 20px;
+  margin-bottom: 40px;
+}
+
+.cta-bawah-judul {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.cta-bawah-deskripsi {
+  max-width: 560px;
+  margin: 0 auto 20px;
+  color: var(--teks);
+}
+
+.guest-sapaan {
+  margin: 28px 0;
+  padding: 28px 24px;
+}
+
+.guest-badge {
+  margin-bottom: 12px;
+}
+
+.guest-judul {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.guest-deskripsi {
+  color: var(--teks);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.guest-alert {
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.guest-alert-ikon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.guest-cta-card {
+  padding: 28px;
+  margin-bottom: 36px;
+  border: 2px dashed var(--teks-2);
+  background-color: var(--kartu);
+}
+
+.guest-cta-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.guest-cta-teks {
+  max-width: 600px;
+}
+
+.guest-cta-judul {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+
+.guest-cta-sub {
+  color: var(--teks);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.guest-cta-tombol {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.guest-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.guest-section-judul {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.guest-section-sub {
+  color: var(--teks-2);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.guest-kuis-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.guest-kuis-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.guest-kuis-info {
+  font-size: 0.9rem;
+  color: var(--teks-2);
+  margin-bottom: 20px;
+}
+
+.error-card {
+  max-width: 640px;
+  margin: 48px auto;
+  text-align: center;
+  padding: 48px 28px;
+}
+
+.error-ikon {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.error-badge {
+  margin-bottom: 16px;
+}
+
+.error-judul {
+  font-size: 2rem;
+  margin-bottom: 14px;
+}
+
+.error-deskripsi {
+  font-size: 1.05rem;
+  color: var(--teks);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.error-aksi {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}

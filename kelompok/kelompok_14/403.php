@@ -1,4 +1,7 @@
 <?php
+// 403.php
+// Halaman Error 403 Akses Ditolak (PB-05) - DynaQuiz
+
 // 1. Set kode status respon HTTP menjadi 403 Forbidden
 http_response_code(403);
 
@@ -19,8 +22,9 @@ $halamanAktif = '';
 $linkKembali = 'index.php';
 $labelKembali = 'Kembali ke Beranda';
 
-if (isset($_SESSION['pengguna']['peran'])) {
-    $peran = $_SESSION['pengguna']['peran'];
+$sesiUser = $_SESSION['user'] ?? $_SESSION['pengguna'] ?? null;
+if ($sesiUser && isset($sesiUser['peran'])) {
+    $peran = $sesiUser['peran'];
     if ($peran === 'admin') {
         $linkKembali = 'admin/dashboard.php';
         $labelKembali = 'Kembali ke Dashboard Admin';
@@ -41,31 +45,31 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 ?>
 
 <!-- Kartu Konten Error 403 -->
-<div class="card" style="max-width: 640px; margin: 48px auto; text-align: center; padding: 48px 28px;">
-  <div style="font-size: 3.5rem; line-height: 1; margin-bottom: 16px;" aria-hidden="true">
+<div class="card error-card">
+  <div class="error-ikon" aria-hidden="true">
     &#128683;
   </div>
 
-  <span class="badge badge-sulit" style="margin-bottom: 16px;">
+  <span class="badge badge-sulit error-badge">
     Error 403 &bull; Akses Ditolak
   </span>
 
-  <h1 style="font-size: 2rem; margin-bottom: 14px;">
+  <h1 class="error-judul">
     Ups! Kamu Tidak Memiliki Akses
   </h1>
 
-  <p style="font-size: 1.05rem; color: var(--teks); line-height: 1.6; margin-bottom: 32px;">
+  <p class="error-deskripsi">
     Maaf, akun atau peranmu saat ini tidak memiliki izin untuk membuka halaman yang dituju. Silakan kembali ke dashboard atau masuk menggunakan akun yang sesuai.
   </p>
 
   <!-- Tombol Aksi Navigasi -->
-  <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-    <a href="<?= e($linkKembali) ?>" class="btn btn-primary" style="text-decoration: none;">
+  <div class="error-aksi">
+    <a href="<?= e($linkKembali) ?>" class="btn btn-primary">
       &#8592; <?= e($labelKembali) ?>
     </a>
 
-    <?php if (!isset($_SESSION['pengguna'])): ?>
-      <a href="login.php" class="btn btn-secondary" style="text-decoration: none;">
+    <?php if (!$sesiUser): ?>
+      <a href="login.php" class="btn btn-secondary">
         &#128273; Masuk dengan Akun Lain
       </a>
     <?php endif; ?>

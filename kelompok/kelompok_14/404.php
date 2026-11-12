@@ -1,4 +1,7 @@
 <?php
+// 404.php
+// Halaman Error 404 Tidak Ditemukan (PB-06) - DynaQuiz
+
 // 1. Set kode status respon HTTP menjadi 404 Not Found
 http_response_code(404);
 
@@ -19,8 +22,9 @@ $halamanAktif = '';
 $linkKembali = 'index.php';
 $labelKembali = 'Kembali ke Beranda';
 
-if (isset($_SESSION['pengguna']['peran'])) {
-    $peran = $_SESSION['pengguna']['peran'];
+$sesiUser = $_SESSION['user'] ?? $_SESSION['pengguna'] ?? null;
+if ($sesiUser && isset($sesiUser['peran'])) {
+    $peran = $sesiUser['peran'];
     if ($peran === 'admin') {
         $linkKembali = 'admin/dashboard.php';
         $labelKembali = 'Kembali ke Dashboard Admin';
@@ -41,30 +45,30 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 ?>
 
 <!-- Kartu Konten Error 404 -->
-<div class="card" style="max-width: 640px; margin: 48px auto; text-align: center; padding: 48px 28px;">
-  <div style="font-size: 3.5rem; line-height: 1; margin-bottom: 16px;" aria-hidden="true">
+<div class="card error-card">
+  <div class="error-ikon" aria-hidden="true">
     &#128506;
   </div>
 
-  <span class="badge badge-sedang" style="margin-bottom: 16px;">
+  <span class="badge badge-sedang error-badge">
     Error 404 &bull; Tidak Ditemukan
   </span>
 
-  <h1 style="font-size: 2rem; margin-bottom: 14px;">
+  <h1 class="error-judul">
     Halaman Tidak Ditemukan
   </h1>
 
-  <p style="font-size: 1.05rem; color: var(--teks); line-height: 1.6; margin-bottom: 32px;">
+  <p class="error-deskripsi">
     Maaf, halaman atau kuis yang kamu cari tidak dapat ditemukan. Tautan yang kamu tuju mungkin salah ketik, sudah dipindahkan, atau kuis telah dihapus dari sistem.
   </p>
 
   <!-- Tombol Aksi Navigasi -->
-  <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-    <a href="<?= e($linkKembali) ?>" class="btn btn-primary" style="text-decoration: none;">
+  <div class="error-aksi">
+    <a href="<?= e($linkKembali) ?>" class="btn btn-primary">
       &#8592; <?= e($labelKembali) ?>
     </a>
 
-    <a href="index.php" class="btn btn-secondary" style="text-decoration: none;">
+    <a href="index.php" class="btn btn-secondary">
       &#127968; Halaman Utama
     </a>
   </div>

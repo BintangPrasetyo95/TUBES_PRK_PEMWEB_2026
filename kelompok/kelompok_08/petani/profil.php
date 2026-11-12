@@ -29,16 +29,106 @@ if (!$petani) {
 
 ?>
 
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Petani - BUYPANEN</title>
+
+    <!-- Bootstrap 5 & Icons (khusus untuk tampilan dan ukuran font Navbar) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- CSS Asli Halaman Profil -->
     <link rel="stylesheet" href="../assets/style.css">
+
+    <style>
+  
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .navbar {
+            background-color: #218838 !important;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: 1rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .navbar .nav-link {
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .profile-container {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
+
+<!-- NAVBAR DASHBOARD PETANI -->
+
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="dashboard.php">
+            🌾 BUYPANEN
+        </a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="dashboard.php#hero">
+                        Beranda
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="dashboard.php#katalog">
+                        Katalog
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="../produk/index.php">
+                        Produk
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="../petani/profil.php">
+                        Profil
+                    </a>
+                </li>
+
+                <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                    <a class="btn btn-light btn-sm px-3"
+                       href="../config/logout.php"
+                       onclick="return confirm('Yakin ingin logout?')">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
 
 <div class="profile-container">
 
@@ -90,6 +180,8 @@ if (!$petani) {
 
 </div>
 
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
-

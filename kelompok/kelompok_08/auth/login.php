@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $_SESSION["role"] = $user["role"];
 
             if ($user["role"] === "petani") {
-                header("Location: ../petani/profil.php");
+                header("Location: ../petani/dashboard.php");
                 exit;
             } 
 

@@ -20,11 +20,12 @@ document.addEventListener("DOMContentLoaded", function () {
 async function muatDataKlasifikasi() {
         const filterKelas = document.getElementById('filter-kelas').value;
         const filterMapel = document.getElementById('filter-mapel').value;
+        const filterPeriode = document.getElementById('filter-periode').value;
         const batasKKM = parseFloat(document.getElementById('input-kkm').value) || 75;
         const batasDisiplin = 80;
 
         try {
-            const response = await fetch(`api/klasifikasi.php?kelas_id=${encodeURIComponent(filterKelas)}&mapel_id=${encodeURIComponent(filterMapel)}`);
+            const response = await fetch(`api/klasifikasi.php?kelas_id=${encodeURIComponent(filterKelas)}&mapel_id=${encodeURIComponent(filterMapel)}&periode_id=${encodeURIComponent(filterPeriode)}`);
             const res = await response.json();
 
             if (res && res.data) {

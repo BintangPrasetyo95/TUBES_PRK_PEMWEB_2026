@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+if (!isset($_SESSION['user'])) {
+    $_SESSION['error'] = 'Silakan login terlebih dahulu.';
+    header('Location: ../login.php');
+    exit;
+}
 
 $pageTitle = 'Laporan';
 ?>

@@ -105,7 +105,10 @@ if ($isPost) {
         $assignment = null;
         if ($penugasanId > 0) {
             $statement = $pdo->prepare(
-                'SELECT id, guru_id, kelas_id, semester_id FROM penugasan_guru WHERE id = :id LIMIT 1'
+                'SELECT p.id, p.guru_id, p.kelas_id, k.semester_id
+                 FROM penugasan_guru p
+                 INNER JOIN kelas k ON k.id = p.kelas_id
+                 WHERE p.id = :id LIMIT 1'
             );
             $statement->execute(['id' => $penugasanId]);
             $assignment = $statement->fetch() ?: null;
@@ -145,10 +148,11 @@ if ($isPost) {
                 'SELECT COUNT(*)
                  FROM jadwal_mengajar j
                  INNER JOIN penugasan_guru p ON p.id = j.penugasan_guru_id
+                 INNER JOIN kelas k ON k.id = p.kelas_id
                  WHERE j.hari = :hari
                    AND j.jam_mulai < :jam_selesai
                    AND j.jam_selesai > :jam_mulai
-                   AND p.semester_id = :semester_id
+                   AND k.semester_id = :semester_id
                    AND (p.kelas_id = :kelas_id OR p.guru_id = :guru_id)
                    AND j.id <> :id'
             );
@@ -279,11 +283,13 @@ if ($filterSemesterId > 0 && !$semesterExists) {
 
 // Assignments available for the form (all semesters; the schedule inherits them).
 $assignmentOptions = $pdo->query(
-    'SELECT p.id, g.nama AS guru_nama, k.nama AS kelas_nama, s.nama AS semester_nama
+    'SELECT p.id, g.nama AS guru_nama, mp.nama AS mapel_nama,
+            k.nama AS kelas_nama, s.nama AS semester_nama
      FROM penugasan_guru p
      INNER JOIN guru g ON g.id = p.guru_id
+     INNER JOIN mata_pelajaran mp ON mp.id = p.mata_pelajaran_id
      INNER JOIN kelas k ON k.id = p.kelas_id
-     INNER JOIN semester s ON s.id = p.semester_id
+     INNER JOIN semester s ON s.id = k.semester_id
      ORDER BY s.tanggal_mulai DESC, k.nama, g.nama'
 )->fetchAll();
 
@@ -332,15 +338,17 @@ $isEditing = $formValues['id'] > 0;
 // Schedule list for the selected semester (0 = all semesters).
 $listSql = 'SELECT j.id, j.hari, j.jam_mulai, j.jam_selesai, j.berlaku_mulai, j.berlaku_sampai,
                    p.id AS penugasan_id,
-                   g.nama AS guru_nama, k.nama AS kelas_nama, s.nama AS semester_nama
+                   g.nama AS guru_nama, mp.nama AS mapel_nama,
+                   k.nama AS kelas_nama, s.nama AS semester_nama
             FROM jadwal_mengajar j
             INNER JOIN penugasan_guru p ON p.id = j.penugasan_guru_id
             INNER JOIN guru g ON g.id = p.guru_id
+            INNER JOIN mata_pelajaran mp ON mp.id = p.mata_pelajaran_id
             INNER JOIN kelas k ON k.id = p.kelas_id
-            INNER JOIN semester s ON s.id = p.semester_id';
+            INNER JOIN semester s ON s.id = k.semester_id';
 $listParams = [];
 if ($filterSemesterId > 0) {
-    $listSql .= ' WHERE p.semester_id = :semester_id';
+    $listSql .= ' WHERE k.semester_id = :semester_id';
     $listParams['semester_id'] = $filterSemesterId;
 }
 $listSql .= ' ORDER BY s.tanggal_mulai DESC, j.hari, j.jam_mulai';
@@ -349,158 +357,15 @@ $statement = $pdo->prepare($listSql);
 $statement->execute($listParams);
 $scheduleList = $statement->fetchAll();
 
-admin_page_start('Jadwal Mengajar', 'jadwal-mengajar.php');
-?>
-<section class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h2 class="text-lg font-semibold text-[#20392a]">Daftar Jadwal Mengajar</h2>
-            <p class="mt-1 text-sm text-slate-600">Guru, kelas, dan semester ditampilkan dari penugasan guru.</p>
-        </div>
-        <form method="get" action="jadwal-mengajar.php" class="flex items-end gap-2">
-            <div>
-                <label for="filter-semester" class="mb-1.5 block text-sm font-medium text-slate-700">Semester</label>
-                <select id="filter-semester" name="semester_id" class="min-h-10 rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm">
-                    <option value="0" <?= $filterSemesterId === 0 ? 'selected' : '' ?>>Semua semester</option>
-                    <?php foreach ($semesterList as $semester): ?>
-                        <option value="<?= h((string) $semester['id']) ?>" <?= (int) $semester['id'] === $filterSemesterId ? 'selected' : '' ?>>
-                            <?= h((string) $semester['nama']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d]">Tampilkan</button>
-        </form>
-    </div>
+$showForm = $isEditing
+    || isset($_GET['form'])
+    || ($isPost && ($_POST['action'] ?? '') === 'save' && $errors !== []);
 
-    <?php if ($flash !== null): ?>
-        <?php $flashType = ($flash['type'] ?? 'success') === 'error' ? 'error' : 'success'; ?>
-        <p role="status" class="rounded-xl px-4 py-3 text-sm <?= $flashType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' ?>">
-            <?= h((string) ($flash['message'] ?? '')) ?>
-        </p>
-    <?php endif; ?>
-
-    <?php if ($errors !== []): ?>
-        <ul class="space-y-1 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-            <?php foreach ($errors as $error): ?>
-                <li>• <?= h($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
-    <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-        <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-            <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Guru</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kelas</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Semester</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Hari</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Jam</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Berlaku</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-[#edf1ec] text-slate-700">
-                <?php if ($scheduleList === []): ?>
-                    <tr><td colspan="8" class="px-4 py-9 text-center text-slate-500">Belum ada jadwal mengajar.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($scheduleList as $index => $schedule): ?>
-                        <?php
-                        $dayNumber = (int) $schedule['hari'];
-                        $dayLabel = JADWAL_DAYS[$dayNumber] ?? 'Hari ' . $dayNumber;
-                        $validFrom = ($schedule['berlaku_mulai'] ?? '') !== '' ? (string) $schedule['berlaku_mulai'] : '';
-                        $validUntil = ($schedule['berlaku_sampai'] ?? '') !== '' ? (string) $schedule['berlaku_sampai'] : '';
-                        $validity = $validFrom === '' && $validUntil === ''
-                            ? 'Selalu'
-                            : ($validFrom !== '' ? $validFrom : '—') . ' s.d. ' . ($validUntil !== '' ? $validUntil : '—');
-                        ?>
-                        <tr class="hover:bg-[#f8faf7]">
-                            <td class="px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
-                            <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['guru_nama']) ?></td>
-                            <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['kelas_nama']) ?></td>
-                            <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['semester_nama']) ?></td>
-                            <td class="px-4 py-3.5 sm:px-5"><?= h($dayLabel . ' (' . $dayNumber . ')') ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h(substr((string) $schedule['jam_mulai'], 0, 5) . '–' . substr((string) $schedule['jam_selesai'], 0, 5)) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h($validity) ?></td>
-                            <td class="px-4 py-3.5 sm:px-5">
-                                <div class="flex items-center gap-2">
-                                    <a href="jadwal-mengajar.php?<?= $filterSemesterId > 0 ? 'semester_id=' . h((string) $filterSemesterId) . '&amp;' : '' ?>edit=<?= h((string) $schedule['id']) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Edit</a>
-                                    <form method="post" action="jadwal-mengajar.php" class="inline" onsubmit="return confirm('Hapus jadwal ini?');">
-                                        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-                                        <input type="hidden" name="action" value="delete">
-                                        <input type="hidden" name="id" value="<?= h((string) $schedule['id']) ?>">
-                                        <input type="hidden" name="filter_semester_id" value="<?= h((string) $filterSemesterId) ?>">
-                                        <button type="submit" class="rounded-md px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50">Hapus</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section id="form-jadwal" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <h2 class="text-base font-semibold text-[#20392a]"><?= $isEditing ? 'Edit Jadwal' : 'Tambah Jadwal' ?></h2>
-    <p class="mt-1 text-sm text-slate-600">
-        Hari memakai angka sesuai konvensi aplikasi: 1 = Senin sampai 7 = Minggu. Jam boleh ditulis HH:MM atau HH:MM:SS.
-    </p>
-
-    <?php if ($assignmentOptions === []): ?>
-        <p class="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Belum ada penugasan guru. Buat penugasan guru terlebih dahulu sebelum menambah jadwal.
-        </p>
-    <?php else: ?>
-        <form method="post" action="jadwal-mengajar.php<?= $filterSemesterId > 0 ? '?semester_id=' . h((string) $filterSemesterId) : '' ?>" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-            <input type="hidden" name="action" value="save">
-            <input type="hidden" name="id" value="<?= h((string) $formValues['id']) ?>">
-            <input type="hidden" name="filter_semester_id" value="<?= h((string) $filterSemesterId) ?>">
-
-            <div class="lg:col-span-3">
-                <label for="schedule-assignment" class="mb-1.5 block text-sm font-medium text-slate-700">Penugasan Guru</label>
-                <select id="schedule-assignment" name="penugasan_guru_id" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm">
-                    <option value="0">Pilih penugasan</option>
-                    <?php foreach ($assignmentOptions as $option): ?>
-                        <option value="<?= h((string) $option['id']) ?>" <?= (int) $option['id'] === $formValues['penugasan_guru_id'] ? 'selected' : '' ?>>
-                            #<?= h((string) $option['id']) ?> · <?= h((string) $option['guru_nama']) ?> · <?= h((string) $option['kelas_nama']) ?> · <?= h((string) $option['semester_nama']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div>
-                <label for="schedule-day" class="mb-1.5 block text-sm font-medium text-slate-700">Hari</label>
-                <select id="schedule-day" name="hari" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm">
-                    <option value="0">Pilih hari</option>
-                    <?php foreach (JADWAL_DAYS as $number => $dayName): ?>
-                        <option value="<?= h((string) $number) ?>" <?= $number === $formValues['hari'] ? 'selected' : '' ?>>
-                            <?= h($number . ' · ' . $dayName) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <?php
-            attendara_ui_input('Jam mulai', 'jam_mulai', $formValues['jam_mulai'], 'text', 'Contoh: 07:00');
-            attendara_ui_input('Jam selesai', 'jam_selesai', $formValues['jam_selesai'], 'text', 'Contoh: 08:30');
-            attendara_ui_input('Berlaku mulai (opsional)', 'berlaku_mulai', $formValues['berlaku_mulai'], 'date');
-            attendara_ui_input('Berlaku sampai (opsional)', 'berlaku_sampai', $formValues['berlaku_sampai'], 'date');
-            ?>
-
-            <div class="flex items-center gap-3 sm:col-span-2 lg:col-span-3">
-                <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
-                    <?= $isEditing ? 'Simpan Perubahan' : 'Simpan Jadwal' ?>
-                </button>
-                <?php if ($isEditing): ?>
-                    <a href="jadwal-mengajar.php<?= $filterSemesterId > 0 ? '?semester_id=' . h((string) $filterSemesterId) : '' ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Batal</a>
-                <?php endif; ?>
-            </div>
-        </form>
-    <?php endif; ?>
-</section>
-<?php admin_page_end(); ?>
+admin_page_start(
+    $showForm ? ($isEditing ? 'Edit Jadwal' : 'Tambah Jadwal') : 'Jadwal Mengajar',
+    'jadwal-mengajar.php',
+    $showForm ? null : ['label' => 'Tambah Jadwal', 'href' => 'jadwal-mengajar.php?form=1' . ($filterSemesterId > 0 ? '&semester_id=' . (string) $filterSemesterId : '')],
+    $showForm ? null : 'Guru, kelas, dan semester ditampilkan dari penugasan guru.'
+);
+require __DIR__ . '/views/' . ($showForm ? 'jadwal-mengajar-form.php' : 'jadwal-mengajar-list.php');
+admin_page_end();

@@ -123,6 +123,8 @@ if (isPost()) {
 
 // ===== Bagian tampilan halaman (HTML) =====
 $judulHalaman = $modeEdit ? 'Edit Kuis' : 'Buat Kuis Baru';
+$halamanAktif = 'kuis';
+$root = '../';
 
 // Kalau kuis pernah ditolak atau ditarik, ambil alasannya untuk ditampilkan
 $catatanRevisi = '';
@@ -133,25 +135,19 @@ if ($modeEdit && ($kuis['status'] == 'ditolak' || $kuis['status'] == 'ditarik'))
 // Ambil token CSRF dari file csrf.php
 $tokenCsrf = ambilTokenCsrf();
 
-// Muat header dan sidebar jika sudah dibuat oleh Farel
-if (file_exists(__DIR__ . '/../includes/partials/header.php')) {
-    include __DIR__ . '/../includes/partials/header.php';
-}
-if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
-    include __DIR__ . '/../includes/partials/sidebar.php';
-}
+require_once __DIR__ . '/../includes/partials/header-panel.php';
 ?>
-<main class="konten-panel">
-    <h1><?= e($judulHalaman) ?></h1>
+<div class="card">
+    <h1 class="card-title"><?= e($judulHalaman) ?></h1>
 
     <?php if ($pesanErrorUmum !== '') { ?>
-        <div class="pesan pesan-galat" role="alert">
+        <div class="alert alert-galat" role="alert">
             <?= e($pesanErrorUmum) ?>
         </div>
     <?php } ?>
 
     <?php if ($catatanRevisi !== '') { ?>
-        <div class="pesan pesan-info" role="status">
+        <div class="alert alert-info" role="status">
             <strong>
                 Kuis ini <?= ($kuis['status'] == 'ditolak') ? 'ditolak' : 'ditarik' ?> oleh admin.
             </strong>
@@ -160,29 +156,29 @@ if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
         </div>
     <?php } ?>
 
-    <form method="post" action="" class="form-kuis" novalidate>
+    <form method="post" action="" novalidate>
         <input type="hidden" name="csrf_token" value="<?= e($tokenCsrf) ?>">
 
         <!-- Judul -->
-        <div class="kolom-form">
-            <label for="judul">Judul Kuis</label>
-            <input type="text" id="judul" name="judul" maxlength="150"
+        <div class="form-group">
+            <label for="judul" class="form-label">Judul Kuis</label>
+            <input type="text" id="judul" name="judul" class="form-input" maxlength="150"
                    value="<?= e($nilaiForm['judul']) ?>" required>
             <?php if (isset($errors['judul'])) { ?>
-                <p class="teks-galat"><?= e($errors['judul']) ?></p>
+                <p class="form-error"><?= e($errors['judul']) ?></p>
             <?php } ?>
         </div>
 
         <!-- Deskripsi -->
-        <div class="kolom-form">
-            <label for="deskripsi">Deskripsi (boleh dikosongkan)</label>
-            <textarea id="deskripsi" name="deskripsi" rows="4"><?= e($nilaiForm['deskripsi']) ?></textarea>
+        <div class="form-group">
+            <label for="deskripsi" class="form-label">Deskripsi (boleh dikosongkan)</label>
+            <textarea id="deskripsi" name="deskripsi" class="form-textarea" rows="4"><?= e($nilaiForm['deskripsi']) ?></textarea>
         </div>
 
         <!-- Topik -->
-        <div class="kolom-form">
-            <label for="topik_id">Topik</label>
-            <select id="topik_id" name="topik_id" required>
+        <div class="form-group">
+            <label for="topik_id" class="form-label">Topik</label>
+            <select id="topik_id" name="topik_id" class="form-select" required>
                 <option value="">-- Pilih topik --</option>
                 <?php foreach ($daftarTopik as $topik) { ?>
                     <option value="<?= e($topik['id']) ?>"
@@ -192,14 +188,14 @@ if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
                 <?php } ?>
             </select>
             <?php if (isset($errors['topik_id'])) { ?>
-                <p class="teks-galat"><?= e($errors['topik_id']) ?></p>
+                <p class="form-error"><?= e($errors['topik_id']) ?></p>
             <?php } ?>
         </div>
 
         <!-- Tingkat -->
-        <div class="kolom-form">
-            <label for="tingkat_id">Tingkat</label>
-            <select id="tingkat_id" name="tingkat_id" required>
+        <div class="form-group">
+            <label for="tingkat_id" class="form-label">Tingkat</label>
+            <select id="tingkat_id" name="tingkat_id" class="form-select" required>
                 <option value="">-- Pilih tingkat --</option>
                 <?php foreach ($daftarTingkat as $tingkat) { ?>
                     <option value="<?= e($tingkat['id']) ?>"
@@ -209,23 +205,23 @@ if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
                 <?php } ?>
             </select>
             <?php if (isset($errors['tingkat_id'])) { ?>
-                <p class="teks-galat"><?= e($errors['tingkat_id']) ?></p>
+                <p class="form-error"><?= e($errors['tingkat_id']) ?></p>
             <?php } ?>
         </div>
 
         <!-- Durasi -->
-        <div class="kolom-form">
-            <label for="durasi_menit">Durasi (menit)</label>
-            <input type="number" id="durasi_menit" name="durasi_menit" min="1" max="240"
+        <div class="form-group">
+            <label for="durasi_menit" class="form-label">Durasi (menit)</label>
+            <input type="number" id="durasi_menit" name="durasi_menit" class="form-input" min="1" max="240"
                    value="<?= e($nilaiForm['durasi_menit']) ?>" required>
             <?php if (isset($errors['durasi_menit'])) { ?>
-                <p class="teks-galat"><?= e($errors['durasi_menit']) ?></p>
+                <p class="form-error"><?= e($errors['durasi_menit']) ?></p>
             <?php } ?>
         </div>
 
         <!-- Jenis akses -->
-        <div class="kolom-form">
-            <p>Jenis Akses</p>
+        <div class="form-group">
+            <p class="form-label">Jenis Akses</p>
             <label for="akses_publik">
                 <input type="radio" id="akses_publik" name="akses" value="publik"
                     <?= ($nilaiForm['akses'] == 'publik') ? 'checked' : '' ?>>
@@ -237,32 +233,30 @@ if (file_exists(__DIR__ . '/../includes/partials/sidebar.php')) {
                 Privat (dibuka dengan kode kuis)
             </label>
             <?php if (isset($errors['akses'])) { ?>
-                <p class="teks-galat"><?= e($errors['akses']) ?></p>
+                <p class="form-error"><?= e($errors['akses']) ?></p>
             <?php } ?>
         </div>
 
         <!-- Kode kuis hanya tampil jika kuis privat sudah punya kode -->
         <?php if ($modeEdit && $nilaiForm['akses'] == 'privat' && $nilaiForm['kode'] !== '') { ?>
-            <div class="kolom-form kotak-kode">
-                <p>Kode Kuis (bagikan ke pelajar)</p>
-                <p class="kode-kuis"><strong><?= e($nilaiForm['kode']) ?></strong></p>
+            <div class="form-group card card-sm">
+                <p class="form-label">Kode Kuis (bagikan ke pelajar)</p>
+                <p><strong><?= e($nilaiForm['kode']) ?></strong></p>
             </div>
         <?php } elseif ($nilaiForm['akses'] == 'privat') { ?>
-            <p class="teks-bantu">Kode kuis akan dibuat otomatis setelah kuis disimpan.</p>
+            <p class="form-helper">Kode kuis akan dibuat otomatis setelah kuis disimpan.</p>
         <?php } ?>
 
-        <div class="baris-tombol">
-            <a href="kuis.php" class="tombol tombol-sekunder">Batal</a>
-            <button type="submit" name="simpan" value="1" class="tombol tombol-utama">Simpan</button>
+        <div class="form-group">
+            <a href="kuis.php" class="btn btn-batal">Batal</a>
+            <button type="submit" name="simpan" value="1" class="btn btn-primary">Simpan</button>
             <?php if ($modeEdit) { ?>
-                <button type="submit" name="lanjut_soal" value="1" class="tombol tombol-aksen">
+                <button type="submit" name="lanjut_soal" value="1" class="btn btn-accent">
                     Simpan &amp; Kelola Soal
                 </button>
             <?php } ?>
         </div>
     </form>
-</main>
+</div>
 <?php
-if (file_exists(__DIR__ . '/../includes/partials/footer.php')) {
-    include __DIR__ . '/../includes/partials/footer.php';
-}
+require_once __DIR__ . '/../includes/partials/footer-panel.php';

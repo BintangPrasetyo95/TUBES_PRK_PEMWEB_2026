@@ -11,6 +11,7 @@ require_once __DIR__ . '/../../includes/csrf.php';
     <title>Kelola Aspirasi - KabarSih</title>
     <link rel="stylesheet" href="../css/admin.css">
 </head>
+
 <body class="adm-body">
 <?php include __DIR__ . '/../../components/admin_nav.php'; ?>
 

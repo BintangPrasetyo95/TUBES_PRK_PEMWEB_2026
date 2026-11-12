@@ -24,7 +24,7 @@ $namaPengguna = $_SESSION['nama'] ?? '';
     >
 
     <!-- CSS Utama Aplikasi -->
-    <link rel="stylesheet" href="../assets/style.css?v=3">
+    <link rel="stylesheet" href="../assets/style.css?">
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">
@@ -32,7 +32,6 @@ $namaPengguna = $_SESSION['nama'] ?? '';
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm topbar">
     <div class="container d-flex justify-content-between align-items-center">
 
-        <!-- Hapus class 'navbar-brand' agar ukuran & font murni mengikuti '.topbar .brand' di style.css -->
         <a class="brand" href="admin.php">
             Klinik FK Unila
         </a>

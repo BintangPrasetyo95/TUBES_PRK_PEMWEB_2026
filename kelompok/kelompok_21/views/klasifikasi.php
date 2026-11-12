@@ -11,6 +11,7 @@ if (!isset($pdo) || !$pdo) {
 
 $daftarKelas = [];
 $daftarMapel = [];
+$daftarPeriode = [];
 try {
     if (isset($pdo) && $pdo) {
         $stmtKls = $pdo->query("SELECT id_kelas, nama_kelas FROM KELAS ORDER BY id_kelas ASC");
@@ -18,6 +19,9 @@ try {
 
         $stmtMapel = $pdo->query("SELECT id_mapel, nama_mapel FROM MATA_PELAJARAN ORDER BY nama_mapel ASC");
         $daftarMapel = $stmtMapel->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtPeriode = $pdo->query("SELECT id_periode, tahun_ajaran, semester, status_aktif FROM PERIODE_PENILAIAN ORDER BY status_aktif DESC, tahun_ajaran DESC, semester ASC");
+        $daftarPeriode = $stmtPeriode->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (Exception $e) {
 }
@@ -40,6 +44,17 @@ try {
                 <?php foreach ($daftarKelas as $kls): ?>
                     <option value="<?= htmlspecialchars($kls['id_kelas']) ?>">
                         <?= htmlspecialchars($kls['nama_kelas']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="filter-item">
+            <label for="filter-periode">Periode:</label>
+            <select id="filter-periode">
+                <option value="0">Semua Periode</option>
+                <?php foreach ($daftarPeriode as $prd): ?>
+                    <option value="<?= htmlspecialchars($prd['id_periode']) ?>" <?= $prd['status_aktif'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($prd['tahun_ajaran'] . ' - ' . $prd['semester']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>

@@ -8,16 +8,22 @@ if ($method !== 'GET') {
 try {
     $kelasId = trim($_GET['kelas_id'] ?? '0');
     $mapelId = trim($_GET['mapel_id'] ?? '0');
+    $periodeId = trim($_GET['periode_id'] ?? '0');
 
-    $joinPenugasan = "LEFT JOIN PENUGASAN_MENGAJAR pm ON pm.id_kelas = s.id_kelas
-                      LEFT JOIN PERIODE_PENILAIAN pr ON pr.id_periode = pm.id_periode AND pr.status_aktif = 1";
+    $joinConditions = ["pm.id_kelas = s.id_kelas"];
     $params = [];
 
     if ($mapelId !== '0' && $mapelId !== '') {
-        $joinPenugasan = "LEFT JOIN PENUGASAN_MENGAJAR pm ON pm.id_kelas = s.id_kelas AND pm.id_mapel = ?
-                          LEFT JOIN PERIODE_PENILAIAN pr ON pr.id_periode = pm.id_periode AND pr.status_aktif = 1";
+        $joinConditions[] = "pm.id_mapel = ?";
         $params[] = $mapelId;
     }
+
+    if ($periodeId !== '0' && $periodeId !== '') {
+        $joinConditions[] = "pm.id_periode = ?";
+        $params[] = $periodeId;
+    }
+
+    $joinSql = "LEFT JOIN PENUGASAN_MENGAJAR pm ON " . implode(" AND ", $joinConditions);
 
     $sql = "
         SELECT 
@@ -27,17 +33,17 @@ try {
             s.id_kelas AS kelas,
             ROUND(COALESCE(
                 (SUM(CASE 
-                    WHEN pr.id_periode IS NOT NULL AND LOWER(TRIM(p.jenis_komponen)) = 'tugas' AND LOWER(TRIM(np.status_pengumpulan)) = 'tepat waktu' THEN 100
-                    WHEN pr.id_periode IS NOT NULL AND LOWER(TRIM(p.jenis_komponen)) = 'tugas' AND LOWER(TRIM(np.status_pengumpulan)) = 'terlambat' THEN 50
+                    WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' AND LOWER(TRIM(np.status_pengumpulan)) = 'tepat waktu' THEN 100
+                    WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' AND LOWER(TRIM(np.status_pengumpulan)) = 'terlambat' THEN 50
                     ELSE 0 
                 END) 
                 / 
-                NULLIF(COUNT(DISTINCT CASE WHEN pr.id_periode IS NOT NULL AND LOWER(TRIM(p.jenis_komponen)) = 'tugas' THEN p.id_penilaian END) * 100, 0)
+                NULLIF(COUNT(DISTINCT CASE WHEN LOWER(TRIM(p.jenis_komponen)) = 'tugas' THEN p.id_penilaian END) * 100, 0)
                 ) * 100, 
             0), 1) AS tugas,
-            ROUND(COALESCE(AVG(CASE WHEN pr.id_periode IS NOT NULL AND LOWER(TRIM(p.jenis_komponen)) = 'uas' AND np.nilai IS NOT NULL THEN np.nilai END), 0), 1) AS ujian
+            ROUND(COALESCE(AVG(CASE WHEN LOWER(TRIM(p.jenis_komponen)) = 'uas' AND np.nilai IS NOT NULL THEN np.nilai END), 0), 1) AS ujian
         FROM SISWA s
-        $joinPenugasan
+        $joinSql
         LEFT JOIN PENILAIAN p ON p.id_penugasan = pm.id_penugasan
         LEFT JOIN NILAI_DAN_PENGUMPULAN np ON np.id_penilaian = p.id_penilaian 
                                           AND np.id_siswa = s.id_siswa
@@ -60,7 +66,7 @@ try {
         $row['kelas'] = (string)$row['kelas'];
     }
 
-    respond($data, 'Data klasifikasi tersinkronisasi per kelas dan mapel aktif.');
+    respond($data, 'Data klasifikasi tersinkronisasi per kelas, mapel, dan periode.');
 } catch (Exception $e) {
     respond(null, 'Gagal mengambil data: ' . $e->getMessage(), 500);
 }

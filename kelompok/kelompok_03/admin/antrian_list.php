@@ -24,39 +24,40 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <nav aria-label="breadcrumb">
-    <ol class="jejak">
-        <li><a href="admin.php">Dashboard</a></li>
-        <li aria-current="page">Daftar Antrian</li>
+    <ol class="breadcrumb mb-2 small">
+        <li class="breadcrumb-item"><a href="admin.php" class="text-decoration-underline fw-medium" style="color: #0f766e;">Dashboard</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Daftar Antrian</li>
     </ol>
 </nav>
 
-<div class="baris-judul">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="judul">Daftar Antrian Pasien</h2>
-        <p class="muted small">Pantau daftar antrian pasien yang masuk hari ini, panggil pasien, atau selesaikan antrian.</p>
+        <h2 class="fw-bold text-primary mb-2">Daftar Antrian Pasien</h2>
+        <p class="text-muted small mb-0">Pantau daftar antrian pasien yang masuk hari ini, panggil pasien, atau selesaikan antrian.</p>
     </div>
-    <span class="lencana lencana-praktik">Hari Ini: <?= date('d M Y'); ?></span>
+    <span class="badge px-3 py-2 rounded-pill small fw-semibold" style="background-color: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4;">
+        Hari Ini: <?= date('d M Y'); ?>
+    </span>
 </div>
 
+<!-- Menampilkan Pesan Sukses / Error dari Backend -->
 <?php if (isset($_SESSION['flash_pesan'])): ?>
-    <?php
-    $tipeFlash = $_SESSION['flash_tipe'] ?? 'info';
-    $kelasFlash = $tipeFlash === 'success' ? 'peringatan-sukses' : ($tipeFlash === 'danger' || $tipeFlash === 'error' ? 'peringatan-bahaya' : 'peringatan-info');
-    ?>
-    <div class="peringatan <?= $kelasFlash ?>" role="alert">
-        <span><?= htmlspecialchars($_SESSION['flash_pesan']) ?></span>
-        <button type="button" class="tutup" data-tutup aria-label="Tutup">&times;</button>
+    <div class="alert alert-<?= htmlspecialchars($_SESSION['flash_tipe']) ?> alert-dismissible fade show shadow-sm" role="alert">
+        <?= htmlspecialchars($_SESSION['flash_pesan']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <?php
-    unset($_SESSION['flash_tipe'], $_SESSION['flash_pesan']);
+    <?php 
+    // Hapus pesan setelah ditampilkan
+    unset($_SESSION['flash_tipe'], $_SESSION['flash_pesan']); 
     ?>
 <?php endif; ?>
 
-<div class="kartu">
-    <div class="kartu-isi">
-        <div class="baris-filter">
-            <input type="text" id="cari-admin" class="masukan masukan-kecil" placeholder="Cari nama pasien atau dokter...">
-            <select id="filter-status-admin" class="masukan masukan-kecil">
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <input type="text" id="cari-admin" class="form-control form-control-sm" style="max-width: 280px;" placeholder="Cari nama pasien atau dokter...">
+            <select id="filter-status-admin" class="form-select form-select-sm" style="max-width: 180px;">
                 <option value="">Semua Status</option>
                 <option value="menunggu">Menunggu</option>
                 <option value="dipanggil">Dipanggil</option>
@@ -64,15 +65,15 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </select>
         </div>
 
-        <div class="bungkus-tabel">
-            <table class="tabel">
-                <thead>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
                     <tr>
-                        <th>No. Antrian</th>
-                        <th>Nama Pasien</th>
-                        <th>Dokter Tujuan</th>
-                        <th>Status</th>
-                        <th class="tengah">Aksi</th>
+                        <th scope="col" class="py-3" width="15%">No. Antrian</th>
+                        <th scope="col" class="py-3" width="25%">Nama Pasien</th>
+                        <th scope="col" class="py-3" width="25%">Dokter Tujuan</th>
+                        <th scope="col" class="py-3" width="15%">Status</th>
+                        <th scope="col" class="py-3 text-center" width="20%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,39 +81,52 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php foreach ($antrian_list as $row): ?>
                             <tr>
                                 <td>
-                                    <span class="nomor-bulat"><?= htmlspecialchars($row['nomor_antrian']) ?></span>
+                                    <!-- Lingkaran Bergaris Tipis Biru -->
+                                    <span class="d-inline-flex align-items-center justify-content-center fw-bold rounded-circle" style="width: 36px; height: 36px; font-size: 0.9rem; background-color: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4;">
+                                        <?= htmlspecialchars($row['nomor_antrian']) ?>
+                                    </span>
                                 </td>
-                                <td class="tebal"><?= htmlspecialchars($row['nama_pasien']) ?></td>
+                                <td class="fw-bold text-dark"><?= htmlspecialchars($row['nama_pasien']) ?></td>
                                 <td><?= htmlspecialchars($row['nama_dokter']) ?></td>
+                                
+                                <!-- Status Badge Ramping -->
                                 <td>
                                     <?php if ($row['status'] === 'menunggu'): ?>
-                                        <span class="lencana lencana-peringatan">Menunggu</span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 rounded-pill small">
+                                            Menunggu
+                                        </span>
                                     <?php elseif ($row['status'] === 'dipanggil'): ?>
-                                        <span class="lencana lencana-info">Dipanggil</span>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill small">
+                                            Dipanggil
+                                        </span>
                                     <?php elseif ($row['status'] === 'selesai'): ?>
-                                        <span class="lencana lencana-sukses">Selesai</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small">
+                                            Selesai
+                                        </span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="tengah">
+
+                                <!-- Aksi Tombol -->
+                                <td class="text-center">
                                     <?php if ($row['status'] === 'menunggu'): ?>
-                                        <form action="antrian_panggil.php" method="POST" style="display:inline;">
+                                        <form action="antrian_panggil.php" method="POST" class="d-inline">
                                             <input type="hidden" name="antrian_id" value="<?= $row['id'] ?>">
-                                            <button type="submit" class="tombol tombol-garis tombol-kecil-btn">Panggil</button>
+                                            <button type="submit" class="btn btn-outline-primary btn-sm px-3">Panggil</button>
                                         </form>
                                     <?php elseif ($row['status'] === 'dipanggil'): ?>
-                                        <form action="antrian_selesai.php" method="POST" style="display:inline;">
+                                        <form action="antrian_selesai.php" method="POST" class="d-inline">
                                             <input type="hidden" name="antrian_id" value="<?= $row['id'] ?>">
-                                            <button type="submit" class="tombol tombol-garis-hijau tombol-kecil-btn">Selesai</button>
+                                            <button type="submit" class="btn btn-outline-success btn-sm px-3">Selesai</button>
                                         </form>
                                     <?php else: ?>
-                                        <span class="lencana lencana-netral">Selesai</span>
+                                        <span class="badge bg-light text-muted border px-3 py-1">Selesai</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="5" class="tengah muted">
+                            <td colspan="5" class="text-center py-4 text-muted">
                                 Belum ada pasien yang mengambil antrian hari ini.
                             </td>
                         </tr>

@@ -119,7 +119,7 @@ foreach ($semuaDokter as $doc) {
 
 <!-- Navigasi Atas (Topbar) -->
 <header class="topbar">
-    <a href="index.php" class="brand">Klinik FK Unila</a>
+    <a href="index.php" class="brand fw-bold">Klinik FK Unila</a>
     <nav aria-label="Menu utama">
         <?php if ($sudahLogin): ?>
             <?php if ($userRole === 'admin'): ?>

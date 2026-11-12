@@ -1,0 +1,262 @@
+
+/* Pengaturan dasar halaman */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 30px;
+}
+
+/* Judul halaman */
+h1 {
+    color: #247a65;
+    margin-bottom: 10px;
+}
+
+h2 {
+    color: #247a65;
+    margin-top: 30px;
+}
+
+/* Navigasi */
+a {
+    color: #247a65;
+    text-decoration: none;
+    margin-right: 8px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Tabel tips */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    margin-top: 20px;
+}
+
+th {
+    background-color: #247a65;
+    color: white;
+    padding: 14px;
+}
+
+td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+tr:hover {
+    background-color: #f0f8f5;
+}
+
+/* Navigasi tombol */
+.navigasi {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.navigasi a {
+    display: inline-block;
+    padding: 10px 18px;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.btn-dashboard {
+    background-color: #52796f;
+}
+
+.btn-tambah {
+    background-color: #218c74;
+}
+
+.btn-logout {
+    background-color: #d9534f;
+}
+
+.navigasi a:hover {
+    opacity: 0.85;
+    text-decoration: none;
+}
+
+/* Form tambah tips */
+form {
+    background-color: white;
+    padding: 25px;
+    border-radius: 10px;
+    max-width: 650px;
+    margin-top: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+form label {
+    display: inline-block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #247a65;
+}
+
+form input[type="text"],
+form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+    margin-bottom: 15px;
+}
+
+form input[type="file"] {
+    margin-bottom: 20px;
+}
+
+form button {
+    background-color: #218c74;
+    color: white;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+form button:hover {
+    background-color: #176b58;
+}
+.btn-hapus {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-hapus:hover {
+    background-color: #b52b27;
+}
+
+/* Halaman publik tips kesehatan */
+.daftar-tips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    margin-top: 25px;
+}
+
+.kartu-tips {
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s;
+}
+
+.kartu-tips:hover {
+    transform: translateY(-5px);
+}
+
+.kartu-tips img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.kartu-tips h3 {
+    color: #247a65;
+    margin-top: 15px;
+}
+
+.kartu-tips p {
+    color: #555;
+    line-height: 1.7;
+    font-size: 14px;
+}
+
+/* Responsif untuk HP */
+@media (max-width: 600px) {
+    body {
+        padding: 15px;
+    }
+
+    .daftar-tips {
+        grid-template-columns: 1fr;
+    }
+}
+.form-hapus {
+    display: inline;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    max-width: none;
+    box-shadow: none;
+}
+.btn-edit {
+    display: inline-block;
+    background-color: #218c74;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.btn-edit:hover {
+    background-color: #176b58;
+    text-decoration: none;
+}
+
+td a.btn-edit {
+    display: inline-block;
+    background-color: #218c74;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0 0 8px 0;
+}
+
+td a.btn-edit:hover {
+    background-color: #176b58;
+}
+
+/* Tombol Edit */
+a.btn-edit {
+    display: inline-block;
+    background-color: #218c74;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0 0 8px 0;
+}
+
+a.btn-edit:hover {
+    background-color: #176b58;
+}
+
+.pesan-sukses {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px 18px;
+    border: 1px solid #c3e6cb;
+    border-radius: 6px;
+    margin: 15px 0;
+    font-weight: bold;
+}

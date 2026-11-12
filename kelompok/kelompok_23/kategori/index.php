@@ -1,17 +1,16 @@
-
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../auth/login.php");
-    exit;
-}
+require_once __DIR__ . '/../includes/role_guard.php';
+requireRole(['Admin', 'Kasir']);
 
 require_once __DIR__ . '/../config/database.php';
 
 $query = $conn->query("SELECT * FROM categories ORDER BY id DESC");
 
 $pageTitle = 'Kategori';
+
+$isAdmin = strtolower(trim($_SESSION['role'] ?? '')) === 'admin';
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -73,13 +72,15 @@ require_once __DIR__ . '/../includes/header.php';
 
                         <span class="badge bg-light text-primary border p-2">
                             <i class="bi bi-tags me-1"></i>
-                            Total: <?= $query->num_rows; ?> Kategori
+                            Total: <?= $query ? $query->num_rows : 0; ?> Kategori
                         </span>
 
-                        <a href="tambah.php" class="btn btn-primary">
-                            <i class="bi bi-plus-lg me-1"></i>
-                            Tambah Kategori
-                        </a>
+                        <?php if ($isAdmin): ?>
+                            <a href="tambah.php" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Tambah Kategori
+                            </a>
+                        <?php endif; ?>
 
                     </div>
                 </div>
@@ -117,21 +118,24 @@ require_once __DIR__ . '/../includes/header.php';
                                         </td>
 
                                         <td>
-                                            <div class="d-flex gap-1">
+                                            <?php if ($isAdmin): ?>
+                                                <div class="d-flex gap-1">
 
-                                                <a href="edit.php?id=<?= (int)$data['id']; ?>"
-                                                    class="btn btn-warning btn-sm">
-                                                    <i class="bi bi-pencil-square"></i> Edit
-                                                </a>
+                                                    <a href="edit.php?id=<?= (int)$data['id']; ?>"
+                                                        class="btn btn-warning btn-sm">
+                                                        <i class="bi bi-pencil-square"></i> Edit
+                                                    </a>
 
-                                                <a href="hapus.php?id=<?= (int)$data['id']; ?>"
-                                                    class="btn btn-danger btn-sm"
-                                                    data-confirm="Yakin ingin menghapus kategori ini?"
-                                                >
-                                                    <i class="bi bi-trash"></i> Hapus
-                                                </a>
+                                                    <a href="hapus.php?id=<?= (int)$data['id']; ?>"
+                                                        class="btn btn-danger btn-sm"
+                                                        data-confirm="Yakin ingin menghapus kategori ini?">
+                                                        <i class="bi bi-trash"></i> Hapus
+                                                    </a>
 
-                                            </div>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-muted small">Tidak ada aksi</span>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
 

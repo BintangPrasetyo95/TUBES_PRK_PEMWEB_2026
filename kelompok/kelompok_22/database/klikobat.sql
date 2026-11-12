@@ -26,6 +26,8 @@ CREATE TABLE `obat` (
   `id_obat` INT(11) NOT NULL AUTO_INCREMENT,
   `nama_obat` VARCHAR(150) NOT NULL,
   `id_kategori` INT(11) NOT NULL,
+  `gambar` VARCHAR(255) NOT NULL DEFAULT 'default.jpg',
+  `harga` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
   `stok` INT(11) NOT NULL DEFAULT 0,
   `indikasi` TEXT NOT NULL,
   `aturan_pakai` TEXT NOT NULL,

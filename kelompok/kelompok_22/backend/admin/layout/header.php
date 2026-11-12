@@ -39,7 +39,6 @@ $baseAdmin = "/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22";
             </div>
 
             <div class="admin-user">
-                <span class="avatar">A</span>
                 <span class="user-name">Admin KlikObat</span>
             </div>
         </header>

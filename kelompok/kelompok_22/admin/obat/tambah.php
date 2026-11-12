@@ -100,64 +100,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Tambah Obat - Admin KlikObat</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 24px; max-width: 640px; }
-        label { display: block; margin-top: 12px; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 8px; box-sizing: border-box; margin-top: 4px; }
-        textarea { min-height: 80px; }
-        .hint { font-size: 12px; color: #6c757d; font-weight: normal; }
-        .err { background: #f8d7da; padding: 10px; border-radius: 4px; margin-bottom: 12px; }
-        .btn { display: inline-block; padding: 8px 14px; background: #0d6efd; color: #fff; text-decoration: none; border: 0; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 16px; }
-        .btn.batal { background: #6c757d; }
-    </style>
+    <!-- Hubungkan CSS UI Admin -->
+    <link rel="stylesheet" href="../../frontend/assets/css/style.css">
+    <link rel="stylesheet" href="../../frontend/assets/css/admin.css">
 </head>
 <body>
-    <h1>Tambah Obat</h1>
-
-    <?php if ($errors): ?>
-        <div class="err">
-            <ul>
-                <?php foreach ($errors as $e): ?>
-                    <li><?= htmlspecialchars($e) ?></li>
-                <?php endforeach; ?>
+    <div class="admin-container">
+        <!-- Sidebar Admin -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">KlikObat</div>
+            <ul class="admin-menu">
+                <li><a href="../kategori/index.php">Kelola Kategori</a></li>
+                <li><a href="index.php" class="active">Kelola Obat</a></li>
+                <li><a href="../logout.php" style="color: #ef4444;">Logout</a></li>
             </ul>
-        </div>
-    <?php endif; ?>
+        </aside>
 
-    <form method="post" enctype="multipart/form-data">
-        <label for="nama_obat">Nama Obat</label>
-        <input type="text" id="nama_obat" name="nama_obat" maxlength="150"
-               value="<?= htmlspecialchars($data['nama_obat']) ?>">
+        <!-- Konten Utama Admin -->
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Tambah Obat</h1>
+                <div class="admin-user">Admin Panel</div>
+            </header>
 
-        <label for="id_kategori">Kategori</label>
-        <select id="id_kategori" name="id_kategori">
-            <option value="">-- Pilih kategori --</option>
-            <?php foreach ($kategori as $k): ?>
-                <option value="<?= (int)$k['id_kategori'] ?>"
-                    <?= (string)$k['id_kategori'] === $data['id_kategori'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($k['nama_kategori']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <div class="admin-content">
+                <h2>Form Tambah Obat</h2>
 
-        <label for="stok">Stok</label>
-        <input type="number" id="stok" name="stok" min="0"
-               value="<?= htmlspecialchars($data['stok']) ?>">
+                <?php if ($errors): ?>
+                    <div style="padding: 12px 15px; margin-bottom: 20px; background: #fee2e2; color: #b91c1c; border-radius: 10px; font-weight: 600; font-size: 14px;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <?php foreach ($errors as $e): ?>
+                                <li><?= htmlspecialchars($e) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
 
-        <label for="gambar">Gambar Obat <span class="hint">(opsional, JPG/PNG, maks. 2 MB)</span></label>
-        <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png">
+                <div class="admin-table-container" style="max-width: 700px; padding: 25px;">
+                    <form method="post" enctype="multipart/form-data">
+                        <div style="margin-bottom: 15px;">
+                            <label for="nama_obat" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--admin-text);">Nama Obat</label>
+                            <input type="text" id="nama_obat" name="nama_obat" maxlength="150"
+                                   value="<?= htmlspecialchars($data['nama_obat']) ?>" autocomplete="off">
+                        </div>
 
-        <label for="indikasi">Deskripsi & Indikasi</label>
-        <textarea id="indikasi" name="indikasi"><?= htmlspecialchars($data['indikasi']) ?></textarea>
+                        <div style="margin-bottom: 15px;">
+                            <label for="id_kategori" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--admin-text);">Kategori</label>
+                            <select id="id_kategori" name="id_kategori">
+                                <option value="">-- Pilih kategori --</option>
+                                <?php foreach ($kategori as $k): ?>
+                                    <option value="<?= (int)$k['id_kategori'] ?>"
+                                        <?= (string)$k['id_kategori'] === $data['id_kategori'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($k['nama_kategori']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-        <label for="aturan_pakai">Aturan Pakai & Dosis</label>
-        <textarea id="aturan_pakai" name="aturan_pakai"><?= htmlspecialchars($data['aturan_pakai']) ?></textarea>
+                        <div style="margin-bottom: 15px;">
+                            <label for="stok" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--admin-text);">Stok</label>
+                            <input type="number" id="stok" name="stok" min="0"
+                                   value="<?= htmlspecialchars($data['stok']) ?>">
+                        </div>
 
-        <label for="peringatan">Peringatan / Kontraindikasi</label>
-        <textarea id="peringatan" name="peringatan"><?= htmlspecialchars($data['peringatan']) ?></textarea>
+                        <div style="margin-bottom: 15px;">
+                            <label for="gambar" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--admin-text);">Gambar Obat <span style="font-size: 12px; color: var(--admin-secondary); font-weight: normal;">(opsional, JPG/PNG, maks. 2 MB)</span></label>
+                            <input type="file" id="gambar" name="gambar" accept="image/jpeg,image/png" style="padding: 8px 0; border: none; background: none;">
+                        </div>
 
-        <button type="submit" class="btn">Simpan</button>
-        <a href="index.php" class="btn batal">Batal</a>
-    </form>
+                        <div style="margin-bottom: 15px;">
+                            <label for="indikasi" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--admin-text);">Deskripsi & Indikasi</label>
+                            <textarea id="indikasi" name="indikasi" style="min-height: 80px; width: 100%;"><?= htmlspecialchars($data['indikasi']) ?></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label for="aturan_pakai" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--admin-text);">Aturan Pakai & Dosis</label>
+                            <textarea id="aturan_pakai" name="aturan_pakai" style="min-height: 80px; width: 100%;"><?= htmlspecialchars($data['aturan_pakai']) ?></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label for="peringatan" style="display: block; font-weight: 600; margin-bottom: 6px; color: var(--admin-text);">Peringatan / Kontraindikasi</label>
+                            <textarea id="peringatan" name="peringatan" style="min-height: 80px; width: 100%;"><?= htmlspecialchars($data['peringatan']) ?></textarea>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <button type="submit" class="admin-btn">Simpan</button>
+                            <a href="index.php" style="color: var(--admin-secondary); text-decoration: none; font-weight: 600; font-size: 14px; padding: 11px 19px; background: #e2e8f0; border-radius: 10px;">Batal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <footer class="admin-footer">
+                <p>&copy; 2026 KlikObat. Sistem Informasi Katalog Farmasi & Edukasi.</p>
+            </footer>
+        </main>
+    </div>
 </body>
 </html>

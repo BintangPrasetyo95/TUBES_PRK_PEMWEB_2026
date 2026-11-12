@@ -1,4 +1,3 @@
-
 <aside class="admin-sidebar">
     <div class="admin-logo">
         KlikObat
@@ -7,19 +6,16 @@
     <nav>
         <ul class="admin-menu">
             <li>
-                <a href="index.php" class="active">Dashboard</a>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/index.php">Dashboard</a>
             </li>
             <li>
-                <a href="obat.php">Data Obat</a>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/obat/index.php">Data Obat</a>
             </li>
             <li>
-                <a href="kategori.php">Data Kategori</a>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/kategori/index.php">Data Kategori</a>
             </li>
             <li>
-                <a href="pengaturan.php">Pengaturan</a>
-            </li>
-            <li>
-                <a href="../logout.php">Keluar</a>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/logout.php" style="color: #ef4444;">Keluar</a>
             </li>
         </ul>
     </nav>

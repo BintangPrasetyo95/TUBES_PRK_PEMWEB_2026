@@ -5,7 +5,6 @@ $idGuru = $_SESSION['guru']['id_guru'];
 $aksi = $_GET['aksi'] ?? '';
 $jenisValid = ['Tugas', 'Kuis', 'UTS', 'UAS'];
 
-// Ambil penugasan beserta pengecekan hak akses (admin: semua, guru: miliknya atau wali kelasnya).
 function ambilPenugasan(PDO $pdo, $id) {
     $id = positiveId($id);
     $stmt = $pdo->prepare('SELECT * FROM PENUGASAN_MENGAJAR WHERE id_penugasan = ?');
@@ -18,7 +17,6 @@ function ambilPenugasan(PDO $pdo, $id) {
     return $row;
 }
 
-// Ambil penilaian beserta pengecekan akses lewat penugasannya.
 function ambilPenilaian(PDO $pdo, $id) {
     $id = positiveId($id);
     $stmt = $pdo->prepare('SELECT * FROM PENILAIAN WHERE id_penilaian = ?');
@@ -29,7 +27,6 @@ function ambilPenilaian(PDO $pdo, $id) {
     return $row;
 }
 
-// Validasi nilai wajib angka 0-100; kembalikan null jika kosong.
 function validasiNilai($value) {
     $value = trim((string)$value);
     if ($value === '') return null;
@@ -40,9 +37,7 @@ function validasiNilai($value) {
     return round((float)$value, 2);
 }
 
-/* ---------------------------- GET ---------------------------- */
 if ($method === 'GET') {
-    // Daftar penugasan + daftar seluruh Kelas, Mapel, dan Periode yang ada di sistem.
     if ($aksi === 'konteks') {
         $sql = 'SELECT pm.id_penugasan, pm.id_kelas, pm.id_mapel, pm.id_periode,
                     k.nama_kelas, m.nama_mapel, pr.tahun_ajaran, pr.semester, pr.status_aktif
@@ -60,7 +55,6 @@ if ($method === 'GET') {
         $stmt->execute($params);
         $penugasan = $stmt->fetchAll();
 
-        // Ambil semua kelas (sesuai akses), semua mapel, dan semua periode agar kelas/mapel baru selalu tampil
         $orderKelas = "ORDER BY FIELD(tingkat, 'X', 'XI', 'XII', '10', '11', '12'), LENGTH(nama_kelas) ASC, nama_kelas ASC";
         if (isAdmin()) {
             $kelas = $pdo->query("SELECT id_kelas, nama_kelas, tingkat FROM KELAS $orderKelas")->fetchAll();
@@ -83,7 +77,6 @@ if ($method === 'GET') {
         ]);
     }
 
-    // Daftar penilaian dalam satu penugasan + progres pengisian nilai.
     if ($aksi === 'daftar') {
         $pm = ambilPenugasan($pdo, $_GET['id_penugasan'] ?? 0);
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM SISWA WHERE id_kelas = ?');
@@ -106,7 +99,6 @@ if ($method === 'GET') {
         respond($rows);
     }
 
-    // Seluruh siswa satu kelas beserta nilainya pada satu penilaian.
     if ($aksi === 'nilai') {
         $p = ambilPenilaian($pdo, $_GET['id_penilaian'] ?? 0);
         $stmt = $pdo->prepare('SELECT s.id_siswa, s.nisn, s.nama_siswa, n.nilai
@@ -124,7 +116,6 @@ if ($method === 'GET') {
         ], 'siswa' => $stmt->fetchAll()]);
     }
 
-    // Rekap rata-rata nilai per komponen untuk setiap siswa.
     if ($aksi === 'rekap') {
         $pm = ambilPenugasan($pdo, $_GET['id_penugasan'] ?? 0);
         $stmt = $pdo->prepare('SELECT id_siswa, nisn, nama_siswa FROM SISWA
@@ -151,7 +142,6 @@ if ($method === 'GET') {
     respond(null, 'Aksi tidak dikenal.', 404);
 }
 
-/* --------- POST: cari atau buat otomatis penugasan dari Kelas + Mapel + Periode --------- */
 if ($method === 'POST' && $aksi === 'siapkan_konteks') {
     $input = inputData();
     $idKelas = positiveId($input['id_kelas'] ?? 0);
@@ -159,7 +149,6 @@ if ($method === 'POST' && $aksi === 'siapkan_konteks') {
     $idPeriode = positiveId($input['id_periode'] ?? 0);
     requireClass($pdo, $idKelas);
 
-    // Cari apakah sudah ada penugasan untuk kombinasi kelas + mapel + periode ini
     $sqlCari = 'SELECT id_penugasan FROM PENUGASAN_MENGAJAR WHERE id_kelas = ? AND id_mapel = ? AND id_periode = ?';
     $paramsCari = [$idKelas, $idMapel, $idPeriode];
     if (!isAdmin()) {
@@ -171,14 +160,12 @@ if ($method === 'POST' && $aksi === 'siapkan_konteks') {
     $stmt->execute($paramsCari);
     $idPenugasan = $stmt->fetchColumn();
 
-    // Jika belum ada (misal kelas baru atau mapel baru), buat otomatis agar langsung bisa dinilai
     if (!$idPenugasan) {
         $ins = $pdo->prepare('INSERT INTO PENUGASAN_MENGAJAR (id_guru, id_kelas, id_mapel, id_periode) VALUES (?, ?, ?, ?)');
         $ins->execute([$idGuru, $idKelas, $idMapel, $idPeriode]);
         $idPenugasan = (int)$pdo->lastInsertId();
     }
 
-    // Simpan konteks aktif di session PHP agar tidak reset ketika pindah halaman/fitur
     $_SESSION['konteks_penilaian'] = [
         'id_kelas' => (int)$idKelas,
         'id_mapel' => (int)$idMapel,
@@ -189,8 +176,6 @@ if ($method === 'POST' && $aksi === 'siapkan_konteks') {
     respond(['id_penugasan' => (int)$idPenugasan], 'Kelas dan mata pelajaran siap dinilai.');
 }
 
-/* ------------------- POST: simpan nilai satu kelas ------------------- */
-// Body JSON datar: {"s_<id_siswa>": "85", "s_<id_siswa>": "", ...}
 if ($method === 'POST' && $aksi === 'simpan_nilai') {
     $p = ambilPenilaian($pdo, $_GET['id_penilaian'] ?? 0);
     $input = inputData();
@@ -199,7 +184,6 @@ if ($method === 'POST' && $aksi === 'simpan_nilai') {
     $stmt->execute([$p['penugasan']['id_kelas']]);
     $siswaKelas = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
 
-    // Validasi semua dulu sebelum menyimpan apa pun.
     $data = [];
     foreach ($input as $key => $value) {
         if (!preg_match('/^s_(\d+)$/', (string)$key, $m)) continue;
@@ -226,13 +210,11 @@ if ($method === 'POST' && $aksi === 'simpan_nilai') {
     respond(['tersimpan' => $tersimpan], 'Nilai berhasil disimpan.');
 }
 
-/* ---------------- POST / PUT / DELETE: CRUD penilaian ---------------- */
 if (!in_array($method, ['POST', 'PUT', 'DELETE'])) respond(null, 'Metode tidak didukung.', 405);
 
 if ($method === 'DELETE') {
     $p = ambilPenilaian($pdo, $_GET['id'] ?? 0);
     $pdo->beginTransaction();
-    // Nilai milik penilaian ini dihapus dulu karena relasi bersifat RESTRICT.
     $pdo->prepare('DELETE FROM NILAI_DAN_PENGUMPULAN WHERE id_penilaian = ?')->execute([$p['id_penilaian']]);
     $pdo->prepare('DELETE FROM PENILAIAN WHERE id_penilaian = ?')->execute([$p['id_penilaian']]);
     $pdo->commit();
@@ -251,7 +233,6 @@ if (!in_array($jenis, $jenisValid, true)) {
     respond(null, 'Jenis komponen harus Tugas, Kuis, UTS, atau UAS.', 422);
 }
 
-// Tenggat waktu hanya digunakan (dan wajib) ketika jenis_komponen adalah Tugas.
 $tenggatFormatted = null;
 if ($jenis === 'Tugas') {
     if ($tenggatInput === '') {
@@ -271,7 +252,6 @@ if ($method === 'PUT') {
     respond(['id_penilaian' => (int)$p['id_penilaian']], 'Penilaian berhasil diperbarui.');
 }
 
-// POST: buat penilaian baru
 $pm = ambilPenugasan($pdo, $input['id_penugasan'] ?? 0);
 $stmt = $pdo->prepare('INSERT INTO PENILAIAN (id_penugasan, judul_penilaian, jenis_komponen, tenggat_waktu, tanggal_dibuat)
     VALUES (?, ?, ?, ?, NOW())');

@@ -1,46 +1,36 @@
 <?php
+// Ambil path halaman yang sedang dibuka, contoh: /TUBES.../admin/obat/index.php
 $halaman = $_SERVER['SCRIPT_NAME'] ?? '';
 
+// Menu aktif ditentukan dari folder, jadi halaman tambah/edit ikut menyala
 $aktifDashboard = basename(dirname($halaman)) === 'admin';
 $aktifObat      = strpos($halaman, '/admin/obat/') !== false;
 $aktifKategori  = strpos($halaman, '/admin/kategori/') !== false;
-
-if (!isset($judulHalaman)) {
-    if ($aktifObat) {
-        $judulHalaman = "Data Obat";
-    } elseif ($aktifKategori) {
-        $judulHalaman = "Data Kategori";
-    } else {
-        $judulHalaman = "Dashboard";
-    }
-}
-
-$baseAdmin = "/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22";
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($judulHalaman) ?> | Admin KlikObat</title>
-    <link rel="stylesheet" href="<?= $baseAdmin ?>/frontend/assets/css/admin.css">
-</head>
-<body>
+<aside class="admin-sidebar">
+    <div class="admin-logo">
+        <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/frontend/index.html" style="text-decoration: none; color: inherit;">
+            KlikObat
+        </a>
+    </div>
 
-<div class="admin-container">
-
-    <?php require_once __DIR__ . "/sidebar.php"; ?>
-
-    <main class="admin-main">
-
-        <header class="admin-header">
-            <div class="header-title">
-                <h1><?= htmlspecialchars($judulHalaman) ?></h1>
-            </div>
-
-            <div class="admin-user">
-                <span class="user-name">Admin KlikObat</span>
-            </div>
-        </header>
-
-        <div class="admin-content">
+    <nav>
+        <ul class="admin-menu">
+            <li>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/index.php"
+                   class="<?= $aktifDashboard ? 'active' : '' ?>">Dashboard</a>
+            </li>
+            <li>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/obat/index.php"
+                   class="<?= $aktifObat ? 'active' : '' ?>">Data Obat</a>
+            </li>
+            <li>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/kategori/index.php"
+                   class="<?= $aktifKategori ? 'active' : '' ?>">Data Kategori</a>
+            </li>
+            <li>
+                <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/admin/logout.php" style="color: #ef4444;">Keluar</a>
+            </li>
+        </ul>
+    </nav>
+</aside>

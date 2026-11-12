@@ -81,20 +81,3 @@ Password disimpan dalam bentuk hash menggunakan PHP `password_hash()` dengan alg
 Gunakan `password_verify()` untuk proses verifikasi password.
 
 Akun tersebut hanya digunakan untuk pengujian praktikum.
-
-## 7. Aturan Implementasi
-
-1. Gunakan PDO prepared statement untuk query yang menerima input pengguna.
-2. Periksa role pengguna pada setiap halaman admin dan pasien.
-3. Gunakan transaksi database ketika pasien mengambil nomor antrean.
-4. Gunakan SELECT FOR UPDATE untuk mengunci baris dokter ketika menentukan nomor berikutnya.
-5. Periksa jadwal praktik dan kuota harian sebelum menyimpan antrean.
-6. Cegah pendaftaran ganda pada dokter dan tanggal yang sama.
-7. Gunakan htmlspecialchars() ketika menampilkan data pengguna ke HTML.
-8. Jangan menghapus dokter atau pengguna yang masih memiliki catatan antrean.
-
-## 8. Batasan Fase 1
-
-Database ini memiliki tiga tabel utama, yaitu users, dokter, dan antrian.
-
-Fitur jadwal praktik berbasis jam, poli, rekam medis, pembayaran, pembatalan, dan no-show belum termasuk dalam cakupan Fase 1.

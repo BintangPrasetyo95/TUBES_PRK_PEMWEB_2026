@@ -230,7 +230,7 @@
         <h2>Login Admin</h2>
 
         <p class="form-description">
-            Silakan masuk menggunakan akun admin Anda.
+            Silakan masuk menggunakan akun Admin atau Kasir Anda.
         </p>
 
         <?php if (isset($_GET['error'])): ?>

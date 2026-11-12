@@ -1,4 +1,3 @@
-
 <?php
 date_default_timezone_set('Asia/Jakarta');
 
@@ -18,17 +17,11 @@ require_once 'includes/helper.php';
 require_once 'includes/header.php';
 require_once 'includes/navbar.php';
 
-// Samakan zona waktu database dengan WIB
 $conn->query("SET time_zone = '+07:00'");
 
-// Tanggal berdasarkan waktu Indonesia
 $today = date('Y-m-d');
 $tomorrow = date('Y-m-d', strtotime('+1 day'));
 $startDate = date('Y-m-d', strtotime('-6 days'));
-
-// ======================================================
-// 1. STATISTIK UTAMA
-// ======================================================
 
 $totalProduk = 0;
 $transaksiHariIni = 0;
@@ -58,10 +51,6 @@ if ($result) {
     $transaksiHariIni = (int) $statistikHariIni['total_transaksi'];
     $omzetHariIni = (float) $statistikHariIni['omzet'];
 }
-
-// ======================================================
-// 2. GRAFIK OMZET 7 HARI TERAKHIR
-// ======================================================
 
 $labelOmzet = [];
 $dataOmzet = [];
@@ -95,13 +84,7 @@ if ($result) {
 }
 
 $dataOmzet = array_values($dataOmzet);
-
-// Nilai maksimum grafik
 $maxOmzet = max($dataOmzet ?: [0]);
-
-// ======================================================
-// 3. KONDISI STOK
-// ======================================================
 
 $stokNormal = 0;
 $stokMenipis = 0;
@@ -135,10 +118,6 @@ if ($result) {
     $stokHabis = (int) $stok['habis'];
 }
 
-// ======================================================
-// 4. MONITORING STOK
-// ======================================================
-
 $stokRendah = [];
 
 $result = $conn->query("
@@ -156,7 +135,6 @@ if ($result) {
 
 ?>
 
-<!-- LAYOUT UTAMA -->
 <div class="app-layout">
 
     <?php require_once 'includes/sidebar.php'; ?>
@@ -166,7 +144,6 @@ if ($result) {
         <div class="dashboard-page">
             <div class="container-fluid">
 
-                <!-- HEADER -->
                 <div class="dashboard-heading">
 
                     <div>
@@ -196,7 +173,6 @@ if ($result) {
 
                 <?php showFlash(); ?>
 
-                <!-- PERINGATAN STOK -->
                 <?php if ($stokHabis > 0 || $stokMenipis > 0): ?>
 
                     <div class="alert alert-warning dashboard-alert">
@@ -219,7 +195,6 @@ if ($result) {
 
                 <?php endif; ?>
 
-                <!-- STATISTIK -->
                 <div class="row g-3 mb-4">
 
                     <div class="col-md-4">
@@ -302,10 +277,8 @@ if ($result) {
 
                 </div>
 
-                <!-- GRAFIK DAN KONDISI STOK -->
                 <div class="row g-3 mb-4">
 
-                    <!-- GRAFIK OMZET -->
                     <div class="col-lg-8">
                         <div class="card dashboard-panel h-100">
 
@@ -336,7 +309,6 @@ if ($result) {
                         </div>
                     </div>
 
-                    <!-- KONDISI STOK -->
                     <div class="col-lg-4">
                         <div class="card dashboard-panel h-100">
 
@@ -387,7 +359,6 @@ if ($result) {
 
                 </div>
 
-                <!-- MONITORING STOK -->
                 <div class="card dashboard-panel mb-4">
 
                     <div class="card-body p-3 p-md-4">
@@ -495,14 +466,10 @@ if ($result) {
 
 </div>
 
-<!-- CHART.JS -->
+<?php include __DIR__ . '/includes/footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-// ======================================================
-// TANGGAL REALTIME WIB
-// ======================================================
-
 function updateDashboardDate() {
     const dateElement = document.getElementById('dashboardDate');
 
@@ -519,55 +486,39 @@ function updateDashboardDate() {
 updateDashboardDate();
 setInterval(updateDashboardDate, 60000);
 
-
-// ======================================================
-// DATA GRAFIK
-// ======================================================
-
 document.addEventListener('DOMContentLoaded', function () {
 
     const labelOmzet = <?= json_encode($labelOmzet) ?>;
     const dataOmzet = <?= json_encode($dataOmzet) ?>;
-
     const maxOmzet = <?= json_encode($maxOmzet) ?>;
 
-    // GRAFIK OMZET
     const omzetCanvas = document.getElementById('omzetChart');
 
     if (omzetCanvas) {
-
         new Chart(omzetCanvas, {
             type: 'line',
-
             data: {
                 labels: labelOmzet,
-
                 datasets: [{
                     label: 'Omzet',
                     data: dataOmzet,
-
                     borderColor: '#5142a5',
                     backgroundColor: 'rgba(81, 66, 165, 0.10)',
-
                     borderWidth: 2.5,
                     fill: true,
                     tension: 0.35,
-
                     pointRadius: 4,
                     pointBackgroundColor: '#5142a5',
                     pointHoverRadius: 6
                 }]
             },
-
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-
                 plugins: {
                     legend: {
                         display: false
                     },
-
                     tooltip: {
                         callbacks: {
                             label: function (context) {
@@ -578,18 +529,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 },
-
                 scales: {
                     y: {
                         beginAtZero: true,
-
                         suggestedMax: maxOmzet === 0 ? 1 : undefined,
-
                         ticks: {
                             count: maxOmzet === 0 ? 1 : 5,
-
                             callback: function (value) {
-
                                 if (maxOmzet === 0) {
                                     return value === 0 ? 'Rp 0' : '';
                                 }
@@ -601,12 +547,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                     }).format(value);
                             }
                         },
-
                         grid: {
                             color: '#eeeeee'
                         }
                     },
-
                     x: {
                         grid: {
                             display: false
@@ -617,47 +561,36 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
-    // GRAFIK KONDISI STOK
     const stockCanvas = document.getElementById('stockChart');
 
     if (stockCanvas) {
-
         new Chart(stockCanvas, {
             type: 'doughnut',
-
             data: {
                 labels: ['Normal', 'Menipis', 'Habis'],
-
                 datasets: [{
                     data: [
                         <?= $stokNormal ?>,
                         <?= $stokMenipis ?>,
                         <?= $stokHabis ?>
                     ],
-
                     backgroundColor: [
                         '#5142a5',
                         '#ffad42',
                         '#dc3545'
                     ],
-
                     borderWidth: 0,
                     hoverOffset: 5
                 }]
             },
-
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-
                 cutout: '68%',
-
                 plugins: {
                     legend: {
                         display: false
                     },
-
                     tooltip: {
                         callbacks: {
                             label: function (context) {

@@ -47,6 +47,7 @@ function rupiah($nominal)
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/savings.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/app-theme.css">
 </head>
 <body>
     <div class="app-container">
@@ -58,7 +59,7 @@ function rupiah($nominal)
             <div class="savings-content">
                 <section class="welcome-section">
                     <div>
-                        <h2>Tabungan Keluarga</h2>
+                        <h1>Tabungan keluarga</h1>
                         <p>Kelola target dan pantau perkembangan tabungan keluarga Anda.</p>
                     </div>
                     <button class="btn-add-target" id="btnTambahTarget">+ Tambah Target</button>

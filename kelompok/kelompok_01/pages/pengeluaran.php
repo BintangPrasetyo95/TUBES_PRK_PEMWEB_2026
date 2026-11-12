@@ -30,6 +30,7 @@ $pageTitle = 'Pengeluaran';
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="../assets/css/transaksi.css">
+    <link rel="stylesheet" href="../assets/css/app-theme.css">
 </head>
 
 <body>
@@ -46,7 +47,7 @@ $pageTitle = 'Pengeluaran';
 
             <section class="welcome-section">
                 <div>
-                    <h2>Kelola Pengeluaran</h2>
+                    <h1>Pengeluaran</h1>
                     <p>Catat dan pantau seluruh pengeluaran keuangan keluarga.</p>
                 </div>
             </section>
@@ -82,7 +83,7 @@ $pageTitle = 'Pengeluaran';
             <section class="transaction-panel">
 
                 <div class="panel-heading">
-                    <h3 id="formTitle">Tambah Pengeluaran</h3>
+                    <h3 id="formTitle">Tambah pengeluaran</h3>
                     <p>Masukkan informasi pengeluaran keluarga.</p>
                 </div>
 

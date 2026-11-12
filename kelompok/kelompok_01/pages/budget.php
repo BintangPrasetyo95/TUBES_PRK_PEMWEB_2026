@@ -49,6 +49,7 @@ $namaBulan = [
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/budget.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/app-theme.css">
 </head>
 
 <body>
@@ -65,7 +66,7 @@ $namaBulan = [
 
             <section class="welcome-section">
                 <div>
-                    <h2>Kelola Anggaran</h2>
+                    <h1>Anggaran keluarga</h1>
                     <p>Atur batas pengeluaran keluarga agar keuangan tetap terkontrol.</p>
                 </div>
 

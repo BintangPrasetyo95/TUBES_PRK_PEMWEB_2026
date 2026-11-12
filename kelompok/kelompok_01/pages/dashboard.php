@@ -25,128 +25,175 @@ $pageTitle = 'Dashboard';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ringkasan pemasukan, pengeluaran, anggaran, dan tabungan keluarga di SaveSmart.">
+    <meta name="theme-color" content="#f4f1e9">
 
-    <title>SaveSmart - Dashboard</title>
-
-    <!-- CSS -->
+    <title>SaveSmart — Ringkasan keluarga</title>
     <link rel="stylesheet" href="../assets/css/style.css">
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/app-theme.css">
 </head>
 
-<body>
-
+<body class="dashboard-page">
     <div class="app-container">
+    <?php include __DIR__ . '/../components/sidebar.php'; ?>
 
-        <!-- Sidebar -->
-        <?php include __DIR__ . '/../components/sidebar.php'; ?>
+    <main class="main-content" id="main-dashboard">
+        <?php include __DIR__ . '/../components/navbar.php'; ?>
+        <div class="dashboard-content">
+            <section class="dashboard-overview" id="dashboard-overview" aria-labelledby="dashboardTitle">
+                <div class="wrap dashboard-overview__wrap">
+                    <div class="hero-text">
+                        <div class="dashboard-overview__body">
+                            <header class="dashboard-intro">
+                                <p class="dashboard-eyebrow">CATATAN KELUARGA</p>
+                                <h1 id="dashboardTitle">Ringkasan keluarga</h1>
+                                <p>Uang yang masuk, keluar, dan tersimpan—dirangkum apa adanya.</p>
+                            </header>
 
-        <!-- Main Content -->
-        <main class="main-content">
+                        <article class="balance-card card" aria-labelledby="balanceTitle">
+                            <div class="balance-card__header">
+                                <div class="balance-card__label">
+                                    <span class="balance-card__dot" aria-hidden="true"></span>
+                                    <p id="balanceTitle">Saldo keseluruhan</p>
+                                </div>
+                                <span class="balance-period">Semua waktu</span>
+                            </div>
 
-            <!-- Navbar -->
-            <?php include __DIR__ . '/../components/navbar.php'; ?>
+                            <div class="balance-card__main">
+                                <p class="balance-card__amount" id="cardSaldo" aria-live="polite">Memuat...</p>
+                                <p class="balance-card__note">Pemasukan dikurangi pengeluaran dan setoran tabungan.</p>
+                            </div>
 
-            <div class="dashboard-content">
+                            <div class="balance-card__footer">
+                                <p>Catatan keuangan keluarga</p>
+                                <div class="balance-actions">
+                                    <a class="btn balance-action balance-action--primary" href="pengeluaran.php">
+                                        Catat pengeluaran
+                                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3l5 5-5 5" /></svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
 
-                <!-- Welcome Section -->
-                <section class="welcome-section">
-                    <div>
-                        <h2>Ringkasan Keuangan Keluarga</h2>
-                        <p>Pantau kondisi keuangan keluarga Anda.</p>
-                    </div>
-                </section>
+                        <div class="summary-grid grid" aria-label="Ringkasan total keluarga">
+                            <article class="summary-card card" aria-label="Total pemasukan">
+                                <div class="summary-card__top">
+                                    <p class="summary-card__label">Total pemasukan</p>
+                                    <span class="ic-tile ic-tile--glyph ic-tile--40 summary-icon income" aria-hidden="true">
+                                        <svg class="ic ic-svg ic-24" viewBox="0 0 24 24" fill="none">
+                                            <path d="M7 17 17 7M7 7h10v10" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <p class="summary-card__amount" id="cardPemasukan" aria-live="polite">Memuat...</p>
+                                <small>Sejak pencatatan dimulai</small>
+                            </article>
 
-                <!-- Summary Cards -->
-                <section class="summary-grid">
+                            <article class="summary-card card" aria-label="Total pengeluaran">
+                                <div class="summary-card__top">
+                                    <p class="summary-card__label">Total pengeluaran</p>
+                                    <span class="ic-tile ic-tile--glyph ic-tile--40 summary-icon expense" aria-hidden="true">
+                                        <svg class="ic ic-svg ic-24" viewBox="0 0 24 24" fill="none">
+                                            <path d="M7 7 17 17M7 17h10V7" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <p class="summary-card__amount" id="cardPengeluaran" aria-live="polite">Memuat...</p>
+                                <small>Sejak pencatatan dimulai</small>
+                            </article>
 
-                    <div class="summary-card">
-                        <div class="summary-icon income">↙</div>
-                        <p>Total Pemasukan</p>
-                        <h3 id="cardPemasukan">Rp 0</h3>
-                        <small>Semua waktu</small>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-icon expense">↗</div>
-                        <p>Total Pengeluaran</p>
-                        <h3 id="cardPengeluaran">Rp 0</h3>
-                        <small>Semua waktu</small>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-icon balance">▣</div>
-                        <p>Total Saldo</p>
-                        <h3 id="cardSaldo">Rp 0</h3>
-                        <small>Semua waktu</small>
-                    </div>
-
-                    <div class="summary-card">
-                        <div class="summary-icon saving">◎</div>
-                        <p>Total Tabungan</p>
-                        <h3 id="cardTabungan">Rp 0</h3>
-                        <small>Akumulasi tabungan</small>
-                    </div>
-
-                </section>
-
-                <!-- Dashboard Panels -->
-                <section class="dashboard-grid">
-
-                    <!-- Finance Chart -->
-                    <div class="dashboard-panel">
-
-                        <div class="panel-heading">
-                            <h3>Grafik Keuangan</h3>
-                            <p>Pemasukan dan pengeluaran 6 bulan terakhir</p>
+                            <article class="summary-card card" aria-label="Total tabungan">
+                                <div class="summary-card__top">
+                                    <p class="summary-card__label">Tabungan terkumpul</p>
+                                    <span class="ic-tile ic-tile--glyph ic-tile--40 summary-icon saving" aria-hidden="true">
+                                        <svg class="ic ic-svg ic-24" viewBox="0 0 24 24" fill="none">
+                                            <circle cx="12" cy="12" r="8" />
+                                            <path d="M12 7v5l3 2" />
+                                        </svg>
+                                    </span>
+                                </div>
+                                <p class="summary-card__amount" id="cardTabungan" aria-live="polite">Memuat...</p>
+                                <small>Akumulasi setoran</small>
+                            </article>
                         </div>
 
-                        <div style="height: 280px; position: relative;">
-                            <canvas id="financeChart"></canvas>
-                        </div>
-
+                        <p class="dashboard-error" id="dashboardError" role="alert" hidden></p>
                     </div>
-
-                    <!-- Finance Information -->
-                    <div class="dashboard-panel">
-
-                        <div class="panel-heading">
-                            <h3>Informasi Keuangan</h3>
-                            <p>Ringkasan kondisi keuangan keseluruhan</p>
-                        </div>
-
-                        <div class="info-item">
-                            <span>Pemasukan</span>
-                            <strong id="infoPemasukan">Rp 0</strong>
-                        </div>
-
-                        <div class="info-item">
-                            <span>Pengeluaran</span>
-                            <strong id="infoPengeluaran">Rp 0</strong>
-                        </div>
-
-                        <div class="info-item">
-                            <span>Setoran Tabungan</span>
-                            <strong id="infoSetoran">Rp 0</strong>
-                        </div>
-
-                        <div class="info-item">
-                            <span>Saldo</span>
-                            <strong id="infoSaldo">Rp 0</strong>
-                        </div>
-
                     </div>
+                </div>
+            </section>
 
-                </section>
+            <section class="dashboard-analytics" id="dashboard-analytics" aria-labelledby="analyticsTitle">
+                <div class="wrap dashboard-analytics__wrap">
+                    <header class="dashboard-section-head">
+                        <h2 id="analyticsTitle">Pergerakan uang</h2>
+                        <p>Bandingkan pemasukan dan pengeluaran selama enam bulan terakhir.</p>
+                        <a class="btn balance-action balance-action--primary analytics-action" href="laporan.php">
+                            Lihat laporan
+                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3l5 5-5 5" /></svg>
+                        </a>
+                    </header>
 
-            </div>
-        </main>
+                    <div class="analytics-panel">
+                        <section class="chart-panel" aria-labelledby="chartTitle">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3 id="chartTitle">Pemasukan &amp; pengeluaran</h3>
+                                    <p>Enam bulan terakhir</p>
+                                </div>
+                                <span class="chart-period">6 bulan</span>
+                            </div>
+
+                            <div class="chart-frame">
+                                <canvas id="financeChart" hidden role="img" aria-label="Grafik batang pemasukan dan pengeluaran keluarga selama enam bulan terakhir"></canvas>
+                                <p class="chart-message" id="financeChartMessage" role="status">Memuat grafik enam bulan terakhir...</p>
+                            </div>
+                        </section>
+
+                        <aside class="finance-summary" aria-labelledby="financeSummaryTitle">
+                            <div class="finance-summary__head">
+                                <div class="summary-mark" aria-hidden="true">
+                                    <svg class="ic ic-svg ic-24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M4 19V5m0 14h16M8 15l3-4 3 2 5-7" />
+                                        <path d="M16 6h3v3" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 id="financeSummaryTitle">Rincian akumulasi</h3>
+                                    <p>Total catatan keluarga</p>
+                                </div>
+                            </div>
+
+                            <dl class="info-list">
+                                <div class="info-item">
+                                    <dt><span class="info-dot info-dot--income" aria-hidden="true"></span>Pemasukan</dt>
+                                    <dd id="infoPemasukan">Memuat...</dd>
+                                </div>
+                                <div class="info-item">
+                                    <dt><span class="info-dot info-dot--expense" aria-hidden="true"></span>Pengeluaran</dt>
+                                    <dd id="infoPengeluaran">Memuat...</dd>
+                                </div>
+                                <div class="info-item">
+                                    <dt><span class="info-dot info-dot--saving" aria-hidden="true"></span>Setoran tabungan</dt>
+                                    <dd id="infoSetoran">Memuat...</dd>
+                                </div>
+                                <div class="info-item info-item--balance">
+                                    <dt>Saldo</dt>
+                                    <dd id="infoSaldo">Memuat...</dd>
+                                </div>
+                            </dl>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
     </div>
 
-    <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../assets/js/script.js"></script>
     <script src="../assets/js/dashboard.js"></script>
-
 </body>
 </html>

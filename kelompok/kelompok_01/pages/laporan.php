@@ -13,6 +13,7 @@ $pageTitle = 'Laporan';
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="../assets/css/reports.css">
+    <link rel="stylesheet" href="../assets/css/app-theme.css">
 </head>
 <body>
     <div class="app-container">
@@ -24,7 +25,7 @@ $pageTitle = 'Laporan';
             <div class="reports-content">
                 <section class="welcome-section">
                     <div>
-                        <h2>Laporan Keuangan</h2>
+                        <h1>Laporan keuangan</h1>
                         <p>Pantau dan analisis kondisi keuangan keluarga Anda.</p>
                     </div>
                 </section>

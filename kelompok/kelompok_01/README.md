@@ -63,7 +63,7 @@ Panduan ini pakai Laragon di Windows. Kalau pakai XAMPP, langkahnya sama saja, t
 5. **Buka di browser:**
 
    ```
-   http://localhost/tubes_prk_pemweb_2026/login.php
+   http://localhost/tubes_prk_pemweb_2026/kelompok/kelompok_01/index.php
    ```
 
    Sesuaikan nama folder dengan hasil clone-mu.
@@ -74,7 +74,7 @@ Database sudah berisi satu akun admin:
 
 | Role  | Email                | Password            |
 |-------|----------------------|---------------------|
-| Admin | admin@savesmart.com  | `ISI_PASSWORD_ADMIN` |
+| Admin | admin@savesmart.com  | `admin123` |
 
 Akun pengguna biasa dibuat sendiri lewat halaman **Daftar** (`register.php`). Password minimal 8 karakter.
 
@@ -110,4 +110,4 @@ Terdapat 8 tabel: `keluarga`, `pengguna`, `kategori`, `pemasukan`, `pengeluaran`
 
 | Nama | NPM |
 |------|-----|
-|      |     |
+| - | - |

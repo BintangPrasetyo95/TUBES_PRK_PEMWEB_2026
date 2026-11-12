@@ -8,22 +8,25 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - SaveSmart</title>
+    <meta name="description" content="Masuk ke catatan keuangan keluarga Anda di SaveSmart.">
+    <meta name="theme-color" content="#f4f1e9">
+    <title>Masuk — SaveSmart</title>
     <link rel="stylesheet" href="assets/css/login.css">
+    <link rel="stylesheet" href="assets/css/app-theme.css">
 </head>
-<body>
+<body class="auth-page login-page">
 
     <main class="login-container">
         <section class="login-illustration">
-            <div class="login-brand">Save<span>Smart</span></div>
+            <a class="login-brand" href="login.php">Save<span>Smart</span></a>
 
             <div class="login-illustration-content">
-                <h1>Kelola Keuangan, Raih Masa Depan.</h1>
-                <p>Mulai atur pemasukan, pengeluaran, anggaran, dan tabunganmu dengan lebih mudah bersama SaveSmart.</p>
+                <h1>Uang keluarga, satu catatan.</h1>
+                <p>Catat yang masuk, yang keluar, dan rencana berikutnya tanpa menyebar catatan ke banyak tempat.</p>
             </div>
 
             <div class="login-illustration-footer">
-                Smart Financial Management
+                Ruang bersama untuk mengelola keuangan keluarga.
             </div>
 
             <div class="login-decoration"></div>
@@ -32,8 +35,8 @@ session_start();
         <section class="login-form-section">
             <div class="login-form-wrapper">
                 <div class="login-heading">
-                    <h2>Selamat Datang!</h2>
-                    <p>Silakan masuk ke akun SaveSmart kamu.</p>
+                    <h2>Masuk ke SaveSmart</h2>
+                    <p>Lanjutkan catatan keluarga Anda.</p>
                 </div>
 
                 <?php if (isset($_SESSION['error'])): ?>
@@ -52,24 +55,24 @@ session_start();
 
                 <form action="backend/auth/login_process.php" method="POST">
                     <div class="login-field">
-                        <label for="email">Email</label>
+                        <label for="email">Alamat email</label>
                         <div class="login-input-wrapper">
-                            <input type="email" id="email" name="email" placeholder="Masukkan email kamu" required>
+                            <input type="email" id="email" name="email" placeholder="nama@email.com" autocomplete="email" required>
                         </div>
                     </div>
 
                     <div class="login-field">
-                        <label for="password">Password</label>
+                        <label for="password">Kata sandi</label>
                         <div class="login-input-wrapper">
-                            <input type="password" id="password" name="password" placeholder="Masukkan password kamu" required>
+                            <input type="password" id="password" name="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required>
                         </div>
                     </div>
 
-                    <button type="submit" class="login-button">Masuk ke Akun</button>
+                    <button type="submit" class="login-button">Masuk</button>
                 </form>
 
                 <div class="login-register">
-                    Belum punya akun? <a href="register.php">Daftar di sini</a>
+                    Belum punya akun keluarga? <a href="register.php">Buat akun</a>
                 </div>
             </div>
         </section>

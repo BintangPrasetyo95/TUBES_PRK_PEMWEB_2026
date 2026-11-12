@@ -177,9 +177,11 @@ const tandaiAktif = () => document.querySelectorAll('.chip').forEach((c) =>
 
 function daftarTerfilter() {
     const q = state.q.trim().toLowerCase();
-    return state.obat.filter((o) =>
-        (state.aktif === 'semua' || String(o.id_kategori) === state.aktif) &&
-        (!q || [o.nama_obat, o.indikasi, o.nama_kategori].some((v) => String(v ?? '').toLowerCase().includes(q))));
+    return state.obat
+        .filter((o) =>
+            (state.aktif === 'semua' || String(o.id_kategori) === state.aktif) &&
+            (!q || [o.nama_obat, o.indikasi, o.nama_kategori].some((v) => String(v ?? '').toLowerCase().includes(q))))
+        .sort((a, b) => a.nama_obat.localeCompare(b.nama_obat, 'id'));
 }
 
 function kartu(o) {

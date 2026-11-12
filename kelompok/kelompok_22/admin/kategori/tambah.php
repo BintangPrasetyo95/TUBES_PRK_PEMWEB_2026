@@ -33,22 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar Admin -->
-        <aside class="admin-sidebar">
-            <div class="admin-logo">KlikObat</div>
-            <ul class="admin-menu">
-                <li><a href="index.php" class="active">Kelola Kategori</a></li>
-                <li><a href="../obat/index.php">Kelola Obat</a></li>
-                <li><a href="../logout.php" style="color: #ef4444;">Logout</a></li>
-            </ul>
-        </aside>
+        <!-- Sidebar Admin (Dipanggil otomatis dari folder layout) -->
+        <?php include '../../backend/admin/layout/sidebar.php'; ?>
 
         <!-- Konten Utama Admin -->
         <main class="admin-main">
-            <header class="admin-header">
-                <h1>Tambah Kategori Obat</h1>
-                <div class="admin-user">Admin Panel</div>
-            </header>
+            <?php include '../../backend/admin/layout/header.php'; ?>
 
             <div class="admin-content">
                 <h2>Form Tambah Kategori</h2>
@@ -76,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <footer class="admin-footer">
-                <p>&copy; 2026 KlikObat. Sistem Informasi Katalog Farmasi & Edukasi.</p>
+                <?php include '../../backend/admin/layout/footer.php'; ?>
             </footer>
         </main>
     </div>

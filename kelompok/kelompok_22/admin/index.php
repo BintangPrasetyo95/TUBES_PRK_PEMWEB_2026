@@ -3,18 +3,18 @@
  * File: admin/index.php
  * Halaman Dashboard Utama - KlikObat
  */
-
+ 
 require_once 'auth.php';
 require_once '../config/koneksi.php';
 require_once '../config/helper.php';
-
+ 
 // 1. Ambil data statistik untuk Summary Cards
 $q_kat = $conn->query("SELECT COUNT(*) as total FROM kategori");
 $total_kategori = $q_kat->fetch_assoc()['total'];
-
+ 
 $q_obt = $conn->query("SELECT COUNT(*) as total FROM obat");
 $total_obat = $q_obt->fetch_assoc()['total'];
-
+ 
 // Hitung stok menipis/habis
 $q_semua_obat = $conn->query("SELECT stok FROM obat");
 $stok_kritis = 0;
@@ -24,7 +24,7 @@ while ($row = $q_semua_obat->fetch_assoc()) {
         $stok_kritis++;
     }
 }
-
+ 
 // 2. Ambil data obat dengan stok Menipis atau Habis (Low Stock Alert Table)
 $sql_kritis = "SELECT o.*, k.nama_kategori FROM obat o 
                JOIN kategori k ON o.id_kategori = k.id_kategori 
@@ -39,13 +39,13 @@ if ($res_kritis) {
         }
     }
 }
-
+ 
 // 3. Ambil 5 data obat terbaru (Recent Additions)
 $sql_terbaru = "SELECT o.*, k.nama_kategori FROM obat o 
                 JOIN kategori k ON o.id_kategori = k.id_kategori 
                 ORDER BY o.id_obat DESC LIMIT 5";
 $res_terbaru = $conn->query($sql_terbaru);
-
+ 
 $page_title = "Dashboard Admin";
 ?>
 <!DOCTYPE html>
@@ -62,12 +62,12 @@ $page_title = "Dashboard Admin";
     <div class="admin-container">
         <!-- Sidebar Admin -->
         <?php include '../backend/admin/layout/sidebar.php'; ?>
-
+ 
         <!-- Konten Utama Admin -->
         <main class="admin-main">
             <!-- Header Admin -->
             <?php include '../backend/admin/layout/header.php'; ?>
-
+ 
             <div class="admin-content">
                 <!-- 1. Kartu Statistik Ringkas (Summary Cards) -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px;">
@@ -84,10 +84,10 @@ $page_title = "Dashboard Admin";
                         <h3 style="margin: 10px 0 0 0; font-size: 28px; color: var(--admin-text);"><?= $stok_kritis; ?></h3>
                     </div>
                 </div>
-
+ 
                 <!-- 2. Tabel Peringatan Stok (Low Stock Alert Table) -->
                 <div style="margin-bottom: 35px;">
-                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);">⚠️ Peringatan Stok Obat (Menipis / Habis)</h2>
+                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);"> ! Peringatan Stok Obat (Menipis / Habis) !</h2>
                     <div class="admin-table-container">
                         <table class="admin-table">
                             <thead>
@@ -124,10 +124,10 @@ $page_title = "Dashboard Admin";
                         </table>
                     </div>
                 </div>
-
+ 
                 <!-- 3. Daftar Obat Terbaru (Recent Additions) -->
                 <div>
-                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);">✨ 5 Obat Terbaru Ditambahkan</h2>
+                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);">5 Obat Terbaru Ditambahkan</h2>
                     <div class="admin-table-container">
                         <table class="admin-table">
                             <thead>
@@ -157,14 +157,13 @@ $page_title = "Dashboard Admin";
                         </table>
                     </div>
                 </div>
-
+ 
             </div>
-
+ 
             <!-- Footer Admin -->
-            <footer class="admin-footer">
-                <?php include '../backend/admin/layout/footer.php'; ?>
-            </footer>
+            <?php include '../backend/admin/layout/footer.php'; ?>
         </main>
     </div>
 </body>
 </html>
+ 

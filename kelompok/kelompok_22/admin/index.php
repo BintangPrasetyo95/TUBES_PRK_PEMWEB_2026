@@ -87,7 +87,7 @@ $page_title = "Dashboard Admin";
 
                 <!-- 2. Tabel Peringatan Stok (Low Stock Alert Table) -->
                 <div style="margin-bottom: 35px;">
-                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);">⚠️ Peringatan Stok Obat (Menipis / Habis)</h2>
+                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);">Peringatan Stok Obat (Menipis / Habis)</h2>
                     <div class="admin-table-container">
                         <table class="admin-table">
                             <thead>
@@ -127,7 +127,7 @@ $page_title = "Dashboard Admin";
 
                 <!-- 3. Daftar Obat Terbaru (Recent Additions) -->
                 <div>
-                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);">✨ 5 Obat Terbaru Ditambahkan</h2>
+                    <h2 style="font-size: 18px; margin-bottom: 15px; color: var(--admin-text);">5 Obat Terbaru Ditambahkan</h2>
                     <div class="admin-table-container">
                         <table class="admin-table">
                             <thead>

@@ -504,6 +504,20 @@ function tarikKuis($kuisId, $pengajarId, $catatan = null) {
     return ubahStatusKuis($kuisId, 'terbit', 'draft', $pengajarId, $catatan);
 }
 
+// Pindahkan kuis yang ditolak atau ditarik kembali ke draft untuk direvisi
+function bukaRevisiKuis($kuisId, $pengajarId, $catatan = null) {
+    $kuis = ambilKuisById($kuisId, $pengajarId);
+    if (!$kuis) {
+        return ['berhasil' => false, 'pesan' => 'Kuis tidak ditemukan.'];
+    }
+
+    if ($kuis['status'] != 'ditolak' && $kuis['status'] != 'ditarik') {
+        return ['berhasil' => false, 'pesan' => 'Hanya kuis berstatus ditolak atau ditarik yang bisa direvisi.'];
+    }
+
+    return ubahStatusKuis($kuisId, $kuis['status'], 'draft', $pengajarId, $catatan);
+}
+
 // Ambil data statistik untuk Dashboard Pengajar
 function ambilStatistikPengajar($pengajarId) {
     global $pdo;

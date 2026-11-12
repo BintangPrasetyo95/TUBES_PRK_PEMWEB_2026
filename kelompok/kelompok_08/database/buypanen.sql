@@ -6,7 +6,7 @@ CREATE TABLE users (
     nama VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role ENUM('petani', 'admin') NOT NULL DEFAULT 'petani',
+    role ENUM('petani') NOT NULL DEFAULT 'petani',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -85,3 +85,46 @@ ON UPDATE CASCADE;
 ALTER TABLE produk
 ADD CONSTRAINT chk_harga CHECK (harga >= 0),
 ADD CONSTRAINT chk_stok CHECK (stok >= 0);
+
+-- Mengambil ID akun petani pertama
+SET @petani_id = (
+    SELECT user_id
+    FROM petani
+    ORDER BY id ASC
+    LIMIT 1
+);
+
+-- Memasukkan data produk
+INSERT INTO produk
+(user_id, kategori_id, nama_produk, harga, satuan, stok, deskripsi, status)
+VALUES
+(
+    @petani_id,
+    (SELECT id FROM kategori WHERE nama_kategori = 'Sayur'),
+    'Cabai Merah',
+    45000,
+    'kg',
+    50,
+    'Cabai merah segar hasil panen petani lokal.',
+    'tayang'
+),
+(
+    @petani_id,
+    (SELECT id FROM kategori WHERE nama_kategori = 'Buah'),
+    'Pisang Kepok',
+    18000,
+    'sisir',
+    40,
+    'Pisang kepok matang dan berkualitas.',
+    'tayang'
+),
+(
+    @petani_id,
+    (SELECT id FROM kategori WHERE nama_kategori = 'Pangan'),
+    'Jagung Manis',
+    8000,
+    'kg',
+    70,
+    'Jagung manis segar hasil panen lokal.',
+    'tayang'
+);

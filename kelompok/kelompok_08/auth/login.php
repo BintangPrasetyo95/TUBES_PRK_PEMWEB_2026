@@ -41,10 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($user["role"] === "petani") {
                 header("Location: ../petani/profil.php");
                 exit;
-            } elseif ($user["role"] === "admin") {
-              
-                $pesan = "Login admin berhasil, dashboard belum tersedia.";
-            }
+            } 
 
         } else {
             $pesan = "Email atau password salah!";

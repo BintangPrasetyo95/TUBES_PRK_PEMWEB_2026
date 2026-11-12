@@ -1,15 +1,12 @@
 <?php
-
 require_once '../config/database.php';
 require_once 'auth_check.php';
 
-// Mengambil kategori dari database
 $query = $pdo->query("
     SELECT id_kategori, nama_kategori
     FROM kategori
     ORDER BY nama_kategori ASC
 ");
-
 $kategoriList = $query->fetchAll();
 
 $nama = $_SESSION['nama_lengkap'] ?? 'Mahasiswa';
@@ -17,476 +14,413 @@ $nama = $_SESSION['nama_lengkap'] ?? 'Mahasiswa';
 function e($data) {
     return htmlspecialchars((string) $data, ENT_QUOTES, 'UTF-8');
 }
-
 ?>
 
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Kirim Aspirasi - KabarSi FISIP</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F6F2E9;
+            color: #141414;
+            min-height: 100vh;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        .navbar {
+            background: #141414;
+            color: #ffffff;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-logo {
+            background: #FF5A1F;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: #ffffff; font-weight: 800; font-size: 14px;
+        }
+        .brand-title { font-size: 18px; font-weight: 800; color: #ffffff; }
+        .brand-title span { color: #FF5A1F; }
+
+        .nav-actions { display: flex; align-items: center; gap: 16px; }
+        .nav-links { display: flex; align-items: center; gap: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
+        .nav-links a:hover { color: #FF5A1F; }
+        .btn-nav-dash {
+            background: #FF5A1F;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .btn-nav-logout {
+            background: #EF4444;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .btn-nav-logout:hover { background: #dc2626; }
+
+        .main-container {
+            max-width: 1152px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+            flex: 1;
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 13px; font-weight: 700; color: #141414;
+            background: #ffffff;
+            border: 1px solid #141414;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-bottom: 28px;
+        }
+        .back-link:hover { border-color: #FF5A1F; color: #FF5A1F; }
+
+        .page-header { margin-bottom: 32px; }
+        .badge-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            color: #6B655B;
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .page-title { font-size: 34px; font-weight: 800; color: #141414; margin-bottom: 10px; letter-spacing: -0.02em; }
+        .page-title span { color: #FF5A1F; }
+        .page-desc { font-size: 15px; color: #57534e; max-width: 670px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 28px;
+            align-items: start;
         }
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #ea580c 0%, #ff5a1f 55%, #f97316 100%);
+        .left-col { display: flex; flex-direction: column; gap: 20px; }
+        .banner-card {
+            background: #141414;
+            border-radius: 16px;
+            padding: 28px;
+            color: #ffffff;
         }
+        .banner-icon {
+            width: 48px; height: 48px;
+            background: #FF5A1F;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; margin-bottom: 20px;
+        }
+        .banner-title { font-size: 20px; font-weight: 800; margin-bottom: 12px; }
+        .banner-text { font-size: 14px; color: #d6d3d1; line-height: 1.6; }
 
-        .input-field {
+        .tips-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #141414;
+        }
+        .tips-title { font-weight: 800; font-size: 16px; margin-bottom: 20px; color: #141414; }
+        .tip-item { display: flex; gap: 12px; margin-bottom: 18px; }
+        .tip-item:last-child { margin-bottom: 0; }
+        .tip-icon {
+            width: 36px; height: 36px; flex-shrink: 0;
+            border-radius: 8px; background: #F6F2E9;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .tip-head { font-size: 14px; font-weight: 700; color: #141414; }
+        .tip-sub { font-size: 12px; color: #6B655B; margin-top: 2px; }
+
+        .privacy-card {
+            background: #ffffff;
+            border: 1px solid #141414;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex; gap: 12px;
+        }
+        .privacy-title { font-size: 14px; font-weight: 800; color: #141414; }
+        .privacy-desc { font-size: 12px; color: #57534e; margin-top: 6px; line-height: 1.5; }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #141414;
+            overflow: hidden;
+        }
+        .form-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid #e7e2d8;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .form-header-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px; background: #F6F2E9;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .form-body { padding: 28px; }
+        .form-group { margin-bottom: 24px; }
+        .form-label {
+            display: block; font-size: 14px; font-weight: 700;
+            color: #141414; margin-bottom: 8px;
+        }
+        .req { color: #ef4444; }
+        .form-control {
+            width: 100%;
+            border: 1px solid #141414;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #141414;
+            font-family: inherit;
+            background: #ffffff;
             transition: all 0.2s ease;
         }
-
-        .input-field:focus {
-            border-color: #ff5a1f;
-            box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.12);
+        .form-control:focus {
             outline: none;
+            border-color: #FF5A1F;
         }
+        .form-hint { font-size: 12px; color: #6B655B; margin-top: 8px; }
 
-        .submit-btn {
-            transition: all 0.25s ease;
+        .anon-box {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 16px;
+            background: #F6F2E9;
+            border: 1px solid #141414;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 28px;
         }
+        .anon-box:hover { border-color: #FF5A1F; }
+        .anon-box input { width: 20px; height: 20px; margin-top: 2px; accent-color: #141414; }
 
-        .submit-btn:hover {
+        .btn-submit {
+            width: 100%;
+            background: #141414;
+            color: #ffffff;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        .btn-submit:hover {
+            background: #292524;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(234, 88, 12, 0.25);
+        }
+
+        .footer {
+            background: #141414;
+            color: #ffffff;
+            margin-top: 64px;
+            padding: 36px 24px;
+        }
+        .footer-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .footer-left { display: flex; flex-direction: column; gap: 8px; }
+        .footer-brand-row { display: flex; align-items: center; gap: 10px; }
+        .footer-logo {
+            background: #FF5A1F;
+            padding: 4px 8px;
+            border-radius: 5px;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 12px;
+        }
+        .footer-brand { font-size: 16px; font-weight: 800; color: #ffffff; }
+        .footer-sub { font-size: 12px; color: #a8a29e; }
+        .footer-right { font-size: 12px; font-weight: 700; color: #ffffff; }
+
+        @media (max-width: 900px) {
+            .form-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+        }
+        @media (max-width: 640px) {
+            .footer-container { flex-direction: column; align-items: flex-start; }
         }
     </style>
-
 </head>
+<body>
 
-<body class="bg-slate-50 min-h-screen">
-
-    <!-- NAVBAR -->
-    <nav class="bg-white border-b border-slate-100">
-
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-
-            <div class="flex items-center gap-3">
-
-                <div class="gradient-bg w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
-                    KS
-                </div>
-
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../index.php" class="brand">
+                <div class="brand-logo">KS</div>
                 <div>
-                    <h1 class="text-lg font-extrabold text-slate-800">
-                        KabarSi <span class="text-[#FF5A1F]">FISIP</span>
-                    </h1>
-
-                    <p class="text-xs text-slate-400">
-                        Suara Mahasiswa, Perubahan Bersama
-                    </p>
+                    <h1 class="brand-title">KabarSi <span>FISIP</span></h1>
                 </div>
-
+            </a>
+            <div class="nav-actions">
+                <div class="nav-links">
+                    <a href="../index.php">BERANDA</a>
+                    <a href="../index.php#berita">BERITA</a>
+                    <a href="../index.php#aspirasi">ASPIRASI</a>
+                </div>
+                <a href="dashboard.php" class="btn-nav-dash">DASHBOARD SAYA</a>
+                <a href="../auth/logout.php" class="btn-nav-logout">LOGOUT</a>
             </div>
-
-            <div class="hidden sm:flex items-center gap-3">
-
-                <div class="text-right">
-                    <p class="text-sm font-semibold text-slate-700">
-                        <?= e($nama); ?>
-                    </p>
-
-                    <p class="text-xs text-slate-400">
-                        Mahasiswa
-                    </p>
-                </div>
-
-                <div class="w-10 h-10 rounded-full bg-orange-100 text-[#FF5A1F] flex items-center justify-center font-bold">
-                    <?= strtoupper(substr($nama, 0, 1)); ?>
-                </div>
-
-            </div>
-
         </div>
-
     </nav>
 
+    <main class="main-container">
 
-    <!-- MAIN CONTENT -->
-    <main class="max-w-6xl mx-auto px-5 py-10">
+        <a href="dashboard.php" class="back-link"><span>←</span> Kembali ke Dashboard</a>
 
-        <!-- BREADCRUMB -->
-        <div class="mb-7">
-
-            <a href="dashboard.php"
-               class="inline-flex items-center gap-2 text-sm font-semibold text-[#FF5A1F] hover:text-orange-700 transition">
-
-                <span>←</span>
-                Kembali ke Dashboard
-
-            </a>
-
+        <div class="page-header">
+            <div class="badge-pill">RUANG ASPIRASI MAHASISWA</div>
+            <h2 class="page-title">Suaramu Berarti. <span>Sampaikan Sekarang!</span></h2>
+            <p class="page-desc">Setiap pendapat memiliki arti. Sampaikan ide, kritik, maupun saran untuk menciptakan lingkungan FISIP yang lebih baik bersama KabarSi.</p>
         </div>
 
+        <div class="form-grid">
 
-        <!-- PAGE HEADER -->
-        <div class="mb-8">
-
-            <div class="inline-flex items-center gap-2 bg-orange-50 text-[#FF5A1F] px-4 py-2 rounded-full text-xs font-bold mb-4 border border-orange-100">
-
-                <span>✦</span>
-                RUANG ASPIRASI MAHASISWA
-
-            </div>
-
-            <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-3">
-
-                Suaramu Berarti.
-
-                <span class="text-[#FF5A1F]">
-                    Sampaikan Sekarang!
-                </span>
-
-            </h2>
-
-            <p class="text-slate-500 text-sm md:text-base leading-relaxed max-w-2xl">
-
-                Setiap pendapat memiliki arti. Sampaikan ide, kritik,
-                maupun saran untuk menciptakan lingkungan FISIP yang
-                lebih baik bersama KabarSi.
-
-            </p>
-
-        </div>
-
-
-        <!-- FORM LAYOUT -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-7 items-start">
-
-
-            <!-- LEFT INFORMATION -->
-            <div class="space-y-5">
-
-                <!-- ORANGE INFORMATION CARD -->
-                <div class="gradient-bg rounded-2xl p-7 text-white shadow-lg relative overflow-hidden">
-
-                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full"></div>
-
-                    <div class="absolute -right-5 bottom-0 w-28 h-28 bg-white opacity-10 rounded-full"></div>
-
-                    <div class="relative z-10">
-
-                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl mb-5">
-                            💬
-                        </div>
-
-                        <h3 class="text-xl font-bold mb-3">
-                            Satu Suara, Banyak Perubahan
-                        </h3>
-
-                        <p class="text-orange-100 text-sm leading-relaxed">
-                            Aspirasi yang kamu sampaikan menjadi bagian
-                            dari langkah untuk membangun lingkungan
-                            kampus yang lebih baik.
-                        </p>
-
-                    </div>
-
+            <div class="left-col">
+                <div class="banner-card">
+                    <div class="banner-icon">💬</div>
+                    <h3 class="banner-title">Satu Suara, Banyak Perubahan</h3>
+                    <p class="banner-text">Aspirasi yang kamu sampaikan menjadi bagian dari langkah untuk membangun lingkungan kampus yang lebih baik.</p>
                 </div>
 
-
-                <!-- TIPS CARD -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-
-                    <h3 class="font-bold text-slate-800 mb-5">
-                        Tips Menyampaikan Aspirasi
-                    </h3>
-
-                    <div class="space-y-5">
-
-                        <div class="flex gap-3">
-
-                            <div class="w-9 h-9 shrink-0 rounded-lg bg-orange-50 flex items-center justify-center">
-                                📝
-                            </div>
-
-                            <div>
-                                <p class="text-sm font-semibold text-slate-700">
-                                    Gunakan judul yang jelas
-                                </p>
-
-                                <p class="text-xs text-slate-400 mt-1">
-                                    Gambarkan inti aspirasi secara singkat.
-                                </p>
-                            </div>
-
-                        </div>
-
-
-                        <div class="flex gap-3">
-
-                            <div class="w-9 h-9 shrink-0 rounded-lg bg-orange-50 flex items-center justify-center">
-                                🎯
-                            </div>
-
-                            <div>
-                                <p class="text-sm font-semibold text-slate-700">
-                                    Sampaikan secara spesifik
-                                </p>
-
-                                <p class="text-xs text-slate-400 mt-1">
-                                    Jelaskan permasalahan dan harapanmu.
-                                </p>
-                            </div>
-
-                        </div>
-
-
-                        <div class="flex gap-3">
-
-                            <div class="w-9 h-9 shrink-0 rounded-lg bg-orange-50 flex items-center justify-center">
-                                🤝
-                            </div>
-
-                            <div>
-                                <p class="text-sm font-semibold text-slate-700">
-                                    Gunakan bahasa yang sopan
-                                </p>
-
-                                <p class="text-xs text-slate-400 mt-1">
-                                    Sampaikan pendapat dengan baik dan santun.
-                                </p>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- PRIVACY CARD -->
-                <div class="bg-orange-50 border border-orange-100 rounded-2xl p-5">
-
-                    <div class="flex gap-3">
-
-                        <div class="text-xl">
-                            🔒
-                        </div>
-
+                <div class="tips-card">
+                    <h3 class="tips-title">Tips Menyampaikan Aspirasi</h3>
+                    <div class="tip-item">
+                        <div class="tip-icon">📝</div>
                         <div>
-                            <h4 class="text-sm font-bold text-orange-900">
-                                Privasi Terjaga
-                            </h4>
-
-                            <p class="text-xs text-orange-700 leading-relaxed mt-2">
-                                Kamu dapat memilih opsi anonim.
-                                Identitas tetap tercatat di database
-                                untuk keperluan pengelolaan admin.
-                            </p>
+                            <p class="tip-head">Gunakan judul yang jelas</p>
+                            <p class="tip-sub">Gambarkan inti aspirasi secara singkat.</p>
                         </div>
-
                     </div>
-
+                    <div class="tip-item">
+                        <div class="tip-icon">🎯</div>
+                        <div>
+                            <p class="tip-head">Sampaikan secara spesifik</p>
+                            <p class="tip-sub">Jelaskan permasalahan dan harapanmu.</p>
+                        </div>
+                    </div>
+                    <div class="tip-item">
+                        <div class="tip-icon">🤝</div>
+                        <div>
+                            <p class="tip-head">Gunakan bahasa yang sopan</p>
+                            <p class="tip-sub">Sampaikan pendapat dengan baik dan santun.</p>
+                        </div>
+                    </div>
                 </div>
 
+                <div class="privacy-card">
+                    <div style="font-size:20px;">🔒</div>
+                    <div>
+                        <h4 class="privacy-title">Privasi Terjaga</h4>
+                        <p class="privacy-desc">Kamu dapat memilih opsi anonim. Identitas tetap tercatat di database untuk keperluan pengelolaan admin.</p>
+                    </div>
+                </div>
             </div>
 
-
-            <!-- RIGHT FORM -->
-            <div class="lg:col-span-2">
-
-                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-
-                    <!-- FORM HEADER -->
-                    <div class="px-7 py-6 border-b border-slate-100">
-
-                        <div class="flex items-center gap-3">
-
-                            <div class="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center text-xl">
-                                📋
-                            </div>
-
-                            <div>
-                                <h3 class="text-lg font-bold text-slate-800">
-                                    Formulir Aspirasi
-                                </h3>
-
-                                <p class="text-xs text-slate-400 mt-1">
-                                    Lengkapi informasi berikut dengan benar.
-                                </p>
-                            </div>
-
-                        </div>
-
+            <div class="form-card">
+                <div class="form-header">
+                    <div class="form-header-icon">📋</div>
+                    <div>
+                        <h3 style="font-size:18px; font-weight:800; color:#141414;">Formulir Aspirasi</h3>
+                        <p style="font-size:12px; color:#6B655B;">Lengkapi informasi berikut dengan benar.</p>
                     </div>
-
-
-                    <!-- FORM BODY -->
-                    <form action="aspirasi_simpan.php" method="POST" class="p-7">
-
-
-                        <!-- JUDUL -->
-                        <div class="mb-6">
-
-                            <label class="block text-sm font-bold text-slate-700 mb-2">
-
-                                Judul Aspirasi
-
-                                <span class="text-red-500">*</span>
-
-                            </label>
-
-                            <input
-                                type="text"
-                                name="judul_aspirasi"
-                                maxlength="255"
-                                required
-                                placeholder="Contoh: Perbaikan Fasilitas Ruang Kelas"
-                                class="input-field w-full border border-slate-200 rounded-xl px-4 py-3.5 text-sm text-slate-700 placeholder:text-slate-300"
-                            >
-
-                            <p class="text-xs text-slate-400 mt-2">
-                                Buat judul yang singkat dan mudah dipahami.
-                            </p>
-
-                        </div>
-
-
-                        <!-- KATEGORI -->
-                        <div class="mb-6">
-
-                            <label class="block text-sm font-bold text-slate-700 mb-2">
-
-                                Kategori Aspirasi
-
-                                <span class="text-red-500">*</span>
-
-                            </label>
-
-                            <select
-                                name="id_kategori"
-                                required
-                                class="input-field w-full border border-slate-200 rounded-xl px-4 py-3.5 text-sm text-slate-600 bg-white"
-                            >
-
-                                <option value="">
-                                    Pilih kategori aspirasi
-                                </option>
-
-                                <?php foreach ($kategoriList as $kategori): ?>
-
-                                    <option value="<?= (int) $kategori['id_kategori']; ?>">
-
-                                        <?= e($kategori['nama_kategori']); ?>
-
-                                    </option>
-
-                                <?php endforeach; ?>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- ISI ASPIRASI -->
-                        <div class="mb-6">
-
-                            <label class="block text-sm font-bold text-slate-700 mb-2">
-
-                                Isi Aspirasi
-
-                                <span class="text-red-500">*</span>
-
-                            </label>
-
-                            <textarea
-                                name="isi_aspirasi"
-                                rows="7"
-                                required
-                                placeholder="Ceritakan aspirasi, kritik, saran, atau pendapatmu secara jelas dan terperinci..."
-                                class="input-field w-full border border-slate-200 rounded-xl px-4 py-4 text-sm text-slate-700 placeholder:text-slate-300 resize-y"
-                            ></textarea>
-
-                            <p class="text-xs text-slate-400 mt-2">
-                                Jelaskan permasalahan dan solusi yang kamu harapkan.
-                            </p>
-
-                        </div>
-
-
-                        <!-- ANONIM -->
-                        <div class="mb-7">
-
-                            <label class="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-orange-50 hover:border-orange-200 transition">
-
-                                <input
-                                    type="checkbox"
-                                    name="is_anonim"
-                                    value="1"
-                                    class="w-5 h-5 mt-0.5 accent-[#FF5A1F] shrink-0"
-                                >
-
-                                <div>
-
-                                    <p class="text-sm font-bold text-slate-700">
-                                        Kirim sebagai Anonim
-                                    </p>
-
-                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-                                        Namamu tidak ditampilkan pada tampilan publik.
-                                        Identitas tetap tersimpan di database admin.
-                                    </p>
-
-                                </div>
-
-                            </label>
-
-                        </div>
-
-
-                        <!-- BUTTON -->
-                        <div class="border-t border-slate-100 pt-6">
-
-                            <button
-                                type="submit"
-                                class="submit-btn w-full gradient-bg text-white py-4 rounded-xl font-bold text-sm shadow-md"
-                            >
-
-                                Kirim Aspirasi
-                                <span class="ml-2">➜</span>
-
-                            </button>
-
-                            <p class="text-center text-xs text-slate-400 mt-4">
-                                Terima kasih telah berkontribusi untuk lingkungan FISIP.
-                            </p>
-
-                        </div>
-
-
-                    </form>
-
                 </div>
 
+                <form action="aspirasi_simpan.php" method="POST" class="form-body">
+                    <div class="form-group">
+                        <label class="form-label">Judul Aspirasi <span class="req">*</span></label>
+                        <input type="text" name="judul_aspirasi" maxlength="255" required placeholder="Contoh: Perbaikan Fasilitas Ruang Kelas" class="form-control">
+                        <p class="form-hint">Buat judul yang singkat dan mudah dipahami.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Kategori Aspirasi <span class="req">*</span></label>
+                        <select name="id_kategori" required class="form-control">
+                            <option value="">Pilih kategori aspirasi</option>
+                            <?php foreach ($kategoriList as $kategori): ?>
+                                <option value="<?= (int) $kategori['id_kategori']; ?>"><?= e($kategori['nama_kategori']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Isi Aspirasi <span class="req">*</span></label>
+                        <textarea name="isi_aspirasi" rows="7" required placeholder="Ceritakan aspirasi, kritik, saran, atau pendapatmu secara jelas dan terperinci..." class="form-control" style="resize:vertical;"></textarea>
+                        <p class="form-hint">Jelaskan permasalahan dan solusi yang kamu harapkan.</p>
+                    </div>
+
+                    <label class="anon-box">
+                        <input type="checkbox" name="is_anonim" value="1">
+                        <div>
+                            <p style="font-size:14px; font-weight:700; color:#141414;">Kirim sebagai Anonim</p>
+                            <p style="font-size:12px; color:#57534e; margin-top:4px;">Namamu tidak ditampilkan pada tampilan publik. Identitas tetap tersimpan di database admin.</p>
+                        </div>
+                    </label>
+
+                    <div style="border-top:1px solid #e7e2d8; padding-top:24px;">
+                        <button type="submit" class="btn-submit">KIRIM ASPIRASI</button>
+                        <p style="text-align:center; font-size:12px; color:#6B655B; margin-top:16px;">Terima kasih telah berkontribusi untuk lingkungan FISIP.</p>
+                    </div>
+                </form>
             </div>
 
         </div>
-
-
-        <!-- FOOTER -->
-        <footer class="text-center mt-12 pb-5">
-
-            <p class="text-xs text-slate-400">
-                © <?= date('Y'); ?> KabarSi FISIP.
-                Suara Mahasiswa, Perubahan Bersama.
-            </p>
-
-        </footer>
 
     </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <div class="footer-brand-row">
+                    <span class="footer-logo">KS</span>
+                    <span class="footer-brand">KabarSi FISIP</span>
+                </div>
+                <p class="footer-sub">Portal Berita Resmi & Suara Aspirasi Mahasiswa FISIP Universitas Lampung</p>
+            </div>
+            <div class="footer-right">
+                © <?= date('Y'); ?> KabarSi FISIP Universitas Lampung
+            </div>
+        </div>
+    </footer>
 
 </body>
 </html>

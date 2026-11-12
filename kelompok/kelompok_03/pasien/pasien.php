@@ -151,6 +151,7 @@ $riwayatList = $stmtRiwayat->fetchAll();
     <a href="../index.php" class="brand">Klinik FK Unila</a>
     <nav aria-label="Menu pengguna">
         <a href="../index.php">Jadwal Umum</a>
+        <a href="../antrian_dokter.php">Papan Antrean Dokter</a>
         <a href="pasien.php" class="aktif">Antrean Saya</a>
         <a href="../auth/logout.php" onclick="return confirm('Apakah Anda yakin ingin keluar?');">Keluar</a>
     </nav>
@@ -228,6 +229,11 @@ $riwayatList = $stmtRiwayat->fetchAll();
                                 </div>
                             </div>
                             <div class="muted small spasi-atas">Didaftarkan pukul: <strong><?= $tiket['waktu_daftar'] ?> WIB</strong></div>
+                            <div class="spasi-atas d-flex gap-2 justify-content-center">
+                                <a href="../antrian_dokter.php?dokter_id=<?= (int) $tiket['dokter_id'] ?>" target="_blank" class="tombol tombol-garis tombol-kecil-btn">
+                                    Papan Antrean Dokter ↗
+                                </a>
+                            </div>
                             <?php if ($tiket['status'] === 'menunggu'): ?>
                                 <form action="batal_antrian.php" method="POST" class="spasi-atas" onsubmit="return confirm('Batalkan antrean #<?= (int) $tiket['nomor'] ?> ke <?= htmlspecialchars($tiket['nama_dokter'], ENT_QUOTES, 'UTF-8') ?>?');">
                                     <input type="hidden" name="antrian_id" value="<?= (int) $tiket['id'] ?>">

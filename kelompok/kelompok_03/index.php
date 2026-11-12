@@ -121,6 +121,7 @@ foreach ($semuaDokter as $doc) {
 <header class="topbar">
     <a href="index.php" class="brand">Klinik FK Unila</a>
     <nav aria-label="Menu utama">
+        <a href="antrian_dokter.php">Papan Antrean Dokter</a>
         <?php if ($sudahLogin): ?>
             <?php if ($userRole === 'admin'): ?>
                 <!-- Tombol navigasi jika yang login adalah admin -->
@@ -206,8 +207,12 @@ foreach ($semuaDokter as $doc) {
                     </span>
                 </td>
 
-                <!-- Kolom Aksi Ambil Nomor Antrean -->
+                <!-- Kolom Aksi Ambil Nomor Antrean & Pantau Antrean -->
                 <td class="aksi">
+                    <!-- Tombol Pantau Antrean Khusus Dokter Ini -->
+                    <a href="antrian_dokter.php?dokter_id=<?= (int) $d['id'] ?>" class="tombol-kecil" style="background: #0f766e; color: #fff; margin-right: 4px;">
+                        Antrean Dokter ↗
+                    </a>
                     <?php if (!empty($d['antrian_saya'])): ?>
                         <!-- Jika pasien sudah memiliki nomor antrean ke dokter ini -->
                         <span class="lencana lencana-praktik">

@@ -112,7 +112,8 @@ if ($peran === 'pelajar') {
 
     // 3. Tentukan status akhir: apakah selesai normal atau waktu habis (BR-10)
     $sisaDetik = hitungSisaWaktuDetik($percobaan);
-    $statusAkhir = ($sisaDetik <= 0) ? 'waktu_habis' : 'selesai';
+    $alasanKlien = (string) ($data['alasan'] ?? '');
+    $statusAkhir = ($sisaDetik <= 0 || $alasanKlien === 'waktu_habis') ? 'waktu_habis' : 'selesai';
 
     // 4. Selesaikan percobaan dan hitung total perolehan skor
     $percobaanSelesai = selesaikanPercobaan($percobaan['id'], $statusAkhir);

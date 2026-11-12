@@ -521,6 +521,7 @@ document.addEventListener('DOMContentLoaded', function () {
       },
       body: JSON.stringify({
         kuis_id: kuisId,
+        alasan: statusAkhir || 'selesai',
         csrf_token: tokenCsrf
       })
     })
@@ -543,6 +544,11 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Terjadi kesalahan jaringan saat menyelesaikan kuis. Mencoba dialihkan ke halaman hasil...');
       window.location.href = 'hasil.php?id=' + kuisId;
     });
+  }
+
+  // Jika sudah ada jawaban tersimpan setelah refresh (AC-12), tampilkan tombol Selesai Kuis
+  if (jumlahTerjawab > 0 && btnSelesaiCepat) {
+    btnSelesaiCepat.style.display = 'inline-block';
   }
 
   // Jalankan timer saat halaman siap

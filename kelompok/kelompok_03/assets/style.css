@@ -336,22 +336,30 @@ form .tombol-kecil {
 
 .tabel-dokter th {
     text-align: left;
-    font-size: .9rem;
+    font-size: .875rem;
     color: var(--tinta-lembut);
     font-weight: 600;
-    padding: 12px 14px;
+    padding: 14px 16px;
     border-bottom: 2px solid var(--tinta);
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 .tabel-dokter td {
-    padding: 16px 14px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--garis);
     vertical-align: middle;
+    line-height: 1.5;
+}
+
+.tabel-dokter td[data-label="Jadwal Praktik"] {
+    white-space: nowrap;
 }
 
 .tabel-dokter .aksi {
     text-align: right;
     white-space: nowrap;
+    min-width: 160px;
 }
 
 .nonaktif {

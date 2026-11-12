@@ -1,7 +1,7 @@
 :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
-    --primary-light: #eff6ff;
+    --primary: #0f766e;
+    --primary-dark: #115e59;
+    --primary-light: #f0fdfa;
     --text-main: #0f172a;
     --text-muted: #64748b;
     --bg-body: #f8fafc;
@@ -12,7 +12,7 @@
     /* Variabel halaman pasien */
     --utama: #0f766e;
     --utama-gelap: #115e59;
-    --sorot: #f59e0b;
+    --sorot: #0f766e;
     --tinta: #0f172a;
     --tinta-lembut: #64748b;
     --garis: #e2e8f0;
@@ -44,6 +44,16 @@ h2.text-primary {
     border-radius: var(--radius) !important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
     margin-bottom: 24px;
+}
+.card a:not(.btn) {
+    color: var(--primary) !important;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.card a:not(.btn):hover {
+    color: var(--primary-dark) !important;
+    text-decoration: underline;
 }
 
 .navbar.bg-primary {
@@ -182,7 +192,6 @@ body.halaman-auth {
 }
 
 .halaman-depan h1,
-.halaman-depan .brand,
 .halaman-auth h3 {
     font-family: "Bricolage Grotesque", "Segoe UI", sans-serif;
     letter-spacing: -0.02em;
@@ -207,9 +216,11 @@ body.halaman-auth {
 }
 
 .topbar .brand {
+    font-family: "Bricolage Grotesque", "Segoe UI", sans-serif;
     color: #fff;
     text-decoration: none;
     font-weight: 700;
+    font-size: 1.35rem;
 }
 
 .topbar nav {
@@ -226,12 +237,16 @@ body.halaman-auth {
 .topbar nav a:hover {
     color: #fff;
 }
+.topbar .tombol-kecil {
+    background-color: var(--utama) !important;
+    color: #ffffff !important;
+}
 
 .tombol-kecil {
     display: inline-block;
     padding: 8px 16px;
     background: var(--sorot);
-    color: var(--tinta) !important;
+    color: #ffffff !important;
     font-weight: 600;
     text-decoration: none;
     border-radius: 6px;
@@ -423,4 +438,10 @@ form .tombol-kecil {
 
 .animate-pulse {
     animation: denyutStatus 1.5s infinite ease-in-out;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(15, 118, 110, 0.2) !important;
 }

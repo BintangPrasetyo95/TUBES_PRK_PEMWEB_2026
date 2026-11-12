@@ -1,3 +1,4 @@
+
 <?php
 require_once __DIR__ . '/../includes/cek_login.php';
 
@@ -65,7 +66,7 @@ require_once '../includes/header.php';
         <!-- Card Container Form -->
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4">
-                <form method="POST" action="dokter_simpan.php">
+                <form id="form-dokter" method="POST" action="dokter_simpan.php">
                     <?php if ($isEdit): ?>
                         <input type="hidden" name="id" value="<?= htmlspecialchars($dokter['id']) ?>">
                     <?php endif; ?>
@@ -119,6 +120,7 @@ require_once '../includes/header.php';
     </div>
 </div>
 
+<script src="admin.js"></script>
 <?php 
 require_once '../includes/footer.php'; 
 ?>

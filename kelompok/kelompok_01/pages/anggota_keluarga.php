@@ -49,6 +49,7 @@ $totalAnggota = count($anggota);
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/responsive.css">
     <link rel="stylesheet" href="../assets/css/anggota_keluarga.css">
+    <link rel="stylesheet" href="../assets/css/app-theme.css">
 </head>
 
 <body>

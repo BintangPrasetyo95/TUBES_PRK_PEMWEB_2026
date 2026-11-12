@@ -9,10 +9,11 @@ Modul Backend Admin dan Manajemen Kategori merupakan fondasi utama dalam sistem 
 ##2. STRUKTUR DIREKTORI FILE MODUL
 Seluruh file yang dikembangkan berlokasi di dalam folder spesifik kelompok (`kelompok/kelompok_22/`) dengan rincian struktur sebagai berikut:
 
-```text
+kelompok/
 kelompok_22/
 │
 ├── admin/
+│   ├── index.php             # Halaman utama Dashboard Admin (Statistik & Low Stock Alert)
 │   ├── auth.php              # Gerbang pengaman pengecekan sesi (Session Guard)
 │   ├── login.php             # Antarmuka form login & pemrosesan autentikasi
 │   ├── logout.php            # Skrip penghancuran sesi (Session Destruction)
@@ -42,7 +43,15 @@ Modul ini mengamankan area administratif dari akses ilegal.
     admin/logout.php (Pengakhiran Sesi)
         Fungsi: Membersihkan seluruh memori sesi aktif menggunakan fungsi session_unset() dan menghancurkan data sesi via session_destroy(), lalu mengalihkan halaman kembali ke form login.
 
-B. Modul CRUD Kategori Obat (admin/kategori/)
+B. Modul Dashboard Admin (admin/index.php)
+
+    Ringkasan Statistik (Summary Cards): Menampilkan kotak informasi total kategori obat dan total jenis obat terdaftar di database secara real-time.
+
+    Tabel Peringatan Stok (Low Stock Alert): Menyajikan daftar obat yang memiliki status stok Menipis atau Habis agar admin dapat segera melakukan tindakan restock.
+
+    Daftar Obat Terbaru (Recent Additions): Menampilkan 5 data obat terakhir yang baru saja diinputkan ke dalam sistem.
+    
+C. Modul CRUD Kategori Obat (admin/kategori/)
 Modul ini menangani manipulasi data kategori obat secara interaktif.
 
     index.php (Tabel Tampilan Data)

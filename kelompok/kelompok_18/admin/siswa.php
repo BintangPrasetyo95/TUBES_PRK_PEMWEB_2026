@@ -202,16 +202,16 @@ if ($detailId > 0) {
     <section class="space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h2 class="text-lg font-semibold text-[#20392a]"><?= h((string) $detailSiswa['nama']) ?></h2>
+                <h2 class="text-lg font-semibold text-[#303832]"><?= h((string) $detailSiswa['nama']) ?></h2>
                 <p class="mt-1 text-sm text-slate-600">Nomor induk <?= h((string) $detailSiswa['nomor_induk']) ?></p>
             </div>
             <div class="flex items-center gap-2">
-                <a href="siswa.php?edit=<?= h((string) $detailSiswa['id']) ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d]">Edit</a>
-                <a href="siswa.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Kembali</a>
+                <a href="siswa.php?edit=<?= h((string) $detailSiswa['id']) ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#41684f]">Edit</a>
+                <a href="siswa.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f] hover:bg-[#eff3ee]">Kembali</a>
             </div>
         </div>
 
-        <dl class="grid gap-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:grid-cols-2 sm:p-6">
+        <dl class="grid gap-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:grid-cols-2 sm:p-6">
             <div><dt class="text-sm font-medium text-slate-500">Jenis kelamin</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) ($detailSiswa['jenis_kelamin'] ?? '-')) ?></dd></div>
             <div><dt class="text-sm font-medium text-slate-500">Tanggal lahir</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) ($detailSiswa['tanggal_lahir'] ?? '-')) ?></dd></div>
             <div><dt class="text-sm font-medium text-slate-500">Status</dt><dd class="mt-1 text-sm text-slate-800"><?= (bool) $detailSiswa['is_active'] ? 'Aktif' : 'Nonaktif' ?></dd></div>
@@ -219,10 +219,10 @@ if ($detailId > 0) {
         </dl>
 
         <div class="space-y-3">
-            <h3 class="text-base font-semibold text-[#20392a]">Riwayat Penempatan Kelas</h3>
-            <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-                <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-                    <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
+            <h3 class="text-base font-semibold text-[#303832]">Riwayat Penempatan Kelas</h3>
+            <div class="overflow-x-auto rounded-2xl border border-[#dfe6de] bg-white">
+                <table class="min-w-full divide-y divide-[#e6ebe5] text-left text-sm">
+                    <thead class="bg-[#eff3ee] text-xs uppercase tracking-wide text-slate-500">
                         <tr>
                             <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Semester</th>
                             <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kelas</th>
@@ -230,16 +230,16 @@ if ($detailId > 0) {
                             <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Dicatat</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#edf1ec] text-slate-700">
+                    <tbody class="divide-y divide-[#e6ebe5] text-slate-700">
                         <?php if ($riwayat === []): ?>
                             <tr><td colspan="4" class="px-4 py-9 text-center text-slate-500">Belum ada riwayat penempatan kelas.</td></tr>
                         <?php else: ?>
                             <?php foreach ($riwayat as $item): ?>
-                                <tr class="hover:bg-[#f8faf7]">
+                                <tr class="hover:bg-[#fafbf9]">
                                     <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $item['semester_nama']) ?></td>
                                     <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $item['kelas_nama']) ?></td>
-                                    <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $item['semester_status']) ?></td>
-                                    <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $item['created_at']) ?></td>
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-center sm:px-5"><?= h((string) $item['semester_status']) ?></td>
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-center sm:px-5"><?= h((string) $item['created_at']) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -312,133 +312,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
 }
 
 $isEditing = $formValues['id'] > 0;
+$isFormPage = $isEditing
+    || (isset($_GET['form']) && $_GET['form'] === '1')
+    || ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save');
 
-admin_page_start($isEditing ? 'Edit Siswa' : 'Data Siswa', 'siswa.php');
-?>
-<section class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h2 class="text-lg font-semibold text-[#20392a]">Daftar Siswa</h2>
-            <p class="mt-1 text-sm text-slate-600">Data profil serta kelas pada semester aktif.</p>
-        </div>
-        <?php attendara_ui_button('Tambah Siswa', 'siswa.php'); ?>
-    </div>
+admin_page_start(
+    $isFormPage ? ($isEditing ? 'Edit Siswa' : 'Tambah Siswa') : 'Data Siswa',
+    'siswa.php',
+    $isFormPage ? null : ['label' => 'Tambah Siswa', 'href' => 'siswa.php?form=1'],
+    $isFormPage ? null : 'Data profil serta kelas pada semester aktif.'
+);
 
-    <?php if ($flash !== null): ?>
-        <?php $flashType = ($flash['type'] ?? 'success') === 'error' ? 'error' : 'success'; ?>
-        <p role="status" class="rounded-xl px-4 py-3 text-sm <?= $flashType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' ?>">
-            <?= h((string) ($flash['message'] ?? '')) ?>
-        </p>
-    <?php endif; ?>
-
-    <p class="text-sm text-slate-500">
-        Kelas ditampilkan untuk <?= h($activeSemester !== null ? (string) $activeSemester['nama'] : 'semester aktif (belum ditetapkan)') ?>.
-    </p>
-
-    <div class="max-w-xl"><?php attendara_ui_input('Cari siswa', 'cari_siswa', '', 'text', 'Nama atau nomor induk'); ?></div>
-
-    <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-        <table data-admin-table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-            <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nomor Induk</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nama</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Jenis Kelamin</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Tanggal Lahir</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kelas Saat Ini</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Status</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-[#edf1ec] text-slate-700">
-                <?php if ($siswaList === []): ?>
-                    <tr><td colspan="8" class="px-4 py-9 text-center text-slate-500">Belum ada data siswa.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($siswaList as $index => $siswa): ?>
-                        <tr class="hover:bg-[#f8faf7]">
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $siswa['nomor_induk']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $siswa['nama']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($siswa['jenis_kelamin'] ?? '-')) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($siswa['tanggal_lahir'] ?? '-')) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($siswa['kelas_nama'] ?? '-')) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <?php if ((bool) $siswa['is_active']): ?>
-                                    <span class="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">Aktif</span>
-                                <?php else: ?>
-                                    <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">Nonaktif</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <div class="flex items-center gap-2">
-                                    <a href="siswa.php?detail=<?= h((string) $siswa['id']) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Detail</a>
-                                    <a href="siswa.php?edit=<?= h((string) $siswa['id']) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Edit</a>
-                                    <form method="post" action="siswa.php" class="inline">
-                                        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-                                        <input type="hidden" name="action" value="toggle">
-                                        <input type="hidden" name="siswa_id" value="<?= h((string) $siswa['id']) ?>">
-                                        <button type="submit" class="rounded-md px-2 py-1 text-xs font-semibold <?= (bool) $siswa['is_active'] ? 'text-red-700 hover:bg-red-50' : 'text-[#28583b] hover:bg-[#edf4ec]' ?>">
-                                            <?= (bool) $siswa['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-    <p id="siswa-search-empty" class="hidden rounded-xl bg-white px-4 py-6 text-center text-sm text-slate-500">Tidak ada siswa yang cocok dengan pencarian.</p>
-</section>
-
-<section id="form-siswa" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <h2 class="text-base font-semibold text-[#20392a]"><?= $isEditing ? 'Edit Siswa' : 'Tambah Siswa' ?></h2>
-    <p class="mt-1 text-sm text-slate-600">Siswa tidak memiliki akun login. Data historis tidak dihapus saat dinonaktifkan.</p>
-
-    <?php if ($errors !== []): ?>
-        <ul class="mt-4 space-y-1 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-            <?php foreach ($errors as $error): ?>
-                <li>• <?= h($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
-    <form method="post" action="siswa.php" class="mt-4 grid gap-4 sm:grid-cols-2">
-        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-        <input type="hidden" name="action" value="save">
-        <input type="hidden" name="id" value="<?= h((string) $formValues['id']) ?>">
-
-        <?php
-        attendara_ui_input('Nomor induk', 'nomor_induk', $formValues['nomor_induk']);
-        attendara_ui_input('Nama', 'nama', $formValues['nama']);
-        attendara_ui_input('Jenis kelamin (opsional)', 'jenis_kelamin', $formValues['jenis_kelamin']);
-        attendara_ui_input('Tanggal lahir (opsional)', 'tanggal_lahir', $formValues['tanggal_lahir'], 'date');
-        ?>
-
-        <div class="flex items-center gap-3 sm:col-span-2">
-            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
-                <?= $isEditing ? 'Simpan Perubahan' : 'Simpan Siswa' ?>
-            </button>
-            <?php if ($isEditing): ?>
-                <a href="siswa.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Batal</a>
-            <?php endif; ?>
-        </div>
-    </form>
-</section>
-
-<script>
-document.getElementById('cari_siswa').addEventListener('input', event => {
-    const query = event.target.value.trim().toLocaleLowerCase('id');
-    const rows = [...document.querySelectorAll('[data-admin-table] tbody tr')];
-    let visible = 0;
-    rows.forEach(row => {
-        const matches = row.textContent.toLocaleLowerCase('id').includes(query);
-        row.hidden = !matches;
-        if (matches) visible++;
-    });
-    document.getElementById('siswa-search-empty').classList.toggle('hidden', visible > 0);
-});
-</script>
-<?php admin_page_end(); ?>
+require __DIR__ . ($isFormPage ? '/views/siswa-form.php' : '/views/siswa-list.php');
+admin_page_end();

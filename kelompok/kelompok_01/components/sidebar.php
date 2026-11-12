@@ -84,7 +84,7 @@ $navigation = $isAdmin
             </a>
 
             <?php if ($role === 'kepala_keluarga'): ?>
-                <span class="menu-heading">Kelola keluarga</span>
+                <span class="menu-heading">KELOLA KELUARGA</span>
 
                 <a href="anggota_keluarga.php"
                    class="menu-item <?= ($pageTitle ?? '') === 'Anggota Keluarga' ? 'active' : '' ?>">

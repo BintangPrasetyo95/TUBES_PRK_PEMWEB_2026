@@ -1,17 +1,22 @@
 </main>
 
-<footer class="bg-white border-top mt-auto py-3">
-    <div class="container text-center">
-
-        <small class="text-muted">
-            &copy; <?= date('Y') ?> Sistem Antrian Klinik
-            - Kelompok 03
-        </small>
-
-    </div>
+<footer class="kaki">
+    <small>
+        &copy; <?= date('Y') ?> Sistem Antrian Klinik
+        - Kelompok 03
+    </small>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.querySelectorAll('[data-tutup]').forEach(function (tombol) {
+    tombol.addEventListener('click', function () {
+        var kotak = tombol.closest('.peringatan');
+        if (kotak) {
+            kotak.remove();
+        }
+    });
+});
+</script>
 
 </body>
 </html>

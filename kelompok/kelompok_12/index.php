@@ -1,97 +1,99 @@
 <?php
-require_once 'config/database.php';
+// Hubungkan dengan konfigurasi database
+require_once 'config/database.php'; // Sesuaikan path jika diletakkan di root kelompok
 
-// Ambil artikel terbaru (limit 4 artikel dengan status published)
-$stmtLatest = $pdo->query("SELECT articles.*, categories.name AS category_name 
-                           FROM articles 
-                           LEFT JOIN categories ON articles.category_id = categories.id 
-                           WHERE articles.status = 'published' 
-                           ORDER BY articles.created_at DESC LIMIT 4");
-$latestArticles = $stmtLatest->fetchAll(PDO::FETCH_ASSOC);
+// Ambil data artikel terbaru dari database
+try {
+    $stmtLatest = $pdo->query("SELECT a.*, c.name as category_name FROM articles a LEFT JOIN categories c ON a.category_id = c.id ORDER BY a.created_at DESC LIMIT 4");
+    $latestArticles = $stmtLatest->fetchAll(PDO::FETCH_ASSOC);
 
-// Ambil artikel populer berdasarkan jumlah views terbanyak (limit 3 artikel)
-$stmtPopular = $pdo->query("SELECT articles.*, categories.name AS category_name 
-                            FROM articles 
-                            LEFT JOIN categories ON articles.category_id = categories.id 
-                            WHERE articles.status = 'published' 
-                            ORDER BY articles.views DESC LIMIT 3");
-$popularArticles = $stmtPopular->fetchAll(PDO::FETCH_ASSOC);
-
-function escape($value) {
-    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+    // Ambil daftar kategori untuk tombol filter
+    $stmtCategories = $pdo->query("SELECT * FROM categories");
+    $categories = $stmtCategories->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $latestArticles = [];
+    $categories = [];
 }
-
-include 'includes/header.php';
-include 'includes/navbar.php';
 ?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sehatin - Portal Informasi Kesehatan</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-light">
 
-<!-- HERO SECTION -->
-<header class="bg-success text-white text-center py-5 mb-5 shadow">
-    <div class="container py-4">
-        <h1 class="display-4 fw-bold">Selamat Datang di Sehatin</h1>
-        <p class="lead mb-4">Temukan berbagai informasi, tips gizi, dan artikel kesehatan terpercaya untuk hidup yang lebih baik.</p>
-        <a href="#articles" class="btn btn-light btn-lg text-success fw-bold px-4">Jelajahi Artikel</a>
-    </div>
-</header>
+    <!-- Include Navbar -->
+    <?php include 'includes/navbar.php'; ?>
 
-<main class="container mb-5" id="articles">
-    
-    <!-- ARTIKEL TERBARU -->
-    <section class="mb-5">
-        <h2 class="mb-4 border-bottom pb-2">🌿 Artikel Terbaru</h2>
-        <div class="row">
-            <?php if (count($latestArticles) > 0): ?>
-                <?php foreach ($latestArticles as $article): ?>
-                    <div class="col-md-3 mb-4">
-                        <div class="card card-article h-100 shadow-sm border-0">
-                            <?php if (!empty($article['image'])): ?>
-                                <img src="<?= escape($article['image']) ?>" class="card-img-top" alt="Gambar Artikel">
-                            <?php else: ?>
-                                <img src="https://via.placeholder.com/300x200?text=Sehatin" class="card-img-top" alt="Default">
-                            <?php endif; ?>
-                            <div class="card-body d-flex flex-column">
-                                <span class="badge bg-success mb-2 align-self-start"><?= escape($article['category_name'] ?? 'Umum') ?></span>
-                                <h5 class="card-title fs-6 fw-bold"><?= escape($article['title']) ?></h5>
-                                <p class="card-text text-muted small flex-grow-1"><?= escape(substr(strip_tags($article['content']), 0, 80)) ?>...</p>
-                                <a href="article-detail.php?id=<?= (int)$article['id'] ?>" class="btn btn-outline-success btn-sm mt-auto">Baca Selengkapnya</a>
+    <!-- Hero Section -->
+    <header class="hero-section text-white text-center py-5 mb-5 bg-success shadow-sm">
+        <div class="container py-5">
+            <h1 class="display-4 fw-bold">Selamat Datang di Sehatin</h1>
+            <p class="lead col-lg-8 mx-auto">Temukan informasi kesehatan terpercaya, tips gaya hidup sehat, dan artikel medis terbaru untuk kualitas hidup yang lebih baik.</p>
+            <a href="#articles" class="btn btn-light text-success fw-bold px-4 py-2 mt-3 shadow-sm">Jelajahi Artikel</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mb-5" id="articles">
+        
+        <!-- Filter Kategori Cepat -->
+        <div class="mb-4 text-center">
+            <span class="d-block text-muted small mb-2">Filter Berdasarkan Kategori:</span>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a href="index.php" class="btn btn-success btn-sm">Semua</a>
+                <?php foreach ($categories as $cat): ?>
+                    <a href="categories.php?id=<?= (int)$cat['id'] ?>" class="btn btn-outline-success btn-sm"><?= htmlspecialchars($cat['name']) ?></a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <!-- Section Artikel Terbaru -->
+        <section class="mb-5">
+            <h2 class="mb-4 border-bottom pb-2 text-dark fs-4">🌿 Artikel Terbaru</h2>
+            <div class="row">
+                <?php if (count($latestArticles) > 0): ?>
+                    <?php foreach ($latestArticles as $article): ?>
+                        <div class="col-md-3 mb-4">
+                            <div class="card card-article h-100 shadow-sm border-0">
+                                <?php if (!empty($article['image'])): ?>
+                                    <img src="<?= htmlspecialchars($article['image']) ?>" class="card-img-top" alt="Gambar Artikel" style="height: 160px; object-fit: cover;">
+                                <?php else: ?>
+                                    <img src="https://via.placeholder.com/300x160?text=Sehatin" class="card-img-top" alt="Default Image">
+                                <?php endif; ?>
+                                <div class="card-body d-flex flex-column">
+                                    <span class="badge bg-success mb-2 align-self-start"><?= htmlspecialchars($article['category_name'] ?? 'Umum') ?></span>
+                                    <h5 class="card-title fs-6 fw-bold"><?= htmlspecialchars($article['title']) ?></h5>
+                                    <p class="card-text text-muted small flex-grow-1"><?= htmlspecialchars(substr(strip_tags($article['content']), 0, 75)) ?>...</p>
+                                    <a href="article-detail.php?id=<?= (int)$article['id'] ?>" class="btn btn-outline-success btn-sm mt-auto">Baca Selengkapnya</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <p class="text-muted">Belum ada artikel terbaru yang dipublikasikan.</p>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <!-- ARTIKEL POPULER -->
-    <section>
-        <h2 class="mb-4 border-bottom pb-2">🔥 Artikel Populer</h2>
-        <div class="row">
-            <?php if (count($popularArticles) > 0): ?>
-                <?php foreach ($popularArticles as $article): ?>
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100 shadow-sm border-0">
-                            <?php if (!empty($article['image'])): ?>
-                                <img src="<?= escape($article['image']) ?>" class="card-img-top" style="height: 180px; object-fit: cover;" alt="Populer">
-                            <?php endif; ?>
-                            <div class="card-body">
-                                <span class="badge bg-danger mb-2"><?= escape($article['category_name'] ?? 'Umum') ?></span>
-                                <h5 class="card-title fw-bold fs-5"><?= escape($article['title']) ?></h5>
-                                <p class="text-muted small">Dilihat: <?= (int)$article['views'] ?> kali</p>
-                                <a href="article-detail.php?id=<?= (int)$article['id'] ?>" class="text-success text-decoration-none fw-bold">Baca &rarr;</a>
-                            </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="col-12">
+                        <div class="alert alert-info text-center" role="alert">
+                            Belum ada artikel terbaru yang dipublikasikan saat ini.
                         </div>
                     </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <p class="text-muted">Belum ada data artikel populer.</p>
-            <?php endif; ?>
-        </div>
-    </section>
+                <?php endif; ?>
+            </div>
+        </section>
 
-</main>
+    </main>
 
-<?php 
-include 'includes/footer.php'; 
-?>
+    <!-- Include Footer -->
+    <?php include 'includes/footer.php'; ?>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

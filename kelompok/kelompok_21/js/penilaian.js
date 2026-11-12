@@ -62,13 +62,11 @@
         });
     }
 
-    // Konversi datetime SQL ("YYYY-MM-DD HH:MM:SS") ke nilai input datetime-local ("YYYY-MM-DDTHH:MM")
     function toDatetimeLocal(value) {
         if (!value) return '';
         return String(value).replace(' ', 'T').slice(0, 16);
     }
 
-    // Tampilkan/sembunyikan input tenggat waktu hanya saat jenis_komponen === 'Tugas'
     function toggleTenggat() {
         const isTugas = $('pn-jenis').value === 'Tugas';
         const wrap = $('pn-tenggat-wrap');
@@ -78,17 +76,14 @@
         if (!isTugas) input.value = '';
     }
 
-    /* ---------- Konteks (Kelas, Mapel, Periode) ---------- */
     async function loadKonteks() {
         const result = await req(URL_API + '?aksi=konteks');
         const { kelas = [], mapel = [], periode = [] } = result.data || {};
         const collator = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
 
-        // Urutkan Kelas (X -> XI -> XII lalu nama kelas secara natural)
         const bobotTingkat = t => ({ X: 1, '10': 1, XI: 2, '11': 2, XII: 3, '12': 3 }[String(t).toUpperCase()] || 9);
         kelas.sort((a, b) => bobotTingkat(a.tingkat) - bobotTingkat(b.tingkat) || collator.compare(a.nama_kelas, b.nama_kelas));
 
-        // Urutkan Mata Pelajaran (A - Z)
         mapel.sort((a, b) => collator.compare(a.nama_mapel, b.nama_mapel));
 
         const bobotSem = s => (String(s).toLowerCase() === 'genap' ? 1 : 2);
@@ -157,7 +152,6 @@
         renderRekap(r.data);
     }
 
-    /* ---------- Daftar penilaian ---------- */
     function renderDaftar() {
         const body = $('pn-body');
         body.replaceChildren();
@@ -198,7 +192,6 @@
         });
     }
 
-    /* ---------- Rekap per komponen ---------- */
     function renderRekap(rows) {
         const body = $('pn-rekap-body');
         body.replaceChildren();
@@ -210,7 +203,6 @@
         });
     }
 
-    /* ---------- Form tambah / edit penilaian ---------- */
     function bukaForm(item = null) {
         editingId = item ? item.id_penilaian : null;
         $('pn-dialog-title').textContent = item ? 'Edit penilaian' : 'Tambah penilaian';
@@ -248,7 +240,6 @@
         finally { button.disabled = false; }
     }
 
-    /* ---------- Input nilai satu kelas ---------- */
     async function bukaNilai(id) {
         try {
             const res = await req(URL_API + '?aksi=nilai&id_penilaian=' + id);
@@ -307,7 +298,6 @@
         finally { button.disabled = false; }
     }
 
-    /* ---------- Inisialisasi ---------- */
     async function init() {
         try {
             await loadKonteks();

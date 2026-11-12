@@ -1,4 +1,3 @@
-
 <?php
 
 // ==========================================
@@ -122,35 +121,14 @@ try {
 
 ?>
 
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<?php
+$pageTitle = ($article ? $article['title'] : 'Artikel Tidak Ditemukan') . ' | Sehatin';
+$extraCss  = ['assets/css/articles.css'];
+$bodyClass = 'page-articles';
+include 'includes/header.php';
+include 'includes/navbar.php';
+?>
 
-    <title>
-        <?= $article ? e($article['title']) : 'Artikel Tidak Ditemukan' ?> | Sehatin
-    </title>
-
-    <link rel="stylesheet" href="assets/css/articles.css">
-</head>
-<body>
-
-    <!-- NAVBAR SEMENTARA -->
-    <header class="navbar">
-        <div class="container nav-content">
-            <a href="articles.php" class="logo">
-                Sehat<span>in.</span>
-            </a>
-
-            <nav class="nav-links">
-                <a href="index.php">Beranda</a>
-                <a href="articles.php" class="active">Artikel</a>
-                <a href="categories.php">Kategori</a>
-                <a href="tips.php">Tips Sehat</a>
-            </nav>
-        </div>
-    </header>
 
     <main class="detail-section">
         <div class="container">
@@ -263,22 +241,8 @@ try {
         </div>
     </main>
 
-    <!-- FOOTER SEMENTARA -->
-    <footer class="footer">
-        <div class="container">
+<?php include 'includes/footer.php'; ?>
 
-            <a href="articles.php" class="logo">
-                Sehat<span>in.</span>
-            </a>
-
-            <p>Teman perjalananmu menuju kehidupan yang lebih sehat.</p>
-
-            <small>
-                &copy; <?= date('Y') ?> Sehatin. All rights reserved.
-            </small>
-
-        </div>
-    </footer>
 
 </body>
 </html>

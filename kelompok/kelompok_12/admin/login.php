@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../assets/css/admin-theme.css?v=1">
+    <link rel="stylesheet" href="../assets/css/login.css?v=1">
 </head>
 
 <body class="login-page">

@@ -51,6 +51,33 @@
         return value === null || value === undefined ? '—' : Number(value).toString();
     }
 
+    // Format datetime SQL ("YYYY-MM-DD HH:MM:SS") ke tampilan lokal
+    function fmtTenggat(value, jenis) {
+        if (jenis !== 'Tugas' || !value) return '—';
+        const dt = new Date(String(value).replace(' ', 'T'));
+        if (Number.isNaN(dt.getTime())) return value;
+        return dt.toLocaleString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    // Konversi datetime SQL ("YYYY-MM-DD HH:MM:SS") ke nilai input datetime-local ("YYYY-MM-DDTHH:MM")
+    function toDatetimeLocal(value) {
+        if (!value) return '';
+        return String(value).replace(' ', 'T').slice(0, 16);
+    }
+
+    // Tampilkan/sembunyikan input tenggat waktu hanya saat jenis_komponen === 'Tugas'
+    function toggleTenggat() {
+        const isTugas = $('pn-jenis').value === 'Tugas';
+        const wrap = $('pn-tenggat-wrap');
+        const input = $('pn-tenggat');
+        wrap.hidden = !isTugas;
+        input.required = isTugas;
+        if (!isTugas) input.value = '';
+    }
+
     /* ---------- Konteks (Kelas, Mapel, Periode) ---------- */
     async function loadKonteks() {
         const result = await req(URL_API + '?aksi=konteks');
@@ -135,12 +162,16 @@
         const body = $('pn-body');
         body.replaceChildren();
         $('pn-count').textContent = daftar.length + ' penilaian';
-        if (!daftar.length) { emptyRow(body, 6, 'Belum ada penilaian. Mulai dengan menambahkan penilaian baru.'); return; }
+        if (!daftar.length) { emptyRow(body, 7, 'Belum ada penilaian. Mulai dengan menambahkan penilaian baru.'); return; }
         daftar.forEach((item, i) => {
             const tr = document.createElement('tr');
             tr.append(
-                cell(i + 1), cell(item.judul_penilaian), cell(item.jenis_komponen),
-                cell(item.terisi + ' / ' + item.jumlah_siswa), cell(fmt(item.rata_rata))
+                cell(i + 1),
+                cell(item.judul_penilaian),
+                cell(item.jenis_komponen),
+                cell(fmtTenggat(item.tenggat_waktu, item.jenis_komponen)),
+                cell(item.terisi + ' / ' + item.jumlah_siswa),
+                cell(fmt(item.rata_rata))
             );
             const aksi = document.createElement('td');
             aksi.className = 'actions';
@@ -187,6 +218,10 @@
         const form = $('pn-form');
         form.elements.judul_penilaian.value = item ? item.judul_penilaian : '';
         form.elements.jenis_komponen.value = item ? item.jenis_komponen : '';
+        toggleTenggat();
+        if (item && item.jenis_komponen === 'Tugas') {
+            $('pn-tenggat').value = toDatetimeLocal(item.tenggat_waktu);
+        }
         $('pn-dialog').showModal();
     }
 
@@ -198,6 +233,12 @@
             const data = Object.fromEntries(new FormData(event.target));
             data.judul_penilaian = data.judul_penilaian.trim();
             if (!data.judul_penilaian) throw new Error('Judul penilaian wajib diisi.');
+            if (data.jenis_komponen === 'Tugas' && !data.tenggat_waktu) {
+                throw new Error('Tenggat waktu wajib diisi untuk komponen Tugas.');
+            }
+            if (data.jenis_komponen !== 'Tugas') {
+                delete data.tenggat_waktu;
+            }
             if (!editingId) data.id_penugasan = idPenugasan;
             const res = await req(URL_API + (editingId ? '?id=' + editingId : ''), editingId ? 'PUT' : 'POST', data);
             $('pn-dialog').close();
@@ -275,6 +316,7 @@
             });
             window.addEventListener('focus', () => { loadKonteks().catch(() => { }); });
             $('pn-add').onclick = () => bukaForm();
+            $('pn-jenis').addEventListener('change', toggleTenggat);
             ['pn-dialog-x', 'pn-dialog-batal'].forEach(id => $(id).onclick = () => $('pn-dialog').close());
             $('pn-form').onsubmit = submitForm;
             $('pn-nilai-form').onsubmit = submitNilai;

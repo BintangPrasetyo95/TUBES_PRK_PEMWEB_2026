@@ -1,4 +1,3 @@
-
 <?php
 require_once __DIR__ . '/../config/database.php';
 
@@ -46,7 +45,7 @@ if (!$resultProduk) {
 }
 ?>
 
-<div class="container">
+<div class="container px-0">
 
     <!-- Form Pencarian dan Filter -->
     <form action="index.php#katalog" method="GET" class="row g-3 mb-4">
@@ -97,13 +96,20 @@ if (!$resultProduk) {
                 if (substr($whatsapp, 0, 1) === '0') {
                     $whatsapp = '62' . substr($whatsapp, 1);
                 }
+
+                // Penyesuaian path gambar agar terbaca dari index.php
+                if (!empty($produk['foto'])) {
+                    $gambar = (strpos($produk['foto'], 'assets/') === 0) ? $produk['foto'] : 'assets/' . $produk['foto'];
+                } else {
+                    $gambar = 'assets/cabai.jpg';
+                }
                 ?>
 
                 <div class="col-lg-3 col-md-4 col-sm-6">
                     <div class="card h-100 shadow-sm border-0">
 
                         <img
-                            src="../<?= htmlspecialchars($produk['foto']) ?>"
+                            src="<?= htmlspecialchars($gambar) ?>"
                             class="img-produk"
                             alt="<?= htmlspecialchars($produk['nama_produk']) ?>"
                         >
@@ -168,7 +174,7 @@ if (!$resultProduk) {
         <?php else: ?>
 
             <div class="col-12 text-center text-muted py-4">
-             
+                <p class="mb-0">Produk tidak ditemukan.</p>
             </div>
 
         <?php endif; ?>

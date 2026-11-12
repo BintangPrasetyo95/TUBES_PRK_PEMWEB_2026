@@ -190,3 +190,29 @@ SET `harga` = CASE `id_obat`
     WHEN 20 THEN 29000.00
 END
 WHERE `id_obat` BETWEEN 1 AND 20;
+
+UPDATE `obat` 
+SET `gambar` = CASE `id_obat`
+    WHEN 1 THEN 'paracetamol.png'
+    WHEN 2 THEN 'ibuprofen.png'
+    WHEN 3 THEN 'asam-mefenamat.png'
+    WHEN 4 THEN 'sanmol-sirup.png'
+    WHEN 5 THEN 'obh-combi.png'
+    WHEN 6 THEN 'siladex-mucolytic-&-expectorant.png'
+    WHEN 7 THEN 'tremenza-sirup.png'
+    WHEN 8 THEN 'degrol-hisap-dequalinium.png'
+    WHEN 9 THEN 'promag-tablet-kunyah.png'
+    WHEN 10 THEN 'mylanta-cair.png'
+    WHEN 11 THEN 'diatabs.png'
+    WHEN 12 THEN 'oralit.png'
+    WHEN 13 THEN 'vitamin-c.png'
+    WHEN 14 THEN 'imboost-force.png'
+    WHEN 15 THEN 'sangobion.png'
+    WHEN 16 THEN 'farmaku-neurobion.png'
+    WHEN 17 THEN 'betadine-antiseptic-solution.png'
+    WHEN 18 THEN 'hansaplast-kain-elastis.png'
+    WHEN 19 THEN 'rivanol-kompres-luka.png'
+    WHEN 20 THEN 'bioplacenton-gel.png'
+    ELSE 'default.png'
+END
+WHERE `id_obat` BETWEEN 1 AND 20;

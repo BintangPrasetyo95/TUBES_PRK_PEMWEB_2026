@@ -466,7 +466,6 @@ if ($result) {
 
 </div>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>

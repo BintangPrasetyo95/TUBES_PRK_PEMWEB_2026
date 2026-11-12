@@ -100,6 +100,7 @@ kelompok_17/
 ├── auth/           # Login, register, logout
 ├── components/     # Komponen tampilan bersama (header, footer, navigasi admin)
 ├── config/         # Koneksi database (PDO)
+├── css/            # css detail berita dan  
 ├── includes/       # Helper (CSRF, otorisasi admin, unggah gambar)
 ├── js/             # JavaScript
 ├── user/           # Dashboard dan form aspirasi mahasiswa

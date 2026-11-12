@@ -77,7 +77,7 @@ include_once __DIR__ . '/components/header.php';
 ?>
 
 <div class="news-detail-page">
-    <a href="index.php" class="news-back-link">&larr; Kembali ke Beranda</a>
+    <a href="index.php" class="news-back-link"> Kembali ke Beranda</a>
     
     <!-- CARD DETAIL BERITA -->
     <article class="news-article">

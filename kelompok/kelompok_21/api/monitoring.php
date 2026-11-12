@@ -67,11 +67,17 @@ function monPenugasan(PDO $pdo, int $id): array
 
 function monTugas(PDO $pdo, int $idPenilaian): array
 {
-       $stmt = $pdo->prepare('SELECT n.id_penilaian, n.id_penugasan, n.judul_penilaian, n.jenis_komponen,
+    $stmt = $pdo->prepare('SELECT n.id_penilaian, n.id_penugasan, n.judul_penilaian, n.jenis_komponen,
             n.tenggat_waktu, p.id_guru, p.id_kelas, k.nama_kelas
         FROM PENILAIAN n JOIN PENUGASAN_MENGAJAR p ON p.id_penugasan = n.id_penugasan
         JOIN KELAS k ON k.id_kelas = p.id_kelas
         WHERE n.id_penilaian = ?');
+    $stmt->execute([$idPenilaian]);
+    $row = $stmt->fetch();
+    if (!$row) respond(null, 'Tugas tidak ditemukan.', 404);
+    if (strtolower($row['jenis_komponen']) !== 'tugas') respond(null, 'Penilaian ini bukan tugas.', 422);
+    requireClass($pdo, (int)$row['id_kelas']);
+    return $row;
 }
 
 function monBolehUbah(array $row, int $idGuru): bool

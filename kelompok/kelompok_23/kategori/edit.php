@@ -128,10 +128,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                     <div class="d-flex justify-content-between flex-wrap gap-2">
 
-                        <a href="index.php" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>
-                            Kembali
-                        </a>
+                        <a href="index.php" class="btn btn-secondary">Kembali</a>
 
                         <button type="submit" name="update" class="btn btn-primary">
                             <i class="bi bi-save me-1"></i>

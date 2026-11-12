@@ -1,6 +1,6 @@
 <?php
 // Ambil path halaman yang sedang dibuka, contoh: /TUBES.../admin/obat/index.php
-$halaman = $_SERVER['SCRIPT_NAME'];
+$halaman = $_SERVER['SCRIPT_NAME'] ?? '';
 
 // Menu aktif ditentukan dari folder, jadi halaman tambah/edit ikut menyala
 $aktifDashboard = basename(dirname($halaman)) === 'admin';
@@ -9,7 +9,9 @@ $aktifKategori  = strpos($halaman, '/admin/kategori/') !== false;
 ?>
 <aside class="admin-sidebar">
     <div class="admin-logo">
-        KlikObat
+        <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/index.php" style="text-decoration: none; color: inherit;">
+            KlikObat
+        </a>
     </div>
 
     <nav>

@@ -180,7 +180,7 @@ File PHP yang membutuhkan koneksi dapat memanggil:
 
 ```php
 
-require_once _DIR_ . '/../config/koneksi.php';
+require_once DIR . '/../config/koneksi.php';
 
 ```
 

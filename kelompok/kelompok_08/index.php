@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <style>
+        body {
+            overflow-y: scroll;
+        }
+
         /* Mengatur gradasi dan gambar background untuk hero banner */
         .hero-bg-image {
             background: linear-gradient(rgba(20, 83, 45, 0.35), rgba(33, 136, 56, 0.75)), url('assets/hero-bg.jpg');

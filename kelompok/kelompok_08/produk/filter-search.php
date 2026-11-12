@@ -97,11 +97,13 @@ if (!$resultProduk) {
                     $whatsapp = '62' . substr($whatsapp, 1);
                 }
 
-                // Penyesuaian path gambar agar terbaca dari index.php
+                // Menyamakan path gambar dengan format simpanan dashboard petani Elan (tanpa '../')
                 if (!empty($produk['foto'])) {
-                    $gambar = (strpos($produk['foto'], 'assets/') === 0) ? $produk['foto'] : 'assets/' . $produk['foto'];
+                    $bersih = preg_replace('#^(\.\./)+#', '', trim($produk['foto']));
+                    $bersih = preg_replace('#^/?assets/#', '', ltrim($bersih, '/'));
+                    $foto   = 'assets/' . $bersih;
                 } else {
-                    $gambar = 'assets/cabai.jpg';
+                    $foto   = 'https://placehold.co/600x400/eaf5e9/218838?text=Produk+BUYPANEN';
                 }
                 ?>
 
@@ -109,7 +111,7 @@ if (!$resultProduk) {
                     <div class="card h-100 shadow-sm border-0">
 
                         <img
-                            src="<?= htmlspecialchars($gambar) ?>"
+                            src="<?= htmlspecialchars($foto) ?>"
                             class="img-produk"
                             alt="<?= htmlspecialchars($produk['nama_produk']) ?>"
                         >
@@ -151,7 +153,7 @@ if (!$resultProduk) {
                             </p>
 
                             <a
-                                href="https://wa.me/<?= $whatsapp ?>"
+                                href="https://wa.me/<?= $whatsapp ?>?text=Halo%20<?= urlencode($produk['nama_petani']) ?>,%20saya%20tertarik%20membeli%20<?= urlencode($produk['nama_produk']) ?>"
                                 target="_blank"
                                 class="btn btn-outline-success w-100 mt-auto mb-2"
                             >

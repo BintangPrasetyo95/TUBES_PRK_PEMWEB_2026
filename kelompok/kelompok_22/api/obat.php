@@ -6,7 +6,7 @@ require_once '../config/koneksi.php';
 $response = ["status" => "error", "message" => "Gagal mengambil data obat", "data" => []];
 
 try {
-    $query = "SELECT id_obat, nama_obat, id_kategori, stok, indikasi, aturan_pakai, peringatan FROM obat WHERE 1=1";
+    $query = "SELECT id_obat, nama_obat, id_kategori, harga, stok, indikasi, aturan_pakai, peringatan FROM obat WHERE 1=1";
     $params = [];
     $types = "";
 

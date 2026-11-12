@@ -10,13 +10,16 @@ if (!isset($pdo) || !$pdo) {
 }
 
 $daftarKelas = [];
+$daftarMapel = [];
 try {
     if (isset($pdo) && $pdo) {
         $stmtKls = $pdo->query("SELECT id_kelas, nama_kelas FROM KELAS ORDER BY id_kelas ASC");
         $daftarKelas = $stmtKls->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtMapel = $pdo->query("SELECT id_mapel, nama_mapel FROM MATA_PELAJARAN ORDER BY nama_mapel ASC");
+        $daftarMapel = $stmtMapel->fetchAll(PDO::FETCH_ASSOC);
     }
 } catch (Exception $e) {
-
 }
 ?>
 
@@ -37,6 +40,17 @@ try {
                 <?php foreach ($daftarKelas as $kls): ?>
                     <option value="<?= htmlspecialchars($kls['id_kelas']) ?>">
                         <?= htmlspecialchars($kls['nama_kelas']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="filter-item">
+            <label for="filter-mapel">Mata Pelajaran:</label>
+            <select id="filter-mapel">
+                <option value="0">Semua Mata Pelajaran</option>
+                <?php foreach ($daftarMapel as $mpl): ?>
+                    <option value="<?= htmlspecialchars($mpl['id_mapel']) ?>">
+                        <?= htmlspecialchars($mpl['nama_mapel']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>

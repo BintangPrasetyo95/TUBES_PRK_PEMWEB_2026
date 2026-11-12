@@ -26,11 +26,7 @@ try {
 
 guru_page_start('Data Siswa & Poin', 'kelas.php');
 ?>
-<nav aria-label="Menu sesi" class="flex flex-wrap gap-2">
-    <a href="tap-sesi.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Tap Kehadiran</a>
-    <a href="absensi.php?session_id=<?= (int) $sessionId ?>" aria-current="page" class="rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Data Siswa &amp; Poin</a>
-    <a href="kelompok.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Kelompok</a>
-</nav>
+<?php guru_session_header($session, 'attendance'); ?>
 <section class="space-y-4">
     <div class="flex flex-wrap items-end justify-between gap-3"><div><h2 class="text-lg font-semibold text-[#303832]">Kehadiran Siswa</h2><p class="mt-1 text-sm text-slate-600"><?= attendara_ui_escape($session['class_name'] . ' · ' . $session['semester']) ?>. Status awal siswa adalah Hadir.</p></div><div class="w-full sm:max-w-xs"><label for="student-filter" class="mb-1.5 block text-sm font-medium text-slate-700">Cari siswa</label><input id="student-filter" type="search" placeholder="Nama atau nomor induk" class="min-h-10 w-full rounded-lg border border-[#dfe6de] px-3 text-sm focus:border-[#679173] focus:outline-none focus:ring-2 focus:ring-[#eaf1ea]"></div></div>
     <div class="overflow-x-auto rounded-2xl border border-[#dfe6de] bg-white">

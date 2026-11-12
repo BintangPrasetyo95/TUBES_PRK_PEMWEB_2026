@@ -58,11 +58,7 @@ try {
 guru_page_start('Kelompok Sesi', 'kelas.php');
 ?>
 <?php if ($session !== null): ?>
-<nav aria-label="Menu sesi" class="flex flex-wrap gap-2">
-    <a href="tap-sesi.php?session_id=<?= (int) $session['id'] ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Tap Kehadiran</a>
-    <a href="absensi.php?session_id=<?= (int) $session['id'] ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Data Siswa &amp; Poin</a>
-    <a href="kelompok.php?session_id=<?= (int) $session['id'] ?>" aria-current="page" class="rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Kelompok</a>
-</nav>
+<?php guru_session_header($session, 'groups'); ?>
 <?php endif; ?>
 <section class="flex flex-wrap items-center justify-between gap-3">
     <div><h2 class="text-lg font-semibold text-[#303832]">Kelompok Pembelajaran</h2><p class="mt-1 text-sm text-slate-600">Kelompok dikelola per penugasan mata pelajaran pada semester aktif.</p></div>

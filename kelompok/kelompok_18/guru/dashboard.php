@@ -23,12 +23,16 @@ try {
 
 guru_page_start('Dashboard Guru', 'dashboard.php');
 ?>
-<section aria-label="Ringkasan Guru" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-    <?php
-    attendara_ui_stat_card('Kelas ditugaskan', (string) count($classCounts), $studentCount . ' siswa pada kelas aktif', 'school', true, false, true);
-    attendara_ui_stat_card('Jadwal mengajar', (string) count($schedules), $activeSemester['nama'] ?? 'Tidak ada semester aktif', 'calendar', true, false, true);
-    attendara_ui_stat_card('Profil Guru', $profile['nomor_induk'] ?? 'Belum terhubung', $profile['nama'] ?? 'Profil Guru belum tersedia', 'users', true, false, true);
-    ?>
+<section aria-label="Ringkasan Guru" class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+    <div class="col-span-2 sm:col-span-1">
+        <?php attendara_ui_stat_card('Profil Guru', $profile['nomor_induk'] ?? 'Belum terhubung', $profile['nama'] ?? 'Profil Guru belum tersedia', 'users', true, false, true); ?>
+    </div>
+    <div class="col-span-1">
+        <?php attendara_ui_stat_card('Kelas ditugaskan', (string) count($classCounts), $studentCount . ' siswa pada kelas aktif', 'school', true, false, true); ?>
+    </div>
+    <div class="col-span-1">
+        <?php attendara_ui_stat_card('Jadwal mengajar', (string) count($schedules), $activeSemester['nama'] ?? 'Tidak ada semester aktif', 'calendar', true, false, true); ?>
+    </div>
 </section>
 
 <section class="space-y-4">

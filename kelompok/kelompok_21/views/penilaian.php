@@ -37,7 +37,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>No.</th><th>Judul</th><th>Jenis</th><th>Terisi</th><th>Rata-rata</th><th>Aksi</th>
+                    <th>No.</th><th>Judul</th><th>Jenis</th><th>Tenggat waktu</th><th>Terisi</th><th>Rata-rata</th><th>Aksi</th>
                 </tr>
             </thead>
             <tbody id="pn-body"></tbody>
@@ -96,16 +96,19 @@
     <form id="pn-form">
         <div>
             <label>Judul penilaian
-                <input name="judul_penilaian" required maxlength="100" placeholder="Contoh: Kuis Bab 1">
+                <input name="judul_penilaian" required maxlength="100" placeholder="Contoh: Tugas Bab 1">
             </label>
             <label>Jenis komponen
-                <select name="jenis_komponen" required>
+                <select name="jenis_komponen" id="pn-jenis" required>
                     <option value="">Pilih jenis komponen</option>
-                    <option>Tugas</option>
-                    <option>Kuis</option>
-                    <option>UTS</option>
-                    <option>UAS</option>
+                    <option value="Tugas">Tugas</option>
+                    <option value="Kuis">Kuis</option>
+                    <option value="UTS">UTS</option>
+                    <option value="UAS">UAS</option>
                 </select>
+            </label>
+            <label id="pn-tenggat-wrap" hidden>Tenggat waktu pengumpulan
+                <input type="datetime-local" name="tenggat_waktu" id="pn-tenggat">
             </label>
         </div>
         <p id="pn-form-error" class="error-text" role="alert"></p>

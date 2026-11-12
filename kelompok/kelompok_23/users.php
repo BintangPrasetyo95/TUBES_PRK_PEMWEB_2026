@@ -1,15 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: auth/login.php");
-    exit;
-}
-
-if ($_SESSION['role'] !== 'admin') {
-    header("Location: dashboard.php");
-    exit;
-}
+require_once __DIR__ . '/includes/role_guard.php';
+requireRole(['Admin']);
 
 require_once __DIR__ . '/config/database.php';
 
@@ -22,12 +15,11 @@ $result = $conn->query($query);
 if (!$result) {
     die("Gagal mengambil data pengguna: " . $conn->error);
 }
-?>
 
-<?php
 $pageTitle = 'Kelola User';
 require_once __DIR__ . '/includes/header.php';
 ?>
+
 <?php include __DIR__ . '/includes/navbar.php'; ?>
 
 <div class="app-layout d-flex flex-grow-1">
@@ -37,15 +29,18 @@ require_once __DIR__ . '/includes/header.php';
     <main class="main-content flex-grow-1 p-4">
 
         <div class="mb-4">
-            <h3 class="fw-bold"><i class="bi bi-people me-2"></i>Kelola User</h3>
-            <p class="text-muted">Kelola dan pantau seluruh pengguna yang terdaftar dalam sistem manajemen FEBMart.</p>
+            <h3 class="fw-bold">
+                <i class="bi bi-people me-2"></i>Kelola User
+            </h3>
+            <p class="text-muted">
+                Kelola dan pantau seluruh pengguna yang terdaftar dalam sistem manajemen FEBMart.
+            </p>
         </div>
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
             <div>
                 <h4>Data Pengguna</h4>
-
                 <p class="content-description mb-0">
                     Informasi akun pengguna FEBMart.
                 </p>
@@ -127,11 +122,13 @@ require_once __DIR__ . '/includes/header.php';
                                 <td>
                                     <?php if (!empty($user['photo'])): ?>
                                         <img src="assets/img/<?= htmlspecialchars($user['photo']); ?>"
-                                             width="30" height="30"
+                                             width="30"
+                                             height="30"
                                              class="me-2"
                                              alt="Foto pengguna"
                                              style="border-radius:50%;object-fit:cover;">
                                     <?php endif; ?>
+
                                     <?= htmlspecialchars($user['name']); ?>
                                 </td>
 
@@ -164,7 +161,7 @@ require_once __DIR__ . '/includes/header.php';
                                 <td>
                                     <div class="d-flex gap-1">
 
-                                        <a href="edit_user.php?id=<?= $user['id']; ?>"
+                                        <a href="edit_user.php?id=<?= (int) $user['id']; ?>"
                                            class="btn btn-warning btn-sm">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </a>
@@ -174,8 +171,9 @@ require_once __DIR__ . '/includes/header.php';
                                               class="d-inline"
                                               onsubmit="return confirm('Yakin ingin menghapus pengguna ini?');">
 
-                                            <input type="hidden" name="id"
-                                                   value="<?= $user['id']; ?>">
+                                            <input type="hidden"
+                                                   name="id"
+                                                   value="<?= (int) $user['id']; ?>">
 
                                             <button type="submit"
                                                     class="btn btn-danger btn-sm">

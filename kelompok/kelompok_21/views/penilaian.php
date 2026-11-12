@@ -1,5 +1,14 @@
 <?php
+$sesiKonteks = $_SESSION['konteks_penilaian'] ?? [];
+$sesiKelas   = $sesiKonteks['id_kelas']   ?? '';
+$sesiMapel   = $sesiKonteks['id_mapel']   ?? '';
+$sesiPeriode = $sesiKonteks['id_periode'] ?? '';
 ?>
+<div id="pn-root"
+     data-kelas="<?= e($sesiKelas) ?>"
+     data-mapel="<?= e($sesiMapel) ?>"
+     data-periode="<?= e($sesiPeriode) ?>">
+
 <div class="page-heading">
     <div>
         <p class="eyebrow">MANAJEMEN PENILAIAN TERPADU</p>
@@ -118,3 +127,5 @@
         </div>
     </form>
 </dialog>
+
+</div>

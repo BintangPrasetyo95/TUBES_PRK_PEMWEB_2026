@@ -5,7 +5,7 @@ $idGuru = $_SESSION['guru']['id_guru'];
 $aksi = $_GET['aksi'] ?? '';
 $jenisValid = ['Tugas', 'Kuis', 'UTS', 'UAS'];
 
-// Ambil penugasan
+// Ambil penugasan beserta pengecekan hak akses (admin: semua, guru: miliknya atau wali kelasnya).
 function ambilPenugasan(PDO $pdo, $id) {
     $id = positiveId($id);
     $stmt = $pdo->prepare('SELECT * FROM PENUGASAN_MENGAJAR WHERE id_penugasan = ?');
@@ -18,7 +18,7 @@ function ambilPenugasan(PDO $pdo, $id) {
     return $row;
 }
 
-// Ambil penilaian
+// Ambil penilaian beserta pengecekan akses lewat penugasannya.
 function ambilPenilaian(PDO $pdo, $id) {
     $id = positiveId($id);
     $stmt = $pdo->prepare('SELECT * FROM PENILAIAN WHERE id_penilaian = ?');
@@ -29,7 +29,7 @@ function ambilPenilaian(PDO $pdo, $id) {
     return $row;
 }
 
-// Validasi nilai
+// Validasi nilai wajib angka 0-100; kembalikan null jika kosong.
 function validasiNilai($value) {
     $value = trim((string)$value);
     if ($value === '') return null;
@@ -40,7 +40,7 @@ function validasiNilai($value) {
     return round((float)$value, 2);
 }
 
-//GET
+/* ---------------------------- GET ---------------------------- */
 if ($method === 'GET') {
     // Daftar penugasan + daftar seluruh Kelas, Mapel, dan Periode yang ada di sistem.
     if ($aksi === 'konteks') {
@@ -78,7 +78,8 @@ if ($method === 'GET') {
             'penugasan' => $penugasan,
             'kelas' => $kelas,
             'mapel' => $mapel,
-            'periode' => $periode
+            'periode' => $periode,
+            'pilihan' => $_SESSION['konteks_penilaian'] ?? null
         ]);
     }
 
@@ -150,7 +151,7 @@ if ($method === 'GET') {
     respond(null, 'Aksi tidak dikenal.', 404);
 }
 
-// POST: cari atau buat otomatis penugasan dari Kelas + Mapel + Periode
+/* --------- POST: cari atau buat otomatis penugasan dari Kelas + Mapel + Periode --------- */
 if ($method === 'POST' && $aksi === 'siapkan_konteks') {
     $input = inputData();
     $idKelas = positiveId($input['id_kelas'] ?? 0);
@@ -176,6 +177,15 @@ if ($method === 'POST' && $aksi === 'siapkan_konteks') {
         $ins->execute([$idGuru, $idKelas, $idMapel, $idPeriode]);
         $idPenugasan = (int)$pdo->lastInsertId();
     }
+
+    // Simpan konteks aktif di session PHP agar tidak reset ketika pindah halaman/fitur
+    $_SESSION['konteks_penilaian'] = [
+        'id_kelas' => (int)$idKelas,
+        'id_mapel' => (int)$idMapel,
+        'id_periode' => (int)$idPeriode,
+        'id_penugasan' => (int)$idPenugasan
+    ];
+
     respond(['id_penugasan' => (int)$idPenugasan], 'Kelas dan mata pelajaran siap dinilai.');
 }
 

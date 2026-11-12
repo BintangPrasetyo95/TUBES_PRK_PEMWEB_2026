@@ -1,3 +1,8 @@
+-- ==========================================================
+-- DATABASE: klikobat (Kelompok 22)
+-- Sistem Informasi KlikObat - Katalog Farmasi & Edukasi
+-- ==========================================================
+
 CREATE DATABASE IF NOT EXISTS `klikobat`
   DEFAULT CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
@@ -21,7 +26,6 @@ CREATE TABLE `obat` (
   `id_obat` INT(11) NOT NULL AUTO_INCREMENT,
   `nama_obat` VARCHAR(150) NOT NULL,
   `id_kategori` INT(11) NOT NULL,
-  `gambar` VARCHAR(255) NOT NULL DEFAULT 'default.jpg',
   `stok` INT(11) NOT NULL DEFAULT 0,
   `indikasi` TEXT NOT NULL,
   `aturan_pakai` TEXT NOT NULL,

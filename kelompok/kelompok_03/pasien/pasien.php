@@ -176,9 +176,13 @@ $riwayatList = $stmtRiwayat->fetchAll();
                 <h2>Halo, <?= htmlspecialchars($namaPasien, ENT_QUOTES, 'UTF-8') ?>!</h2>
                 <p>Hari ini: <strong><?= htmlspecialchars($tanggalTampil, ENT_QUOTES, 'UTF-8') ?></strong></p>
             </div>
-            <div class="grup-tombol">
-                <a href="#form-ambil" class="tombol tombol-peringatan">+ Ambil Nomor Baru</a>
-                <button type="button" class="tombol tombol-utama" onclick="location.reload();">↻ Segarkan Status</button>
+            <div>
+                <a href="#form-ambil" class="btn btn-warning fw-semibold px-4 py-2">
+                    + Ambil Nomor Baru
+                </a>
+                <button type="button" class="btn btn-primary ms-2" onclick="location.reload();">
+                    Segarkan Status
+                </button>
             </div>
         </div>
     </div>
@@ -190,11 +194,13 @@ $riwayatList = $stmtRiwayat->fetchAll();
         </div>
 
         <?php if (empty($antrianAktifDiproses)): ?>
-            <div class="kartu kosong-besar">
-                <div class="ikon">🎫</div>
-                <h4>Belum Ada Nomor Antrean Aktif</h4>
-                <p class="muted">Anda belum mengambil nomor antrean untuk hari ini. Silakan pilih dokter praktik pada daftar di bawah.</p>
-                <a href="#form-ambil" class="tombol tombol-utama">Pilih Dokter & Ambil Nomor</a>
+            <!-- Ditampilkan bila pasien belum mengambil antrean hari ini -->
+            <div class="card border-0 shadow-sm text-center p-5 bg-white">
+                <h4 class="h5 fw-bold text-secondary">Belum Ada Nomor Antrean Aktif</h4>
+                <p class="text-muted mb-3">Anda belum mengambil nomor antrean untuk hari ini. Silakan pilih dokter praktik pada daftar di bawah.</p>
+                <div>
+                    <a href="#form-ambil" class="btn btn-primary px-4 py-2">Pilih Dokter &amp; Ambil Nomor</a>
+                </div>
             </div>
         <?php else: ?>
             <div class="kisi">

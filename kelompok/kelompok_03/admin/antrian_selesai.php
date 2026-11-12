@@ -27,12 +27,17 @@ if (!$id || $id < 1) {
     kembali('danger', 'Data antrian tidak valid.');
 }
 
+$tanggal = $_POST['tanggal'] ?? date('Y-m-d');
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $tanggal)) {
+    $tanggal = date('Y-m-d');
+}
+
 try {
     $stmt = $pdo->prepare(
         "UPDATE antrian SET status = 'selesai'
          WHERE id = ? AND tanggal = ? AND status = 'dipanggil'"
     );
-    $stmt->execute([$id, date('Y-m-d')]);
+    $stmt->execute([$id, $tanggal]);
 
     if ($stmt->rowCount() === 1) {
         kembali('success', 'Antrian berhasil diselesaikan.');

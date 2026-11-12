@@ -1,39 +1,19 @@
 <?php
 // PJ-03: Form Buat dan Edit Kuis untuk Pengajar
 
-// Muat file konfigurasi dan helper 
-if (file_exists(__DIR__ . '/../includes/config.php')) {
-    require_once __DIR__ . '/../includes/config.php';
-}
-if (file_exists(__DIR__ . '/../includes/db.php')) {
-    require_once __DIR__ . '/../includes/db.php';
-}
-if (file_exists(__DIR__ . '/../includes/auth.php')) {
-    require_once __DIR__ . '/../includes/auth.php';
-}
-if (file_exists(__DIR__ . '/../includes/helpers.php')) {
-    require_once __DIR__ . '/../includes/helpers.php';
-}
-if (file_exists(__DIR__ . '/../includes/csrf.php')) {
-    require_once __DIR__ . '/../includes/csrf.php';
-}
-
+// Muat file konfigurasi dan helper
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/fungsi/kuis.php';
 
-// Fallback helper sederhana jika file dari anggota lain belum digabung
-if (!function_exists('e')) {
-    function e($teks) {
-        return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
-    }
-}
-
 // Pastikan yang mengakses halaman ini adalah pengajar
-if (function_exists('wajibPeran')) {
-    wajibPeran(['pengajar']);
-}
+wajibPeran(['pengajar']);
 
 // Ambil id pengajar yang sedang login dari session
-$pengajarId = $_SESSION['user']['id'] ?? ($_SESSION['pengajar_id'] ?? 0);
+$pengajarId = (int) $_SESSION['user']['id'];
 
 // Cek apakah ini mode Edit (ada parameter ?id= di URL) atau mode Buat Baru
 $kuisId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -85,11 +65,9 @@ $errors = [];
 $pesanErrorUmum = '';
 
 // Proses saat form dikirim (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isPost()) {
     // Cek token CSRF
-    if (function_exists('verifikasiCsrf')) {
-        verifikasiCsrf();
-    }
+    verifikasiCsrf();
 
     // Ambil input dari form
     $nilaiForm['judul']        = trim($_POST['judul'] ?? '');
@@ -175,13 +153,8 @@ if ($modeEdit && ($kuis['status'] == 'ditolak' || $kuis['status'] == 'ditarik'))
     $catatanRevisi = ambilCatatanStatusTerakhir($kuisId);
 }
 
-// Ambil token CSRF dari file csrf.php (nama fungsi bisa disesuaikan dengan punya Nanda)
-$tokenCsrf = '';
-if (function_exists('csrfToken')) {
-    $tokenCsrf = csrfToken();
-} elseif (isset($_SESSION['csrf_token'])) {
-    $tokenCsrf = $_SESSION['csrf_token'];
-}
+// Ambil token CSRF dari file csrf.php
+$tokenCsrf = ambilTokenCsrf();
 
 // Muat header dan sidebar jika sudah dibuat oleh Farel
 if (file_exists(__DIR__ . '/../includes/partials/header.php')) {

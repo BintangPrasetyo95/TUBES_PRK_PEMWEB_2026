@@ -45,70 +45,78 @@ $selectedHari = $isEdit ? explode(',', $dokter['hari_praktik']) : [];
 require_once '../includes/header.php';
 ?>
 
-<div class="wadah-form" style="padding: 0;">
-    <div class="baris-judul">
-        <div>
-            <h2 class="judul"><?= $isEdit ? 'Edit' : 'Tambah' ?> Dokter</h2>
-            <p class="muted small">Silakan isi data dokter di bawah ini.</p>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        
+        <!-- Header Judul Form -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+                <h2 class="text-primary fw-bold mb-1"><?= $isEdit ? 'Edit' : 'Tambah' ?> Dokter</h2>
+                <p class="text-muted small mb-0">Silakan isi data dokter di bawah ini.</p>
+            </div>
         </div>
-    </div>
 
-    <?php if ($error): ?>
-        <div class="peringatan peringatan-bahaya" role="alert">
-            <span><?= htmlspecialchars($error) ?></span>
-            <button type="button" class="tutup" data-tutup aria-label="Tutup">&times;</button>
-        </div>
-    <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?= htmlspecialchars($error) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
 
-    <div class="kartu">
-        <div class="kartu-isi">
-            <form id="form-dokter" method="POST" action="dokter_simpan.php">
-                <?php if ($isEdit): ?>
-                    <input type="hidden" name="id" value="<?= htmlspecialchars($dokter['id']) ?>">
-                <?php endif; ?>
+        <!-- Card Container Form -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form id="form-dokter" method="POST" action="dokter_simpan.php">
+                    <?php if ($isEdit): ?>
+                        <input type="hidden" name="id" value="<?= htmlspecialchars($dokter['id']) ?>">
+                    <?php endif; ?>
 
-                <div class="grup-form">
-                    <label for="nama">Nama Dokter</label>
-                    <input type="text" class="masukan" id="nama" name="nama"
-                           value="<?= htmlspecialchars($dokter['nama']) ?>" required>
-                </div>
-
-                <div class="grup-form">
-                    <label for="spesialis">Spesialis</label>
-                    <input type="text" class="masukan" id="spesialis" name="spesialis"
-                           value="<?= htmlspecialchars($dokter['spesialis']) ?>" required>
-                </div>
-
-                <div class="grup-form">
-                    <label for="kuota_per_hari">Kuota Per Hari</label>
-                    <input type="number" class="masukan" id="kuota_per_hari" name="kuota_per_hari"
-                           value="<?= htmlspecialchars($dokter['kuota_per_hari']) ?>" min="1" required>
-                </div>
-
-                <div class="grup-form">
-                    <label>Hari Praktik</label>
-                    <div class="kotak-hari">
-                        <?php foreach ($hariOptions as $hari): ?>
-                            <div class="cek">
-                                <input type="checkbox"
-                                       name="hari_praktik[]"
-                                       id="hari_<?= $hari ?>"
-                                       value="<?= $hari ?>"
-                                       <?= in_array($hari, $selectedHari) ? 'checked' : '' ?>>
-                                <label for="hari_<?= $hari ?>"><?= $hari ?></label>
-                            </div>
-                        <?php endforeach; ?>
+                    <div class="mb-3">
+                        <label for="nama" class="form-label fw-semibold text-dark">Nama Dokter</label>
+                        <input type="text" class="form-control" id="nama" name="nama" 
+                               value="<?= htmlspecialchars($dokter['nama']) ?>" required>
                     </div>
-                </div>
 
-                <hr class="garis">
+                    <div class="mb-3">
+                        <label for="spesialis" class="form-label fw-semibold text-dark">Spesialis</label>
+                        <input type="text" class="form-control" id="spesialis" name="spesialis" 
+                               value="<?= htmlspecialchars($dokter['spesialis']) ?>" required>
+                    </div>
 
-                <div class="baris-aksi">
-                    <a href="dokter_list.php" class="tombol tombol-terang">Batal</a>
-                    <button type="submit" class="tombol tombol-utama">Simpan</button>
-                </div>
-            </form>
+                    <div class="mb-3">
+                        <label for="kuota_per_hari" class="form-label fw-semibold text-dark">Kuota Per Hari</label>
+                        <input type="number" class="form-control" id="kuota_per_hari" name="kuota_per_hari" 
+                               value="<?= htmlspecialchars($dokter['kuota_per_hari']) ?>" min="1" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-dark d-block">Hari Praktik</label>
+                        <div class="p-3 bg-light rounded border d-flex flex-wrap gap-3">
+                            <?php foreach ($hariOptions as $hari): ?>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                           name="hari_praktik[]" 
+                                           id="hari_<?= $hari ?>" 
+                                           value="<?= $hari ?>"
+                                           <?= in_array($hari, $selectedHari) ? 'checked' : '' ?>>
+                                    <label class="form-check-label fw-medium text-dark" for="hari_<?= $hari ?>">
+                                        <?= $hari ?>
+                                    </label>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 text-muted opacity-25">
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="dokter_list.php" class="btn btn-light border px-4">Batal</a>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
+
     </div>
 </div>
 

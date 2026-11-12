@@ -8,7 +8,6 @@ require_once __DIR__ . '/../config/database.php';
 
 $error = '';
 
-// Validasi ID produk
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
 if (!$id || $id <= 0) {
@@ -16,7 +15,6 @@ if (!$id || $id <= 0) {
     exit;
 }
 
-// Ambil data produk
 $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -27,12 +25,10 @@ if (!$data) {
     exit;
 }
 
-// Ambil data kategori
 $kategori = $conn->query(
     "SELECT * FROM categories ORDER BY name ASC"
 );
 
-// Proses update produk
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
 
     $category_id = (int)($_POST['category_id'] ?? 0);
@@ -58,7 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
         $error = "Pastikan semua data wajib diisi dengan benar!";
     } else {
 
-        // Periksa apakah kategori tersedia
         $stmt_kategori = $conn->prepare(
             "SELECT id FROM categories WHERE id = ?"
         );
@@ -69,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
             $error = "Kategori yang dipilih tidak ditemukan.";
         }
 
-        // Proses upload gambar jika ada
         $uploadedImage = null;
 
         if (
@@ -115,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
             }
         }
 
-        // Simpan perubahan ke database
         if ($error === '') {
 
             if ($uploadedImage !== null) {
@@ -152,7 +145,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update'])) {
 
             if ($stmt_update->execute()) {
 
-                // Hapus gambar lama setelah gambar baru berhasil disimpan
                 if (
                     $uploadedImage !== null &&
                     !empty($data['image'])

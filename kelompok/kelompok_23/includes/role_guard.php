@@ -2,7 +2,7 @@
 function requireRole(array $allowedRoles): void
 {
     if (!isset($_SESSION['user_id'])) {
-        header("Location: /TUBES_PRK_PEMWEB_2026/kelompok/kelompok_23/auth/login.php");
+        header("Location: auth/login.php");
         exit;
     }
 
@@ -11,7 +11,7 @@ function requireRole(array $allowedRoles): void
     $allowedRoles = array_map('strtolower', $allowedRoles);
 
     if (!in_array($userRole, $allowedRoles, true)) {
-        header("Location: /TUBES_PRK_PEMWEB_2026/kelompok/kelompok_23/dashboard.php");
+        header("Location: dashboard.php");
         exit;
     }
 }

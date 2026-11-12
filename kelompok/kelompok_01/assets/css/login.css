@@ -185,15 +185,46 @@ body {
 
 .login-password-toggle {
     position: absolute;
-    right: 14px;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
     border: none;
     background: none;
     color: #829087;
     font-family: inherit;
-    font-size: 12px;
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
     cursor: pointer;
+}
+
+.login-password-toggle svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
+}
+
+.login-password-toggle .password-icon-eye-off,
+.login-password-toggle.is-visible .password-icon-eye {
+    display: none;
+}
+
+.login-password-toggle.is-visible .password-icon-eye-off {
+    display: block;
+}
+
+.login-input-wrapper.has-password-toggle input {
+    padding-right: 60px;
+}
+
+.login-password-toggle:hover {
+    color: #176b50;
 }
 
 .login-button {

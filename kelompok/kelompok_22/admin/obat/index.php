@@ -8,6 +8,8 @@ require_once '../auth.php'; // halaman ini hanya boleh dibuka admin yang sudah l
 
 require_once '../../config/koneksi.php';
 require_once '../../config/helper.php';
+$adminSection = 'obat';
+$judulHalaman = 'Data Obat';
 
 $daftar_pesan = [
     'tambah' => 'Obat berhasil ditambahkan.',
@@ -31,15 +33,7 @@ $warna = [
     'Habis'    => '#dc3545',
 ];
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Obat - KlikObat</title>
-    <!-- Hubungkan CSS UI Admin -->
-    <link rel="stylesheet" href="../../frontend/assets/css/style.css">
-    <link rel="stylesheet" href="../../frontend/assets/css/admin.css">
+<?php require_once '../../backend/admin/layout/header.php'; ?>
     <style>
         .obat-notif { padding: 12px 15px; margin-bottom: 20px; border-radius: 10px; font-weight: 600; font-size: 14px; }
         .obat-notif.ok { background: #d1e7dd; color: #0f5132; }
@@ -57,27 +51,7 @@ $warna = [
         .obat-aksi { display: flex; gap: 12px; align-items: center; margin-top: 24px; }
         .obat-batal { color: var(--admin-secondary); text-decoration: none; font-weight: 600; font-size: 14px; padding: 11px 19px; }
     </style>
-</head>
-<body>
-    <div class="admin-container">
-        <!-- Sidebar Admin -->
-        <aside class="admin-sidebar">
-            <div class="admin-logo">KlikObat</div>
-            <ul class="admin-menu">
-                <li><a href="../kategori/index.php">Kelola Kategori</a></li>
-                <li><a href="index.php" class="active">Kelola Obat</a></li>
-                <li><a href="../logout.php" style="color: #ef4444;">Logout</a></li>
-            </ul>
-        </aside>
-
-        <!-- Konten Utama Admin -->
-        <main class="admin-main">
-            <header class="admin-header">
-                <h1>Data Obat</h1>
-                <div class="admin-user">Admin Panel</div>
-            </header>
-
-            <div class="admin-content">
+<div class="admin-content">
                 <div style="margin-bottom: 20px;">
                     <a class="admin-btn" href="tambah.php">+ Tambah Obat</a>
                 </div>
@@ -137,12 +111,5 @@ $warna = [
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <footer class="admin-footer">
-                <p>&copy; 2026 KlikObat. Sistem Informasi Katalog Farmasi & Edukasi.</p>
-            </footer>
-        </main>
-    </div>
-</body>
-</html>
+</div>
+<?php require_once '../../backend/admin/layout/footer.php'; ?>

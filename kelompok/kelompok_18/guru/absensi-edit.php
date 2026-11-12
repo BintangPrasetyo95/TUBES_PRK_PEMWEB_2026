@@ -18,6 +18,10 @@ try {
         http_response_code(404);
         exit('Data absensi tidak ditemukan.');
     }
+    if ($session['status'] !== 'berlangsung') {
+        http_response_code(409);
+        exit('Absensi hanya dapat diubah selama sesi berlangsung.');
+    }
     $students = guruSessionAttendance($sessionId);
     $student = null;
     foreach ($students as $candidate) {
@@ -64,19 +68,19 @@ try {
 guru_page_start('Ubah Status Kehadiran', 'kelas.php');
 ?>
 <?php if ($pageError !== ''): ?><p class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert"><?= attendara_ui_escape($pageError) ?></p><?php endif; ?>
-<section class="max-w-2xl rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <div><h2 class="text-lg font-semibold text-[#20392a]"><?= attendara_ui_escape($student['name']) ?></h2><p class="mt-1 text-sm text-slate-500"><?= attendara_ui_escape($student['number']) ?></p></div>
+<section class="max-w-2xl rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
+    <div><h2 class="text-lg font-semibold text-[#303832]"><?= attendara_ui_escape($student['name']) ?></h2><p class="mt-1 text-sm text-slate-500"><?= attendara_ui_escape($student['number']) ?></p></div>
     <form id="attendance-edit-form" method="post" action="absensi-edit.php?session_id=<?= (int) $sessionId ?>&amp;id=<?= (int) $studentId ?>" class="mt-5 space-y-4">
         <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
         <input type="hidden" name="session_id" value="<?= (int) $sessionId ?>">
         <input type="hidden" name="student_id" value="<?= (int) $studentId ?>">
-        <div><label for="attendance-status" class="mb-1.5 block text-sm font-medium text-slate-700">Status Kehadiran</label><select id="attendance-status" name="status" required class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm">
+        <div><label for="attendance-status" class="mb-1.5 block text-sm font-medium text-slate-700">Status Kehadiran</label><select id="attendance-status" name="status" required class="min-h-10 w-full rounded-lg border border-[#dfe6de] bg-white px-3 text-sm">
             <?php foreach (['hadir' => 'Hadir', 'izin' => 'Izin', 'alpha' => 'Alpha', 'sakit' => 'Sakit'] as $value => $label): ?>
                 <option value="<?= attendara_ui_escape($value) ?>"<?= $student['attendance_status'] === $value ? ' selected' : '' ?>><?= attendara_ui_escape($label) ?></option>
             <?php endforeach; ?>
         </select></div>
-        <div><label for="attendance-note" class="mb-1.5 block text-sm font-medium text-slate-700">Catatan (opsional)</label><textarea id="attendance-note" name="note" maxlength="500" rows="3" class="w-full rounded-lg border border-[#d8e2d8] px-3 py-2 text-sm focus:border-[#376c4d] focus:outline-none focus:ring-2 focus:ring-[#e6efe6]"><?= attendara_ui_escape((string) ($student['note'] ?? '')) ?></textarea></div>
-        <div class="flex flex-wrap gap-2"><button id="save-attendance" type="submit" class="min-h-10 rounded-lg bg-[#1e5638] px-4 text-sm font-semibold text-white">Simpan Status</button><a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center rounded-lg border border-[#d8e2d8] px-4 text-sm font-semibold text-[#284b35]">Kembali</a></div>
+        <div><label for="attendance-note" class="mb-1.5 block text-sm font-medium text-slate-700">Catatan (opsional)</label><textarea id="attendance-note" name="note" maxlength="500" rows="3" class="w-full rounded-lg border border-[#dfe6de] px-3 py-2 text-sm focus:border-[#679173] focus:outline-none focus:ring-2 focus:ring-[#eaf1ea]"><?= attendara_ui_escape((string) ($student['note'] ?? '')) ?></textarea></div>
+        <div class="flex flex-wrap gap-2"><button id="save-attendance" type="submit" class="min-h-10 rounded-lg bg-[#4e7a5d] px-4 text-sm font-semibold text-white">Simpan Status</button><a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center rounded-lg border border-[#dfe6de] px-4 text-sm font-semibold text-[#41684f]">Kembali</a></div>
     </form>
 </section>
 <?php guru_page_end(); ?>

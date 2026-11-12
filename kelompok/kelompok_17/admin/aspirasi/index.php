@@ -9,28 +9,28 @@ require_once __DIR__ . '/../../includes/csrf.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <title>Kelola Aspirasi - KabarSih</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/admin.css">
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="adm-body">
 <?php include __DIR__ . '/../../components/admin_nav.php'; ?>
 
-<main class="max-w-6xl mx-auto px-4 py-6">
-    <h1 class="text-2xl font-bold mb-4">Kelola Aspirasi</h1>
-    <div id="alert-box" class="mb-4 rounded-lg p-3" role="status" style="display:none;"></div>
+<main class="adm-main">
+    <h1 class="adm-title">Kelola Aspirasi</h1>
+    <div id="alert-box" class="adm-alert" role="status" style="display:none;"></div>
 
-    <div class="bg-white rounded-lg shadow overflow-x-auto">
-        <table class="min-w-full text-sm">
-            <thead class="bg-slate-100 text-left">
+    <div class="adm-card">
+        <table class="adm-table">
+            <thead>
                 <tr>
-                    <th class="p-3">Judul</th>
-                    <th class="p-3">Kategori</th>
-                    <th class="p-3">Pengirim</th>
-                    <th class="p-3">Tanggal</th>
-                    <th class="p-3">Status</th>
+                    <th>Judul</th>
+                    <th>Kategori</th>
+                    <th>Pengirim</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody id="tabel-body-aspirasi">
-                <tr><td colspan="5" class="p-6 text-center text-slate-500">Memuat data dari server...</td></tr>
+                <tr><td colspan="5" class="adm-empty">Memuat data dari server...</td></tr>
             </tbody>
         </table>
     </div>

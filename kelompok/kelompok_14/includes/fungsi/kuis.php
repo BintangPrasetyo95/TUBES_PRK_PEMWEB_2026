@@ -62,17 +62,19 @@ function ambilKuisById($kuisId, $pengajarId = null) {
 }
 
 // Ambil daftar kuis milik pengajar (untuk halaman Kuis Saya)
-function daftarKuisPengajar($pengajarId, $status = '') {
+function daftarKuisPengajar($pengajarId, $status = '', $kataKunci = '') {
     global $pdo;
 
     $sql = "SELECT kuis.*, 
                    topik.nama AS nama_topik, 
                    tingkat.nama AS nama_tingkat,
-                   COUNT(soal.id) AS jumlah_soal
+                   COUNT(DISTINCT soal.id) AS jumlah_soal,
+                   COUNT(DISTINCT percobaan_kuis.id) AS jumlah_percobaan
             FROM kuis
             JOIN topik ON kuis.topik_id = topik.id
             JOIN tingkat ON kuis.tingkat_id = tingkat.id
             LEFT JOIN soal ON soal.kuis_id = kuis.id
+            LEFT JOIN percobaan_kuis ON percobaan_kuis.kuis_id = kuis.id
             WHERE kuis.pengajar_id = ?";
     
     $params = [$pengajarId];
@@ -82,11 +84,26 @@ function daftarKuisPengajar($pengajarId, $status = '') {
         $params[] = $status;
     }
 
+    if ($kataKunci != '') {
+        $sql .= " AND kuis.judul LIKE ?";
+        $params[] = '%' . $kataKunci . '%';
+    }
+
     $sql .= " GROUP BY kuis.id ORDER BY kuis.dibuat_pada DESC";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $daftar = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($daftar as $index => $baris) {
+        if ($baris['status'] == 'ditolak' || $baris['status'] == 'ditarik') {
+            $daftar[$index]['catatan_status_terakhir'] = ambilCatatanStatusTerakhir($baris['id']);
+        } else {
+            $daftar[$index]['catatan_status_terakhir'] = '';
+        }
+    }
+
+    return $daftar;
 }
 
 

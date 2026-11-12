@@ -272,6 +272,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             <th>Kode</th>
                             <th>Nama</th>
                             <th>Kategori</th>
+                            <th>Deskripsi</th>
                             <th>Jenis</th>
                             <th>Stok</th>
                             <th>Lokasi</th>
@@ -300,6 +301,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <td><?= e($alat['kode']) ?></td>
                                 <td><?= e($alat['nama']) ?></td>
                                 <td><?= e($alat['nama_kategori']) ?></td>
+                                <td><?= e($alat['deskripsi'] ?: '-') ?></td>
                                 <td>
                                     <span class="badge badge-info">
                                         <?= e($alat['jenis']) ?>

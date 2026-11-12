@@ -5,7 +5,7 @@ $idGuru = $_SESSION['guru']['id_guru'];
 $aksi = $_GET['aksi'] ?? '';
 $jenisValid = ['Tugas', 'Kuis', 'UTS', 'UAS'];
 
-// Ambil penugasan beserta pengecekan hak akses (admin: semua, guru: miliknya atau wali kelasnya).
+// Ambil penugasan
 function ambilPenugasan(PDO $pdo, $id) {
     $id = positiveId($id);
     $stmt = $pdo->prepare('SELECT * FROM PENUGASAN_MENGAJAR WHERE id_penugasan = ?');
@@ -18,7 +18,7 @@ function ambilPenugasan(PDO $pdo, $id) {
     return $row;
 }
 
-// Ambil penilaian beserta pengecekan akses lewat penugasannya.
+// Ambil penilaian
 function ambilPenilaian(PDO $pdo, $id) {
     $id = positiveId($id);
     $stmt = $pdo->prepare('SELECT * FROM PENILAIAN WHERE id_penilaian = ?');
@@ -29,7 +29,7 @@ function ambilPenilaian(PDO $pdo, $id) {
     return $row;
 }
 
-// Validasi nilai wajib angka 0-100; kembalikan null jika kosong.
+// Validasi nilai
 function validasiNilai($value) {
     $value = trim((string)$value);
     if ($value === '') return null;
@@ -40,7 +40,7 @@ function validasiNilai($value) {
     return round((float)$value, 2);
 }
 
-/* ---------------------------- GET ---------------------------- */
+//GET
 if ($method === 'GET') {
     // Daftar penugasan + daftar seluruh Kelas, Mapel, dan Periode yang ada di sistem.
     if ($aksi === 'konteks') {
@@ -90,7 +90,7 @@ if ($method === 'GET') {
         $jumlahSiswa = (int)$stmt->fetchColumn();
 
         $stmt = $pdo->prepare('SELECT p.id_penilaian, p.judul_penilaian, p.jenis_komponen,
-                p.tanggal_dibuat, COUNT(n.nilai) AS terisi, AVG(n.nilai) AS rata_rata
+                p.tenggat_waktu, p.tanggal_dibuat, COUNT(n.nilai) AS terisi, AVG(n.nilai) AS rata_rata
             FROM PENILAIAN p
             LEFT JOIN NILAI_DAN_PENGUMPULAN n ON n.id_penilaian = p.id_penilaian
             WHERE p.id_penugasan = ?
@@ -118,7 +118,8 @@ if ($method === 'GET') {
         respond(['penilaian' => [
             'id_penilaian' => $p['id_penilaian'],
             'judul_penilaian' => $p['judul_penilaian'],
-            'jenis_komponen' => $p['jenis_komponen']
+            'jenis_komponen' => $p['jenis_komponen'],
+            'tenggat_waktu' => $p['tenggat_waktu']
         ], 'siswa' => $stmt->fetchAll()]);
     }
 
@@ -149,7 +150,7 @@ if ($method === 'GET') {
     respond(null, 'Aksi tidak dikenal.', 404);
 }
 
-/* --------- POST: cari atau buat otomatis penugasan dari Kelas + Mapel + Periode --------- */
+// POST: cari atau buat otomatis penugasan dari Kelas + Mapel + Periode
 if ($method === 'POST' && $aksi === 'siapkan_konteks') {
     $input = inputData();
     $idKelas = positiveId($input['id_kelas'] ?? 0);
@@ -231,6 +232,8 @@ if ($method === 'DELETE') {
 $input = inputData();
 $judul = trim((string)($input['judul_penilaian'] ?? ''));
 $jenis = trim((string)($input['jenis_komponen'] ?? ''));
+$tenggatInput = trim((string)($input['tenggat_waktu'] ?? ''));
+
 if ($judul === '' || preg_match_all('/./us', $judul) > 100) {
     respond(null, 'Judul penilaian wajib diisi, maksimal 100 karakter.', 422);
 }
@@ -238,16 +241,29 @@ if (!in_array($jenis, $jenisValid, true)) {
     respond(null, 'Jenis komponen harus Tugas, Kuis, UTS, atau UAS.', 422);
 }
 
+// Tenggat waktu hanya digunakan (dan wajib) ketika jenis_komponen adalah Tugas.
+$tenggatFormatted = null;
+if ($jenis === 'Tugas') {
+    if ($tenggatInput === '') {
+        respond(null, 'Tenggat waktu wajib diisi untuk komponen Tugas.', 422);
+    }
+    $dt = date_create($tenggatInput);
+    if (!$dt) {
+        respond(null, 'Format tenggat waktu tidak valid.', 422);
+    }
+    $tenggatFormatted = $dt->format('Y-m-d H:i:s');
+}
+
 if ($method === 'PUT') {
     $p = ambilPenilaian($pdo, $_GET['id'] ?? 0);
-    $stmt = $pdo->prepare('UPDATE PENILAIAN SET judul_penilaian = ?, jenis_komponen = ? WHERE id_penilaian = ?');
-    $stmt->execute([$judul, $jenis, $p['id_penilaian']]);
+    $stmt = $pdo->prepare('UPDATE PENILAIAN SET judul_penilaian = ?, jenis_komponen = ?, tenggat_waktu = ? WHERE id_penilaian = ?');
+    $stmt->execute([$judul, $jenis, $tenggatFormatted, $p['id_penilaian']]);
     respond(['id_penilaian' => (int)$p['id_penilaian']], 'Penilaian berhasil diperbarui.');
 }
 
 // POST: buat penilaian baru
 $pm = ambilPenugasan($pdo, $input['id_penugasan'] ?? 0);
-$stmt = $pdo->prepare('INSERT INTO PENILAIAN (id_penugasan, judul_penilaian, jenis_komponen, tanggal_dibuat)
-    VALUES (?, ?, ?, NOW())');
-$stmt->execute([$pm['id_penugasan'], $judul, $jenis]);
+$stmt = $pdo->prepare('INSERT INTO PENILAIAN (id_penugasan, judul_penilaian, jenis_komponen, tenggat_waktu, tanggal_dibuat)
+    VALUES (?, ?, ?, ?, NOW())');
+$stmt->execute([$pm['id_penugasan'], $judul, $jenis, $tenggatFormatted]);
 respond(['id_penilaian' => (int)$pdo->lastInsertId()], 'Penilaian berhasil dibuat.', 201);

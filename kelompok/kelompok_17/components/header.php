@@ -9,6 +9,9 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KabarSi FISIP - Portal Berita & Aspirasi Mahasiswa</title>
+    <?php if (!empty($pageStylesheet)): ?>
+        <link rel="stylesheet" href="<?= htmlspecialchars($pageStylesheet, ENT_QUOTES, 'UTF-8'); ?>">
+    <?php endif; ?>
     <style>
         /* Reset & Base */
         *, *::before, *::after {

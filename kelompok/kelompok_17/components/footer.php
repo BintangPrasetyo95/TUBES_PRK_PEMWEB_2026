@@ -13,6 +13,7 @@
             
             <div class="footer-copy-wrap">
                 <p class="footer-copy">
+                    
                     &copy; <?= date('Y'); ?> KabarSi FISIP Universitas Lampung;
                 </p>
             </div>

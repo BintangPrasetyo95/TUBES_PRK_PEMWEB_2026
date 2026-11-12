@@ -9,7 +9,7 @@ require_once __DIR__ . '/../../includes/csrf.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
     <title>Kelola Aspirasi - KabarSih</title>
-    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../../css/aspirasi.css">
 </head>
 
 <body class="adm-body">

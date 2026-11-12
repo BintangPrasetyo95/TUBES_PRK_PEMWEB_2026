@@ -72,71 +72,72 @@ if (!$berita) {
     exit();
 }
 
+$pageStylesheet = 'css/berita_detail.css';
 include_once __DIR__ . '/components/header.php';
 ?>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <a href="index.php" class="text-blue-600 hover:underline text-sm font-medium"> Kembali ke Beranda</a>
+<div class="news-detail-page">
+    <a href="index.php" class="news-back-link">&larr; Kembali ke Beranda</a>
     
     <!-- CARD DETAIL BERITA -->
-    <article class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8 mt-4">
-        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-1 rounded">
+    <article class="news-article">
+        <span class="news-category">
             <?= htmlspecialchars($berita['nama_kategori'] ?? 'Umum'); ?>
         </span>
         
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-3">
+        <h1 class="news-title">
             <?= htmlspecialchars($berita['judul_berita']); ?>
         </h1>
         
-        <div class="flex items-center text-xs text-gray-500 space-x-4 mt-3 pb-6 border-b border-gray-100">
-            <span>Diterbitkan oleh: <strong class="text-gray-700"><?= htmlspecialchars($berita['penulis'] ?? 'Admin Kampus'); ?></strong></span>
-            <span>&bull;</span>
-            <span><?= date('d M Y, H:i', strtotime($berita['tanggal_publikasi'])); ?> WIB</span>
+        <div class="news-meta">
+            <span>Diterbitkan oleh: <strong><?= htmlspecialchars($berita['penulis'] ?? 'Admin Kampus'); ?></strong></span>
+            <span class="news-meta-separator">&bull;</span>
+            <time><?= date('d M Y, H:i', strtotime($berita['tanggal_publikasi'])); ?> WIB</time>
         </div>
 
         <?php if (!empty($berita['gambar_url'])): ?>
-            <img src="uploads/<?= htmlspecialchars($berita['gambar_url']); ?>" alt="Gambar Berita" class="w-full max-h-96 object-cover rounded-lg my-6">
+            <img src="uploads/<?= htmlspecialchars($berita['gambar_url']); ?>" alt="Gambar Berita" class="news-image">
         <?php endif; ?>
 
-        <div class="prose max-w-none text-gray-800 leading-relaxed space-y-4 mt-6">
+        <div class="news-content">
             <?= nl2br(htmlspecialchars($berita['isi_berita'])); ?>
         </div>
     </article>
 
     <!-- SECTION KOMENTAR BERITA -->
-    <div id="komentar" class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8">
+    <section id="komentar" class="news-comments">
         <?php if ($komentarError): ?>
-            <p class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+            <p class="news-error" role="alert">
                 <?= htmlspecialchars($komentarError); ?>
             </p>
         <?php endif; ?>
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold text-gray-900">Komentar</h3>
-            <span class="text-xs bg-gray-100 text-gray-600 font-semibold px-2.5 py-1 rounded-full">
+        <div class="news-comments-heading">
+            <h2>Komentar</h2>
+            <span class="news-comment-count">
                 <?= count($komentarList) ?> Komentar
             </span>
         </div>
 
         <!-- DAFTAR KOMENTAR -->
-        <div class="space-y-4 mb-8">
+        <div class="news-comment-list">
             <?php if (!empty($komentarList)): ?>
                 <?php foreach ($komentarList as $k): ?>
-                    <div class="p-4 rounded-lg bg-gray-50 border border-gray-100">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-gray-800">
+                    <article class="news-comment">
+                        <div class="news-comment-meta">
+                            <span class="news-comment-author">
                                 <?= $k['is_anonim'] ? '👤 Anonim' : '🎓 ' . htmlspecialchars($k['nama_lengkap'] ?? 'Mahasiswa') ?>
                             </span>
-                            <span class="text-[11px] text-gray-400">
+                            <time>
                                 <?= date('d M Y, H:i', strtotime($k['tanggal_komentar'])) ?> WIB
-                            </span>
+                            </time>
                         </div>
-                        <p class="text-sm text-gray-700 leading-relaxed mt-1">
+                        <p>
                             <?= nl2br(htmlspecialchars($k['isi_komentar'])); ?>
                         </p>
-                    </div>
+                    </article>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="p-6 border border-dashed border-gray-200 rounded-lg text-center text-xs text-gray-500">
+                <div class="news-empty-comments">
                     Belum ada komentar untuk berita ini. Berikan pandangan Anda pertama kali!
                 </div>
             <?php endif; ?>
@@ -145,33 +146,27 @@ include_once __DIR__ . '/components/header.php';
 
         <!-- FORM INPUT KOMENTAR -->
         <?php if (isset($_SESSION['id_user'])): ?>
-    <form action="berita_detail.php?id=<?= (int)$id_berita ?>" method="POST" class="space-y-4 border-t border-gray-100 pt-6">
-        <?= csrf_field() ?>
-        <div>
-                    <label class="flex items-center gap-2 text-xs text-gray-600">
-            <input type="checkbox" name="is_anonim" value="1"> Komentar sebagai Anonim
-        </label>
-                    <textarea name="isi_komentar" rows="3" required
-                        class="w-full p-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                        placeholder="Tuliskan komentar atau tanggapan mengenai berita ini..."></textarea>
-                </div>
-
-                <button type="submit" name="submit_komentar"
-                    class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium text-xs rounded-lg shadow-sm transition-all">
-                    Kirim Komentar
-                </button>
+            <form action="berita_detail.php?id=<?= (int)$id_berita ?>" method="POST" class="news-comment-form">
+                <?= csrf_field() ?>
+                <label class="news-anonymous-option">
+                    <input type="checkbox" name="is_anonim" value="1">
+                    Komentar sebagai Anonim
+                </label>
+                <textarea name="isi_komentar" rows="4" required
+                    placeholder="Tuliskan komentar atau tanggapan mengenai berita ini..."></textarea>
+                <button type="submit" name="submit_komentar">Kirim Komentar</button>
             </form>
 
 
         <?php else: ?>
-            <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-xs flex justify-between items-center flex-wrap gap-2">
-                <span class="text-amber-800 font-medium">🔒 Silakan login terlebih dahulu untuk memberikan komentar.</span>
-                <a href="auth/login.php" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-xs transition-colors">
+            <div class="news-login-notice">
+                <span>Silakan login terlebih dahulu untuk memberikan komentar.</span>
+                <a href="auth/login.php">
                     Login Sekarang
                 </a>
             </div>
         <?php endif; ?>
-    </div>
+    </section>
 </div>
 
 <?php include __DIR__ . '/components/footer.php'; ?>

@@ -59,9 +59,8 @@ $page_title = "Manajemen Kategori Obat";
                 </div>
             </div>
 
-            <footer class="admin-footer">
-                <?php include '../../backend/admin/layout/footer.php'; ?>
-            </footer>
+            <!-- Footer Modular Saja (Tanpa tag <footer class="admin-footer"> ganda) -->
+            <?php include '../../backend/admin/layout/footer.php'; ?>
         </main>
     </div>
 </body>

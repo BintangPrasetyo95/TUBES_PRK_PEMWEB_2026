@@ -65,9 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
-            <footer class="admin-footer">
                 <?php include '../../backend/admin/layout/footer.php'; ?>
-            </footer>
         </main>
     </div>
 </body>

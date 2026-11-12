@@ -34,14 +34,21 @@ if (isPost()) {
 
         // 3. Simpan data user ke dalam session
         $_SESSION['user'] = [
-            'id'    => $user['id'],
-            'nama'  => $user['nama'],
-            'email' => $user['email'],
-            'peran' => $user['peran']
+            'id'                => $user['id'],
+            'nama'              => $user['nama'],
+            'email'             => $user['email'],
+            'peran'             => $user['peran'],
+            'wajib_ganti_sandi' => isset($user['wajib_ganti_sandi']) ? (int)$user['wajib_ganti_sandi'] : 0
         ];
 
         // Hapus data guest jika sebelumnya ada di session
         unset($_SESSION['guest']);
+
+        // Jika pengguna diwajibkan mengganti sandi sementara, arahkan ke profil.php (AUT-09, AC-21)
+        if ($_SESSION['user']['wajib_ganti_sandi'] === 1) {
+            flash('info', 'Anda login menggunakan sandi sementara. Silakan ganti password Anda terlebih dahulu.');
+            redirect(BASE_URL . '/profil.php');
+        }
 
         // 4. Arahkan pengguna ke dashboard sesuai perannya (AUT-02)
         redirect(urlDashboardPeran($user['peran']));

@@ -95,8 +95,14 @@ if (isPost()) {
         <div class="container-sm">
 
             <?php if ($pesanFlash): ?>
-                <div class="alert alert-<?= $pesanFlash['tipe'] === 'sukses' ? 'sukses' : 'galat' ?>" role="alert">
+                <div class="alert alert-<?= $pesanFlash['tipe'] === 'sukses' ? 'sukses' : ($pesanFlash['tipe'] === 'info' ? 'info' : 'galat') ?>" role="alert">
                     <?= e($pesanFlash['pesan']) ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($userData['wajib_ganti_sandi']) && (int)$userData['wajib_ganti_sandi'] === 1 && $suksesSandi === ''): ?>
+                <div class="alert alert-galat" role="alert">
+                    <strong>Perhatian:</strong> Anda wajib mengganti sandi sementara Anda pada formulir "Ganti Password" di bawah sebelum dapat membuka halaman lain.
                 </div>
             <?php endif; ?>
 

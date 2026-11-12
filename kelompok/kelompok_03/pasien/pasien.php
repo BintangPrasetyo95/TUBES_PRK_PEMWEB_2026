@@ -186,7 +186,7 @@ $riwayatList = $stmtRiwayat->fetchAll();
                     + Ambil Nomor Baru
                 </a>
                 <button type="button" class="btn btn-primary ms-2" onclick="location.reload();">
-                    ↻ Segarkan Status
+                    Segarkan Status
                 </button>
             </div>
         </div>
@@ -202,11 +202,10 @@ $riwayatList = $stmtRiwayat->fetchAll();
         <?php if (empty($antrianAktifDiproses)): ?>
             <!-- Ditampilkan bila pasien belum mengambil antrean hari ini -->
             <div class="card border-0 shadow-sm text-center p-5 bg-white">
-                <div class="mb-3" style="font-size: 3rem;">🎫</div>
                 <h4 class="h5 fw-bold text-secondary">Belum Ada Nomor Antrean Aktif</h4>
                 <p class="text-muted mb-3">Anda belum mengambil nomor antrean untuk hari ini. Silakan pilih dokter praktik pada daftar di bawah.</p>
                 <div>
-                    <a href="#form-ambil" class="btn btn-primary px-4 py-2">Pilih Dokter & Ambil Nomor</a>
+                    <a href="#form-ambil" class="btn btn-primary px-4 py-2">Pilih Dokter &amp; Ambil Nomor</a>
                 </div>
             </div>
         <?php else: ?>
@@ -219,11 +218,11 @@ $riwayatList = $stmtRiwayat->fetchAll();
                                 <!-- Status Antrean Badge -->
                                 <div class="mb-2">
                                     <?php if ($tiket['status'] === 'menunggu'): ?>
-                                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">⏳ Menunggu Giliran</span>
+                                        <span class="badge bg-warning text-dark px-3 py-2 fs-6">Menunggu Giliran</span>
                                     <?php elseif ($tiket['status'] === 'dipanggil'): ?>
-                                        <span class="badge bg-success text-white px-3 py-2 fs-6 animate-pulse">🔊 Giliran Anda Dipanggil!</span>
+                                        <span class="badge bg-success text-white px-3 py-2 fs-6 animate-pulse">Giliran Anda Dipanggil!</span>
                                     <?php else: ?>
-                                        <span class="badge bg-secondary text-white px-3 py-2 fs-6">✓ Selesai Diperiksa</span>
+                                        <span class="badge bg-secondary text-white px-3 py-2 fs-6">Selesai Diperiksa</span>
                                     <?php endif; ?>
                                 </div>
 
@@ -340,7 +339,7 @@ $riwayatList = $stmtRiwayat->fetchAll();
                                     <?php if ($dok['sudah_ambil']): ?>
                                         <!-- Tombol jika pasien sudah terdaftar hari ini -->
                                         <button type="button" class="btn btn-sm btn-outline-success" disabled>
-                                            ✓ Sudah Ambil
+                                            Sudah Ambil
                                         </button>
                                     <?php elseif (!$dok['bisa_ambil']): ?>
                                         <!-- Tombol nonaktif jika kuota habis atau libur -->

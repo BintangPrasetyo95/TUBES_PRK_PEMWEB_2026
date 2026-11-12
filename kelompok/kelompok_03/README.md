@@ -38,23 +38,23 @@ Aplikasi web sistem antrian klinik berbasis PHP native. Pasien dapat melihat jad
 
 kelompok_03/
 
-├── admin/ # Halaman & proses admin (CRUD dokter, kelola antrean)
+|-- admin/ # Halaman & proses admin (CRUD dokter, kelola antrean)
 
-├── assets/ # style.css (CSS utama aplikasi)
+|-- assets/ # style.css (CSS utama aplikasi)
 
-├── auth/ # Login, register, logout
+|-- auth/ # Login, register, logout
 
-├── config/ # koneksi.php (koneksi database)
+|-- config/ # koneksi.php (koneksi database)
 
-├── database/ # klinik.sql (dump struktur + data)
+|-- database/ # klinik.sql (dump struktur + data)
 
-├── includes/ # header, footer, init, cek_login
+|-- includes/ # header, footer, init, cek_login
 
-├── pasien/ # Portal pasien, ambil/batal antrean
+|-- pasien/ # Portal pasien, ambil/batal antrean
 
-├── index.php # Halaman depan (jadwal dokter)
+|-- index.php # Halaman depan (jadwal dokter)
 
-└── README.md
+`-- README.md
 
 ```
 

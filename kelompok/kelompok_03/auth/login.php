@@ -82,8 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             Masuk untuk mengambil nomor antrian poli, memantau jadwal dokter praktik, dan melihat estimasi giliran pemeriksaan Anda secara real-time.
                         </p>
                         <div class="d-flex flex-column gap-1 small text-muted">
-                            <div>✓ Cek jadwal & kuota dokter hari ini</div>
-                            <div>✓ Ambil nomor antrian tanpa perlu antre lama di lokasi</div>
+                            <div>Cek jadwal &amp; kuota dokter hari ini</div>
+                            <div>Ambil nomor antrian tanpa perlu antre lama di lokasi</div>
                         </div>
                     </div>
 
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="mb-4">
                                         <label for="password" class="form-label fw-medium">Password</label>
                                         <input type="password" class="form-control py-2" id="password" name="password" 
-                                               placeholder="••••••••" required>
+                                               placeholder="Masukkan password" required>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
                                 </form>

@@ -79,25 +79,25 @@ guru_page_start('Tambah Kelompok', 'kelas.php');
 ?>
 <?php if ($pageError !== ''): ?><p class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert"><?= attendara_ui_escape($pageError) ?></p><?php endif; ?>
 <form id="group-form" method="post" action="kelompok-baru.php?assignment_id=<?= (int) $assignment['assignment_id'] ?>">
-    <section class="rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-        <div><h2 class="text-lg font-semibold text-[#20392a]">Bentuk Kelompok</h2><p class="mt-1 text-sm text-slate-600">Atur jumlah kelompok atau jumlah anggota, lalu acak anggota siswa.</p></div>
+    <section class="rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
+        <div><h2 class="text-lg font-semibold text-[#303832]">Bentuk Kelompok</h2><p class="mt-1 text-sm text-slate-600">Atur jumlah kelompok atau jumlah anggota, lalu acak anggota siswa.</p></div>
         <p class="mt-1 text-sm text-slate-500"><?= attendara_ui_escape($assignment['name'] . ' · ' . $assignment['subject_name'] . ' · ' . $assignment['semester']) ?></p>
         <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
         <input type="hidden" name="assignment_id" value="<?= (int) $assignment['assignment_id'] ?>">
         <input id="groups-json" type="hidden" name="groups_json" value="">
         <div class="mt-5 grid gap-4 sm:grid-cols-2">
-            <div><label for="group-name" class="mb-1.5 block text-sm font-medium text-slate-700">Nama Kelompok</label><input id="group-name" name="group_name" type="text" maxlength="80" required value="<?= attendara_ui_escape($nameInput) ?>" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] px-3 text-sm"></div>
-            <div><label for="group-rule" class="mb-1.5 block text-sm font-medium text-slate-700">Kriteria pembagian</label><select id="group-rule" name="group_rule" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm"><option value="groups"<?= $groupRuleInput === 'groups' ? ' selected' : '' ?>>Jumlah kelompok</option><option value="members"<?= $groupRuleInput === 'members' ? ' selected' : '' ?>>Jumlah siswa per kelompok</option></select></div>
-            <div><label id="group-value-label" for="group-value" class="mb-1.5 block text-sm font-medium text-slate-700"><?= $groupRuleInput === 'groups' ? 'Jumlah kelompok' : 'Jumlah siswa per kelompok' ?></label><input id="group-value" name="group_value" type="number" min="1" max="20" value="<?= attendara_ui_escape($groupValueInput) ?>" required class="min-h-10 w-full rounded-lg border border-[#d8e2d8] px-3 text-sm focus:border-[#376c4d] focus:outline-none focus:ring-2 focus:ring-[#e6efe6]"></div>
-            <div><label for="minimum-male" class="mb-1.5 block text-sm font-medium text-slate-700">Minimum laki-laki per kelompok</label><input id="minimum-male" name="minimum_male" type="number" min="0" max="20" value="<?= attendara_ui_escape($minimumMaleInput) ?>" required class="min-h-10 w-full rounded-lg border border-[#d8e2d8] px-3 text-sm"></div>
-            <div><label for="minimum-female" class="mb-1.5 block text-sm font-medium text-slate-700">Minimum perempuan per kelompok</label><input id="minimum-female" name="minimum_female" type="number" min="0" max="20" value="<?= attendara_ui_escape($minimumFemaleInput) ?>" required class="min-h-10 w-full rounded-lg border border-[#d8e2d8] px-3 text-sm"></div>
+            <div><label for="group-name" class="mb-1.5 block text-sm font-medium text-slate-700">Nama Kelompok</label><input id="group-name" name="group_name" type="text" maxlength="80" required value="<?= attendara_ui_escape($nameInput) ?>" class="min-h-10 w-full rounded-lg border border-[#dfe6de] px-3 text-sm"></div>
+            <div><label for="group-rule" class="mb-1.5 block text-sm font-medium text-slate-700">Kriteria pembagian</label><select id="group-rule" name="group_rule" class="min-h-10 w-full rounded-lg border border-[#dfe6de] bg-white px-3 text-sm"><option value="groups"<?= $groupRuleInput === 'groups' ? ' selected' : '' ?>>Jumlah kelompok</option><option value="members"<?= $groupRuleInput === 'members' ? ' selected' : '' ?>>Jumlah siswa per kelompok</option></select></div>
+            <div><label id="group-value-label" for="group-value" class="mb-1.5 block text-sm font-medium text-slate-700"><?= $groupRuleInput === 'groups' ? 'Jumlah kelompok' : 'Jumlah siswa per kelompok' ?></label><input id="group-value" name="group_value" type="number" min="1" max="20" value="<?= attendara_ui_escape($groupValueInput) ?>" required class="min-h-10 w-full rounded-lg border border-[#dfe6de] px-3 text-sm focus:border-[#679173] focus:outline-none focus:ring-2 focus:ring-[#eaf1ea]"></div>
+            <div><label for="minimum-male" class="mb-1.5 block text-sm font-medium text-slate-700">Minimum laki-laki per kelompok</label><input id="minimum-male" name="minimum_male" type="number" min="0" max="20" value="<?= attendara_ui_escape($minimumMaleInput) ?>" required class="min-h-10 w-full rounded-lg border border-[#dfe6de] px-3 text-sm"></div>
+            <div><label for="minimum-female" class="mb-1.5 block text-sm font-medium text-slate-700">Minimum perempuan per kelompok</label><input id="minimum-female" name="minimum_female" type="number" min="0" max="20" value="<?= attendara_ui_escape($minimumFemaleInput) ?>" required class="min-h-10 w-full rounded-lg border border-[#dfe6de] px-3 text-sm"></div>
         </div>
-        <div class="mt-5 flex flex-wrap gap-2"><button id="randomize-groups" type="button" class="min-h-10 rounded-lg bg-[#1e5638] px-4 text-sm font-semibold text-white hover:bg-[#17452d]">Acak Anggota</button><button id="save-groups" type="submit" class="min-h-10 rounded-lg border border-[#d8e2d8] bg-white px-4 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Simpan Kelompok</button></div>
+        <div class="mt-5 flex flex-wrap gap-2"><button id="randomize-groups" type="button" class="min-h-10 rounded-lg bg-[#4e7a5d] px-4 text-sm font-semibold text-white hover:bg-[#41684f]">Acak Anggota</button><button id="save-groups" type="submit" class="min-h-10 rounded-lg border border-[#dfe6de] bg-white px-4 text-sm font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Simpan Kelompok</button></div>
         <p id="group-message" class="mt-3 text-sm text-slate-500" role="status">Hasil pengacakan hanya ditampilkan pada halaman ini.</p>
     </section>
 </form>
-<section class="space-y-4"><div><h2 class="text-lg font-semibold text-[#20392a]">Hasil Pembagian</h2></div><div id="group-results" class="grid gap-4 md:grid-cols-2"></div></section>
-<a href="kelompok.php?assignment_id=<?= (int) $assignment['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35]">Kembali ke Kelompok</a>
+<section class="space-y-4"><div><h2 class="text-lg font-semibold text-[#303832]">Hasil Pembagian</h2></div><div id="group-results" class="grid gap-4 md:grid-cols-2"></div></section>
+<a href="kelompok.php?assignment_id=<?= (int) $assignment['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Kembali ke Kelompok</a>
 <script>
 const students = <?= $studentJson ?>;
 const rule = document.getElementById('group-rule');
@@ -203,9 +203,9 @@ document.getElementById('randomize-groups').addEventListener('click', () => {
     results.replaceChildren();
     generatedGroups.forEach((group, index) => {
         const card = document.createElement('article');
-        card.className = 'rounded-2xl border border-[#e2e9e2] bg-white p-5';
+        card.className = 'rounded-2xl border border-[#dfe6de] bg-white p-5';
         const heading = document.createElement('h3');
-        heading.className = 'font-semibold text-[#20392a]';
+        heading.className = 'font-semibold text-[#303832]';
         heading.textContent = groupName.value.trim() + ' ' + (index + 1) + ' · ' + group.length + ' siswa';
         const list = document.createElement('ul');
         list.className = 'mt-3 space-y-2 text-sm text-slate-600';

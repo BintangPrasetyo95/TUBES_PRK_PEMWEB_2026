@@ -98,31 +98,31 @@ $csrfJson = json_encode(csrfToken(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP
 guru_page_start('Tap Kehadiran', 'kelas.php');
 ?>
 <nav aria-label="Menu sesi" class="flex flex-wrap gap-2">
-    <a href="tap-sesi.php?session_id=<?= (int) $sessionId ?>" aria-current="page" class="rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white">Tap Kehadiran</a>
-    <a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Data Siswa &amp; Poin</a>
-    <a href="kelompok.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Kelompok</a>
+    <a href="tap-sesi.php?session_id=<?= (int) $sessionId ?>" aria-current="page" class="rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Tap Kehadiran</a>
+    <a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Data Siswa &amp; Poin</a>
+    <a href="kelompok.php?session_id=<?= (int) $sessionId ?>" class="rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#526257]">Kelompok</a>
 </nav>
 <?php if ($pageError !== ''): ?><p class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert"><?= attendara_ui_escape($pageError) ?></p><?php elseif (($_GET['correction'] ?? '') === 'saved'): ?><p class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">Jumlah tap berhasil dikoreksi.</p><?php endif; ?>
-<section class="flex flex-col gap-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-    <div><h2 class="text-lg font-semibold text-[#20392a]">Tap Anonim · <?= attendara_ui_escape($session['class_name']) ?></h2><p class="mt-1 text-sm text-slate-600">Setiap tap menambah hitungan sesi. Cooldown 2 detik berlaku untuk seluruh sesi.</p></div>
-    <div class="rounded-xl bg-[#e9f0e8] px-4 py-3 text-center"><p class="text-xs font-medium text-[#526257]">Tap tercatat pada sesi ini</p><p class="mt-1 text-2xl font-semibold text-[#173e2b]"><span id="tap-count"><?= (int) $tapCount ?></span> / <span id="roster-count"><?= (int) $rosterCount ?></span></p></div>
+<section class="flex flex-col gap-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+    <div><h2 class="text-lg font-semibold text-[#303832]">Tap Anonim · <?= attendara_ui_escape($session['class_name']) ?></h2><p class="mt-1 text-sm text-slate-600">Setiap tap menambah hitungan sesi. Cooldown 2 detik berlaku untuk seluruh sesi.</p></div>
+    <div class="rounded-xl bg-[#e8f0e9] px-4 py-3 text-center"><p class="text-xs font-medium text-[#526257]">Tap tercatat pada sesi ini</p><p class="mt-1 text-2xl font-semibold text-[#173e2b]"><span id="tap-count"><?= (int) $tapCount ?></span> / <span id="roster-count"><?= (int) $rosterCount ?></span></p></div>
 </section>
-<section class="space-y-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <h2 class="text-lg font-semibold text-[#20392a]">Catat Tap Kehadiran</h2>
-    <button id="anonymous-tap" type="button"<?= $tapCount >= $rosterCount ? ' disabled' : '' ?> class="min-h-12 rounded-lg bg-[#1e5638] px-5 text-sm font-semibold text-white hover:bg-[#17452d] disabled:cursor-not-allowed disabled:bg-slate-400"><?= $tapCount >= $rosterCount ? 'Batas Tap Tercapai' : 'Tap Kehadiran' ?></button>
+<section class="space-y-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
+    <h2 class="text-lg font-semibold text-[#303832]">Catat Tap Kehadiran</h2>
+    <button id="anonymous-tap" type="button"<?= $tapCount >= $rosterCount ? ' disabled' : '' ?> class="min-h-12 rounded-lg bg-[#4e7a5d] px-5 text-sm font-semibold text-white hover:bg-[#41684f] disabled:cursor-not-allowed disabled:bg-slate-400"><?= $tapCount >= $rosterCount ? 'Batas Tap Tercapai' : 'Tap Kehadiran' ?></button>
     <p id="tap-feedback" class="text-sm text-slate-600" aria-live="polite"></p>
 </section>
-<section class="space-y-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <div><h2 class="text-lg font-semibold text-[#20392a]">Koreksi Jumlah Tap</h2><p class="mt-1 text-sm text-slate-600">Jumlah harus berada dalam rentang 0 sampai jumlah siswa pada snapshot sesi.</p></div>
+<section class="space-y-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
+    <div><h2 class="text-lg font-semibold text-[#303832]">Koreksi Jumlah Tap</h2><p class="mt-1 text-sm text-slate-600">Jumlah harus berada dalam rentang 0 sampai jumlah siswa pada snapshot sesi.</p></div>
     <form method="post" action="tap-sesi.php?session_id=<?= (int) $sessionId ?>" class="flex flex-wrap items-end gap-3">
         <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
         <input type="hidden" name="action" value="correct_count">
         <input type="hidden" name="session_id" value="<?= (int) $sessionId ?>">
-        <div><label for="tap-count-input" class="mb-1.5 block text-sm font-medium text-slate-700">Jumlah tap</label><input id="tap-count-input" name="tap_count" type="number" min="0" max="<?= (int) $rosterCount ?>" value="<?= (int) $requestedTapCount ?>" required class="min-h-10 w-32 rounded-lg border border-[#d8e2d8] px-3 text-sm"></div>
-        <button type="submit" class="min-h-10 rounded-lg border border-[#d8e2d8] bg-white px-4 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Simpan Koreksi</button>
+        <div><label for="tap-count-input" class="mb-1.5 block text-sm font-medium text-slate-700">Jumlah tap</label><input id="tap-count-input" name="tap_count" type="number" min="0" max="<?= (int) $rosterCount ?>" value="<?= (int) $requestedTapCount ?>" required class="min-h-10 w-32 rounded-lg border border-[#dfe6de] px-3 text-sm"></div>
+        <button type="submit" class="min-h-10 rounded-lg border border-[#dfe6de] bg-white px-4 text-sm font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Simpan Koreksi</button>
     </form>
 </section>
-<div class="flex flex-wrap gap-2"><a href="sesi-aktif.php?id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35]">Kembali ke Sesi</a><a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white">Lanjut ke Data Siswa</a></div>
+<div class="flex flex-wrap gap-2"><a href="sesi-aktif.php?id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Kembali ke Sesi</a><a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Lanjut ke Data Siswa</a></div>
 <script>
 const tapToken = <?= $csrfJson ?>;
 const tapEndpoint = 'tap-sesi.php?session_id=<?= (int) $sessionId ?>';

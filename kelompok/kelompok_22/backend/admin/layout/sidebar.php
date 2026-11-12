@@ -9,7 +9,7 @@ $aktifKategori  = strpos($halaman, '/admin/kategori/') !== false;
 ?>
 <aside class="admin-sidebar">
     <div class="admin-logo">
-        <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/index.php" style="text-decoration: none; color: inherit;">
+        <a href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/frontend/index.html" style="text-decoration: none; color: inherit;">
             KlikObat
         </a>
     </div>

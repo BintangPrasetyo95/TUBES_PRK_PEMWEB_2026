@@ -84,11 +84,18 @@ $navigation = $isAdmin
             </a>
 
             <?php if ($role === 'kepala_keluarga'): ?>
-                <span class="menu-heading">KELOLA KELUARGA</span>
+                <span class="menu-heading">Kelola keluarga</span>
 
                 <a href="anggota_keluarga.php"
                    class="menu-item <?= ($pageTitle ?? '') === 'Anggota Keluarga' ? 'active' : '' ?>">
-                    <span>♧</span> Anggota Keluarga
+                    <span class="menu-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </span>
+                    <span>Anggota Keluarga</span>
                 </a>
             <?php endif; ?>
 

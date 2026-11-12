@@ -23,26 +23,15 @@ $kuis = null;
 if ($modeEdit) {
     $kuis = ambilKuisById($kuisId, $pengajarId);
 
-    // Kalau kuis tidak ditemukan atau bukan milik pengajar ini, tampilkan 404 / tolak akses
+    // Kalau kuis tidak ditemukan atau bukan milik pengajar ini, arahkan ke halaman 404
     if (!$kuis) {
-        http_response_code(404);
-        if (file_exists(__DIR__ . '/../404.php')) {
-            require __DIR__ . '/../404.php';
-            exit;
-        }
-        die('Kuis tidak ditemukan atau Anda tidak memiliki akses.');
+        redirect(BASE_URL . '/404.php');
     }
 
     // Kuis yang sedang menunggu persetujuan atau sudah terbit tidak boleh diedit
     if ($kuis['status'] == 'menunggu' || $kuis['status'] == 'terbit') {
-        if (function_exists('flash')) {
-            flash('error', 'Kuis yang sedang menunggu persetujuan atau sudah terbit tidak dapat diedit.');
-        }
-        if (function_exists('redirect')) {
-            redirect('pengajar/kuis.php');
-        }
-        header('Location: kuis.php');
-        exit;
+        flash('galat', 'Kuis yang sedang menunggu persetujuan atau sudah terbit tidak dapat diedit.');
+        redirect('kuis.php');
     }
 }
 
@@ -105,20 +94,14 @@ if (isPost()) {
         if ($modeEdit) {
             $hasil = editKuis($kuisId, $pengajarId, $nilaiForm);
             if ($hasil['berhasil']) {
-                if (function_exists('flash')) {
-                    flash('sukses', 'Perubahan kuis berhasil disimpan.');
-                }
+                flash('sukses', 'Perubahan kuis berhasil disimpan.');
 
                 // Cek apakah pengajar menekan tombol lanjut kelola soal
                 $tujuan = isset($_POST['lanjut_soal'])
                     ? 'kelola-soal.php?kuis_id=' . $kuisId
                     : 'kuis.php';
 
-                if (function_exists('redirect')) {
-                    redirect('pengajar/' . $tujuan);
-                }
-                header('Location: ' . $tujuan);
-                exit;
+                redirect($tujuan);
             } else {
                 $pesanErrorUmum = $hasil['pesan'] ?? 'Gagal memperbarui kuis.';
             }
@@ -126,17 +109,11 @@ if (isPost()) {
             $hasil = tambahKuis($pengajarId, $nilaiForm);
             if ($hasil['berhasil']) {
                 $idBaru = (int) $hasil['kuis_id'];
-                if (function_exists('flash')) {
-                    flash('sukses', 'Draft kuis berhasil dibuat. Silakan tambahkan soal.');
-                }
+                flash('sukses', 'Draft kuis berhasil dibuat. Silakan tambahkan soal.');
 
                 // Setelah buat kuis baru, mengarah ke halaman kelola soal
                 $tujuan = 'kelola-soal.php?kuis_id=' . $idBaru;
-                if (function_exists('redirect')) {
-                    redirect('pengajar/' . $tujuan);
-                }
-                header('Location: ' . $tujuan);
-                exit;
+                redirect($tujuan);
             } else {
                 $pesanErrorUmum = $hasil['pesan'] ?? 'Gagal membuat kuis baru.';
             }

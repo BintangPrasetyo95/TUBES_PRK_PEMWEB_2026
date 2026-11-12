@@ -46,7 +46,7 @@ const judul = (nama) => {
     return m ? `${escapeHTML(m[1])}<span class="kekuatan">${escapeHTML(m[2])}</span>` : escapeHTML(nama);
 };
 const stokHTML = (s, n) => `<strong>${s.t}</strong><span>${s.k === 'low' ? 'sisa ' : ''}<b>${n}</b> unit</span>`;
-const status = (s) => (s <= 0 ? { k: 'out', t: 'Habis' } : s <= 5 ? { k: 'low', t: 'Menipis' } : { k: 'ok', t: 'Tersedia' });
+const status = (s) => (s <= 0 ? { k: 'out', t: 'Habis' } : s <= 10 ? { k: 'low', t: 'Menipis' } : { k: 'ok', t: 'Tersedia' });
 
 const TEMA = [
     [/nyeri|analges|demam|antipiret/i, 'bolt', '#2563EB'],
@@ -103,6 +103,19 @@ const GAMBAR_OBAT = {
     5: '../assets/images/obat/obh-combi.png',
     6: '../assets/images/obat/siladex-mucolytic-&-expectorant.png',
     7: '../assets/images/obat/tremenza-sirup.png',
+    8: '../assets/images/obat/degrol-hisap-dequalinium.png',
+    9: '../assets/images/obat/promag-tablet-kunyah.png',
+    10: '../assets/images/obat/mylanta-cair.png',
+    11: '../assets/images/obat/diatabs.png',
+    12: '../assets/images/obat/oralit.png',
+    13: '../assets/images/obat/vitamin-c.png',
+    14: '../assets/images/obat/imboost-force.png',
+    15: '../assets/images/obat/sangobion.png',
+    16: '../assets/images/obat/farmaku-neurobion.png',
+    17: '../assets/images/obat/betadine-antiseptic-solution.png',
+    18: '../assets/images/obat/hansaplast-kain-elastis.png',
+    19: '../assets/images/obat/rivanol-kompres-luka.png',
+    20: '../assets/images/obat/bioplacenton-gel.png',
 };
 
 function visualObat(o, warna, besar = false) {

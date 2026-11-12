@@ -25,17 +25,17 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb mb-2 small">
-        <li class="breadcrumb-item"><a href="admin.php" class="text-decoration-none">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="admin.php" class="text-decoration-underline fw-medium" style="color: #0f766e;">Dashboard</a></li>
         <li class="breadcrumb-item active" aria-current="page">Daftar Antrian</li>
     </ol>
 </nav>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="fw-bold text-primary mb-1">Daftar Antrian Pasien</h2>
+        <h2 class="fw-bold text-primary mb-2">Daftar Antrian Pasien</h2>
         <p class="text-muted small mb-0">Pantau daftar antrian pasien yang masuk hari ini, panggil pasien, atau selesaikan antrian.</p>
     </div>
-    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill small">
+    <span class="badge px-3 py-2 rounded-pill small fw-semibold" style="background-color: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4;">
         Hari Ini: <?= date('d M Y'); ?>
     </span>
 </div>
@@ -54,6 +54,17 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="card shadow-sm border-0">
     <div class="card-body p-4">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <input type="text" id="cari-admin" class="form-control form-control-sm" style="max-width: 280px;" placeholder="Cari nama pasien atau dokter...">
+            <select id="filter-status-admin" class="form-select form-select-sm" style="max-width: 180px;">
+                <option value="">Semua Status</option>
+                <option value="menunggu">Menunggu</option>
+                <option value="dipanggil">Dipanggil</option>
+                <option value="selesai">Selesai</option>
+            </select>
+        </div>
+
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -70,8 +81,8 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php foreach ($antrian_list as $row): ?>
                             <tr>
                                 <td>
-                                    <!-- Lingkaran Lembut Bergaris Tipis Biru -->
-                                    <span class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary border border-primary-subtle fw-bold rounded-circle" style="width: 36px; height: 36px; font-size: 0.9rem;">
+                                    <!-- Lingkaran Bergaris Tipis Biru -->
+                                    <span class="d-inline-flex align-items-center justify-content-center fw-bold rounded-circle" style="width: 36px; height: 36px; font-size: 0.9rem; background-color: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4;">
                                         <?= htmlspecialchars($row['nomor_antrian']) ?>
                                     </span>
                                 </td>
@@ -126,6 +137,7 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 </div>
 
+<script src="admin.js"></script>
 <?php 
 require_once '../includes/footer.php'; 
 ?>

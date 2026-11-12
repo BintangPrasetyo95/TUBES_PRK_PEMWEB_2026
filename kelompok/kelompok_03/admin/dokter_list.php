@@ -1,3 +1,4 @@
+
 <?php
 require_once '../includes/header.php';
 require_once '../config/koneksi.php';
@@ -24,7 +25,7 @@ try {
 <!-- Breadcrumb Navigasi -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb mb-2 small">
-        <li class="breadcrumb-item"><a href="admin.php" class="text-decoration-none">Dashboard</a></li>
+         <li class="breadcrumb-item"><a href="admin.php" class="text-decoration-underline fw-medium" style="color: #0f766e;">Dashboard</a></li>
         <li class="breadcrumb-item active" aria-current="page">Kelola Dokter</li>
     </ol>
 </nav>
@@ -60,8 +61,23 @@ try {
         <?php if (empty($dokterList)): ?>
             <p class="text-muted p-4 text-center mb-0">Belum ada data dokter.</p>
         <?php else: ?>
+        <!-- Kotak Pencarian & Filter Dokter -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <input type="text" id="cari-admin" class="form-control form-control-sm" style="max-width: 280px;" placeholder="Cari nama dokter atau spesialis...">
+            <select id="filter-status-admin" class="form-select form-select-sm" style="max-width: 180px;">
+                 <option value="">Semua Hari Praktik</option>
+                 <option value="senin">Senin</option>
+                 <option value="selasa">Selasa</option>
+                 <option value="rabu">Rabu</option>
+                 <option value="kamis">Kamis</option>
+                 <option value="jumat">Jumat</option>
+                 <option value="sabtu">Sabtu</option>
+                 <option value="minggu">Minggu</option>
+            </select>
+            </div>
+            
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0 w-100">
                     <thead class="table-dark">
                         <tr>
                             <th class="ps-4">Nama</th>
@@ -104,6 +120,7 @@ try {
     </div>
 </div>
 
+<script src="admin.js"></script>
 <?php 
 require_once '../includes/footer.php'; 
 ?>

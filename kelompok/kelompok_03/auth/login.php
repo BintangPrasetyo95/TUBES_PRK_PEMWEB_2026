@@ -1,4 +1,3 @@
-
 <?php
 
 require_once __DIR__ . '/../includes/init.php';
@@ -60,43 +59,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="halaman-auth bg-light">
     <header class="topbar">
-        <a href="../index.php" class="brand">Klinik FK Unila</a>
+        <a href="../index.php" class="brand fw-bold">Klinik FK Unila</a>
         <nav aria-label="Menu utama">
             <a href="../index.php">Jadwal</a>
             <a href="register.php" class="tombol-kecil">Daftar</a>
         </nav>
     </header>
-    <div class="container">
-        <div class="row justify-content-center align-items-center" style="min-height: calc(100vh - 52px);">
-            <div class="col-md-5">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-4 p-md-5">
-                        <p class="text-muted small mb-1">Sistem Antrian Klinik</p>
-                        <h3 class="text-center mb-4">Masuk</h3>
-                        
-                        <?php if ($error): ?>
-                            <div class="alert alert-danger" role="alert">
-                                <?= htmlspecialchars($error) ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <form method="POST" action="">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" 
-                                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Login</button>
-                        </form>
-
-                        <div class="text-center mt-3 mb-0">
-                            <p class="mb-0">Belum punya akun? <a href="register.php">Daftar di sini</a></p>
+<div class="container py-5">
+        <div class="row justify-content-center align-items-center" style="min-height: calc(100vh - 140px);">
+            <div class="col-lg-9">
+                <div class="row g-5 align-items-start">
+                    
+                    <!-- Sisi Kiri: Informasi & Branding -->
+                    <div class="col-md-6 pt-1">
+                        <span class="badge rounded-pill px-3 py-2 mb-3" style="background-color: #ccfbf1; color: var(--utama-gelap); font-weight: 600;">
+                            Sistem Antrian Klinik
+                        </span>
+                        <h1 class="fw-bold mb-2" style="font-family: 'Bricolage Grotesque', sans-serif; color: var(--text-main); line-height: 1.2;">
+                            Layanan Antrian Online Klinik FK Unila
+                        </h1>
+                        <p class="text-muted mb-2">
+                            Masuk untuk mengambil nomor antrian poli, memantau jadwal dokter praktik, dan melihat estimasi giliran pemeriksaan Anda secara real-time.
+                        </p>
+                        <div class="d-flex flex-column gap-1 small text-muted">
+                            <div>✓ Cek jadwal & kuota dokter hari ini</div>
+                            <div>✓ Ambil nomor antrian tanpa perlu antre lama di lokasi</div>
                         </div>
                     </div>
+
+                    <!-- Sisi Kanan: Card Form Login -->
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm mb-0">
+                            <div class="card-body p-4 p-md-5">
+                                <h3 class="fw-bold mb-1">Masuk</h3>
+                                <p class="text-muted small mb-4">Gunakan akun yang sudah terdaftar</p>
+
+                                <?php if ($error): ?>
+                                    <div class="alert alert-danger" role="alert">
+                                        <?= htmlspecialchars($error) ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <form method="POST" action="">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label fw-medium">Email</label>
+                                        <input type="email" class="form-control py-2" id="email" name="email" 
+                                               placeholder="nama@email.com"
+                                               value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="password" class="form-label fw-medium">Password</label>
+                                        <input type="password" class="form-control py-2" id="password" name="password" 
+                                               placeholder="••••••••" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+                                </form>
+
+                                <div class="text-center mt-4 mb-0">
+                                    <p class="mb-0 text-muted small">Belum punya akun? <a href="register.php" class="text-decoration-none fw-semibold" style="color: var(--primary);">Daftar di sini</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

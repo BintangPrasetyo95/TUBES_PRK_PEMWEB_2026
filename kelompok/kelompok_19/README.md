@@ -26,7 +26,7 @@ kebunku/
 │   │   └── Database.php          # Konfigurasi koneksi PDO & helper response JSON
 │   ├── Controllers/              # Handler request & logika bisnis API
 │   ├── Models/                   # Layer abstraksi data & query SQL (PDO)
-│   └── Views/                    # Template antarmuka antarmuka
+│   └── Views/                    # Template antarmuka
 │       └── layouts/              # Komponen bersama (header, sidebar, footer)
 ├── database/
 │   └── schema.sql                # DDL tabel & data inisialisasi awal
@@ -42,9 +42,9 @@ kebunku/
 
 ## Alur Kerja Sistem
 
-1. **Routing Halaman**: Semua permintaan antarmuka diproses melalui `public/index.php` menggunakan parameter query `?page=<nama_halaman>` yang memuat view terkait beserta layout dasarnya.
+1. **Routing Halaman**: Semua permintaan antarmuka diproses melalui `public/index.php` berdasarkan path URL (`/`, `/lahan`, `/siklus`, `/inventaris`, `/pekerja`, `/panen`) yang memuat view terkait beserta layout dasarnya.
 2. **Komunikasi Data**: Setiap halaman memuat script JavaScript masing-masing di direktori `public/assets/js/` yang berkomunikasi ke `public/api.php` secara asinkron (AJAX Fetch).
-3. **API Gateway**: `public/api.php` menerima permintaan berbasis parameter `?resource=<nama_modul>&id=<id>` dan metode HTTP (`GET`, `POST`, `PUT`, `DELETE`), kemudian mendelegasikannya ke controller yang sesuai.
+3. **API Gateway**: `public/api.php` menerima permintaan REST dengan pola `/api/<modul>` dan `/api/<modul>/<id>` untuk metode HTTP (`GET`, `POST`, `PUT`, `DELETE`), kemudian mendelegasikannya ke controller yang sesuai. Sub-route khusus: `/api/inventaris/transaksi` dan `/api/pekerja/presensi`.
 4. **Data Access**: Controller memanggil model terkait untuk mengeksekusi prepared statement PDO, kemudian mengembalikan respons terstandarisasi dalam format JSON.
 
 ---
@@ -68,6 +68,15 @@ kebunku/
    mysql -u root -p -e "CREATE DATABASE kebunku;"
    mysql -u root -p kebunku < database/schema.sql
    ```
+   Di Windows PowerShell, operator `<` tidak dikenali. Gunakan salah satu alternatif berikut:
+   ```powershell
+   Get-Content database/schema.sql | mysql -u root -p kebunku
+   ```
+   ```cmd
+   mysql -u root -p kebunku < database/schema.sql
+   ```
+
+   > `database/schema.sql` sudah memuat `CREATE DATABASE IF NOT EXISTS kebunku;` dan `USE kebunku;`, serta data contoh. Menjalankan ulang file ini akan gagal pada `CREATE TABLE` karena tabel sudah ada. Hapus dulu database `kebunku` bila ingin impor dari awal.
 
 3. **Konfigurasi Lingkungan**  
    Sesuaikan parameter koneksi database pada `app/Config/Database.php` bila diperlukan:
@@ -79,15 +88,44 @@ kebunku/
    ```
 
 4. **Menjalankan Aplikasi**  
-   - **Melalui Web Server (Laragon / XAMPP):**  
-     Akses melalui browser di:
-     ```
-     http://localhost/kelompok_19/public/
-     ```
-   - **Melalui PHP Built-in Server:**  
-     Buka terminal pada root proyek:
-     ```bash
-     cd public
-     php -S localhost:8000
-     ```
-     Lalu buka `http://localhost:8000` pada browser.
+   Buka terminal pada root proyek:
+   ```bash
+   cd public
+   php -S localhost:8000
+   ```
+   Lalu buka `http://localhost:8000` pada browser.
+
+---
+
+## Penggunaan
+
+Aplikasi tidak memakai halaman login. Semua menu langsung dapat diakses dari sidebar kiri: **Lahan**, **Siklus**, **Inventaris**, **Pekerja**, dan **Panen**. Tombol **Mode gelap** di bagian bawah sidebar mengganti tema terang/gelap.
+
+### Urutan pengisian data
+
+Isi data mengikuti relasi antar tabel agar pilihan pada form berikutnya tersedia:
+
+1. **Lahan** — buat petak lahan lebih dulu.
+2. **Siklus** — pilih lahan yang sudah dibuat, isi tanaman dan tanggal tanam.
+3. **Panen** — pilih siklus yang sudah dibuat, isi tanggal, berat, dan kualitas.
+
+Untuk modul lain:
+
+- **Inventaris** — buat item barang, lalu catat transaksi masuk/keluar per siklus.
+- **Pekerja** — daftarkan pekerja, lalu catat presensi beserta upah harian per siklus.
+
+### Cara pakai tiap halaman
+
+- **Dashboard** — menampilkan ringkasan stok menipis, siklus terdekat, upah tercatat, dan cuaca. Tautan aksi cepat membuka halaman modul terkait. Widget cuaca mengambil data dari `api.open-meteo.com`, jadi butuh koneksi internet; tanpa internet widget menampilkan "Data cuaca tidak tersedia."
+- **Lahan** — tombol **Tambah petak** membuka dialog form. Isi nama, lokasi, luas, dan jenis tanah, lalu **Simpan petak**. Tombol **Edit**/**Hapus** ada di kolom aksi setiap baris tabel.
+- **Siklus** — tombol **Tambah siklus** membuka form siklus. Gunakan panel **Filter siklus** lalu **Terapkan** untuk menyaring data; **Reset** mengembalikan tampilan penuh.
+- **Inventaris** — **Tambah item** untuk data barang. Gunakan **Catat transaksi** pada baris item untuk mencatat barang masuk/keluar; stok item ikut menyesuaikan.
+- **Pekerja** — **Tambah pekerja** untuk data pekerja, **Catat presensi** untuk kehadiran dan upah harian. Panel **Filter presensi** menyaring riwayat presensi.
+- **Panen** — **Catat panen** membuka form panen (siklus, tanggal, berat kg, kualitas A/B/C/Reject, catatan). Isi rentang **Filter tanggal** lalu **Terapkan** untuk menghitung total pada periode tersebut; **Reset** menampilkan semua catatan. **Cetak PDF** membuka dialog cetak browser (pilih "Save as PDF"); elemen tombol, filter, dialog, dan sidebar otomatis disembunyikan saat dicetak.
+
+### Catatan
+
+- Semua tanggal memakai format `YYYY-MM-DD` pada input dan ditampilkan dalam format Indonesia.
+- Berat panen minimal 0,01 kg. Kualitas hanya boleh `A`, `B`, `C`, atau `Reject`.
+- Data contoh dari `schema.sql` bisa diubah atau dihapus langsung dari antarmuka; tidak ada data yang dilindungi.
+- Pesan berhasil/gagal tampil sebagai banner di atas halaman. Pesan berhasil hilang otomatis setelah ±4,5 detik; pesan gagal tetap tampil sampai ditutup. Kesalahan validasi form juga tampil di dalam dialog.

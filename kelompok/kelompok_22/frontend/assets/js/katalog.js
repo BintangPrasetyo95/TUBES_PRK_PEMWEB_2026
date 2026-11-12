@@ -95,6 +95,33 @@ async function muatData() {
 }
 
 /* ------------------------------- Ilustrasi SVG ---------------------------- */
+const GAMBAR_OBAT = {
+    1: '../assets/images/obat/paracetamol.png',
+    2: '../assets/images/obat/ibuprofen.png',
+    3: '../assets/images/obat/asam-mefenamat.png',
+    4: '../assets/images/obat/sanmol-sirup.png',
+    5: '../assets/images/obat/obh-combi.png',
+    6: '../assets/images/obat/siladex-mucolytic-&-expectorant.png',
+    7: '../assets/images/obat/tremenza-sirup.png',
+};
+
+function visualObat(o, warna, besar = false) {
+    const fallback = botol(warna, o.nama_obat, o.nama_kategori, besar);
+    const gambar = GAMBAR_OBAT[o.id_obat];
+    return gambar
+        ? `<img class="gambar-obat" src="${gambar}" alt="Kemasan ${escapeHTML(o.nama_obat)}"><span class="gambar-fallback" hidden>${fallback}</span>`
+        : fallback;
+}
+
+function pasangFallbackGambar(root) {
+    root.querySelectorAll('.gambar-obat').forEach((gambar) => {
+        gambar.addEventListener('error', () => {
+            gambar.hidden = true;
+            gambar.nextElementSibling.hidden = false;
+        }, { once: true });
+    });
+}
+
 function botol(warna, nama = '', kat = '', besar = false) {
     const teks = besar
         ? `<text x="60" y="114" text-anchor="middle" font-size="9" font-weight="800" fill="#0F172A">${escapeHTML(nama.split(' ')[0].slice(0, 11))}</text>` +
@@ -152,7 +179,7 @@ function kartu(o) {
     return `<article class="medicine-card${s.k === 'out' ? ' habis' : ''}" data-id="${escapeHTML(o.id_obat)}">
     <div class="thumb">
       <span class="tag">${escapeHTML(o.nama_kategori)}</span>
-      ${botol(t.warna)}
+      ${visualObat(o, t.warna)}
     </div>
     <div class="card-body">
       <h3 class="card-name">${judul(o.nama_obat)}</h3>
@@ -170,6 +197,7 @@ function renderGrid() {
     const data = daftarTerfilter();
     $('#info-jumlah-obat').innerHTML = `Menampilkan <b>${data.length}</b> obat`;
     $('#katalog-grid').innerHTML = data.length ? data.map((o) => kartu(o)).join('') : kosong();
+    pasangFallbackGambar($('#katalog-grid'));
 }
 function transisi() {
     const g = $('#katalog-grid');
@@ -183,7 +211,8 @@ const modalTerbuka = () => !$('#modal-detail').hidden;
 
 window.bukaModalDetail = function (o) {
     const s = status(o.stok), t = tema(o.nama_kategori);
-    $('#modal-visual').innerHTML = botol(t.warna, o.nama_obat, o.nama_kategori, true);
+    $('#modal-visual').innerHTML = visualObat(o, t.warna, true);
+    pasangFallbackGambar($('#modal-visual'));
     $('#modal-tags').innerHTML = `<span class="tag">${escapeHTML(o.nama_kategori)}</span>`;
     $('#modal-nama').innerHTML = judul(o.nama_obat);
     const ms = $('#modal-stok');

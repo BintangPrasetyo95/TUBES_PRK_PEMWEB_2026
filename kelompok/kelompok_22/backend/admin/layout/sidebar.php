@@ -7,10 +7,16 @@
     <nav>
         <ul class="admin-menu">
             <li>
-                <a href="../kategori/index.php" class="<?= ($adminSection ?? '') === 'kategori' ? 'active' : '' ?>">Data Kategori</a>
+                <a href="index.php" class="active">Dashboard</a>
             </li>
             <li>
-                <a href="../obat/index.php" class="<?= ($adminSection ?? '') === 'obat' ? 'active' : '' ?>">Data Obat</a>
+                <a href="obat.php">Data Obat</a>
+            </li>
+            <li>
+                <a href="kategori.php">Data Kategori</a>
+            </li>
+            <li>
+                <a href="pengaturan.php">Pengaturan</a>
             </li>
             <li>
                 <a href="../logout.php">Keluar</a>

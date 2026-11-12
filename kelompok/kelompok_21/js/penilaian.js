@@ -1,4 +1,3 @@
-// Manajemen Penilaian Terpadu
 (function () {
     const $ = id => document.getElementById(id);
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
@@ -72,7 +71,6 @@
         return value === null || value === undefined ? '—' : Number(value).toString();
     }
 
-    // Format datetime SQL ("YYYY-MM-DD HH:MM:SS") ke tampilan lokal
     function fmtTenggat(value, jenis) {
         if (jenis !== 'Tugas' || !value) return '—';
         const dt = new Date(String(value).replace(' ', 'T'));
@@ -83,13 +81,11 @@
         });
     }
 
-    // Konversi datetime SQL ("YYYY-MM-DD HH:MM:SS") ke nilai input datetime-local ("YYYY-MM-DDTHH:MM")
     function toDatetimeLocal(value) {
         if (!value) return '';
         return String(value).replace(' ', 'T').slice(0, 16);
     }
 
-    // Tampilkan/sembunyikan input tenggat waktu hanya saat jenis_komponen === 'Tugas'
     function toggleTenggat() {
         const isTugas = $('pn-jenis').value === 'Tugas';
         const wrap = $('pn-tenggat-wrap');
@@ -99,17 +95,14 @@
         if (!isTugas) input.value = '';
     }
 
-    /* ---------- Konteks (Kelas, Mapel, Periode) ---------- */
     async function loadKonteks() {
         const result = await req(URL_API + '?aksi=konteks');
         const { kelas = [], mapel = [], periode = [], pilihan = null } = result.data || {};
         const collator = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
 
-        // Urutkan Kelas (X -> XI -> XII lalu nama kelas secara natural)
         const bobotTingkat = t => ({ X: 1, '10': 1, XI: 2, '11': 2, XII: 3, '12': 3 }[String(t).toUpperCase()] || 9);
         kelas.sort((a, b) => bobotTingkat(a.tingkat) - bobotTingkat(b.tingkat) || collator.compare(a.nama_kelas, b.nama_kelas));
 
-        // Urutkan Mata Pelajaran (A - Z)
         mapel.sort((a, b) => collator.compare(a.nama_mapel, b.nama_mapel));
 
         const bobotSem = s => (String(s).toLowerCase() === 'genap' ? 1 : 2);
@@ -122,7 +115,6 @@
         const root = $('pn-root');
         const lokal = bacaSesiLokal();
 
-        // Prioritas pemulihan pilihan: nilai dropdown saat ini -> sessionStorage -> $_SESSION PHP
         const prevKelas = selKelas.value || lokal?.id_kelas || (pilihan?.id_kelas ? String(pilihan.id_kelas) : '') || root?.dataset.kelas || '';
         const prevMapel = selMapel.value || lokal?.id_mapel || (pilihan?.id_mapel ? String(pilihan.id_mapel) : '') || root?.dataset.mapel || '';
         const prevPeriode = selPeriode.value || lokal?.id_periode || (pilihan?.id_periode ? String(pilihan.id_periode) : '') || root?.dataset.periode || '';
@@ -141,7 +133,6 @@
             selPeriode.add(new Option(p.tahun_ajaran + ' · ' + p.semester + (aktif ? ' (aktif)' : ''), p.id_periode));
         });
 
-        // Set kembali hanya jika opsi masih ada di dalam daftar
         if ([...selKelas.options].some(o => o.value === String(prevKelas))) selKelas.value = String(prevKelas);
         if ([...selMapel.options].some(o => o.value === String(prevMapel))) selMapel.value = String(prevMapel);
 
@@ -187,7 +178,6 @@
         renderRekap(r.data);
     }
 
-    /* ---------- Daftar penilaian ---------- */
     function renderDaftar() {
         const body = $('pn-body');
         body.replaceChildren();
@@ -228,7 +218,6 @@
         });
     }
 
-    /* ---------- Rekap per komponen ---------- */
     function renderRekap(rows) {
         const body = $('pn-rekap-body');
         body.replaceChildren();
@@ -240,7 +229,6 @@
         });
     }
 
-    /* ---------- Form tambah / edit penilaian ---------- */
     function bukaForm(item = null) {
         editingId = item ? item.id_penilaian : null;
         $('pn-dialog-title').textContent = item ? 'Edit penilaian' : 'Tambah penilaian';
@@ -278,7 +266,6 @@
         finally { button.disabled = false; }
     }
 
-    /* ---------- Input nilai satu kelas ---------- */
     async function bukaNilai(id) {
         try {
             const res = await req(URL_API + '?aksi=nilai&id_penilaian=' + id);
@@ -337,7 +324,6 @@
         finally { button.disabled = false; }
     }
 
-    /* ---------- Inisialisasi ---------- */
     async function init() {
         try {
             await loadKonteks();
@@ -352,7 +338,6 @@
             $('pn-nilai-form').onsubmit = submitNilai;
             $('pn-nilai-tutup').onclick = tutupNilai;
 
-            // Jika sesi konteks sebelumnya sudah lengkap, langsung muat daftar penilaiannya
             if ($('pn-kelas').value && $('pn-mapel').value && $('pn-periode').value) {
                 await pilihKonteks();
             }

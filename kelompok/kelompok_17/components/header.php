@@ -12,68 +12,81 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
-
-        /* Navbar & Utility Neo-Brutalism Style */
-        .nav-kb {
-            font-family: 'Space Grotesk', system-ui, sans-serif;
-            background-color: #141414;
-            border-bottom: 3px solid #141414;
+        /* Font Sans-Serif Default Sistem (Tailwind UI Standard) */
+        body, .nav-kb {
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
+
+        .nav-kb {
+            background-color: #141414;
+            border-bottom: 1px solid #141414;
+        }
+        
         .nav-btn {
-            font-family: 'Space Mono', monospace;
             font-weight: 700;
             text-transform: uppercase;
             font-size: 0.75rem;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.03em;
             padding: 0.5rem 1rem;
-            border: 2px solid #141414;
-            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
+        
         .nav-btn-or {
             background-color: #FF5A1F;
             color: #ffffff !important;
-            box-shadow: 3px 3px 0 #F6F2E9;
+            border-color: #FF5A1F;
         }
         .nav-btn-or:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0 #FFE24A;
+            background-color: #e04a13;
+            border-color: #e04a13;
         }
+        
         .nav-btn-dark {
             background-color: #FFFDF8;
             color: #141414 !important;
-            box-shadow: 3px 3px 0 #FF5A1F;
+            border-color: #FFFDF8;
         }
         .nav-btn-dark:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0 #FFFDF8;
+            background-color: #FFD9C7;
         }
+
+        .nav-btn-logout {
+            background-color: #ef4444;
+            color: #ffffff !important;
+        }
+        .nav-btn-logout:hover {
+            background-color: #dc2626;
+        }
+
         .nav-link {
-            font-family: 'Space Mono', monospace;
             font-size: 0.8rem;
+            font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.04em;
             color: #F6F2E9;
             transition: color 0.15s ease;
         }
         .nav-link:hover {
-            color: #FFE24A;
+            color: #FF5A1F;
         }
     </style>
 </head>
 <body class="bg-[#F6F2E9] text-[#141414] min-h-screen flex flex-col justify-between font-sans">
 
-    <!-- Navigation Bar Neo-Brutalisme -->
-    <nav class="nav-kb sticky top-0 z-50 text-[#F6F2E9] shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Navigation Bar Clean Modern Style -->
+    <nav class="nav-kb sticky top-0 z-50 text-[#F6F2E9]">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 
                 <!-- Logo KabarSi -->
                 <div class="flex items-center space-x-3">
                     <a href="index.php" class="font-bold text-xl tracking-wide flex items-center space-x-2 group">
-                        <span class="bg-[#FF5A1F] text-[#FFFDF8] border-2 border-[#FFFDF8] px-2.5 py-0.5 font-extrabold text-sm shadow-[2px_2px_0px_#FFE24A] group-hover:translate-x-0.5 transition-transform">
+                        <span class="bg-[#FF5A1F] text-[#FFFDF8] px-2.5 py-0.5 font-extrabold text-sm rounded transition-opacity group-hover:opacity-90">
                             KS
                         </span>
-                        <span class="font-extrabold text-lg text-[#F6F2E9] group-hover:text-[#FFE24A] transition-colors">
+                        <span class="font-extrabold text-lg text-[#F6F2E9] tracking-tight">
                             KabarSi <span class="text-[#FF5A1F]">FISIP</span>
                         </span>
                     </a>
@@ -85,14 +98,14 @@ if (session_status() === PHP_SESSION_NONE) {
                     <a href="index.php#berita" class="nav-link hidden sm:inline-block">Berita</a>
                     <a href="index.php#aspirasi" class="nav-link hidden sm:inline-block">Aspirasi</a>
                     
-                    <?php if (isset($_SESSION['id_user'])): ?>
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                    <?php if (isset($_SESSION['id_user']) || isset($_SESSION['user_id'])): ?>
+                        <?php if (isset($_SESSION['role']) && strtolower($_SESSION['role']) === 'admin'): ?>
                             <a href="admin/index.php" class="nav-btn nav-btn-or">Panel Admin</a>
                         <?php else: ?>
                             <a href="user/dashboard.php" class="nav-btn nav-btn-or">Dashboard Saya</a>
                         <?php endif; ?>
                         
-                        <a href="auth/logout.php" class="nav-btn bg-[#FF9A94] text-[#141414] hover:bg-red-500 hover:text-white">Logout</a>
+                        <a href="auth/logout.php" class="nav-btn nav-btn-logout">Logout</a>
                     <?php else: ?>
                         <a href="auth/login.php" class="nav-link">Login</a>
                         <a href="auth/register.php" class="nav-btn nav-btn-or">Daftar</a>

@@ -18,41 +18,82 @@ $navigation = $isAdmin
 ?>
 
 <aside class="sidebar" id="sidebar">
-    <a class="brand" href="<?= $isAdmin ? 'admin_dashboard.php' : 'dashboard.php' ?>" aria-label="SaveSmart, halaman utama">
-        <span class="brand-logo" aria-hidden="true">S</span>
-        <span class="brand-info">
-            <strong>SaveSmart</strong>
-            <small><?= $isAdmin ? 'Ruang pengelola' : 'Catatan keluarga' ?></small>
-        </span>
-    </a>
+    <?php $role = $_SESSION['user']['role'] ?? ''; ?>
 
-    <nav class="sidebar-menu" aria-label="Menu utama">
-        <p class="menu-heading"><?= $isAdmin ? 'Pengelolaan' : 'Keuangan keluarga' ?></p>
-        <?php foreach ($navigation as $item): ?>
-            <?php $isActive = $activePage === $item['title']; ?>
-            <a href="<?= htmlspecialchars($item['href'], ENT_QUOTES, 'UTF-8') ?>"
-               class="menu-item<?= $isActive ? ' active' : '' ?>"
-               <?= $isActive ? 'aria-current="page"' : '' ?>>
-                <span class="menu-icon" aria-hidden="true">
-                    <?php if ($item['icon'] === 'grid'): ?>
-                        <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>
-                    <?php elseif ($item['icon'] === 'up'): ?>
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
-                    <?php elseif ($item['icon'] === 'down'): ?>
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14m6-6-6 6-6-6"/></svg>
-                    <?php elseif ($item['icon'] === 'target'): ?>
-                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="m14 10 5-5"/></svg>
-                    <?php elseif ($item['icon'] === 'chart'): ?>
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5m0 14h16"/><path d="m7 15 4-4 3 2 5-6"/></svg>
-                    <?php elseif ($item['icon'] === 'people'): ?>
-                        <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0m1-8a3 3 0 1 0 0-6m1 8a5 5 0 0 1 4 5"/></svg>
-                    <?php else: ?>
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M6 5h12M6 12h12M6 19h12"/><circle cx="4" cy="5" r=".5"/><circle cx="4" cy="12" r=".5"/><circle cx="4" cy="19" r=".5"/></svg>
-                    <?php endif; ?>
-                </span>
-                <span><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
+    <div class="brand">
+        <div class="brand-logo">S</div>
+        <div class="brand-info">
+            <h2>SaveSmart</h2>
+            <small><?= $role === 'admin' ? 'Administrator' : 'Family Finance' ?></small>
+        </div>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <?php if ($role === 'admin'): ?>
+
+            <span class="menu-heading">ADMINISTRATOR</span>
+
+            <a href="admin_dashboard.php"
+               class="menu-item <?= ($pageTitle ?? '') === 'Admin Dashboard' ? 'active' : '' ?>">
+                <span>▦</span>
+                <span>Dashboard</span>
             </a>
-        <?php endforeach; ?>
+
+            <a href="admin_pengguna.php"
+               class="menu-item <?= ($pageTitle ?? '') === 'Manajemen Pengguna' ? 'active' : '' ?>">
+                <span>♙</span>
+                <span>Manajemen Pengguna</span>
+            </a>
+
+            <a href="admin_kategori.php"
+               class="menu-item <?= ($pageTitle ?? '') === 'Manajemen Kategori' ? 'active' : '' ?>">
+                <span>▤</span>
+                <span>Manajemen Kategori</span>
+            </a>
+
+        <?php else: ?>
+
+            <span class="menu-heading">MENU UTAMA</span>
+
+            <a href="dashboard.php"
+               class="menu-item <?= ($pageTitle ?? '') === 'Dashboard' ? 'active' : '' ?>">
+                <span>▦</span> Dashboard
+            </a>
+
+            <a href="pemasukan.php" class="menu-item <?= ($pageTitle ?? '') === 'Pemasukan' ? 'active' : '' ?>">
+                <span>↙</span> Pemasukan
+            </a>
+
+            <a href="pengeluaran.php" class="menu-item <?= ($pageTitle ?? '') === 'Pengeluaran' ? 'active' : '' ?>">
+                <span>↗</span> Pengeluaran
+            </a>
+
+            <span class="menu-heading">KEUANGAN</span>
+
+            <a href="budget.php" class="menu-item">
+                <span>▤</span> Anggaran
+            </a>
+
+            <a href="tabungan.php" class="menu-item">
+                <span>◎</span> Tabungan
+            </a>
+
+            <a href="laporan.php" class="menu-item">
+                <span>▥</span> Laporan
+            </a>
+
+            <?php if ($role === 'kepala_keluarga'): ?>
+                <span class="menu-heading">KELOLA KELUARGA</span>
+
+                <a href="anggota_keluarga.php"
+                   class="menu-item <?= ($pageTitle ?? '') === 'Anggota Keluarga' ? 'active' : '' ?>">
+                    <span>♧</span> Anggota Keluarga
+                </a>
+            <?php endif; ?>
+
+        <?php endif; ?>
+
     </nav>
 
     <a href="../logout.php" class="sidebar-logout" id="logoutBtn">

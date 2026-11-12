@@ -12,6 +12,11 @@ $namaPengguna = $_SESSION['nama'] ?? '';
 
     <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
 
+    <!-- Google Fonts: Bricolage Grotesque -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&display=swap" rel="stylesheet">
+
     <!-- Bootstrap 5 CSS -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
@@ -19,16 +24,17 @@ $namaPengguna = $_SESSION['nama'] ?? '';
     >
 
     <!-- CSS Utama Aplikasi -->
-    <link rel="stylesheet" href="../assets/style.css">
+    <link rel="stylesheet" href="../assets/style.css?v=3">
 </head>
 
 <body class="bg-light d-flex flex-column min-vh-100">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm topbar">
     <div class="container d-flex justify-content-between align-items-center">
 
-        <a class="navbar-brand fw-bold" href="admin.php">
-            Sistem Antrian Klinik
+        <!-- Hapus class 'navbar-brand' agar ukuran & font murni mengikuti '.topbar .brand' di style.css -->
+        <a class="brand" href="admin.php">
+            Klinik FK Unila
         </a>
 
         <?php if (!empty($_SESSION['user_id'])): ?>
@@ -37,7 +43,7 @@ $namaPengguna = $_SESSION['nama'] ?? '';
                     <?= htmlspecialchars($namaPengguna, ENT_QUOTES, 'UTF-8') ?>
                 </span>
                 <a href="../auth/logout.php" class="btn btn-outline-light btn-sm px-3" onclick="return confirm('Apakah Anda yakin ingin keluar?');">
-                    Logout
+                    Keluar
                 </a>
             </div>
         <?php endif; ?>

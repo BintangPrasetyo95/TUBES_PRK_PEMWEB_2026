@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const modTugas = document.getElementById('modalNilaiTugas');
     const modUjian = document.getElementById('modalNilaiUjian');
     const modBadge = document.getElementById('modalBadgeKuadran');
+    const modRekomendasi = document.getElementById('modalRekomendasi');
 
     async function muatDataKlasifikasi() {
         const filterKelas = document.getElementById('filter-kelas').value;
@@ -57,19 +58,19 @@ document.addEventListener("DOMContentLoaded", function () {
             pill.addEventListener('click', () => bukaDetail(siswa));
 
             if (rajinTugas && lulusUjian) {
-                siswa.labelKlasifikasi = "Bintang Kelas";
+                siswa.labelKlasifikasi = "Rajin & nilai tinggi";
                 listBintang.appendChild(pill);
                 cBintang++;
             } else if (rajinTugas && !lulusUjian) {
-                siswa.labelKlasifikasi = "Butuh Cara Baru";
+                siswa.labelKlasifikasi = "Jarang kumpul & nilai tinggi";
                 listButuh.appendChild(pill);
                 cButuh++;
             } else if (!rajinTugas && lulusUjian) {
-                siswa.labelKlasifikasi = "Bakat Terpendam";
+                siswa.labelKlasifikasi = "Rajin & nilai rendah";
                 listBakat.appendChild(pill);
                 cBakat++;
             } else {
-                siswa.labelKlasifikasi = "Perlu Pendampingan";
+                siswa.labelKlasifikasi = "Jarang kumpul & nilai rendah";
                 listBahaya.appendChild(pill);
                 cBahaya++;
             }
@@ -82,16 +83,30 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function bukaDetail(siswa) {
-        modNama.textContent = siswa.name;
-        modTugas.textContent = siswa.tugas + "%";
-        modUjian.textContent = siswa.ujian;
-        modBadge.textContent = siswa.labelKlasifikasi;
-        modal.showModal();
+    modNama.textContent = siswa.name;
+    modTugas.textContent = siswa.tugas + "%";
+    modUjian.textContent = siswa.ujian;
+    modBadge.textContent = siswa.labelKlasifikasi;
+
+    let teksRekomendasi = "";
+    if (siswa.labelKlasifikasi === "Rajin & nilai tinggi") {
+        teksRekomendasi = "Pertahankan konsistensi belajar. Siswa siap diberikan materi pengayaan dan dapat ditugaskan sebagai tutor sebaya.";
+    } else if (siswa.labelKlasifikasi === "Jarang kumpul & nilai tinggi") {
+        teksRekomendasi = "Kemampuan kognitif tinggi namun kedisiplinan rendah. Perlu peningkatan motivasi serta pemantauan pengumpulan tugas harian.";
+    } else if (siswa.labelKlasifikasi === "Rajin & nilai rendah") {
+        teksRekomendasi = "Kedisiplinan belajar sangat baik namun hasil nilai belum optimal. Disarankan evaluasi cara belajar atau pendampingan remedial konsep dasar.";
+    } else {
+        teksRekomendasi = "Perlu perhatian segera. Jadwalkan sesi pendampingan belajar khusus dan komunikasi bersama wali kelas/orang tua.";
     }
+
+    modRekomendasi.textContent = teksRekomendasi;
+    modal.showModal();
+}
 
     document.getElementById('btn-terapkan-filter').addEventListener('click', muatDataKlasifikasi);
     document.getElementById('btnCloseModal').addEventListener('click', () => modal.close());
     document.getElementById('btnTutupModalFooter').addEventListener('click', () => modal.close());
 
     muatDataKlasifikasi();
+
 });

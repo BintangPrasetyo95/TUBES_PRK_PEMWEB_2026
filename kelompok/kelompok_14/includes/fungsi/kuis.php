@@ -1,6 +1,10 @@
 <?php
 // Fungsi-fungsi untuk mengelola data kuis
 
+if (file_exists(__DIR__ . '/percobaan.php')) {
+    require_once __DIR__ . '/percobaan.php';
+}
+
 // Ambil semua daftar topik untuk dropdown
 function ambilSemuaTopik() {
     global $pdo;

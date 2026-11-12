@@ -1,7 +1,6 @@
 <?php
 // app/Controllers/PanenController.php
-// Tugas: Menerima request, memanggil Model Panen, mengembalikan JSON atau halaman web.
-// Diisi oleh: Putri.
+// Tugas: Menerima request, memanggil Model Panen, mengembalikan JSON.
 
 require_once __DIR__ . "/../Config/Database.php";
 require_once __DIR__ . "/../Models/PanenModel.php";
@@ -15,20 +14,6 @@ class PanenController
         $database = new \App\Config\Database();
         $db = $database->getConnection();
         $this->model = new PanenModel($db);
-    }
-
-    // ---------- Helper ----------
-    private function sukses($message, $extra = [], $code = 200)
-    {
-        \App\Config\Database::response(
-            array_merge(['status' => 'success', 'message' => $message], $extra),
-            $code
-        );
-    }
-
-    private function gagal($message, $code)
-    {
-        \App\Config\Database::response(['status' => 'error', 'message' => $message], $code);
     }
 
     private function tanggalValid($tanggal)
@@ -46,15 +31,14 @@ class PanenController
         return $nilai !== '' ? $nilai : null;
     }
 
-    private function bacaBody()
-    {
-        $body = json_decode(file_get_contents('php://input'), true);
-        return is_array($body) ? $body : [];
-    }
-
     // Validasi + bersihkan input. Mengembalikan [data_bersih, daftar_error]
-    private function validasi($input)
+    private function validasi()
     {
+        $input = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($input)) {
+            $input = [];
+        }
+
         $errors = [];
 
         $siklusId = filter_var($input['siklus_id'] ?? null, FILTER_VALIDATE_INT);
@@ -79,14 +63,13 @@ class PanenController
 
         $catatan = trim((string) ($input['catatan'] ?? ''));
 
-        $data = [
+        return [[
             'siklus_id'     => $siklusId,
             'tanggal_panen' => $tanggal,
             'jumlah_kg'     => is_numeric($jumlah) ? (float) $jumlah : 0,
             'kualitas'      => $kualitas,
             'catatan'       => $catatan !== '' ? $catatan : null,
-        ];
-        return [$data, $errors];
+        ], $errors];
     }
 
     // ---------- Endpoint ----------
@@ -99,25 +82,47 @@ class PanenController
         $sampai = $this->param('sampai');
 
         if ($dari !== null && !$this->tanggalValid($dari)) {
-            $this->gagal('Format tanggal "dari" tidak valid.', 400);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Format tanggal "dari" tidak valid.',
+                'data' => null,
+            ], 400);
+            return;
         }
         if ($sampai !== null && !$this->tanggalValid($sampai)) {
-            $this->gagal('Format tanggal "sampai" tidak valid.', 400);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Format tanggal "sampai" tidak valid.',
+                'data' => null,
+            ], 400);
+            return;
         }
 
         try {
             if (($_GET['mode'] ?? '') === 'siklus') {
-                $this->sukses('OK', ['data' => $this->model->getSiklusOptions()]);
+                \App\Config\Database::response([
+                    'status' => 'success',
+                    'message' => 'Daftar siklus berhasil diambil.',
+                    'data' => $this->model->getSiklusOptions(),
+                ]);
+                return;
             }
 
-            $this->sukses('OK', [
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data panen berhasil diambil.',
                 'data'      => $this->model->read($dari, $sampai),
                 'ringkasan' => $this->model->getRingkasan($dari, $sampai),
             ]);
         } catch (PDOException $e) {
             error_log('PanenController::index ' . $e->getMessage());
-            $this->gagal('Gagal mengambil data panen.', 500);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data panen.',
+                'data' => null,
+            ], 500);
         }
+        return;
     }
 
     // GET /api/panen/{id}
@@ -128,51 +133,99 @@ class PanenController
             $data = $this->model->readSingle($id);
         } catch (PDOException $e) {
             error_log('PanenController::show ' . $e->getMessage());
-            $this->gagal('Gagal mengambil data panen.', 500);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal mengambil data panen.',
+                'data' => null,
+            ], 500);
+            return;
         }
 
         if (!$data) {
-            $this->gagal('Data panen tidak ditemukan', 404);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Data panen tidak ditemukan',
+                'data' => null,
+            ], 404);
+            return;
         }
-        $this->sukses('OK', ['data' => $data]);
+        \App\Config\Database::response([
+            'status' => 'success',
+            'message' => 'Data panen ditemukan.',
+            'data' => $data,
+        ]);
+        return;
     }
 
     // POST /api/panen
     public function create()
     {
-        [$data, $errors] = $this->validasi($this->bacaBody());
+        [$data, $errors] = $this->validasi();
         if ($errors) {
-            $this->gagal(implode(' ', $errors), 422);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => implode(' ', $errors),
+                'data' => null,
+            ], 422);
+            return;
         }
 
         try {
             $this->model->create($data);
-            $this->sukses('Data panen berhasil ditambahkan', ['id' => $this->model->getLastId()], 201);
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data panen berhasil ditambahkan.',
+                'data' => ['id' => $this->model->getLastId()],
+            ], 201);
         } catch (PDOException $e) {
             error_log('PanenController::create ' . $e->getMessage());
-            $this->gagal('Gagal menambahkan data panen. Pastikan siklus yang dipilih valid.', 500);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal menambahkan data panen. Pastikan siklus yang dipilih valid.',
+                'data' => null,
+            ], 500);
         }
+        return;
     }
 
     // PUT /api/panen/{id}
     public function update($id)
     {
         $id = (int) $id;
-        [$data, $errors] = $this->validasi($this->bacaBody());
+        [$data, $errors] = $this->validasi();
         if ($errors) {
-            $this->gagal(implode(' ', $errors), 422);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => implode(' ', $errors),
+                'data' => null,
+            ], 422);
+            return;
         }
 
         try {
             if (!$this->model->readSingle($id)) {
-                $this->gagal('Data panen tidak ditemukan', 404);
+                \App\Config\Database::response([
+                    'status' => 'error',
+                    'message' => 'Data panen tidak ditemukan',
+                    'data' => null,
+                ], 404);
+                return;
             }
             $this->model->update($id, $data);
-            $this->sukses('Data panen berhasil diperbarui');
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data panen berhasil diperbarui.',
+                'data' => $data,
+            ]);
         } catch (PDOException $e) {
             error_log('PanenController::update ' . $e->getMessage());
-            $this->gagal('Gagal memperbarui data panen. Pastikan siklus yang dipilih valid.', 500);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal memperbarui data panen. Pastikan siklus yang dipilih valid.',
+                'data' => null,
+            ], 500);
         }
+        return;
     }
 
     // DELETE /api/panen/{id}
@@ -181,12 +234,26 @@ class PanenController
         $id = (int) $id;
         try {
             if (!$this->model->delete($id)) {
-                $this->gagal('Data panen tidak ditemukan', 404);
+                \App\Config\Database::response([
+                    'status' => 'error',
+                    'message' => 'Data panen tidak ditemukan',
+                    'data' => null,
+                ], 404);
+                return;
             }
-            $this->sukses('Data panen berhasil dihapus');
+            \App\Config\Database::response([
+                'status' => 'success',
+                'message' => 'Data panen berhasil dihapus.',
+                'data' => null,
+            ]);
         } catch (PDOException $e) {
             error_log('PanenController::delete ' . $e->getMessage());
-            $this->gagal('Gagal menghapus data panen.', 500);
+            \App\Config\Database::response([
+                'status' => 'error',
+                'message' => 'Gagal menghapus data panen.',
+                'data' => null,
+            ], 500);
         }
+        return;
     }
 }

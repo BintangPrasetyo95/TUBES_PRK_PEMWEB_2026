@@ -7,6 +7,11 @@ wajibAdmin();
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    if (function_exists('verifikasiCsrf')) {
+        verifikasiCsrf();
+    }
+
     $aksi = $_POST['aksi'] ?? '';
 
     if ($aksi === 'tambah') {
@@ -93,6 +98,8 @@ include '../includes/header.php';
             <h3 style="color: #1E3B2F; font-size: 18px; margin-bottom: 15px;">Tambah Kategori Baru</h3>
             
             <form method="POST" action="kategori.php">
+                <!-- 2. Token CSRF Form Tambah -->
+                <?php if (function_exists('csrfField')) echo csrfField(); ?>
                 <input type="hidden" name="aksi" value="tambah">
 
                 <div style="margin-bottom: 15px;">
@@ -143,7 +150,9 @@ include '../includes/header.php';
                                     </span>
                                 </td>
                                 <td style="padding: 12px 8px; text-align: center;">
+                                    <!-- 3. Token CSRF Form Hapus -->
                                     <form method="POST" action="kategori.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori ini? Laporan lama yang memakai kategori ini tidak akan terhapus.');" style="display: inline;">
+                                        <?php if (function_exists('csrfField')) echo csrfField(); ?>
                                         <input type="hidden" name="aksi" value="hapus">
                                         <input type="hidden" name="kategori_id" value="<?= (int)$kat['id'] ?>">
                                         <button type="submit" style="background: transparent; color: #8B2E2E; border: 1px solid #F7E0DC; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">

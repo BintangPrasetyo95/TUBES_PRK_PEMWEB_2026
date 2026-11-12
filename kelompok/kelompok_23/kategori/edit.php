@@ -1,11 +1,8 @@
-
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../auth/login.php");
-    exit;
-}
+require_once __DIR__ . '/../includes/role_guard.php';
+requireRole(['Admin']);
 
 require_once __DIR__ . '/../config/database.php';
 
@@ -21,6 +18,7 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 
 $data = $stmt->get_result()->fetch_assoc();
+$stmt->close();
 
 if (!$data) {
     header("Location: index.php");
@@ -50,6 +48,8 @@ if (isset($_POST['update'])) {
         } else {
             $error = "Gagal mengupdate kategori: " . $conn->error;
         }
+
+        $stmt->close();
     }
 
     $data['name'] = $name;

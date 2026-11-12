@@ -1,9 +1,5 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-
 session_start();
 
 require_once __DIR__ . '/../config/database.php';
@@ -33,37 +29,34 @@ if (!$stmt) {
 }
 
 $stmt->bind_param("s", $username);
-
 $stmt->execute();
 
 $result = $stmt->get_result();
+
+if ($result === false) {
+    die("Error database: " . $stmt->error);
+}
+
 $user = $result->fetch_assoc();
+$stmt->close();
 
-if ($user && password_verify($password, $user['password'])) {
-
-    if (!$user['is_active']) {
-        header("Location: login.php?error=nonaktif");
-        exit;
-    }
-
-    session_regenerate_id(true);
-
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['name'] = $user['name'];
-    $_SESSION['username'] = $user['username'];
-    $_SESSION['role'] = $user['role'];
-    $_SESSION['photo'] = $user['photo'] ?? null;
-
-    header("Location: ../dashboard.php");
-    exit;
-
-} else {
-
+if (!$user || !password_verify($password, $user['password'])) {
     header("Location: login.php?error=gagal");
     exit;
 }
 
-$stmt->close();
-$conn->close();
+if (!(int) $user['is_active']) {
+    header("Location: login.php?error=nonaktif");
+    exit;
+}
 
-?>
+session_regenerate_id(true);
+
+$_SESSION['user_id'] = (int) $user['id'];
+$_SESSION['name'] = $user['name'];
+$_SESSION['username'] = $user['username'];
+$_SESSION['role'] = $user['role'];
+$_SESSION['photo'] = $user['photo'] ?? null;
+
+header("Location: ../dashboard.php");
+exit;

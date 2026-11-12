@@ -498,6 +498,21 @@ kbd {
     color: var(--text-main)
 }
 
+.harga-obat {
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.35
+}
+
+.harga-obat span {
+    color: var(--text-secondary);
+    font-size: .8125rem;
+    font-weight: 400
+}
+
 .kekuatan {
     display: block;
     margin-top: .15rem;
@@ -794,6 +809,10 @@ button.m-btn:hover {
     flex: none;
     align-items: flex-end;
     text-align: right
+}
+
+#modal-harga {
+    margin: -.2rem 0 .75rem
 }
 
 .info {

@@ -46,6 +46,12 @@ const judul = (nama) => {
     return m ? `${escapeHTML(m[1])}<span class="kekuatan">${escapeHTML(m[2])}</span>` : escapeHTML(nama);
 };
 const stokHTML = (s, n) => `<strong>${s.t}</strong><span>${s.k === 'low' ? 'sisa ' : ''}<b>${n}</b> unit</span>`;
+const hargaHTML = (harga) => {
+    const nilai = Number(harga);
+    return Number.isFinite(nilai) && nilai > 0
+        ? `<p class="harga-obat">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(nilai)} <span>/ kemasan</span></p>`
+        : '';
+};
 const status = (s) => (s <= 0 ? { k: 'out', t: 'Habis' } : s <= 10 ? { k: 'low', t: 'Menipis' } : { k: 'ok', t: 'Tersedia' });
 
 const TEMA = [
@@ -171,9 +177,11 @@ const tandaiAktif = () => document.querySelectorAll('.chip').forEach((c) =>
 
 function daftarTerfilter() {
     const q = state.q.trim().toLowerCase();
-    return state.obat.filter((o) =>
-        (state.aktif === 'semua' || String(o.id_kategori) === state.aktif) &&
-        (!q || [o.nama_obat, o.indikasi, o.nama_kategori].some((v) => String(v ?? '').toLowerCase().includes(q))));
+    return state.obat
+        .filter((o) =>
+            (state.aktif === 'semua' || String(o.id_kategori) === state.aktif) &&
+            (!q || [o.nama_obat, o.indikasi, o.nama_kategori].some((v) => String(v ?? '').toLowerCase().includes(q))))
+        .sort((a, b) => a.nama_obat.localeCompare(b.nama_obat, 'id'));
 }
 
 function kartu(o) {
@@ -186,6 +194,7 @@ function kartu(o) {
     </div>
     <div class="card-body">
       <h3 class="card-name">${judul(o.nama_obat)}</h3>
+      ${state.sumberLokal ? '' : hargaHTML(o.harga)}
       <p class="card-ind">${escapeHTML(o.indikasi)}</p>
       <div class="dose">${ikon('clock')}<span>${escapeHTML(o.aturan_pakai)}</span></div>
     </div>
@@ -221,6 +230,7 @@ window.bukaModalDetail = function (o) {
     const ms = $('#modal-stok');
     ms.className = `stok st-${s.k}`;
     ms.innerHTML = stokHTML(s, o.stok);
+    $('#modal-harga').innerHTML = state.sumberLokal ? '' : hargaHTML(o.harga);
     $('#modal-indikasi').textContent = o.indikasi;
     $('#modal-aturan').textContent = o.aturan_pakai;
     $('#modal-peringatan').textContent = o.peringatan;

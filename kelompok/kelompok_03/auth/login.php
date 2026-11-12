@@ -115,8 +115,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
                                 </form>
 
-                                <div class="text-center mt-4 mb-0">
-                                    <p class="mb-0 text-muted small">Belum punya akun? <a href="register.php" class="text-decoration-none fw-semibold" style="color: var(--primary);">Daftar di sini</a></p>
+                               <div class="text-center mt-4 mb-0">
+                                    <p class="mb-2 text-muted small">
+                                        Belum punya akun? <a href="register.php" class="text-decoration-none fw-semibold" style="color: var(--primary);">Daftar di sini</a>
+                                    </p>
+                                    <a href="javascript:void(0)" onclick="document.getElementById('needHelpDialog').showModal()" class="text-muted small text-decoration-none fw-semibold">
+                                        Need Help?
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -126,5 +131,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
+    <dialog id="needHelpDialog" class="border-0 rounded-4 shadow p-4" style="max-width: 420px; width: 90%;">
+        <h5 class="fw-bold mb-2" style="font-family: 'Bricolage Grotesque', sans-serif; color: var(--text-main);">
+            Bantuan Akses Akun
+        </h5>
+        <p class="text-muted mb-4">
+            Password atau akun bermasalah? Harap lapor ke petugas loket/admin <strong>Klinik FK Unila</strong> untuk reset akun.
+        </p>
+        <button type="button" onclick="document.getElementById('needHelpDialog').close()" class="btn btn-secondary px-4">
+            Close
+        </button>
+    </dialog>
 </body>
 </html>

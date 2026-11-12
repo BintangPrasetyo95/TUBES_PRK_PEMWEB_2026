@@ -1,4 +1,5 @@
 <?php
+
 require __DIR__ . '/bootstrap.php';
 
 $idGuru = (int)$_SESSION['guru']['id_guru'];
@@ -563,6 +564,9 @@ if ($action === 'rekap' && $method === 'GET') {
     respond([
         'penugasan' => [
             'id_penugasan' => $idPenugasan,
+            'id_kelas'     => (int)$penugasan['id_kelas'],
+            'id_mapel'     => (int)$penugasan['id_mapel'],
+            'id_periode'   => (int)$penugasan['id_periode'],
             'nama_guru'    => $penugasan['nama_guru'],
             'nip'          => $penugasan['nip'],
             'nama_kelas'   => $penugasan['nama_kelas'],

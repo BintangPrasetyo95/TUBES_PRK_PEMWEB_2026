@@ -1,11 +1,5 @@
 <?php
-/**
- * =================================================================
- * VIEW HTML5: Laporan Rekapitulasi Nilai & Pengaturan Bobot
- * Modul     : Perhitungan Nilai & Laporan Akademik
- * Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
- * =================================================================
- */
+
 $sesiKonteks   = $_SESSION['konteks_penilaian'] ?? [];
 $sesiKelas     = $sesiKonteks['id_kelas']     ?? '';
 $sesiMapel     = $sesiKonteks['id_mapel']     ?? '';

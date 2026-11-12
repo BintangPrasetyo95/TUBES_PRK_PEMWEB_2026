@@ -9,8 +9,8 @@ if ($_SESSION['role'] !== 'admin') {
 }
 
 $hari_ini = date('Y-m-d');
+$tanggal_filter = (isset($_GET['tanggal']) && $_GET['tanggal'] !== '') ? $_GET['tanggal'] : $hari_ini;
 
-// Query untuk mengambil daftar antrian hari ini
 $query = "SELECT a.id, a.nomor AS nomor_antrian, a.status, u.nama AS nama_pasien, d.nama AS nama_dokter 
           FROM antrian a
           JOIN users u ON a.user_id = u.id
@@ -19,7 +19,7 @@ $query = "SELECT a.id, a.nomor AS nomor_antrian, a.status, u.nama AS nama_pasien
           ORDER BY a.nomor ASC";
 
 $stmt = $pdo->prepare($query);
-$stmt->execute(['tanggal' => $hari_ini]);
+$stmt->execute(['tanggal' => $tanggal_filter]);
 $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -33,10 +33,10 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="fw-bold text-primary mb-2">Daftar Antrian Pasien</h2>
-        <p class="text-muted small mb-0">Pantau daftar antrian pasien yang masuk hari ini, panggil pasien, atau selesaikan antrian.</p>
+        <p class="text-muted small mb-0">Pantau daftar antrian pasien yang masuk, panggil pasien, atau selesaikan antrian.</p>
     </div>
     <span class="badge px-3 py-2 rounded-pill small fw-semibold" style="background-color: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4;">
-        Hari Ini: <?= date('d M Y'); ?>
+        <?= ($tanggal_filter === $hari_ini) ? 'Hari Ini: ' : 'Tanggal: ' ?><?= date('d M Y', strtotime($tanggal_filter)); ?>
     </span>
 </div>
 
@@ -55,14 +55,22 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="card shadow-sm border-0">
     <div class="card-body p-4">
 
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
             <input type="text" id="cari-admin" class="form-control form-control-sm" style="max-width: 280px;" placeholder="Cari nama pasien atau dokter...">
-            <select id="filter-status-admin" class="form-select form-select-sm" style="max-width: 180px;">
-                <option value="">Semua Status</option>
-                <option value="menunggu">Menunggu</option>
-                <option value="dipanggil">Dipanggil</option>
-                <option value="selesai">Selesai</option>
-            </select>
+            <div class="d-flex align-items-center gap-2 flex-nowrap">
+                <form method="GET" action="" class="d-flex align-items-center gap-2 m-0">
+                    <input type="date" name="tanggal" value="<?= htmlspecialchars($tanggal_filter) ?>" onchange="this.form.submit()" class="form-control form-control-sm" style="width: 150px; cursor: pointer;" title="Pilih tanggal riwayat antrian">
+                    <?php if ($tanggal_filter !== $hari_ini): ?>
+                        <a href="antrian_list.php" class="btn btn-outline-secondary btn-sm text-nowrap">Hari Ini</a>
+                    <?php endif; ?>
+                </form>
+                <select id="filter-status-admin" class="form-select form-select-sm" style="width: 160px;">
+                    <option value="">Semua Status</option>
+                    <option value="menunggu">Menunggu</option>
+                    <option value="dipanggil">Dipanggil</option>
+                    <option value="selesai">Selesai</option>
+                </select>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -127,7 +135,7 @@ $antrian_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php else: ?>
                         <tr>
                             <td colspan="5" class="text-center py-4 text-muted">
-                                Belum ada pasien yang mengambil antrian hari ini.
+                                <?= ($tanggal_filter === $hari_ini) ? 'Belum ada pasien yang mengambil antrian hari ini.' : 'Tidak ada riwayat antrian pada tanggal tersebut.' ?>
                             </td>
                         </tr>
                     <?php endif; ?>

@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (password_verify($password, $row['password'])) {
             $_SESSION['id_admin'] = $row['id_admin'];
             $_SESSION['username'] = $row['username'];
-            header("Location: kategori/index.php");
+            header("Location: index.php");
             exit;
         } else {
             $error = "Password salah!";

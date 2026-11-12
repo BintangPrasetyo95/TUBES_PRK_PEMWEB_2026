@@ -872,3 +872,159 @@
 .teks-kanan {
   text-align: right;
 }
+
+
+/* --- 13. Dashboard Pelajar Lengkap (PL-01) --- */
+.dashboard-sambutan {
+  margin-bottom: 24px;
+}
+
+.dashboard-sambutan h1 {
+  margin-bottom: 6px;
+}
+
+.dashboard-sambutan p {
+  color: var(--teks-2);
+  margin: 0;
+}
+
+.stats-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 600px) {
+  .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .stats-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-ikon {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.stat-angka {
+  font-family: var(--font-judul);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--teks);
+  line-height: 1.15;
+}
+
+.stat-ket {
+  font-size: 0.9rem;
+  color: var(--teks-2);
+  font-weight: 600;
+}
+
+.kuis-sorotan-card {
+  border: 2px solid var(--primary);
+  margin-bottom: 28px;
+}
+
+.kuis-sorotan-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+@media (min-width: 768px) {
+  .kuis-sorotan-header {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.kuis-sorotan-aksi {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.section-blok {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-judul {
+  margin: 0;
+}
+
+.rekomendasi-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 768px) {
+  .rekomendasi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.kuis-card {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.kuis-judul {
+  font-size: 1.15rem;
+  margin: 8px 0 6px;
+}
+
+.kuis-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--teks-2);
+}
+
+.menu-cepat-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 768px) {
+  .menu-cepat-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.menu-cepat-card {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}

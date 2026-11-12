@@ -5,15 +5,18 @@
 $root = $root ?? '';
 $halamanAktif = $halamanAktif ?? '';
 
+// Ambil sesi pengguna utama (mendukung kunci 'user' dari auth.php)
+$sesiUser = $_SESSION['user'] ?? $_SESSION['pengguna'] ?? null;
+
 // Cek apakah pengguna saat ini adalah Guest atau Pelajar terdaftar
-$isGuest = isset($_SESSION['guest']) || (isset($_SESSION['pengguna']['peran']) && $_SESSION['pengguna']['peran'] === 'guest');
+$isGuest = isset($_SESSION['guest']) || (isset($sesiUser['peran']) && $sesiUser['peran'] === 'guest');
 
 // Ambil nama tampilan pengguna
 $namaPengguna = 'Pelajar';
 if ($isGuest) {
     $namaPengguna = $_SESSION['guest']['username'] ?? $_SESSION['guest']['nama'] ?? 'Tamu';
-} elseif (isset($_SESSION['pengguna']['nama'])) {
-    $namaPengguna = $_SESSION['pengguna']['nama'];
+} elseif (isset($sesiUser['nama'])) {
+    $namaPengguna = $sesiUser['nama'];
 }
 
 // Tautan halaman Beranda sesuai status (Guest atau Pelajar)

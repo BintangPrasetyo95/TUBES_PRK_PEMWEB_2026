@@ -1,5 +1,5 @@
 <?php
-// Ambil path halaman yang sedang dibuka, contoh: /TUBES.../admin/obat/index.php
+// Ambil path halaman yang sedang dibuka
 $halaman = $_SERVER['SCRIPT_NAME'];
 
 // Menu aktif ditentukan dari folder, jadi halaman tambah/edit ikut menyala

@@ -185,7 +185,7 @@ $riwayatList = $stmtRiwayat->fetchAll();
                 <a href="#form-ambil" class="btn btn-warning fw-semibold px-4 py-2">
                     + Ambil Nomor Baru
                 </a>
-                <button type="button" class="btn btn-outline-light ms-2" onclick="location.reload();">
+                <button type="button" class="btn btn-primary ms-2" onclick="location.reload();">
                     ↻ Segarkan Status
                 </button>
             </div>

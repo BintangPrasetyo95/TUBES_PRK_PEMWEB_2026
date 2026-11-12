@@ -133,7 +133,7 @@
             <p class="text-muted">Pilih produk segar dan hubungi petaninya secara langsung</p>
         </div>
 
-        <!-- FITUR PENCARIAN DAN FILTER PRODUK - ZAHRA -->
+        <!-- FITUR PENCARIAN DAN FILTER PRODUK -->
 <?php include 'produk/filter-search.php'; ?>
 
         <!-- TAMPILAN PRODUK (Kartu/Card Bootstrap) -->

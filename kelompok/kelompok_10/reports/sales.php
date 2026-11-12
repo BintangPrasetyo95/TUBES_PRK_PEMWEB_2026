@@ -2,24 +2,39 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/auth.php';
+require_once __DIR__ . '/nav.php';
 require_login();
 
 $user = current_user();
 $isAdmin = $user['role'] === 'admin';
 
 $pageTitle = 'Laporan Penjualan';
-$activePage = 'reports';
+$activePage = 'sales';
 
-$navItems = [
-    ['key' => 'home', 'label' => 'Beranda', 'href' => 'dashboard.php'],
-    ['key' => 'reports', 'label' => 'Analytics', 'href' => 'reports/index.php'],
-];
+$navItems = reports_nav_items($isAdmin);
 
 $pdo = db();
 
 $startDate = is_string($_GET['start_date'] ?? null) ? trim($_GET['start_date']) : '';
 $endDate = is_string($_GET['end_date'] ?? null) ? trim($_GET['end_date']) : '';
 $invoice = is_string($_GET['invoice'] ?? null) ? trim($_GET['invoice']) : '';
+
+// Filter kasir hanya untuk admin; kasir selalu dibatasi ke transaksinya sendiri.
+$cashierFilter = $isAdmin ? filter_input(INPUT_GET, 'cashier_id', FILTER_VALIDATE_INT) : null;
+$cashierFilter = ($cashierFilter !== false && $cashierFilter !== null && $cashierFilter > 0)
+    ? $cashierFilter
+    : null;
+
+$cashiers = [];
+
+if ($isAdmin) {
+    $cashiers = $pdo->query("
+        SELECT DISTINCT u.id, u.full_name
+        FROM users u
+        JOIN sales s ON s.cashier_id = u.id
+        ORDER BY u.full_name ASC
+    ")->fetchAll();
+}
 
 $errors = [];
 
@@ -70,6 +85,9 @@ if (empty($errors)) {
 if (!$isAdmin) {
     $where[] = 's.cashier_id = :cashier_id';
     $params['cashier_id'] = (int) $user['id'];
+} elseif ($cashierFilter !== null) {
+    $where[] = 's.cashier_id = :filter_cashier';
+    $params['filter_cashier'] = $cashierFilter;
 }
 
 $sales = [];
@@ -97,6 +115,7 @@ $exportUrl = app_url('reports/export-sales.php') . '?' . http_build_query([
     'start_date' => $startDate,
     'end_date' => $endDate,
     'invoice' => $invoice,
+    'cashier_id' => $cashierFilter ?? '',
 ]);
 
 require_once __DIR__ . '/../includes/header.php';
@@ -127,6 +146,21 @@ require_once __DIR__ . '/../includes/header.php';
                     <input type="date" id="end_date" name="end_date"
                         value="<?= e($endDate) ?>">
                 </div>
+
+                <?php if ($isAdmin): ?>
+                    <div>
+                        <label for="cashier_id">Kasir</label>
+                        <select id="cashier_id" name="cashier_id">
+                            <option value="">Semua kasir</option>
+                            <?php foreach ($cashiers as $cashier): ?>
+                                <option value="<?= (int) $cashier['id'] ?>"
+                                    <?= $cashierFilter === (int) $cashier['id'] ? 'selected' : '' ?>>
+                                    <?= e($cashier['full_name']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                <?php endif; ?>
 
                 <div>
                     <label for="invoice">Nomor Invoice</label>

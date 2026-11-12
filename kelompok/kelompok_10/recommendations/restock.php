@@ -2,17 +2,15 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/auth.php';
+require_once __DIR__ . '/../reports/nav.php';
 
 require_login();
 require_role('admin');
 
 $pageTitle = 'Rekomendasi Restock';
-$activePage = 'recommendations';
+$activePage = 'restock';
 
-$navItems = [
-    ['key' => 'home', 'label' => 'Beranda', 'href' => 'dashboard.php'],
-    ['key' => 'reports', 'label' => 'Analytics', 'href' => 'reports/index.php'],
-];
+$navItems = reports_nav_items(true);
 
 $pdo = db();
 
@@ -90,6 +88,10 @@ $parseInteger = static function (string $value): ?int {
 
 $hasSubmitted = isset($_GET['calculate']);
 $results = [];
+$anyFilled = false;
+
+$periodStart = date('d-m-Y', strtotime('-30 days'));
+$periodEnd = date('d-m-Y');
 
 foreach ($products as $product) {
     $id = (int) $product['id'];
@@ -108,11 +110,19 @@ foreach ($products as $product) {
     // ADS dihitung dari penjualan 30 hari terakhir.
     $ads = $soldQty / 30;
 
+    // Baris dianggap diisi jika minimal satu kolom input terisi.
+    $rowFilled = $leadTimeInput !== '' || $safetyStockInput !== '' || $targetStockInput !== '';
+
+    if ($rowFilled) {
+        $anyFilled = true;
+    }
+
     $rop = null;
     $suggestedQty = null;
+    $needsRestock = null;
     $error = '';
 
-    if ($hasSubmitted) {
+    if ($hasSubmitted && $rowFilled) {
         if (
             $leadTime === null ||
             $leadTime < 1 ||
@@ -130,6 +140,8 @@ foreach ($products as $product) {
                 0,
                 $targetStock - $availableStock
             );
+
+            $needsRestock = $availableStock <= $rop;
         }
     }
 
@@ -145,9 +157,12 @@ foreach ($products as $product) {
         'target_stock' => $targetStockInput,
         'rop' => $rop,
         'suggested_qty' => $suggestedQty,
+        'needs_restock' => $needsRestock,
         'error' => $error,
     ];
 }
+
+$noRowFilled = $hasSubmitted && !$anyFilled;
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -171,6 +186,14 @@ require_once __DIR__ . '/../includes/header.php';
         <h2>Perhitungan Kebutuhan Stok</h2>
 
         <p>
+            Periode data penjualan:
+            <strong><?= e($periodStart) ?> sampai <?= e($periodEnd) ?></strong>
+            (30 hari terakhir, hanya transaksi selesai).
+            Isi lead time, safety stock, dan target stok hanya untuk produk
+            yang ingin dihitung.
+        </p>
+
+        <p>
             ADS = Total penjualan 30 hari terakhir / 30.
             ROP = (ADS × Lead Time) + Safety Stock.
         </p>
@@ -179,7 +202,13 @@ require_once __DIR__ . '/../includes/header.php';
             Jumlah pembelian = Maksimum (0, Target Stok - Stok Tersedia).
         </p>
 
-        <form method="GET" action="<?= e(app_url('recommendations/restock.php')) ?>">
+        <?php if ($noRowFilled): ?>
+            <p class="report-error">
+                Isi lead time, safety stock, dan target stok minimal untuk satu produk.
+            </p>
+        <?php endif; ?>
+
+        <form method="GET" data-form="restock" action="<?= e(app_url('recommendations/restock.php')) ?>">
 
             <div class="table-responsive">
 
@@ -195,6 +224,7 @@ require_once __DIR__ . '/../includes/header.php';
                             <th>Safety Stock</th>
                             <th>Target Stok</th>
                             <th>ROP</th>
+                            <th>Status</th>
                             <th>Rekomendasi Beli</th>
                         </tr>
                     </thead>
@@ -226,7 +256,6 @@ require_once __DIR__ . '/../includes/header.php';
                                         name="lead_time[<?= $result['id'] ?>]"
                                         min="1"
                                         step="1"
-                                        required
                                         value="<?= e($result['lead_time']) ?>"
                                         aria-label="Lead time <?= e($result['name']) ?>"
                                     >
@@ -238,7 +267,6 @@ require_once __DIR__ . '/../includes/header.php';
                                         name="safety_stock[<?= $result['id'] ?>]"
                                         min="0"
                                         step="1"
-                                        required
                                         value="<?= e($result['safety_stock']) ?>"
                                         aria-label="Safety stock <?= e($result['name']) ?>"
                                     >
@@ -250,7 +278,6 @@ require_once __DIR__ . '/../includes/header.php';
                                         name="target_stock[<?= $result['id'] ?>]"
                                         min="1"
                                         step="1"
-                                        required
                                         value="<?= e($result['target_stock']) ?>"
                                         aria-label="Target stok <?= e($result['name']) ?>"
                                     >
@@ -270,6 +297,16 @@ require_once __DIR__ . '/../includes/header.php';
                                 </td>
 
                                 <td>
+                                    <?php if ($result['needs_restock'] === true): ?>
+                                        <span class="stock-status stock-low">Perlu restock</span>
+                                    <?php elseif ($result['needs_restock'] === false): ?>
+                                        <span class="stock-status stock-ok">Stok cukup</span>
+                                    <?php else: ?>
+                                        -
+                                    <?php endif; ?>
+                                </td>
+
+                                <td>
                                     <?php if ($result['suggested_qty'] !== null): ?>
                                         <strong>
                                             <?= number_format($result['suggested_qty']) ?>
@@ -282,7 +319,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                             <?php if ($result['error'] !== ''): ?>
                                 <tr>
-                                    <td colspan="10">
+                                    <td colspan="11">
                                         <span class="report-error">
                                             <?= e($result['name']) ?>:
                                             <?= e($result['error']) ?>
@@ -313,8 +350,7 @@ require_once __DIR__ . '/../includes/header.php';
     <p class="reports-description">
         Catatan: Perhitungan menggunakan data penjualan 30 hari terakhir.
         Jika tidak ada penjualan dalam periode tersebut, sistem tidak
-        membuat rekomendasi otomatis agar tidak menghasilkan angka
-        yang menyesatkan.
+        membuat rekomendasi otomatis.
     </p>
 
 </section>

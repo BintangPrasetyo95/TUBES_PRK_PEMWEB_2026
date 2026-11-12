@@ -22,6 +22,11 @@ $invoice = is_string($_GET['invoice'] ?? null)
     ? trim($_GET['invoice'])
     : '';
 
+$cashierFilter = $isAdmin ? filter_input(INPUT_GET, 'cashier_id', FILTER_VALIDATE_INT) : null;
+$cashierFilter = ($cashierFilter !== false && $cashierFilter !== null && $cashierFilter > 0)
+    ? $cashierFilter
+    : null;
+
 $where = ["s.status = 'completed'"];
 $params = [];
 
@@ -69,6 +74,9 @@ if ($invoice !== '') {
 if (!$isAdmin) {
     $where[] = 's.cashier_id = :cashier_id';
     $params['cashier_id'] = (int) $user['id'];
+} elseif ($cashierFilter !== null) {
+    $where[] = 's.cashier_id = :filter_cashier';
+    $params['filter_cashier'] = $cashierFilter;
 }
 
 $sql = "

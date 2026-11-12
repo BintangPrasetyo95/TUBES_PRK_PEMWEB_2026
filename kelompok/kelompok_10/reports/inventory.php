@@ -2,17 +2,15 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/auth.php';
+require_once __DIR__ . '/nav.php';
 
 require_login();
 require_role('admin');
 
 $pageTitle = 'Laporan Inventaris';
-$activePage = 'reports';
+$activePage = 'inventory';
 
-$navItems = [
-    ['key' => 'home', 'label' => 'Beranda', 'href' => 'dashboard.php'],
-    ['key' => 'reports', 'label' => 'Analytics', 'href' => 'reports/index.php'],
-];
+$navItems = reports_nav_items(true);
 
 $pdo = db();
 

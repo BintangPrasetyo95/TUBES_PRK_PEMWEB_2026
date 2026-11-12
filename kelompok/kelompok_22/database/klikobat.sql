@@ -1,3 +1,8 @@
+-- ==========================================================
+-- DATABASE: klikobat (Kelompok 22)
+-- Sistem Informasi KlikObat - Katalog Farmasi & Edukasi
+-- ==========================================================
+
 CREATE DATABASE IF NOT EXISTS `klikobat`
   DEFAULT CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;

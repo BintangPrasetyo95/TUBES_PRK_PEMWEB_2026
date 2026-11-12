@@ -49,7 +49,7 @@ if (!$resultProduk) {
 <div class="container">
 
     <!-- Form Pencarian dan Filter -->
-    <form action="index.php" method="GET" class="row g-3 mb-4">
+    <form action="index.php#katalog" method="GET" class="row g-3 mb-4">
 
         <div class="col-md-6">
             <input
@@ -168,7 +168,7 @@ if (!$resultProduk) {
         <?php else: ?>
 
             <div class="col-12 text-center text-muted py-4">
-                Produk tidak ditemukan.
+             
             </div>
 
         <?php endif; ?>

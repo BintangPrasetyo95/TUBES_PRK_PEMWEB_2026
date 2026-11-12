@@ -92,18 +92,13 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="#hero">Beranda</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#katalog">Katalog</a></li>
-                    <!-- Link menuju sistem akun yang dibuat Elan -->
-                    
-                    <li class="nav-item">
-                    <a class="nav-link btn-login-petani ms-lg-3 px-3 mt-2 mt-lg-0"
-                    href="auth/login.php">
-                    Login Petani
-                </a>
-            </li>
-
-                </ul>
+    <li class="nav-item"><a class="nav-link text-white" href="#hero">Beranda</a></li>
+    <li class="nav-item"><a class="nav-link text-white" href="#katalog">Katalog</a></li>
+    <!-- Ini tambahan link Edukasi-nya -->
+    <li class="nav-item"><a class="nav-link text-white" href="edukasi/index.php">Edukasi</a></li>
+    
+    <li class="nav-item"><a class="btn btn-light ms-lg-3 px-3 mt-2 mt-lg-0" style="color: var(--dark-green); font-weight: 600; font-size: 13px;" href="auth/login.php">Login Petani</a></li>
+</ul>
             </div>
         </div>
     </nav>
@@ -229,4 +224,5 @@
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

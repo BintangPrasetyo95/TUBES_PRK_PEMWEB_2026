@@ -56,38 +56,48 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login BUYPANEN</title>
+    
+    <!-- Memanggil CSS Global agar form kembali ke tengah dan berbentuk kartu putih -->
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
-<body>
-  <p style="text-align:center; margin-top:20px; color:#14532d; font-size:24px; font-weight:700;">
-    Login BUYPANEN
-</p>
+<body class="login-page">
 
+    <div class="login-container">
+        <!-- Judul Atas -->
+        <h1>Login BUYPANEN</h1>
+        <h2>Login Petani</h2>
 
-    <?php if (!empty($pesan)): ?>
-        <p>
-            <?= htmlspecialchars($pesan) ?>
-        </p>
-    <?php endif; ?>
+        <!-- Area Pesan Error/Notifikasi -->
+        <?php if (!empty($pesan)): ?>
+            <div class="login-message">
+                <?= htmlspecialchars($pesan) ?>
+            </div>
+        <?php endif; ?>
 
-    <form method="POST">
+        <!-- Form Login (Kartu Putih) -->
+        <form method="POST">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="contoh@buypanen.com" required>
 
-        <label>Email</label><br>
-        <input type="email" name="email" required>
-        <br><br>
+            <label>Password</label>
+            <input type="password" name="password" required>
 
-        <label>Password</label><br>
-        <input type="password" name="password" required>
-        <br><br>
+            <button type="submit">Login</button>
+        </form>
 
-        <button type="submit">Login</button>
+        <!-- Area Link Bawah -->
+        <div class="login-register">
+            Belum punya akun? <a href="register.php">Daftar Sekarang</a>
 
-    </form>
-
-     <p style="text-align:center; margin-top:20px;"> 
-        Belum punya akun?
-        <a href="../auth/register.php">Daftar Sekarang</a>
-    </p>
+            <div style="margin-top: 20px;">
+                <a href="../index.php" style="color: #718078; text-decoration: none; font-size: 14px; font-weight: 500;">
+                    &larr; Kembali ke Beranda
+                </a>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

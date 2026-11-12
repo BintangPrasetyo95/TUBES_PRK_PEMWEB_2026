@@ -121,7 +121,7 @@ if (isPost()) {
     }
 }
 
-// ===== Bagian tampilan halaman (HTML) =====
+// Bagian tampilan halaman (HTML)
 $judulHalaman = $modeEdit ? 'Edit Kuis' : 'Buat Kuis Baru';
 $halamanAktif = 'kuis';
 $root = '../';

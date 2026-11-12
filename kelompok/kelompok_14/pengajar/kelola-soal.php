@@ -1,39 +1,19 @@
 <?php
 // PJ-04: Kelola Soal (tambah, edit, hapus, urutkan soal, dan ajukan publish)
 
-// Muat file
-if (file_exists(__DIR__ . '/../includes/config.php')) {
-    require_once __DIR__ . '/../includes/config.php';
-}
-if (file_exists(__DIR__ . '/../includes/db.php')) {
-    require_once __DIR__ . '/../includes/db.php';
-}
-if (file_exists(__DIR__ . '/../includes/auth.php')) {
-    require_once __DIR__ . '/../includes/auth.php';
-}
-if (file_exists(__DIR__ . '/../includes/helpers.php')) {
-    require_once __DIR__ . '/../includes/helpers.php';
-}
-if (file_exists(__DIR__ . '/../includes/csrf.php')) {
-    require_once __DIR__ . '/../includes/csrf.php';
-}
-
+// Muat file konfigurasi dan helper
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/fungsi/kuis.php';
 require_once __DIR__ . '/../includes/fungsi/soal.php';
 
-// Fungsi e() sementara 
-if (!function_exists('e')) {
-    function e($teks) {
-        return htmlspecialchars((string) $teks, ENT_QUOTES, 'UTF-8');
-    }
-}
-
 // Hanya pengajar yang boleh membuka halaman ini
-if (function_exists('wajibPeran')) {
-    wajibPeran(['pengajar']);
-}
+wajibPeran(['pengajar']);
 
-$pengajarId = $_SESSION['user']['id'] ?? ($_SESSION['pengajar_id'] ?? 0);
+$pengajarId = (int) $_SESSION['user']['id'];
 
 // Ambil id kuis dari URL 
 $kuisId = isset($_GET['kuis_id']) ? (int) $_GET['kuis_id'] : 0;
@@ -41,12 +21,7 @@ $kuisId = isset($_GET['kuis_id']) ? (int) $_GET['kuis_id'] : 0;
 // Cek kuis ada dan milik pengajar ini
 $kuis = ambilKuisById($kuisId, $pengajarId);
 if (!$kuis) {
-    http_response_code(404);
-    if (file_exists(__DIR__ . '/../404.php')) {
-        require __DIR__ . '/../404.php';
-        exit;
-    }
-    die('Kuis tidak ditemukan atau Anda tidak memiliki akses.');
+    redirect(BASE_URL . '/404.php');
 }
 
 // Kuis yang menunggu persetujuan atau sudah terbit dikunci (hanya boleh dilihat)
@@ -72,10 +47,8 @@ $nilaiSoal = [
 ];
 
 // Proses saat ada form yang dikirim (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (function_exists('verifikasiCsrf')) {
-        verifikasiCsrf();
-    }
+if (isPost()) {
+    verifikasiCsrf();
 
     $aksi = $_POST['aksi'] ?? '';
     $soalId = (int) ($_POST['soal_id'] ?? 0);
@@ -121,11 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($hasil != null) {
             if ($hasil['berhasil']) {
                 // Berhasil: simpan pesan lalu muat ulang halaman supaya data terbaru tampil
-                if (function_exists('flash')) {
-                    flash('sukses', $pesanSukses);
-                }
-                header('Location: ' . $halamanTujuan);
-                exit;
+                flash('sukses', $pesanSukses);
+                redirect($halamanTujuan);
             } else {
                 $pesanError = $hasil['pesan'] ?? 'Terjadi kesalahan.';
                 // Kalau ajukan gagal, ada daftar alasan kenapa kuis belum lengkap
@@ -150,7 +120,7 @@ if ($editSoalId > 0 && !$terkunci) {
     if ($dataEdit) {
         $modeEditSoal = true;
         // Jika belum ada input error dari POST sebelumnya, isi form dengan data yang mau diedit
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        if (!isPost()) {
             $nilaiSoal['pertanyaan'] = $dataEdit['pertanyaan'];
             $nilaiSoal['pembahasan'] = $dataEdit['pembahasan'] ?? '';
             $nilaiSoal['poin']       = (int) $dataEdit['poin'];
@@ -172,12 +142,7 @@ if ($editSoalId > 0 && !$terkunci) {
 $judulHalaman = 'Kelola Soal';
 
 // Ambil token CSRF
-$tokenCsrf = '';
-if (function_exists('csrfToken')) {
-    $tokenCsrf = csrfToken();
-} elseif (isset($_SESSION['csrf_token'])) {
-    $tokenCsrf = $_SESSION['csrf_token'];
-}
+$tokenCsrf = ambilTokenCsrf();
 
 // Muat header dan sidebars
 if (file_exists(__DIR__ . '/../includes/partials/header.php')) {

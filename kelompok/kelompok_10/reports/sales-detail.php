@@ -2,18 +2,16 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/auth.php';
+require_once __DIR__ . '/nav.php';
 require_login();
 
 $user = current_user();
 $isAdmin = $user['role'] === 'admin';
 
 $pageTitle = 'Detail Penjualan';
-$activePage = 'reports';
+$activePage = 'sales';
 
-$navItems = [
-    ['key' => 'home', 'label' => 'Beranda', 'href' => 'dashboard.php'],
-    ['key' => 'reports', 'label' => 'Analytics', 'href' => 'reports/index.php'],
-];
+$navItems = reports_nav_items($isAdmin);
 
 $pdo = db();
 

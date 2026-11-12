@@ -166,3 +166,27 @@ INSERT INTO `obat` (`id_obat`, `nama_obat`, `id_kategori`, `stok`, `indikasi`, `
 -- 6. Seed Data: 1 Akun Admin Default (Username: admin | Password: password)
 INSERT INTO `admin` (`id_admin`, `username`, `password`) VALUES
 (1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+UPDATE `obat` 
+SET `harga` = CASE `id_obat`
+    WHEN 1 THEN 3500.00
+    WHEN 2 THEN 5000.00
+    WHEN 3 THEN 6500.00
+    WHEN 4 THEN 18000.00
+    WHEN 5 THEN 22000.00
+    WHEN 6 THEN 19500.00
+    WHEN 7 THEN 32000.00
+    WHEN 8 THEN 12000.00
+    WHEN 9 THEN 9000.00
+    WHEN 10 THEN 45000.00
+    WHEN 11 THEN 3000.00
+    WHEN 12 THEN 1000.00
+    WHEN 13 THEN 7500.00
+    WHEN 14 THEN 85000.00
+    WHEN 15 THEN 18500.00
+    WHEN 16 THEN 48000.00
+    WHEN 17 THEN 14000.00
+    WHEN 18 THEN 6000.00
+    WHEN 19 THEN 8000.00
+    WHEN 20 THEN 29000.00
+END
+WHERE `id_obat` BETWEEN 1 AND 20;

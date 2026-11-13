@@ -10,32 +10,34 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// 3. Muat fungsi pembantu
+// 3. Muat konfigurasi dan fungsi pembantu
+require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 // 4. Konfigurasi halaman dan template publik
-$root = './';
+$root = defined('BASE_URL') ? (rtrim(BASE_URL, '/') . '/') : './';
 $judulHalaman = '404 Halaman Tidak Ditemukan - DynaQuiz';
 $halamanAktif = '';
 
 // Tentukan tautan kembali yang cerdas berdasarkan peran pengguna saat ini
-$linkKembali = 'index.php';
+$baseUrl = defined('BASE_URL') ? rtrim(BASE_URL, '/') : '';
+$linkKembali = $baseUrl ? ($baseUrl . '/index.php') : 'index.php';
 $labelKembali = 'Kembali ke Beranda';
 
 $sesiUser = $_SESSION['user'] ?? $_SESSION['pengguna'] ?? null;
 if ($sesiUser && isset($sesiUser['peran'])) {
     $peran = $sesiUser['peran'];
     if ($peran === 'admin') {
-        $linkKembali = 'admin/dashboard.php';
+        $linkKembali = $baseUrl ? ($baseUrl . '/admin/dashboard.php') : 'admin/dashboard.php';
         $labelKembali = 'Kembali ke Dashboard Admin';
     } elseif ($peran === 'pengajar') {
-        $linkKembali = 'pengajar/dashboard.php';
+        $linkKembali = $baseUrl ? ($baseUrl . '/pengajar/dashboard.php') : 'pengajar/dashboard.php';
         $labelKembali = 'Kembali ke Dashboard Pengajar';
     } elseif ($peran === 'pelajar') {
-        $linkKembali = 'pelajar/dashboard.php';
+        $linkKembali = $baseUrl ? ($baseUrl . '/pelajar/dashboard.php') : 'pelajar/dashboard.php';
         $labelKembali = 'Kembali ke Dashboard Pelajar';
     } elseif ($peran === 'guest') {
-        $linkKembali = 'guest/dashboard.php';
+        $linkKembali = $baseUrl ? ($baseUrl . '/guest/dashboard.php') : 'guest/dashboard.php';
         $labelKembali = 'Kembali ke Dashboard Tamu';
     }
 }

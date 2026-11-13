@@ -74,9 +74,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body class="flex min-h-screen items-center justify-center bg-[#f3f5f2] px-4 py-8 text-slate-900 sm:px-6">
     <main class="w-full max-w-5xl">
         <section class="overflow-hidden rounded-3xl border border-[#dfe6de] bg-white shadow-[0_18px_55px_rgba(40,56,43,0.10)] md:grid md:min-h-[570px] md:grid-cols-[0.92fr_1.08fr]" aria-labelledby="login-title">
-            <aside class="relative isolate overflow-hidden bg-[#4e7a5d] px-6 py-7 text-white sm:px-9 sm:py-9 md:flex md:flex-col md:justify-between md:px-10 md:py-10">
-                <div aria-hidden="true" class="absolute -right-20 -top-24 -z-10 h-72 w-72 rounded-full border-[38px] border-white/[0.07]"></div>
-                <div aria-hidden="true" class="absolute -bottom-24 -left-16 -z-10 h-56 w-56 rounded-full bg-[#315b3e]/35"></div>
+            <!-- Panel kiri dengan gambar background -->
+            <aside class="relative isolate overflow-hidden bg-[#4e7a5d] bg-cover bg-[position:60%_center] bg-no-repeat px-6 py-7 text-white sm:px-9 sm:py-9 md:flex md:flex-col md:justify-between md:px-10 md:py-10"
+                   style="background-image: url('assets/img/login-bg.jpg');">
+                <!-- Overlay gelap supaya teks putih tetap terbaca -->
+                <div aria-hidden="true" class="absolute inset-0 -z-10 bg-gradient-to-t from-[#1f3a28]/90 via-[#2f5a3c]/65 to-[#2f5a3c]/55"></div>
+
                 <a href="login.php" class="inline-flex w-fit items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#4e7a5d]">
                     <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20">
                         <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-5 9 5-9 5z"/><path d="M7 12v5c3 2 7 2 10 0v-5M21 10v6"/></svg>
@@ -90,8 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p class="mt-3 max-w-sm text-sm leading-6 text-white/80">Satu tempat untuk mengelola kelas dan mendukung aktivitas pembelajaran.</p>
 
                     <div class="mt-8 grid gap-2.5 sm:grid-cols-2 md:grid-cols-1">
-                        <div class="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3.5 py-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10"><svg aria-hidden="true" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></span><span class="text-sm font-medium">Jadwal dan kelas</span></div>
-                        <div class="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3.5 py-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10"><svg aria-hidden="true" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="text-sm font-medium">Data guru dan siswa</span></div>
+                        <div class="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3.5 py-3 backdrop-blur-sm"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10"><svg aria-hidden="true" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></span><span class="text-sm font-medium">Jadwal dan kelas</span></div>
+                        <div class="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3.5 py-3 backdrop-blur-sm"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10"><svg aria-hidden="true" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="text-sm font-medium">Data guru dan siswa</span></div>
                     </div>
                 </div>
                 <p class="hidden text-xs text-white/60 md:block">Portal untuk Admin dan Guru</p>

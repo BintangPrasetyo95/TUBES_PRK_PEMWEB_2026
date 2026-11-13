@@ -31,7 +31,7 @@
                 <label for="schedule-day" class="mb-1.5 block text-sm font-medium text-slate-700">Hari</label>
                 <select id="schedule-day" name="hari" required class="min-h-10 w-full rounded-lg border border-[#dfe6de] bg-white px-3 text-sm">
                     <option value="" <?= $formValues['hari'] === 0 ? 'selected' : '' ?> disabled>Pilih hari</option>
-                    <?php foreach (JADWAL_DAYS as $number => $dayName): ?><option value="<?= h((string) $number) ?>" <?= $number === $formValues['hari'] ? 'selected' : '' ?>><?= h((string) $number) ?> &middot; <?= h($dayName) ?></option><?php endforeach; ?>
+                    <?php foreach (JADWAL_DAYS as $number => $dayName): ?><option value="<?= h((string) $number) ?>" <?= $number === $formValues['hari'] ? 'selected' : '' ?>><?= h($dayName) ?></option><?php endforeach; ?>
                 </select>
             </div>
             <?php
@@ -40,7 +40,7 @@
             admin_ui_input('Berlaku mulai (opsional)', 'berlaku_mulai', $formValues['berlaku_mulai'], 'date');
             admin_ui_input('Berlaku sampai (opsional)', 'berlaku_sampai', $formValues['berlaku_sampai'], 'date');
             ?>
-            <p class="text-xs leading-5 text-slate-500 sm:col-span-2">Hari mengikuti angka aplikasi (1 = Senin sampai 7 = Minggu). Jam menggunakan format HH:MM.</p>
+            <p class="text-xs leading-5 text-slate-500 sm:col-span-2">Jam menggunakan format HH:MM.</p>
             <div class="flex flex-wrap items-center gap-3 sm:col-span-2">
                 <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#41684f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#679173] focus-visible:ring-offset-2"><?= $isEditing ? 'Simpan Perubahan' : 'Simpan Jadwal' ?></button>
                 <a href="jadwal-mengajar.php<?= $filterSemesterId > 0 ? '?semester_id=' . h((string) $filterSemesterId) : '' ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Batal</a>

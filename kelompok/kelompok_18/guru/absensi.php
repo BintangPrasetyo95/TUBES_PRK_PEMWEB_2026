@@ -34,11 +34,21 @@ guru_page_start('Data Siswa & Poin', 'kelas.php');
             <thead class="bg-[#eff3ee] text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3.5 font-semibold">Nomor Induk</th><th class="px-4 py-3.5 font-semibold">Nama Siswa</th><th class="px-4 py-3.5 font-semibold">Status Kehadiran</th><th class="px-4 py-3.5 font-semibold">Poin</th><th class="px-4 py-3.5 font-semibold">Aksi</th></tr></thead>
             <tbody id="student-attendance-list" class="divide-y divide-[#e6ebe5] text-slate-700">
                 <?php foreach ($students as $student): ?>
-                    <?php $attendanceLabel = ucfirst((string) $student['attendance_status']); ?>
+                    <?php
+                    $attendanceStatus = (string) $student['attendance_status'];
+                    $attendanceLabel = ucfirst($attendanceStatus);
+                    $attendanceBadgeClass = match ($attendanceStatus) {
+                        'hadir' => 'bg-[#e8f1e7] text-[#31583c]',
+                        'alpha' => 'bg-slate-300 text-slate-800',
+                        'sakit' => 'bg-amber-100 text-amber-800',
+                        'izin' => 'bg-blue-100 text-blue-800',
+                        default => 'bg-slate-100 text-slate-600',
+                    };
+                    ?>
                     <tr data-student-row>
                         <td class="whitespace-nowrap px-4 py-3.5"><?= attendara_ui_escape($student['number']) ?></td>
                         <td class="whitespace-nowrap px-4 py-3.5"><?= attendara_ui_escape($student['name']) ?></td>
-                        <td class="whitespace-nowrap px-4 py-3.5"><span class="rounded-full bg-[#e8f1e7] px-2.5 py-1 text-xs font-medium text-[#31583c]"><?= attendara_ui_escape($attendanceLabel) ?></span></td>
+                        <td class="whitespace-nowrap px-4 py-3.5"><span class="rounded-full px-2.5 py-1 text-xs font-medium <?= $attendanceBadgeClass ?>"><?= attendara_ui_escape($attendanceLabel) ?></span></td>
                         <td class="whitespace-nowrap px-4 py-3.5 text-slate-500"><?= number_format((float) $student['points'], 2, '.', ',') ?></td>
                         <td class="whitespace-nowrap px-4 py-3.5"><div class="flex gap-2"><?php if ($canEdit): ?><a href="absensi-edit.php?session_id=<?= (int) $sessionId ?>&amp;id=<?= (int) $student['id'] ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#3f6548] hover:bg-[#edf4ec]">Ubah Status</a><a href="poin-tambah.php?session_id=<?= (int) $sessionId ?>&amp;id=<?= (int) $student['id'] ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#3f6548] hover:bg-[#edf4ec]">Tambah Poin</a><?php else: ?>—<?php endif; ?></div></td>
                     </tr>
@@ -48,7 +58,6 @@ guru_page_start('Data Siswa & Poin', 'kelas.php');
     </div>
     <p id="no-students-found" class="hidden rounded-xl bg-white px-4 py-6 text-center text-sm text-slate-500">Tidak ada siswa yang cocok.</p>
 </section>
-<div class="flex flex-wrap gap-2"><a href="tap-sesi.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Kembali ke Tap</a><a href="kelompok.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Lanjut ke Kelompok</a></div>
 <script>
 const attendanceRows = [...document.querySelectorAll('[data-student-row]')];
 document.getElementById('student-filter').addEventListener('input', event => {

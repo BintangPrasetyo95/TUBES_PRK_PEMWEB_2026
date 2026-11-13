@@ -48,7 +48,7 @@
                             <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['mapel_nama']) ?></td>
                             <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['kelas_nama']) ?></td>
                             <td class="px-4 py-3.5 sm:px-5"><?= h((string) $schedule['semester_nama']) ?></td>
-                            <td class="px-4 py-3.5 text-center sm:px-5"><?= h($dayLabel . ' (' . $dayNumber . ')') ?></td>
+                            <td class="px-4 py-3.5 text-center sm:px-5"><?= h($dayLabel) ?></td>
                             <td class="whitespace-nowrap px-4 py-3.5 text-center sm:px-5"><?= h(substr((string) $schedule['jam_mulai'], 0, 5) . '–' . substr((string) $schedule['jam_selesai'], 0, 5)) ?></td>
                             <td class="whitespace-nowrap px-4 py-3.5 text-center sm:px-5"><?= h($validity) ?></td>
                             <td class="px-4 py-3.5 text-center sm:px-5">

@@ -1,175 +1,148 @@
 <?php
 declare(strict_types=1);
-
 require_once __DIR__ . '/../config/auth.php';
-require_once __DIR__ . '/helpers.php';
+require_login();
 
-require_role('admin');
+$filterType = $_GET['type'] ?? 'all';
+$limit = 100;
 
-$pdo = db();
-$perPage = 20;
-$types = inventory_movement_types();
-
-$productId = (int) filter_input(INPUT_GET, 'product', FILTER_VALIDATE_INT);
-$typeInput = (string) ($_GET['type'] ?? '');
-$type = isset($types[$typeInput]) ? $typeInput : '';
-$fromInput = trim((string) ($_GET['from'] ?? ''));
-$toInput = trim((string) ($_GET['to'] ?? ''));
-$page = max(1, (int) filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT));
-
-function movements_parse_date(string $value): ?DateTimeImmutable
-{
-    if ($value === '') {
-        return null;
-    }
-    $d = DateTimeImmutable::createFromFormat('Y-m-d', $value);
-    return ($d && $d->format('Y-m-d') === $value) ? $d->setTime(0, 0) : null;
-}
-
-$from = movements_parse_date($fromInput);
-$to = movements_parse_date($toInput);
-$filterError = '';
-if (($fromInput !== '' && $from === null) || ($toInput !== '' && $to === null)) {
-    $filterError = 'Format tanggal tidak valid.';
-    $from = $to = null;
-} elseif ($from !== null && $to !== null && $from > $to) {
-    $filterError = 'Tanggal awal tidak boleh setelah tanggal akhir. Filter tanggal diabaikan.';
-    $from = $to = null;
-}
-
-$where = [];
 $params = [];
-if ($productId > 0) {
-    $where[] = 'm.product_id = ?';
-    $params[] = $productId;
-}
-if ($type !== '') {
-    $where[] = 'm.movement_type = ?';
-    $params[] = $type;
-}
-if ($from !== null) {
-    $where[] = 'm.occurred_at >= ?';
-    $params[] = $from->format('Y-m-d H:i:s');
-}
-if ($to !== null) {
-    $where[] = 'm.occurred_at < ?';
-    $params[] = $to->modify('+1 day')->format('Y-m-d H:i:s');
-}
-$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$whereSql = '';
 
-$countStmt = $pdo->prepare("SELECT COUNT(*) FROM inventory_movements m $whereSql");
-$countStmt->execute($params);
-$total = (int) $countStmt->fetchColumn();
-$totalPages = max(1, (int) ceil($total / $perPage));
-$page = min($page, $totalPages);
-$offset = ($page - 1) * $perPage;
-
-$stmt = $pdo->prepare(
-    "SELECT m.id, m.movement_type, m.quantity, m.unit_cost, m.reason, m.occurred_at,
-            p.sku, p.name AS product_name, p.unit,
-            b.id AS batch_id, b.batch_code, u.full_name
-     FROM inventory_movements m
-     JOIN products p ON p.id = m.product_id
-     LEFT JOIN stock_batches b ON b.id = m.batch_id
-     JOIN users u ON u.id = m.user_id
-     $whereSql
-     ORDER BY m.occurred_at DESC, m.id DESC
-     LIMIT $perPage OFFSET $offset"
-);
-$stmt->execute($params);
-$rows = $stmt->fetchAll();
-
-$products = $pdo->query('SELECT id, sku, name FROM products ORDER BY name')->fetchAll();
-
-function movements_page_url(int $page): string
-{
-    $query = $_GET;
-    $query['page'] = $page;
-    return 'movements.php?' . http_build_query($query);
+if ($filterType !== 'all') {
+    $whereSql = 'WHERE im.movement_type = :type';
+    $params['type'] = $filterType;
 }
 
-$pageTitle = 'Riwayat stok';
-$activePage = 'movements';
-$navItems = inventory_nav_items();
+$movements = [];
+try {
+    $query = "
+        SELECT 
+            im.*,
+            p.name AS product_name,
+            p.sku AS product_sku,
+            p.unit AS product_unit,
+            sb.batch_code,
+            u.full_name AS operator_name,
+            s.invoice_no
+        FROM inventory_movements im
+        JOIN products p ON im.product_id = p.id
+        LEFT JOIN stock_batches sb ON im.batch_id = sb.id
+        LEFT JOIN users u ON im.user_id = u.id
+        LEFT JOIN sales s ON im.sale_id = s.id
+        {$whereSql}
+        ORDER BY im.occurred_at DESC
+        LIMIT {$limit}
+    ";
+    $stmt = db()->prepare($query);
+    $stmt->execute($params);
+    $movements = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log('Error loading movements: ' . $e->getMessage());
+    flash('error', 'Gagal memuat riwayat mutasi stok.');
+}
+
+$pageTitle = 'Riwayat Mutasi Persediaan (Audit Log)';
+$activePage = 'inventory';
 require __DIR__ . '/../includes/header.php';
-echo inventory_css();
 ?>
-<p class="eyebrow">PERSEDIAAN</p>
-<h1>Riwayat pergerakan stok</h1>
-<p class="muted">Catatan audit semua stok masuk, keluar, dan penjualan. Tidak bisa diubah atau dihapus.</p>
 
-<section class="panel">
-    <?php if ($filterError !== ''): ?>
-        <div class="notice notice-error" role="alert"><?= e($filterError) ?></div>
-    <?php endif; ?>
+<div class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Riwayat Mutasi & Audit Persediaan</h2>
+            <p class="muted" style="margin: 0; font-size: 13px;">Catatan permanen setiap stok masuk, penjualan POS, dan penyesuaian barang.</p>
+        </div>
+        <a href="<?= e(app_url('inventory/index.php')) ?>" class="button button-secondary button-sm">Kembali ke Stok</a>
+    </div>
 
-    <form method="get" action="movements.php" class="filter-bar">
-        <div class="form-stack">
-            <label for="product">Produk</label>
-            <select id="product" name="product">
-                <option value="0">Semua produk</option>
-                <?php foreach ($products as $p): ?>
-                    <option value="<?= (int) $p['id'] ?>" <?= $productId === (int) $p['id'] ? 'selected' : '' ?>><?= e($p['sku'] . ' - ' . $p['name']) ?></option>
-                <?php endforeach; ?>
+    <!-- Filter Bar -->
+    <form method="get" class="filter-bar">
+        <div class="filter-group">
+            <select name="type">
+                <option value="all" <?= $filterType === 'all' ? 'selected' : '' ?>>Semua Jenis Mutasi</option>
+                <option value="IN" <?= $filterType === 'IN' ? 'selected' : '' ?>>Stok Masuk (IN)</option>
+                <option value="SALE" <?= $filterType === 'SALE' ? 'selected' : '' ?>>Penjualan POS (SALE)</option>
+                <option value="ADJUSTMENT_OUT" <?= $filterType === 'ADJUSTMENT_OUT' ? 'selected' : '' ?>>Penyesuaian Keluar</option>
+                <option value="EXPIRED" <?= $filterType === 'EXPIRED' ? 'selected' : '' ?>>Kedaluwarsa (EXPIRED)</option>
+                <option value="OUT" <?= $filterType === 'OUT' ? 'selected' : '' ?>>Rusak / Hilang (OUT)</option>
+                <option value="RETURN" <?= $filterType === 'RETURN' ? 'selected' : '' ?>>Retur Pembatalan</option>
             </select>
+            <button type="submit" class="button button-secondary button-sm">Filter</button>
+            <?php if ($filterType !== 'all'): ?>
+                <a href="<?= e(app_url('inventory/movements.php')) ?>" class="button button-secondary button-sm">Reset</a>
+            <?php endif; ?>
         </div>
-        <div class="form-stack">
-            <label for="type">Tipe</label>
-            <select id="type" name="type">
-                <option value="">Semua tipe</option>
-                <?php foreach ($types as $key => [$label]): ?>
-                    <option value="<?= e($key) ?>" <?= $type === $key ? 'selected' : '' ?>><?= e($label) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="form-stack">
-            <label for="from">Dari tanggal</label>
-            <input id="from" name="from" type="date" value="<?= e($fromInput) ?>">
-        </div>
-        <div class="form-stack">
-            <label for="to">Sampai tanggal</label>
-            <input id="to" name="to" type="date" value="<?= e($toInput) ?>">
-        </div>
-        <button class="button button-secondary" type="submit">Terapkan</button>
+        <span class="muted" style="font-size: 12px;">Menampilkan <?= count($movements) ?> aktivitas terbaru</span>
     </form>
 
-    <div class="table-wrap">
+    <div class="table-container">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Waktu</th><th>Produk</th><th>Tipe</th><th>Batch</th>
-                    <th class="num">Jumlah</th><th class="num">Harga pokok</th><th>Keterangan</th><th>Oleh</th>
+                    <th>Waktu</th>
+                    <th>Tipe Mutasi</th>
+                    <th>Produk</th>
+                    <th>Batch</th>
+                    <th class="col-num">Kuantitas</th>
+                    <th class="col-num">HPP Satuan</th>
+                    <th>Keterangan / Referensi</th>
+                    <th>Operator</th>
                 </tr>
             </thead>
             <tbody>
-            <?php if (!$rows): ?>
-                <tr><td class="empty-row" colspan="8">Tidak ada pergerakan yang cocok.</td></tr>
-            <?php endif; ?>
-            <?php foreach ($rows as $r): ?>
-                <?php [$label, $class, $sign] = $types[$r['movement_type']] ?? [$r['movement_type'], 'badge-muted', '']; ?>
-                <tr>
-                    <td><?= e(substr((string) $r['occurred_at'], 0, 16)) ?></td>
-                    <td><strong><?= e($r['product_name']) ?></strong><br><span class="muted"><?= e($r['sku']) ?></span></td>
-                    <td><span class="badge <?= e($class) ?>"><?= e($label) ?></span></td>
-                    <td><?= ($r['batch_code'] ?? '') !== '' ? e($r['batch_code']) : ($r['batch_id'] ? '#' . (int) $r['batch_id'] : '-') ?></td>
-                    <td class="num"><?= e($sign) ?><?= (int) $r['quantity'] ?> <?= e($r['unit']) ?></td>
-                    <td class="num"><?= $r['unit_cost'] !== null ? e(inventory_rupiah($r['unit_cost'])) : '-' ?></td>
-                    <td class="muted"><?= ($r['reason'] ?? '') !== '' ? e($r['reason']) : '-' ?></td>
-                    <td><?= e($r['full_name']) ?></td>
-                </tr>
-            <?php endforeach; ?>
+                <?php if (empty($movements)): ?>
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 36px; color: var(--ink-muted);">
+                            Belum ada riwayat pergerakan stok.
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($movements as $m): 
+                        $type = $m['movement_type'];
+                        $isPlus = in_array($type, ['IN', 'ADJUSTMENT_IN', 'RETURN'], true);
+                    ?>
+                        <tr>
+                            <td style="white-space: nowrap; font-size: 12px; color: #475569;">
+                                <?= date('d/m/Y H:i', strtotime($m['occurred_at'])) ?>
+                            </td>
+                            <td>
+                                <?php if ($type === 'IN'): ?>
+                                    <span class="badge badge-success">+ MASUK</span>
+                                <?php elseif ($type === 'SALE'): ?>
+                                    <span class="badge badge-info">&minus; TERJUAL</span>
+                                <?php elseif ($type === 'EXPIRED'): ?>
+                                    <span class="badge badge-danger">&minus; EXPIRED</span>
+                                <?php else: ?>
+                                    <span class="badge badge-warning">&minus; <?= e($type) ?></span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <strong><?= e($m['product_name']) ?></strong>
+                                <small style="display: block; color: var(--ink-subtle);"><?= e($m['product_sku']) ?></small>
+                            </td>
+                            <td class="col-code"><?= e($m['batch_code'] ?? '-') ?></td>
+                            <td class="col-num">
+                                <strong style="color: <?= $isPlus ? 'var(--success)' : 'var(--danger)' ?>;">
+                                    <?= $isPlus ? '+' : '-' ?><?= (int) $m['quantity'] ?> <?= e($m['product_unit']) ?>
+                                </strong>
+                            </td>
+                            <td class="col-num">
+                                <?= $m['unit_cost'] !== null ? 'Rp ' . number_format((float) $m['unit_cost'], 0, ',', '.') : '-' ?>
+                            </td>
+                            <td>
+                                <?= e($m['reason'] ?? '-') ?>
+                                <?php if (!empty($m['invoice_no'])): ?>
+                                    <small style="display: block; color: var(--primary);">Invoice: <?= e($m['invoice_no']) ?></small>
+                                <?php endif; ?>
+                            </td>
+                            <td><?= e($m['operator_name'] ?? 'Sistem') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
+</div>
 
-    <div class="pagination">
-        <?php if ($page > 1): ?>
-            <a class="button button-secondary button-small" href="<?= e(movements_page_url($page - 1)) ?>">Sebelumnya</a>
-        <?php endif; ?>
-        <span class="muted">Halaman <?= $page ?> dari <?= $totalPages ?> (<?= $total ?> catatan)</span>
-        <?php if ($page < $totalPages): ?>
-            <a class="button button-secondary button-small" href="<?= e(movements_page_url($page + 1)) ?>">Berikutnya</a>
-        <?php endif; ?>
-    </div>
-</section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

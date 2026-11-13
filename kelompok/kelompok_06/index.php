@@ -1,3 +1,4 @@
+
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -44,8 +45,10 @@ $titles = [
     'dashboard' => 'Dashboard Analitik',
     'kasir'     => 'Terminal Kasir',
     'produk'    => 'Data Master Produk',
-    'laporan'   => 'Laporan & Bukti Transaksi'
+    'laporan'   => 'Laporan & Bukti Transaksi',
+    'profil'    => 'Profil Pengguna'
 ];
+
 $page_heading = $titles[$page] ?? 'FlashPOS System';
 
 // Halaman kasir memakai layout penuh (tanpa padding) seperti aplikasi POS
@@ -53,7 +56,8 @@ $active_page = $page;
 $main_class  = ($page === 'kasir')
     ? 'flex-1 overflow-hidden'
     : 'flex-1 overflow-y-auto p-8';
-$page_title   = $page_heading . ' — FlashPOS';
+
+$page_title = $page_heading . ' — FlashPOS';
 
 // 3. Panggil Layout Atas (Header & Sidebar)
 require_once 'includes/header.php';
@@ -67,15 +71,26 @@ switch ($page) {
     case 'dashboard':
         if (file_exists('pages/dashboard.php')) include 'pages/dashboard.php';
         break;
+
     case 'kasir':
         if (file_exists('pages/kasir.php')) include 'pages/kasir.php';
         break;
+
     case 'produk':
         if (file_exists('pages/produk.php')) include 'pages/produk.php';
         break;
+
     case 'laporan':
         if (file_exists('pages/laporan.php')) include 'pages/laporan.php';
         break;
+
+    // Halaman Profil Pengguna
+    case 'profil':
+        if (file_exists('pages/profil.php')) {
+            include 'pages/profil.php';
+        }
+        break;
+
     default:
         echo "<div class='p-4 bg-red-50 text-red-600 rounded-lg'>Halaman tidak ditemukan!</div>";
         break;

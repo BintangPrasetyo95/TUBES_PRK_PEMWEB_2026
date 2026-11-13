@@ -1,3 +1,4 @@
+
 <?php
 // Menentukan menu aktif. Variabel $page berasal dari index.php
 $active_page = $active_page ?? ($page ?? '');
@@ -8,6 +9,7 @@ $menu_items = [
     ['kasir',     'shopping-bag', 'Terminal Kasir',  false],
     ['produk',    'package',      'Data Produk',     true],
     ['laporan',   'file-text',    'Laporan & Struk', false],
+    ['profil',    'user-round',   'Profil Pengguna', false],
 ];
 
 $inisial = strtoupper(substr($nama_user, 0, 1));

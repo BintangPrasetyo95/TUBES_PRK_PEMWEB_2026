@@ -183,18 +183,3 @@ Kredensial demo yang disediakan pada berkas `03\\\_demo.sql`:
 
 \---
 
-## Kepatuhan Git Workflow \& Monorepo Isolasi
-
-Tim Kelompok 21 menerapkan aturan ketat kepatuhan monorepo:
-
-1. **Zero Contamination:** Seluruh pengerjaan hanya menyentuh path `kelompok/kelompok\\\_21/`.
-2. **Git Check Validasi:**
-
-```bash
-   git diff --name-only upstream/main..staging
-   ```
-
-*Output dipastikan 100% berawalan `kelompok/kelompok\\\_21/` agar lolos validasi otomatis robot CI/CD.*
-
-3. **Branching Strategy:** Menggunakan integrasi cabang perantara `staging` untuk me-merge 6 cabang fitur sebelum diajukan melalui Final Pull Request ke branch `main` repositori pusat LabKom TI Unila.
-

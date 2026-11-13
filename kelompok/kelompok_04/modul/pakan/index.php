@@ -38,7 +38,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM pakan ORDER BY id_pakan DESC");
                         <td><?= $no++; ?></td>
                         <td><strong><?= htmlspecialchars($row['nama_pakan']); ?></strong></td>
                         <td><span class="badge bg-secondary"><?= htmlspecialchars($row['jenis_pakan']); ?></span></td>
-                        <td><?= htmlspecialchars($row['peruntukan']); ?></td>
+                        <td><?= htmlspecialchars($row['peruntukan'] ?? '-'); ?></td>
                         <td><span class="badge <?= $badge_stok; ?>"><?= number_format($row['stok_kg'], 2); ?></span></td>
                         <td><?= htmlspecialchars($row['satuan']); ?></td>
                         <td class="text-center text-nowrap">

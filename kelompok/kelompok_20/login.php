@@ -135,25 +135,46 @@ require_once __DIR__ . '/includes/header.php';
 
         <div class="form-group">
             <label for="password" class="form-label">Kata Sandi</label>
-            <input
-                type="password"
-                id="password"
-                name="password"
-                class="form-control"
-                placeholder="Masukkan kata sandi"
-                required
-            >
+            <div style="position: relative;">
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="form-control"
+                    style="padding-right: 3rem;"
+                    placeholder="Masukkan kata sandi"
+                    required
+                >
+                <button type="button" data-password-toggle="password" aria-label="Tampilkan kata sandi" aria-pressed="false" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: var(--color-text-muted); padding: 0.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path data-eye-slash d="m3 3 18 18" style="display: none;" /></svg>
+                </button>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
-            Masuk
-        </button>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Masuk</button>
     </form>
 
     <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--color-text-muted);">
         Belum memiliki akun? <a href="/register.php" style="color: var(--color-primary); font-weight: 600;">Daftar di sini</a>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var input = document.getElementById(button.getAttribute('data-password-toggle'));
+            if (!input) return;
+
+            var tampil = input.type === 'password';
+            input.type = tampil ? 'text' : 'password';
+            button.setAttribute('aria-pressed', tampil ? 'true' : 'false');
+            button.setAttribute('aria-label', tampil ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+            button.querySelector('[data-eye-slash]').style.display = tampil ? 'none' : 'block';
+        });
+    });
+});
+</script>
 
 <script src="/assets/js/auth.js" defer></script>
 

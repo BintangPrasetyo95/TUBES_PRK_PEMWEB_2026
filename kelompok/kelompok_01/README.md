@@ -96,6 +96,7 @@ Akun pengguna biasa dibuat sendiri lewat halaman **Daftar** (`register.php`). Pa
 ├── config/          Koneksi database dan session
 ├── database/        database.sql (tabel, view, trigger, stored procedure, data awal)
 ├── pages/           Halaman aplikasi setelah login
+├── index.php
 ├── login.php
 ├── register.php
 └── logout.php
@@ -110,4 +111,8 @@ Terdapat 8 tabel: `keluarga`, `pengguna`, `kategori`, `pemasukan`, `pengeluaran`
 
 | Nama | NPM |
 |------|-----|
-| - | - |
+| Adelia Aura Nabilla | 2415061035 |
+| Hafizh Abdoel Ghofar | 2415061076 |
+| AKHMAD FAISHAL KHARISMA | 2415061054 |
+| Nabila Saida Zara | 2415061110 |
+| Anugrah Aziz Firdaus | 2415061115 |

@@ -24,3 +24,4 @@ return [
     // Port default MySQL
     'port'     => '3306',
 ];
+

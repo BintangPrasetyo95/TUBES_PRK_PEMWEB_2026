@@ -1,222 +1,253 @@
-# SisaSense
+# SisaSense &bull; Kelompok 10
 
-**Sistem Manajemen Persediaan, Kasir POS, dan Analisis Performa Penjualan UMKM**  
+**Sistem Manajemen Persediaan, Kasir POS Modern, dan Analisis Performa Penjualan UMKM**  
 *Tugas Besar Praktikum Pemrograman Web 2026 &bull; Kelompok 10*
-
-SisaSense adalah aplikasi web *enterprise-grade* untuk membantu UMKM mengelola stok barang, mencatat transaksi penjualan di kasir (POS), memantau masa simpan/kedaluwarsa barang (*FEFO*), memberikan rekomendasi restok otomatis (*ADS & ROP*), serta menganalisis performa laba kotor secara transparan.
 
 ---
 
-## 1. Tiga Peran Pengguna (Multi-Role System)
+## 1. Identitas Proyek & Anggota Tim
 
-Sistem ini mendukung 3 peran pengguna dengan hak akses yang terisolasi secara ketat:
+SisaSense adalah aplikasi web *enterprise-grade* berbasis **PHP Native 8.2** dan **MySQL** yang dirancang untuk mendigitalkan operasional UMKM retail dan pangan nusantara. Sistem mengintegrasikan pencatatan kasir POS real-time, alokasi stok berprinsip **FEFO (*First Expired, First Out*)**, sistem pendukung keputusan restok barang (*ADS & ROP*), serta laporan laba-rugi kotor otomatis.
+
+### Anggota Pengembang (Kelompok 10):
+| No | Nama Mahasiswa | NIM / NPM | Peran & Kontribusi |
+|:---:|---|:---:|---|
+| 1 | **Fadhlan** *(Lead Developer)* | *2317051...* | Arsitektur Sistem, Integrasi Database & Backend |
+| 2 | **Anggota Kelompok 10** | *2317051...* | Frontend UI/UX NutrAmla, Kasir POS & Modul Transaksi |
+| 3 | **Anggota Kelompok 10** | *2317051...* | Modul Analitik Keuangan, Laporan & Testing |
+
+---
+
+## 2. Tiga Peran Pengguna (Multi-Role System)
+
+Sistem menerapkan pembatasan hak akses berbasis peran (*Role-Based Access Control / RBAC*) dengan session yang aman:
 
 | Peran | Hak Akses Utama | Halaman Utama |
 |---|---|---|
-| **Administrator** | Akses penuh: manajemen produk & kategori, pencatatan stok masuk, penyesuaian/koreksi opname, laporan keuangan, analitik omzet & HPP, rekomendasi restok, simulasi diskon. | `dashboard.php`, `products/`, `inventory/`, `reports/`, `sales/` |
-| **Kasir (Cashier)** | Akses operasional: antarmuka kasir POS, pencarian produk, perhitungan uang tunai & kembalian, pemrosesan transaksi belanja, riwayat invoice, cetak struk nota. | `dashboard.php`, `sales/pos.php`, `sales/history.php`, `inventory/index.php` |
-| **Pembeli (Customer)** | Portal pelanggan: pendaftaran mandiri (`register.php`), eksplorasi katalog produk toko secara real-time, melihat harga & ketersediaan stok, riwayat struk belanjaan pribadi. | `dashboard.php`, `products/index.php`, `sales/my_orders.php` |
+| **Administrator** | Akses Penuh: Manajemen produk & master kategori, input stok batch masuk, opname/koreksi barang rusak, analisis laporan keuangan, rekomendasi restok otomatis (ROP), dan simulasi diskon harga. | `dashboard.php`, `products/`, `inventory/`, `reports/`, `sales/` |
+| **Kasir (Cashier)** | Akses Operasional Toko: Kasir POS interaktif, pencarian cepat produk & SKU, kalkulasi uang tunai/kembalian, modal multi-metode pembayaran, riwayat transaksi, dan cetak struk nota belanja. | `dashboard.php`, `sales/pos.php`, `sales/history.php`, `inventory/index.php` |
+| **Pembeli (Customer)** | Portal Pelanggan: Registrasi akun mandiri (`register.php`), eksplorasi etalase toko bertema NutrAmla, keranjang belanja interaktif, dan riwayat pesanan pribadi. | `dashboard.php`, `products/index.php`, `sales/my_orders.php` |
 
 ### Akun Demo Pengujian (Tinggal Pakai):
+Seluruh akun demo telah di-seed dengan kata sandi default **`123`**:
 
-Setelah mengimpor database `database/sisa_sense.sql`, Anda dapat langsung masuk menggunakan akun demo berikut:
+| Peran | Username | Email | Password | URL Akses |
+|---|---|---|:---:|---|
+| **Administrator** | `admin` | `admin@sisasense.id` | **`123`** | `login.php` &rarr; `dashboard.php` |
+| **Kasir** | `kasir` | `kasir@sisasense.id` | **`123`** | `login.php` &rarr; `sales/pos.php` |
+| **Pembeli** | `pembeli` | `pembeli@sisasense.id` | **`123`** | `login.php` &rarr; `products/index.php` |
 
-| Peran | Username / Email | Password Default |
-|---|---|---|
-| **Administrator** | `admin` *(atau admin@sisasense.id)* | `123` |
-| **Kasir** | `kasir` *(atau kasir@sisasense.id)* | `123` |
-| **Pembeli** | `pembeli` *(atau pembeli@sisasense.id)* | `123` |
-
-*(Pelanggan baru juga dapat mendaftar mandiri kapan saja melalui menu **Daftar Akun Pembeli** pada halaman `register.php`)*.
-
----
-
-## 2. Fitur Unggulan Sistem
-
-1. **Kasir POS Modern & Modal Checkout Pop-Up (`sales/pos.php`):**
-   - Antarmuka visual bersih terinspirasi dari **Ecavo (`ecavo.in`)**, **Majoo**, dan **Pano SaaS**.
-   - Pencarian instan nama produk atau kode SKU serta filter navigasi pill kategori.
-   - 24 Produk UMKM dengan foto nyata 100% sinkron dan autentik (Minyak Goreng Sawit 2L dalam botol kemasan jernih, Madu Hutan Murni dalam toples keemasan dengan honey dipper, Beras Ramos, Dodol Garut, Abon Sapi, Jamu Kunyit Asam, dll).
-   - Bebas gangguan: Menghilangkan header WhatsApp/telepon yang berlebihan dan menyederhanakan halaman login/register tanpa dinding teks berbelit-belit.
-   - Keranjang belanja interaktif dengan proteksi stok fisik (tidak dapat melebihi sisa stok).
-   - **Modal Pop-Up Multi-Metode Pembayaran:**
-     - 💵 **Tunai (Cash):** Kalkulasi kembalian otomatis real-time & quick cash buttons (`Uang Pas`, `+10rb`, `+20rb`, `+50rb`, `+100rb`).
-     - 📱 **QRIS (Standar Bank Indonesia):** QR code dinamis terintegrasi e-wallet & mobile banking.
-     - 🏦 **Transfer Bank:** Nomor rekening resmi BCA, Mandiri, dan BRI dengan tombol salin instan (*copy-to-clipboard*).
-     - 💳 **Kartu Debit / EDC:** Pilihan mesin EDC bank dan pencatatan nomor approval kartu.
-2. **Transaksi Database Atomik & Alokasi FEFO (`sales/checkout.php`):**
-   - Menggunakan `BEGIN TRANSACTION` dengan *row-level locking* pada MySQL InnoDB.
-   - Otomatis memotong stok dari batch yang tanggal kedaluwarsanya paling dekat (*First Expired, First Out*).
-   - Menyimpan *snapshot* harga jual dan harga pokok modal (HPP) per baris item untuk akurasi laporan historis.
-   - Mencatat otomatis mutasi keluar ke tabel audit `inventory_movements`.
-   - Mengembalikan (*rollback*) seluruh data jika terjadi kegagalan atau stok tidak mencukupi di tengah proses.
-3. **Struk Belanja Siap Cetak (`sales/receipt.php`):**
-   - Desain nota belanja ala printer kasir termal mini (58mm/80mm) maupun kertas A4 standar dengan dukungan `@media print`.
-4. **Manajemen Persediaan & Batch (`inventory/`):**
-   - Ringkasan stok tersedia hasil agregasi `SUM(qty_remaining)` seluruh batch aktif.
-   - Pelacak lot/batch dengan indikator hari menuju kedaluwarsa (Aman, Kritis <30 hari, Kedaluwarsa).
-   - Pencatatan stok masuk (`inventory/incoming.php`) dan penyesuaian keluar non-penjualan (`inventory/adjustment.php` untuk barang rusak, hilang, atau kedaluwarsa).
-   - Audit trail mutasi barang lengkap (`inventory/movements.php`).
-5. **Dashboard Analitik & Rekomendasi Restok (`reports/`):**
-   - Ringkasan Keuangan: Omzet Bersih, HPP Terjual, Laba Kotor, dan Persentase Margin.
-   - Visualisasi tren penjualan 7 hari menggunakan **Native Pure SVG Micro-Chart** tanpa library JS eksternal.
-   - Produk Terlaris (*Top Selling*) & Produk Lambat Terjual (*Slow Moving* > 30 hari).
-   - **Sistem Pendukung Keputusan Restok:** Menghitung *Average Daily Sales* (ADS), *Safety Stock*, *Reorder Point* (ROP), dan saran kuantitas restok.
-   - **Simulator Diskon:** Menguji skenario diskon harga dan membunyikan alarm peringatan jika harga jatuh di bawah HPP modal UMKM.
-   - **Ekspor CSV:** Unduh laporan penjualan dan laporan stok persediaan berstandar RFC 4180 (dilengkapi UTF-8 BOM untuk Microsoft Excel).
+> *Catatan: Pengunjung baru juga dapat mendaftar langsung sebagai pembeli melalui menu **Daftar Akun Baru** pada `register.php`.*
 
 ---
 
-## 3. Struktur Direktori Proyek
+## 3. Fitur Unggulan Sistem
+
+### A. Desain UI/UX E-Commerce Modern (Terinspirasi NutrAmla & Ecavo)
+1. **Top Navbar Header 3-Zona (Ala NutrAmla `nutramla.com`):**
+   - Menghilangkan sidebar samping yang kaku; menggantinya dengan canvas navigasi horizontal penuh (*full-width canvas*).
+   - **Kiri:** Tautan navigasi aktif sesuai role (`Beranda`, `Katalog`, `Kasir POS`, `Laporan`, dll).
+   - **Tengah:** Framed Badge Logo elegan `UMKM Nusantara & SisaSense`.
+   - **Kanan:** Pencarian instan katalog, avatar pengguna dengan dropdown profil, serta badge tas keranjang hijau limau (*lime green*) dinamis.
+2. **Koleksi Etalase & Card Produk Interaktif:**
+   - Showcase *"Shop Collections"* 4 kolom responsif (Camilan Snack, Minuman Herbal, Sembako Pokok, Oleh-Oleh Khas Daerah).
+   - Card produk dilengkapi rating bintang `★★★★★`, stepper jumlah kuantitas `[-] 1 [+]`, tombol cepat `Add to Cart`, dan tombol hijau `Buy Now`.
+3. **Bebas Gangguan (*Clean UI*):**
+   - Menghapus tulisan asing/India ("सिसासेंस", dll) dan meniadakan nomor kontak/WhatsApp yang mengganggu ruang kerja kasir.
+
+### B. Kasir POS & Modal Pembayaran Multi-Metode (`sales/pos.php`)
+1. **Pencarian & Filter Cepat:** Temukan produk secara instan berdasarkan nama atau SKU, dengan pill filter kategori.
+2. **Modal Checkout Pop-Up 4 Metode (Terinspirasi Ecavo):**
+   - 💵 **Tunai (Cash):** Kalkulasi kembalian otomatis real-time & quick cash buttons (`Uang Pas`, `+10rb`, `+20rb`, `+50rb`, `+100rb`).
+   - 📱 **QRIS (Standar Bank Indonesia):** QR code dinamis terintegrasi e-wallet & mobile banking.
+   - 🏦 **Transfer Bank:** Nomor rekening resmi BCA, Mandiri, dan BRI dengan tombol salin instan (*copy-to-clipboard*).
+   - 💳 **Kartu Debit / EDC:** Pilihan mesin EDC bank dan pencatatan nomor approval kartu.
+3. **Struk Nota Kasir Siap Cetak (`sales/receipt.php`):**
+   - Desain nota printer termal 58mm/80mm maupun kertas A4 dengan dukungan `@media print`.
+
+### C. Alokasi Stok Cerdas FEFO & Transaksi Atomik (`sales/checkout.php`)
+1. **FEFO (First Expired, First Out):** Algoritma checkout otomatis memprioritaskan pengurangan stok dari batch barang yang memiliki tanggal kedaluwarsa paling dekat.
+2. **Integritas Database Atomik:** Menggunakan `BEGIN TRANSACTION` dengan *row-level locking* (`FOR UPDATE`) pada MySQL InnoDB. Mengembalikan (*rollback*) secara utuh jika stok fisik tidak mencukupi.
+3. **Audit Trail Mutasi Stok (`inventory/movements.php`):** Setiap transaksi penjualan, stok masuk, atau koreksi opname otomatis tercatat ke tabel audit log persediaan.
+
+### D. Analitik Keuangan & Sistem Pendukung Keputusan (SPK)
+1. **Executive Dashboard (`reports/index.php`):**
+   - Ringkasan Omzet Bersih, Total HPP Terjual, Laba Kotor, dan Persentase Margin Keuntungan.
+   - Grafik tren penjualan 7 hari terakhir berbasis **Native Pure SVG Micro-Chart** tanpa ketergantungan library JavaScript pihak ketiga.
+2. **SPK Rekomendasi Restok (`reports/restock_recommendations.php`):**
+   - Perhitungan *Average Daily Sales* (ADS), *Safety Stock*, *Lead Time*, dan *Reorder Point* (ROP) untuk mencegah kehabisan stok (*stockout*).
+3. **Simulator Diskon & Proteksi Margin (`reports/discount_simulator.php`):**
+   - Simulasi potongan harga yang membunyikan alarm peringatan jika harga diskon berada di bawah HPP modal UMKM.
+4. **Ekspor Laporan CSV Excel-Ready (`reports/export_sales_csv.php`):**
+   - Laporan transaksi penjualan dan persediaan berformat CSV standar RFC 4180 lengkap dengan UTF-8 BOM untuk Microsoft Excel.
+
+---
+
+## 4. Struktur Direktori Proyek
 
 ```text
 kelompok_10/
+├── analytics/                   # [MODUL ANALITIK]
+│   ├── functions.php            # Formula agregasi data & kalkulasi margin
+│   └── index.php                # Dashboard analitik performa toko
 ├── assets/
 │   └── css/
-│       └── style.css            # Design system, layout kasir, responsif & print
+│       └── style.css            # Desain sistem NutrAmla, Ecavo, POS, & cetak nota
 ├── config/
-│   ├── auth.php                 # Autentikasi, session cookie unik, CSRF, dynamic URL
-│   └── database.php             # Koneksi PDO Singleton fleksibel
+│   ├── auth.php                 # Autentikasi RBAC, session cookie unik, CSRF, URL resolver
+│   ├── database.php             # Koneksi PDO Singleton (mendukung local & InfinityFree)
+│   └── database.local.example.php # Template konfigurasi koneksi hosting InfinityFree
 ├── database/
-│   └── sisa_sense.sql           # DDL resmi 8 tabel + Data awal demo akun 3 role
+│   ├── sisa_sense.sql           # DDL 8 tabel + seeder awal lokal (Laragon/XAMPP)
+│   └── infinityfree_seeder.sql  # SQL Seeder khusus InfinityFree (Bebas error 1044)
 ├── includes/
-│   ├── header.php               # Navigasi sidebar dinamis sesuai role (SVG icons)
+│   ├── header.php               # Top Navbar 3-Zona ala NutrAmla (responsif)
 │   └── footer.php               # Penutup layout bersama
-├── products/                    # [MODUL 1 - PRODUK & KATEGORI]
-│   ├── index.php                # Katalog produk & tabel stok
-│   ├── create.php               # Form tambah produk baru + auto SKU
-│   ├── edit.php                 # Form edit produk & toggle nonaktif aman
-│   └── categories.php           # Manajemen kategori barang
-├── inventory/                   # [MODUL 2 - PERSEDIAAN & BATCH]
+├── inventory/                   # [MODUL PERSEDIAAN & BATCH]
 │   ├── index.php                # Monitoring stok fisik real-time
 │   ├── incoming.php             # Form catat stok masuk (Batch baru)
-│   ├── batches.php              # Detail batch & countdown expired (FEFO)
+│   ├── batches.php              # Pelacak batch & hitung mundur kedaluwarsa (FEFO)
 │   ├── adjustment.php           # Form penyesuaian barang rusak / selisih opname
-│   └── movements.php            # Riwayat mutasi persediaan (audit log)
-├── sales/                       # [MODUL 3 - POS KASIR & PENJUALAN]
-│   ├── pos.php                  # Antarmuka kasir belanja interaktif
-│   ├── checkout.php             # Pemroses transaksi database atomik
-│   ├── history.php              # Riwayat struk invoice toko
-│   ├── receipt.php              # Tampilan nota cetak kasir
-│   └── my_orders.php            # Riwayat belanja khusus akun pembeli
-├── reports/                     # [MODUL 4 - ANALITIK & LAPORAN]
-│   ├── index.php                # Executive Dashboard Analitik & Tren SVG
-│   ├── sales_report.php         # Laporan penjualan detail berfilter tanggal
-│   ├── inventory_report.php     # Laporan nilai aset modal persediaan (HPP)
-│   ├── export_sales_csv.php     # Ekspor CSV penjualan (Excel-ready)
-│   ├── export_inventory_csv.php # Ekspor CSV persediaan
-│   ├── restock_recommendations.php # SPK Rekomendasi Restok (ADS & ROP)
-│   └── discount_simulator.php   # Simulator diskon & alarm proteksi defisit
-├── skills/                      # [SKILL AI & DESAIN SISTEM]
-│   └── artisan-pos-design/
-│       └── SKILL.md             # Panduan estetika Sarah's Snacks & Majoo
+│   ├── movements.php            # Riwayat mutasi persediaan (audit log lengkap)
+│   ├── stock_in.php             # Input penerimaan stok
+│   └── stock_out.php            # Input pengeluaran non-penjualan
+├── products/                    # [MODUL PRODUK & KATEGORI]
+│   ├── index.php                # Katalog etalase produk dengan filter kategori
+│   ├── create.php               # Form penambahan produk baru + auto-SKU
+│   ├── edit.php                 # Form edit data produk & status aktif
+│   ├── form.php                 # Komponen form bersama produk
+│   └── categories.php           # Manajemen kategori barang
+├── recommendations/             # [MODUL SPK & REKOMENDASI]
+│   ├── restock.php              # Logika kalkulasi Reorder Point (ROP) & ADS
+│   └── discount.php             # Logika evaluasi batas diskon aman vs HPP
+├── reports/                     # [MODUL LAPORAN & KEUANGAN]
+│   ├── index.php                # Executive Dashboard Keuangan & Tren SVG
+│   ├── sales_report.php         # Laporan penjualan detail dengan filter periode
+│   ├── inventory_report.php     # Laporan valuasi aset persediaan (HPP)
+│   ├── export_sales_csv.php     # Unduh CSV transaksi penjualan (Excel-ready)
+│   ├── export_inventory_csv.php # Unduh CSV ringkasan stok persediaan
+│   ├── restock_recommendations.php # Halaman rekomendasi restok barang
+│   └── discount_simulator.php   # Simulator diskon harga & alarm defisit modal
+├── sales/                       # [MODUL KASIR POS & TRANSAKSI]
+│   ├── pos.php                  # Antarmuka kasir belanja interaktif (Card & Modal)
+│   ├── checkout.php             # Pemroses transaksi atomik database (FEFO)
+│   ├── history.php              # Riwayat struk invoice transaksi toko
+│   ├── receipt.php              # Tampilan nota kasir siap cetak termal/A4
+│   ├── my_orders.php            # Riwayat belanja khusus akun pembeli
+│   └── void.php                 # Pembatalan transaksi kasir (dengan otorisasi)
+├── skills/                      # [PANDUAN DESAIN SISTEM]
+│   ├── artisan-pos-design/SKILL.md
+│   ├── ecavo-modern-agro/SKILL.md
+│   └── nutramla-shopify-design/SKILL.md
 ├── tests/
-│   └── run.php                  # Test suite otomatis (6 suite)
-├── dashboard.php                # Beranda utama (menyesuaikan role pengguna)
-├── index.php                    # Gerbang masuk (redirect otomatis)
-├── login.php                    # Halaman masuk akun (cheat sheet demo tersedia)
-├── logout.php                   # Pembersihan sesi & cookie
-├── register.php                 # Pendaftaran akun pembeli mandiri
+│   ├── run.php                  # Test suite otomatis logika bisnis & keamanan (6 suite)
+│   └── test_nutramla_render.php # Uji rendering tampilan antarmuka NutrAmla
+├── dashboard.php                # Beranda utama (beradaptasi otomatis sesuai peran)
+├── index.php                    # Gerbang landing page & katalog etalase utama
+├── login.php                    # Form masuk akun (dilengkapi cheat sheet demo)
+├── logout.php                   # Penghancur sesi & pembersihan cookie aman
+├── register.php                 # Form registrasi mandiri akun pembeli
+├── seeder.php                   # Web Seeder interaktif 1-klik (InfinityFree & Lokal)
 ├── setup.php                    # Inisialisasi awal admin toko
-├── .gitignore
-└── README.md
+├── readme.md                    # Dokumentasi lengkap proyek
+└── .gitignore
 ```
 
 ---
 
-## 4. Persyaratan Sistem & Instalasi Lokal
+## 5. Panduan Instalasi Lokal (Laragon / XAMPP)
 
-### Persyaratan:
+### Persyaratan Lingkungan:
 - **PHP:** Versi 8.2 atau lebih baru.
-- **Ekstensi PHP:** `pdo_mysql`, `mbstring`, `session`.
-- **Database:** MySQL 5.7+ atau MariaDB 10.3+.
-- **Web Server:** Apache (Laragon / XAMPP / bawaan PHP).
-- **Peramban:** Chrome, Edge, Firefox, atau Safari.
+- **Ekstensi PHP Aktif:** `pdo_mysql`, `mbstring`, `session`.
+- **Database Server:** MySQL 5.7+ atau MariaDB 10.3+.
+- **Web Server:** Apache (Laragon, XAMPP, atau PHP Built-in Server).
 
 ### Langkah Instalasi:
-
-1. **Jalankan Web Server & MySQL:**
-   Buka Laragon atau XAMPP, pastikan modul **Apache** dan **MySQL** aktif.
-
-2. **Impor Database:**
+1. **Jalankan Apache & MySQL:** Buka Laragon atau XAMPP, pastikan kedua servis menyala (*Running*).
+2. **Impor Basis Data:**
    - Buka phpMyAdmin di `http://localhost/phpmyadmin`.
-   - Pilih tab **Import**.
-   - Pilih file: `kelompok/kelompok_10/database/sisa_sense.sql`.
-   - Klik **Go / Kirim**. Database `sisasense_db` beserta 8 tabel dan akun demo akan dibuat secara otomatis.
-
-3. **Buka Aplikasi:**
-   Akses melalui browser di alamat:
+   - Buat database `sisasense_db` (atau langsung klik tab **Import**).
+   - Pilih file `kelompok/kelompok_10/database/sisa_sense.sql`.
+   - Klik **Go / Kirim**. Sebanyak 8 tabel, 5 kategori, 24 produk foto real, dan 3 akun demo langsung terisi.
+3. **Buka Aplikasi di Browser:**
    ```text
    http://localhost/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_10/
    ```
-
-4. **Koneksi Database Bawaan (`config/database.php`):**
+4. **Konfigurasi Database Bawaan (`config/database.php`):**
    - Host: `127.0.0.1` | Port: `3306`
    - Database: `sisasense_db`
-   - User: `root` | Password: *(sesuai konfigurasi Laragon/MySQL lokal)*
+   - User: `root` | Password: *(sesuai pengaturan MySQL lokal Anda)*
 
 ---
 
-## 5. Panduan Deployment ke InfinityFree (Free Hosting)
+## 6. Panduan Deployment ke InfinityFree (Free Hosting)
 
-InfinityFree memiliki batasan hak akses MySQL cPanel (nama database harus diawali `if0_xxxxxxx_...` dan **dilarang** menggunakan perintah `CREATE DATABASE` atau `USE ...` di phpMyAdmin). 
+InfinityFree memiliki aturan keamanan cPanel yang ketat: nama basis data wajib diawali dengan prefix akun (misal: `if0_38123456_...`) dan **dilarang** menggunakan perintah `CREATE DATABASE` atau `USE ...` di phpMyAdmin.
 
-SisaSense menyediakan dua opsi yang 100% kompatibel dan siap pakai di InfinityFree:
+SisaSense menyediakan dua solusi siap pakai:
 
-### Opsi A: Menggunakan Web Seeder Interaktif (`seeder.php`) — *Paling Mudah & Otomatis*
-1. Unggah seluruh file folder proyek ke direktori `htdocs/` di InfinityFree (via File Manager atau FileZilla FTP).
-2. Di vPanel InfinityFree, masuk ke menu **MySQL Databases** dan buat 1 database baru (misalnya: `if0_12345678_sisasense`).
-3. Konfigurasi kredensial database di `config/database.php` atau buat file `config/database.local.php` (lihat template `config/database.local.example.php`):
+### Opsi A: Menggunakan Web Seeder Interaktif (`seeder.php`) — *Direkomendasikan (1-Klik)*
+1. Unggah seluruh file folder `kelompok_10/` ke direktori `htdocs/` di InfinityFree (menggunakan File Manager cPanel atau FileZilla FTP).
+2. Di vPanel InfinityFree, buka menu **MySQL Databases** dan buat database baru (misal: `if0_38123456_sisasense`).
+3. Buat file `config/database.local.php` (bisa mencontoh template `config/database.local.example.php`) berisi:
    ```php
    <?php
    return [
-       'host'     => 'sql300.infinityfree.com', // MySQL Host Name dari vPanel
-       'database' => 'if0_12345678_sisasense',  // Nama Database dari vPanel
-       'username' => 'if0_12345678',            // Username Akun vPanel
-       'password' => 'PASSWORD_VPANEL_ANDA',    // Password Akun vPanel
+       'host'     => 'sql300.infinityfree.com', // Lihat di MySQL Databases vPanel
+       'database' => 'if0_38123456_sisasense',  // Nama Database lengkap dari vPanel
+       'username' => 'if0_38123456',            // Username Akun vPanel
+       'password' => 'PASSWORD_VPANEL_ANDA',    // Password Akun vPanel Anda
        'port'     => '3306',
    ];
    ```
-4. Buka URL seeder di browser:
+4. Buka URL seeder di browser Anda:
    ```text
-   http://<domain-anda>.infinityfreeapp.com/seeder.php
+   http://<subdomain-anda>.infinityfreeapp.com/seeder.php
    ```
-5. Klik **Eksekusi / Refresh**. Seeder akan secara otomatis membuat ke-8 tabel dan mengisi 3 akun demo, 5 kategori, 24 produk foto real, dan 24 batch stok FEFO!
+5. Halaman web seeder akan memeriksa koneksi, membuat seluruh tabel secara otomatis, dan menyuntikkan data akun `admin`, `kasir`, serta `pembeli` dengan password `123`.
 
-### Opsi B: Impor Manual via phpMyAdmin InfinityFree (`infinityfree_seeder.sql`)
-1. Buka vPanel InfinityFree &gt; **MySQL Databases** &gt; klik tombol **phpMyAdmin** pada database Anda.
-2. Klik tab **Import**.
-3. Pilih file `kelompok/kelompok_10/database/infinityfree_seeder.sql` (file ini **bebas** dari `CREATE DATABASE` dan `USE` sehingga 100% lolos tanpa error *Access Denied*).
-4. Klik tombol **Go / Kirim**.
-
-### Akun Demo Setelah Seeding (Password: `123`):
-- **Admin:** `admin` / `123` *(Akses Penuh: Dashboard, Master Produk, Laporan)*
-- **Kasir:** `kasir` / `123` *(Akses Kasir POS, Pembayaran Tunai/QRIS/Transfer/EDC, Cetak Struk)*
-- **Pembeli:** `pembeli` / `123` *(Akses Katalog Produk & Keranjang Belanja)*
+### Opsi B: Impor Manual File SQL via phpMyAdmin InfinityFree
+1. Buka vPanel InfinityFree &gt; **MySQL Databases** &gt; klik tombol **phpMyAdmin** pada database yang telah dibuat.
+2. Masuk ke tab **Import**.
+3. Pilih file `kelompok/kelompok_10/database/infinityfree_seeder.sql`. File ini **bebas** dari klausul `CREATE DATABASE` maupun `USE`, serta telah dilengkapi `SET FOREIGN_KEY_CHECKS = 0;` sehingga terjamin **100% bebas dari error #1044 Access Denied**.
+4. Klik tombol **Go / Kirim** di kanan bawah.
 
 ---
 
-## 6. Menjalankan Pengujian Otomatis
+## 7. Menjalankan Pengujian Otomatis (Testing)
 
-Aplikasi dilengkapi test runner bawaan untuk memverifikasi logika bisnis, formula akuntansi, sanitasi keamanan XSS/CSRF, dan otorisasi 3 role:
+Proyek ini dilengkapi test runner mandiri untuk memastikan reliabilitas logika bisnis dan keamanan sebelum dipresentasikan:
 
+### 1. Test Suite Logika Bisnis & Keamanan:
 ```bash
 php kelompok/kelompok_10/tests/run.php
 ```
+*Menguji 6 aspek kritis:*
+- `[1/6]` Autentikasi multi-role (Admin, Kasir, Pembeli) dan verifikasi password bcrypt `123`.
+- `[2/6]` Sanitasi XSS (Cross-Site Scripting) dan validasi token CSRF form POST.
+- `[3/6]` Dynamic URL Resolver (`app_url`) lintas subdirektori.
+- `[4/6]` Algoritma alokasi batch FEFO (*First Expired, First Out*).
+- `[5/6]` Akurasi formula Laba Kotor, HPP Snapshot, dan Margin Omzet.
+- `[6/6]` Formula Reorder Point (ROP), Safety Stock, dan deteksi defisit diskon harga.
 
-Pemeriksaan sintaks seluruh file PHP (linter):
+### 2. Test Rendering Tampilan UI NutrAmla:
+```bash
+php kelompok/kelompok_10/tests/test_nutramla_render.php
+```
 
+### 3. Pemeriksaan Sintaks PHP (Linter Seluruh File):
 ```powershell
 Get-ChildItem kelompok\kelompok_10 -Recurse -Filter *.php | ForEach-Object { php -l $_.FullName }
 ```
 
 ---
 
-## 6. Standar Keamanan & Kepatuhan Aturan Praktikum
+## 8. Standar Keamanan & Kepatuhan Praktikum
 
-- **Anti-XSS:** Seluruh pencetakan variabel ke HTML dilewatkan fungsi `e()` (`htmlspecialchars` dengan flag `ENT_QUOTES | ENT_SUBSTITUTE`).
-- **Anti-SQL Injection:** 100% kueri database menggunakan PDO Prepared Statements dengan parameter binding.
-- **Proteksi CSRF:** Seluruh form bermetode POST diverifikasi dengan `csrf_token()` dan `require_valid_csrf()`.
-- **Integritas Transaksi:** Checkout kasir menggunakan `beginTransaction()`, `FOR UPDATE` locking, dan `commit()` / `rollBack()`.
-- **Isolasi Monorepo:** 100% kode berada di dalam folder `kelompok/kelompok_10/` tanpa mengubah file root repository.
-- **Tanpa Framework:** Murni HTML5, CSS3, JavaScript Vanilla, PHP Native 8.2, dan MySQL.
+- **Anti-XSS (Cross-Site Scripting):** Setiap variabel dinamis yang ditampilkan ke browser dilewatkan melalui fungsi `e()` (`htmlspecialchars` dengan flag `ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5`).
+- **Anti-SQL Injection:** 100% kueri basis data menggunakan PDO Prepared Statements dengan binding parameter (`:param` atau `?`).
+- **Proteksi CSRF (Cross-Site Request Forgery):** Seluruh form pengiriman data POST diverifikasi dengan `csrf_token()` dan fungsi `require_valid_csrf()`.
+- **Integritas Transaksi Atomik:** Transaksi checkout kasir dilindungi oleh mekanisme `beginTransaction()`, *pessimistic row locking* `FOR UPDATE`, `commit()`, dan `rollBack()`.
+- **Pure Native & Tanpa Framework Luar:** Murni menggunakan HTML5 semantik, CSS3 modern, JavaScript Vanilla, PHP Native 8.2, dan MySQL tanpa ketergantungan framework berat, menjamin kecepatan rendering maksimal.
+- **Isolasi Monorepo Terjaga:** 100% file kode dan aset berada di dalam direktori `kelompok/kelompok_10/` tanpa mengubah struktur root repository praktikum.

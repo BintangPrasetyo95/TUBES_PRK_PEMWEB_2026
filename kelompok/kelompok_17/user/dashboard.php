@@ -44,9 +44,9 @@ $aspirasiList = $stmt->fetchAll();
 $queryJumlah = $pdo->prepare("
     SELECT
         COUNT(*) AS total,
-        SUM(status = 'menunggu') AS pending,
-        SUM(status = 'ditolak') AS ditolak,
-        SUM(status = 'selesai') AS publikasi
+        SUM(status = 'menunggu')  AS pending,
+        SUM(status = 'ditolak')   AS ditolak,
+        SUM(status = 'publikasi') AS publikasi
     FROM aspirasi
     WHERE id_user = :id_user
 ");

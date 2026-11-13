@@ -107,6 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $judul = 'Daftar';
+$tanpaKerangka = true;   // halaman penuh tanpa navbar/footer situs
 require_once __DIR__ . '/../includes/header.php';
 
 /** Satu kolom isian dengan ikon dan pesan galat dari server. */
@@ -127,10 +128,17 @@ function kolom(string $id, string $label, string $ikon, array $in, array $galat,
 }
 ?>
 <link rel="stylesheet" href="<?= e(url('assets/css/auth.css')) ?>">
-<div class="auth-wrap">
-  <div class="container">
-    <div class="auth-kartu auth-lebar">
-      <section class="auth-isi">
+<div class="auth-layar">
+  <?php auth_panel('Mulai konsultasi hukummu hari ini.', [
+      ['bi-lightning-charge', 'Daftar gratis dalam hitungan menit'],
+      ['bi-patch-check', 'Pilih pengacara terverifikasi sesuai bidangmu'],
+      ['bi-clock-history', 'Riwayat konsultasi tersimpan di dashboard'],
+  ]); ?>
+
+  <div class="auth-sisi">
+    <div class="auth-atas"><?= auth_logo('d-lg-none') ?><?= auth_kembali() ?></div>
+
+      <section class="auth-isi auth-lebar">
         <h1 class="auth-judul">Mendaftar Akun</h1>
         <p class="text-secondary mb-4">Buat akun untuk berkonsultasi dengan pengacara, atau bergabung sebagai pengacara.</p>
 
@@ -200,7 +208,6 @@ function kolom(string $id, string $label, string $ikon, array $in, array $galat,
 
         <p class="text-center mt-4 mb-0 small">Sudah punya akun? <a href="<?= e(url('auth/login.php')) ?>">Login</a></p>
       </section>
-    </div>
   </div>
 </div>
 <script src="<?= e(url('assets/js/auth.js')) ?>"></script>

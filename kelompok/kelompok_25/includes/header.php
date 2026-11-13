@@ -25,6 +25,8 @@ $menuAktif = $menuAktif ?? (function (): string {
         'tentang.php'        => 'tentang',
     ][$rel] ?? '';
 })();
+// Halaman polos (masuk, daftar, dst.): tanpa navbar dan footer. Set $tanpaKerangka = true; sebelum memanggil header.
+$tanpaKerangka = $tanpaKerangka ?? false;
 $menuUtama = [
     'beranda'   => ['index.php', 'Beranda'],
     'pengacara' => ['pengacara.php', 'Pengacara'],
@@ -47,7 +49,8 @@ $menuUtama = [
   <link href="<?= url('assets/css/profil.css') ?>" rel="stylesheet">
   <link href="<?= url('assets/css/footer.css') ?>" rel="stylesheet">
 </head>
-<body>
+<body<?= $tanpaKerangka ? ' class="halaman-polos"' : '' ?>>
+<?php if (!$tanpaKerangka): ?>
 <nav class="navbar navbar-expand-lg navbar-rh sticky-top">
   <div class="container">
     <a class="navbar-brand" href="<?= url('index.php') ?>"><i class="bi bi-bank2"></i> Ruang Hukum</a>
@@ -88,6 +91,7 @@ $menuUtama = [
     </div>
   </div>
 </nav>
+<?php endif; ?>
 
 <?php $pesan = ambil_flash(); if ($pesan): ?>
 <div class="toast-rh-wrap" aria-live="polite">

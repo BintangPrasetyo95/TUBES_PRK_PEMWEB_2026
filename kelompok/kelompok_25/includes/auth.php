@@ -685,3 +685,44 @@ function auth_avatar_html(?string $foto, string $ukuran = 'kecil', bool $idModal
     }
     return '<span class="' . $kelas . ' avatar-kosong"' . $id . '><i class="bi bi-person-fill"></i></span>';
 }
+
+// ---------------------------------------------------------------------------
+// Tata letak halaman polos (masuk, daftar, lupa/reset sandi): tanpa navbar dan footer situs.
+// ---------------------------------------------------------------------------
+
+/** Logo Ruang Hukum yang menuju beranda. $kelas menambah kelas CSS. */
+function auth_logo(string $kelas = ''): string
+{
+    return '<a class="auth-logo ' . e($kelas) . '" href="' . e(url('index.php')) . '" aria-label="Ruang Hukum, ke beranda">'
+         . '<i class="bi bi-bank2" aria-hidden="true"></i> Ruang Hukum</a>';
+}
+
+/** Tautan kembali ke beranda (jalan keluar karena halaman ini tidak punya navbar). */
+function auth_kembali(string $kelas = ''): string
+{
+    return '<a class="auth-kembali ' . e($kelas) . '" href="' . e(url('index.php')) . '">'
+         . '<i class="bi bi-arrow-left" aria-hidden="true"></i> Kembali ke beranda</a>';
+}
+
+/** Panel biru di sisi kiri halaman masuk/daftar. $manfaat = [[ikon, teks], ...]. */
+function auth_panel(string $judul, array $manfaat): void
+{
+    $stat = auth_statistik();
+    ?>
+    <aside class="auth-panel d-none d-lg-flex">
+      <div>
+        <?= auth_logo() ?>
+        <h2><?= e($judul) ?></h2>
+        <ul class="auth-manfaat">
+          <?php foreach ($manfaat as [$ikon, $teks]): ?>
+            <li><i class="bi <?= e($ikon) ?>" aria-hidden="true"></i> <?= e($teks) ?></li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+      <div class="auth-angka">
+        <div><b><?= (int) $stat['pengacara'] ?></b><span>pengacara aktif</span></div>
+        <div><b><?= (int) $stat['konsultasi'] ?></b><span>konsultasi dijawab</span></div>
+      </div>
+    </aside>
+    <?php
+}

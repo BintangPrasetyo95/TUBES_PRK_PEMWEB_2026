@@ -31,10 +31,12 @@ if ($r && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $judul = 'Atur Ulang Kata Sandi';
+$tanpaKerangka = true;   // halaman penuh tanpa navbar/footer situs
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <link rel="stylesheet" href="<?= e(url('assets/css/auth.css')) ?>">
-<div class="auth-tengah">
+<div class="auth-polos">
+  <?= auth_logo() ?>
   <div class="auth-kartu-kecil">
     <?php if (!$r): ?>
       <div class="text-center mb-3"><span class="ikon-besar gagal"><i class="bi bi-x-octagon"></i></span></div>
@@ -57,6 +59,7 @@ require_once __DIR__ . '/../includes/header.php';
       </form>
     <?php endif; ?>
   </div>
+  <?= auth_kembali() ?>
 </div>
 <script src="<?= e(url('assets/js/auth.js')) ?>"></script>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

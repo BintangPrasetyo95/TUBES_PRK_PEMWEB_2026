@@ -32,10 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $judul = 'Lupa Kata Sandi';
+$tanpaKerangka = true;   // halaman penuh tanpa navbar/footer situs
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <link rel="stylesheet" href="<?= e(url('assets/css/auth.css')) ?>">
-<div class="auth-tengah">
+<div class="auth-polos">
+  <?= auth_logo() ?>
   <div class="auth-kartu-kecil">
     <?php if ($terkirim): ?>
       <div class="text-center mb-3"><span class="ikon-besar"><i class="bi bi-envelope-check"></i></span></div>
@@ -64,5 +66,6 @@ require_once __DIR__ . '/../includes/header.php';
       <p class="text-center mt-4 mb-0 small"><a href="<?= e(url('auth/login.php')) ?>">&larr; Kembali ke halaman masuk</a></p>
     <?php endif; ?>
   </div>
+  <?= auth_kembali() ?>
 </div>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

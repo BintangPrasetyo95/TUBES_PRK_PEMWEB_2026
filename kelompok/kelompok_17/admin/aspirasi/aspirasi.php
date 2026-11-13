@@ -44,11 +44,12 @@ include __DIR__ . '/../../includes/admin_header.php';
                     <th scope="col" class="px-5 py-3 font-medium">Pengirim</th>
                     <th scope="col" class="px-5 py-3 font-medium">Tanggal</th>
                     <th scope="col" class="px-5 py-3 font-medium">Status</th>
+                    <th scope="col" class="px-5 py-3 font-medium">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-200/70">
             <?php if (!$daftarAspirasi): ?>
-                <tr><td colspan="5" class="px-5 py-10 text-center text-slate-500">Belum ada aspirasi.</td></tr>
+                <tr><td colspan="6" class="px-5 py-10 text-center text-slate-500">Belum ada aspirasi.</td></tr>
             <?php endif; ?>
             <?php foreach ($daftarAspirasi as $a): ?>
                 <tr class="align-top hover:bg-white/50">
@@ -69,6 +70,12 @@ include __DIR__ . '/../../includes/admin_header.php';
                             </select>
                             <button type="submit" class="rounded-lg bg-clay-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-clay-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay-600 focus-visible:ring-offset-2">Simpan</button>
                         </form>
+                    </td>
+                    <td class="px-5 py-3">
+                        <a href="<?= e(admin_url('/aspirasi_detail.php?id=' . (int) $a['id_aspirasi'])) ?>"
+                           class="inline-flex rounded-lg border border-clay-600 px-3 py-1.5 text-sm font-medium text-clay-700 hover:bg-clay-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-clay-600 focus-visible:ring-offset-2">
+                            Preview
+                        </a>
                     </td>
                 </tr>
             <?php endforeach; ?>

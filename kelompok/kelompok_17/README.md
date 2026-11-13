@@ -180,8 +180,6 @@ Pada tabel `komentar`, tepat satu dari `id_berita` atau `id_aspirasi` terisi, sa
 
 ## Screenshot
 
-> Taruh gambar di folder `screenshots/`, lalu sesuaikan nama file di bawah.
-
 | Halaman | Tampilan |
 |---|---|
 | Beranda | ![Beranda](screenshots/beranda.png) |

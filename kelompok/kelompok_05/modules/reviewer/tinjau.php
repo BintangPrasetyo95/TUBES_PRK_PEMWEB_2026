@@ -37,13 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('modules/reviewer/tinjau.php');
 }
 
-$st = $pdo->prepare("SELECT c.id, c.judul, c.status, c.created_at, u.nama AS pemohon, t.nama AS jenis, f.id AS file_id, f.nama_asli FROM cases c JOIN users u ON u.id = c.user_id JOIN document_types t ON t.id = c.document_type_id LEFT JOIN case_files f ON f.case_id = c.id WHERE c.status IN ('siap_ditinjau','sedang_ditinjau') AND (c.reviewer_id IS NULL OR c.reviewer_id = ?) ORDER BY c.created_at ASC, c.id");
+$st = $pdo->prepare("SELECT c.id, c.judul, c.status, c.created_at, u.nama AS pemohon, t.nama AS jenis FROM cases c JOIN users u ON u.id = c.user_id JOIN document_types t ON t.id = c.document_type_id WHERE c.status IN ('siap_ditinjau','sedang_ditinjau') AND (c.reviewer_id IS NULL OR c.reviewer_id = ?) ORDER BY c.created_at ASC, c.id");
 $st->execute([$user['id']]);
 $cases = [];
 foreach ($st->fetchAll() as $row) {
     $id = (int) $row['id'];
-    if (!isset($cases[$id])) $cases[$id] = ['id' => $id, 'judul' => $row['judul'], 'status' => $row['status'], 'created_at' => $row['created_at'], 'pemohon' => $row['pemohon'], 'jenis' => $row['jenis'], 'files' => []];
-    if ($row['file_id'] !== null) $cases[$id]['files'][] = ['id' => $row['file_id'], 'nama_asli' => $row['nama_asli']];
+    $cases[$id] = $row + ['files' => [], 'answers' => []];
+}
+if ($cases) {
+    $ids = array_keys($cases);
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $st = $pdo->prepare("SELECT case_id, id, nama_asli FROM case_files WHERE case_id IN ($placeholders) ORDER BY id");
+    $st->execute($ids);
+    foreach ($st->fetchAll() as $file) $cases[(int) $file['case_id']]['files'][] = $file;
+    $st = $pdo->prepare("SELECT d.case_id, r.label, d.nilai FROM case_data d JOIN requirements r ON r.id = d.requirement_id WHERE d.case_id IN ($placeholders) ORDER BY r.urutan, r.id");
+    $st->execute($ids);
+    foreach ($st->fetchAll() as $answer) $cases[(int) $answer['case_id']]['answers'][] = $answer;
 }
 $page_title = 'Tinjau pemeriksaan';
 require __DIR__ . '/../../includes/header.php';
@@ -55,6 +64,13 @@ require __DIR__ . '/../../includes/header.php';
         <article class="card">
             <h2><?= e($case['judul']) ?></h2>
             <p><?= e($case['pemohon']) ?> · <?= e($case['jenis']) ?> · <?= status_badge($case['status']) ?></p>
+            <h3>Jawaban pemohon</h3>
+            <?php if (!$case['answers']): ?><p>Belum ada isian yang tersimpan.</p><?php else: ?>
+                <dl><?php foreach ($case['answers'] as $answer): ?>
+                    <dt><strong><?= e($answer['label']) ?></strong></dt>
+                    <dd><?= nl2br(e($answer['nilai'] ?? '')) ?></dd>
+                <?php endforeach; ?></dl>
+            <?php endif; ?>
             <h3>Berkas</h3>
             <?php if (!$case['files']): ?><p>Tidak ada berkas yang diunggah.</p><?php else: ?>
                 <ul><?php foreach ($case['files'] as $file): ?><li>

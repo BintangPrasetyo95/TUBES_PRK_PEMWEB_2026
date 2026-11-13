@@ -86,7 +86,7 @@ require __DIR__ . '/../../includes/header.php';
         </ol>
     <?php endif; ?>
 
-    <a href="index.php">Kembali ke Pustaka</a>
+    <a class="btn" href="index.php">Kembali ke Pustaka</a>
 </div>
 
 <?php require __DIR__ . '/../../includes/footer.php'; ?>

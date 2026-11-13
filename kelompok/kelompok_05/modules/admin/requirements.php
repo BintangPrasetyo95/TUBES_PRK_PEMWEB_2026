@@ -71,8 +71,8 @@ require __DIR__ . '/../../includes/header.php';
                                     : 'Belum diverifikasi' ?>
                             </td>
                             <td><?= (int) $item['urutan'] ?></td>
-                            <td>
-                                <a href="<?= e(base_url('modules/admin/requirement_edit.php?id=' . (int) $item['id'])) ?>">
+                            <td><div class="table-actions">
+                                <a class="btn btn-sm" href="<?= e(base_url('modules/admin/requirement_edit.php?id=' . (int) $item['id'])) ?>">
                                     Edit
                                 </a>
 
@@ -87,11 +87,11 @@ require __DIR__ . '/../../includes/header.php';
                                         name="id"
                                         value="<?= (int) $item['id'] ?>"
                                     >
-                                    <button type="submit" class="btn">
+                                    <button type="submit" class="btn btn-sm btn-danger">
                                         Hapus
                                     </button>
                                 </form>
-                            </td>
+                            </div></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

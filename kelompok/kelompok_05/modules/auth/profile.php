@@ -108,13 +108,14 @@ require __DIR__ . '/../../includes/header.php';
             >
         </div>
 
-        <button type="submit" class="btn">
-            Simpan Perubahan
-        </button>
-
-        <a href="../../index.php" class="btn">
-            Kembali
-        </a>
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+                Simpan Perubahan
+            </button>
+            <a href="../../index.php" class="btn">
+                Kembali
+            </a>
+        </div>
     </form>
 </div>
 

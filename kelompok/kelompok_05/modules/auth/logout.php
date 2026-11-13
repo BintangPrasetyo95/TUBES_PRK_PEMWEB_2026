@@ -38,13 +38,14 @@ require __DIR__ . '/../../includes/header.php';
     <form method="post">
         <?= csrf_field() ?>
 
-        <button type="submit" class="btn">
-            Ya, Keluar
-        </button>
-
-        <a href="<?= e(base_url('index.php')) ?>">
-            Batal
-        </a>
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+                Ya, Keluar
+            </button>
+            <a class="btn" href="<?= e(base_url('index.php')) ?>">
+                Batal
+            </a>
+        </div>
     </form>
 </div>
 

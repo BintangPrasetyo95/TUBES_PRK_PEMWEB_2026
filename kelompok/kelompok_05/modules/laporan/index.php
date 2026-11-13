@@ -49,7 +49,9 @@ require __DIR__ . '/../../includes/header.php';
     <h1>Laporan pemeriksaan</h1>
     <p><strong><?= e($case['judul']) ?></strong> · <?= e($case['jenis']) ?></p>
     <p>Status pemeriksaan: <?= status_badge($case['status']) ?></p>
-    <?php if (!$analysis): ?><p>Belum ada hasil analisis. Laporan akan tersedia setelah pemeriksaan dianalisis.</p><?php else: ?>
+    <?php if (!$analysis): ?>
+        <p>Belum ada hasil analisis. <a href="<?= e(base_url('modules/hasil/index.php?case=' . (int) $caseId)) ?>">Buka hasil untuk menjalankan analisis.</a></p>
+    <?php else: ?>
         <p>Kelengkapan: <strong><?= e(number_format($persentase, 2, ',', '.')) ?>%</strong>
             (<?= e($analysis['jumlah_terpenuhi']) ?>/<?= e($analysis['jumlah_berlaku']) ?> persyaratan berlaku)</p>
         <div class="progress" role="progressbar" aria-valuenow="<?= e($persentase) ?>" aria-valuemin="0" aria-valuemax="100">

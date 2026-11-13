@@ -16,12 +16,17 @@ if (is_file($home_kustom)) {
         <h1>CEKHAK</h1>
         <p>Cek Hak dan Ketentuan Hukum: periksa kelengkapan administratif dokumen hukum sebelum diajukan.</p>
         <p class="muted">Alat bantu administratif, bukan pendapat hukum final.</p>
-        <p>
+        <p class="btn-group">
             <?php if ($user === null): ?>
+                <?= link_if_exists('modules/pemeriksaan/form.php', 'Mulai Pemeriksaan', 'btn btn-primary') ?>
                 <?= link_if_exists(login_url(), 'Masuk', 'btn btn-primary') ?>
                 <?= link_if_exists('modules/auth/register.php', 'Daftar', 'btn') ?>
-            <?php else: ?>
-                <?= link_if_exists('modules/pemeriksaan/buat.php', 'Mulai Pemeriksaan', 'btn') ?>
+            <?php elseif ($user['role'] === 'pengguna'): ?>
+                <?= link_if_exists('modules/pemeriksaan/form.php', 'Mulai Pemeriksaan', 'btn btn-primary') ?>
+            <?php elseif ($user['role'] === 'reviewer'): ?>
+                <?= link_if_exists('modules/reviewer/tinjau.php', 'Tinjau Pemeriksaan', 'btn btn-primary') ?>
+            <?php elseif ($user['role'] === 'admin'): ?>
+                <?= link_if_exists('modules/admin/index.php', 'Kelola Dokumen', 'btn btn-primary') ?>
             <?php endif; ?>
         </p>
     </div>

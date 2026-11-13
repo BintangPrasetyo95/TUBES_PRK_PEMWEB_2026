@@ -1,11 +1,10 @@
 <?php
-// admin/kategori.php
+
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
 wajibAdmin();
 
-// PROSES FORM POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (function_exists('verifikasiCsrf')) {
         verifikasiCsrf();
@@ -13,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $aksi = $_POST['aksi'] ?? '';
 
-    // TAMBAH KATEGORI
     if ($aksi === 'tambah') {
         $nama_kategori = trim($_POST['nama_kategori'] ?? '');
 
@@ -42,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // HAPUS KATEGORI
     if ($aksi === 'hapus') {
         $kategori_id = (int)($_POST['kategori_id'] ?? 0);
 
@@ -59,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// AMBIL DATA KATEGORI
 $query = "SELECT kategori.*, COUNT(laporan.id) AS total_laporan 
           FROM kategori 
           LEFT JOIN laporan ON kategori.id = laporan.kategori_id 
@@ -84,7 +80,6 @@ include '../includes/header.php';
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; align-items: start;">
         
-        <!-- Form Tambah -->
         <div class="card" style="padding: 1.75rem;">
             <h3 class="card-title" style="font-size: 1.2rem; margin-bottom: 1rem;">+ Tambah Kategori Baru</h3>
             <form method="POST" action="kategori.php">
@@ -105,7 +100,6 @@ include '../includes/header.php';
             </form>
         </div>
 
-        <!-- Tabel Daftar Kategori -->
         <div class="card" style="padding: 1.75rem;">
             <h3 class="card-title" style="font-size: 1.2rem; margin-bottom: 1rem;">Daftar Kategori Tersedia</h3>
             <div class="table-responsive" style="margin-bottom: 0;">

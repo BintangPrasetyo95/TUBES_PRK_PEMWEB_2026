@@ -39,114 +39,109 @@ $root = '../';
 require_once __DIR__ . '/../includes/partials/header-panel.php';
 ?>
 
-<div class="panel-header" style="margin-bottom: 24px;">
-    <div>
-        <h1 style="margin: 0 0 8px 0;">Halo, <?= e($namaPengajar) ?>! 👋</h1>
-        <p class="text-secondary" style="margin: 0;">Selamat datang di panel pengajar DynaQuiz. Berikut ringkasan kuis Anda.</p>
-    </div>
-    <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
+<div class="card">
+    <h1 class="card-title">Halo, <?= e($namaPengajar) ?>! 👋</h1>
+    <p class="form-helper">Selamat datang di panel pengajar DynaQuiz. Berikut ringkasan kuis Anda.</p>
+    <div class="form-group">
         <a href="kuis-form.php" class="btn btn-primary">+ Buat Kuis Baru</a>
         <a href="kuis.php" class="btn btn-secondary">Kelola Kuis Saya</a>
     </div>
 </div>
 
 <!-- Ringkasan Statistik Percobaan Pelajar -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
-    <div class="card" style="padding: 20px;">
-        <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 14px;">Total Kuis Dibuat</p>
-        <h2 style="margin: 0; font-size: 32px;"><?= e($totalKuis) ?></h2>
+<div class="bento-grid">
+    <div class="card">
+        <span class="badge badge-terbit">Kuis</span>
+        <h2 class="card-title">Total Kuis Dibuat</h2>
+        <p><strong><?= e($totalKuis) ?></strong> kuis terdaftar</p>
     </div>
-    <div class="card" style="padding: 20px;">
-        <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 14px;">Total Percobaan Pelajar</p>
-        <h2 style="margin: 0; font-size: 32px;"><?= e($totalPercobaan) ?></h2>
+    <div class="card">
+        <span class="badge badge-menunggu">Pelajar</span>
+        <h2 class="card-title">Total Percobaan Pelajar</h2>
+        <p><strong><?= e($totalPercobaan) ?></strong> kali dikerjakan</p>
     </div>
-    <div class="card" style="padding: 20px;">
-        <p class="text-secondary" style="margin: 0 0 8px 0; font-size: 14px;">Rata-rata Skor Pelajar</p>
-        <h2 style="margin: 0; font-size: 32px;"><?= e($rataRataPersen) ?>%</h2>
+    <div class="card">
+        <span class="badge badge-draft">Hasil</span>
+        <h2 class="card-title">Rata-rata Skor Pelajar</h2>
+        <p><strong><?= e($rataRataPersen) ?>%</strong> rata-rata nilai</p>
     </div>
 </div>
 
 <!-- Ringkasan Jumlah Kuis per Status -->
-<div class="card" style="padding: 20px; margin-bottom: 24px;">
-    <h2 style="margin: 0 0 16px 0; font-size: 18px;">Status Kuis Anda</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
-        
-        <a href="kuis.php?status=draft" class="card" style="padding: 14px; text-decoration: none; color: inherit; text-align: center;">
-            <span class="badge badge-neutral" style="margin-bottom: 8px;">Draft</span>
-            <div style="font-size: 24px; font-weight: bold;"><?= e($jumlahStatus['draft']) ?></div>
-        </a>
-
-        <a href="kuis.php?status=menunggu" class="card" style="padding: 14px; text-decoration: none; color: inherit; text-align: center;">
-            <span class="badge badge-warning" style="margin-bottom: 8px;">Menunggu</span>
-            <div style="font-size: 24px; font-weight: bold;"><?= e($jumlahStatus['menunggu']) ?></div>
-        </a>
-
-        <a href="kuis.php?status=terbit" class="card" style="padding: 14px; text-decoration: none; color: inherit; text-align: center;">
-            <span class="badge badge-success" style="margin-bottom: 8px;">Terbit</span>
-            <div style="font-size: 24px; font-weight: bold;"><?= e($jumlahStatus['terbit']) ?></div>
-        </a>
-
-        <a href="kuis.php?status=ditolak" class="card" style="padding: 14px; text-decoration: none; color: inherit; text-align: center;">
-            <span class="badge badge-danger" style="margin-bottom: 8px;">Ditolak</span>
-            <div style="font-size: 24px; font-weight: bold;"><?= e($jumlahStatus['ditolak']) ?></div>
-        </a>
-
-        <a href="kuis.php?status=ditarik" class="card" style="padding: 14px; text-decoration: none; color: inherit; text-align: center;">
-            <span class="badge badge-neutral" style="margin-bottom: 8px;">Ditarik</span>
-            <div style="font-size: 24px; font-weight: bold;"><?= e($jumlahStatus['ditarik']) ?></div>
-        </a>
-
+<div class="card">
+    <h2 class="card-title">Status Kuis Anda</h2>
+    <div class="bento-grid">
+        <div class="card card-sm">
+            <span class="badge badge-draft">Draft</span>
+            <p><strong><?= e($jumlahStatus['draft']) ?></strong> kuis</p>
+            <a href="kuis.php?status=draft" class="btn btn-outline btn-sm">Lihat Draft</a>
+        </div>
+        <div class="card card-sm">
+            <span class="badge badge-menunggu">Menunggu</span>
+            <p><strong><?= e($jumlahStatus['menunggu']) ?></strong> kuis</p>
+            <a href="kuis.php?status=menunggu" class="btn btn-outline btn-sm">Lihat Menunggu</a>
+        </div>
+        <div class="card card-sm">
+            <span class="badge badge-terbit">Terbit</span>
+            <p><strong><?= e($jumlahStatus['terbit']) ?></strong> kuis</p>
+            <a href="kuis.php?status=terbit" class="btn btn-outline btn-sm">Lihat Terbit</a>
+        </div>
+        <div class="card card-sm">
+            <span class="badge badge-ditolak">Ditolak</span>
+            <p><strong><?= e($jumlahStatus['ditolak']) ?></strong> kuis</p>
+            <a href="kuis.php?status=ditolak" class="btn btn-outline btn-sm">Lihat Ditolak</a>
+        </div>
+        <div class="card card-sm">
+            <span class="badge badge-ditarik">Ditarik</span>
+            <p><strong><?= e($jumlahStatus['ditarik']) ?></strong> kuis</p>
+            <a href="kuis.php?status=ditarik" class="btn btn-outline btn-sm">Lihat Ditarik</a>
+        </div>
     </div>
 </div>
 
 <!-- Daftar Hasil Persetujuan & Moderasi Terbaru dari Admin -->
-<div class="card" style="padding: 20px;">
-    <h2 style="margin: 0 0 16px 0; font-size: 18px;">Hasil Persetujuan &amp; Moderasi Terbaru</h2>
+<div class="card">
+    <h2 class="card-title">Hasil Persetujuan &amp; Moderasi Terbaru</h2>
 
     <?php if (empty($riwayatKeputusan)): ?>
-        <p class="text-secondary" style="margin: 0;">
+        <p class="form-helper">
             Belum ada keputusan persetujuan atau moderasi dari admin untuk kuis Anda.
         </p>
     <?php else: ?>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-group">
             <?php foreach ($riwayatKeputusan as $log): ?>
                 <?php
-                $badgeKelas = 'badge-neutral';
+                $badgeKelas = 'badge-draft';
                 $labelKeputusan = ucfirst($log['status_ke']);
                 if ($log['status_ke'] === 'terbit') {
-                    $badgeKelas = 'badge-success';
+                    $badgeKelas = 'badge-terbit';
                     $labelKeputusan = 'Disetujui (Terbit)';
                 } elseif ($log['status_ke'] === 'ditolak') {
-                    $badgeKelas = 'badge-danger';
+                    $badgeKelas = 'badge-ditolak';
                     $labelKeputusan = 'Ditolak';
                 } elseif ($log['status_ke'] === 'ditarik') {
-                    $badgeKelas = 'badge-neutral';
+                    $badgeKelas = 'badge-ditarik';
                     $labelKeputusan = 'Ditarik Admin';
                 }
                 ?>
-                <div style="border: 1px solid rgba(0,0,0,0.08); border-radius: var(--radius-s); padding: 14px;">
-                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px;">
-                        <strong style="font-size: 15px;"><?= e($log['judul_kuis']) ?></strong>
-                        <span class="badge <?= $badgeKelas ?>" style="font-size: 12px;">
-                            <?= e($labelKeputusan) ?>
-                        </span>
-                    </div>
-
-                    <div class="text-secondary" style="font-size: 12px; margin-bottom: 8px;">
-                        Tanggal: <?= e($log['dibuat_pada']) ?>
-                    </div>
+                <div class="card card-sm">
+                    <span class="badge <?= e($badgeKelas) ?>">
+                        <?= e($labelKeputusan) ?>
+                    </span>
+                    <h3 class="card-title"><?= e($log['judul_kuis']) ?></h3>
+                    <p class="form-helper">Tanggal: <?= e(formatTanggal($log['dibuat_pada'])) ?></p>
 
                     <?php if (!empty($log['catatan'])): ?>
-                        <div class="<?= $log['status_ke'] === 'terbit' ? 'alert alert-sukses' : 'alert alert-galat' ?>" style="font-size: 13px; padding: 10px; margin: 0 0 8px 0;">
+                        <div class="alert <?= $log['status_ke'] === 'terbit' ? 'alert-sukses' : 'alert-galat' ?>">
                             <strong>Catatan Admin:</strong> <?= e($log['catatan']) ?>
                         </div>
                     <?php endif; ?>
 
-                    <div>
+                    <div class="form-group">
                         <?php if ($log['status_ke'] === 'terbit'): ?>
-                            <a href="hasil.php?kuis_id=<?= e($log['kuis_id']) ?>" style="font-size: 13px;">Lihat Hasil Kuis &rarr;</a>
+                            <a href="hasil.php?kuis_id=<?= e($log['kuis_id']) ?>" class="btn btn-primary btn-sm">Lihat Hasil Kuis &rarr;</a>
                         <?php else: ?>
-                            <a href="kuis.php?status=<?= e($log['status_ke']) ?>" style="font-size: 13px;">Buka di Kuis Saya untuk Revisi &rarr;</a>
+                            <a href="kuis.php?status=<?= e($log['status_ke']) ?>" class="btn btn-secondary btn-sm">Buka di Kuis Saya untuk Revisi &rarr;</a>
                         <?php endif; ?>
                     </div>
                 </div>

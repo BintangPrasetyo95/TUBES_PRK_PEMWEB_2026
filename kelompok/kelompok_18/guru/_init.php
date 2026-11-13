@@ -40,6 +40,11 @@ function guru_session_header(array $session, string $activeMenu = '', bool $show
     $sessionId = (int) $session['id'];
     $status = (string) ($session['status'] ?? '');
     $isOngoing = $status === 'berlangsung';
+    $attendanceCounts = $isOngoing
+        ? guruSessionAttendanceCounts($sessionId)
+        : ['roster_count' => 0, 'nonpresent_count' => 0];
+    $finishReady = !$isOngoing
+        || (int) ($session['jumlah_tap'] ?? 0) + $attendanceCounts['nonpresent_count'] === $attendanceCounts['roster_count'];
     $statusLabels = ['berlangsung' => 'Berlangsung', 'selesai' => 'Selesai', 'dibatalkan' => 'Dibatalkan'];
     $statusLabel = $statusLabels[$status] ?? $status;
     $scheduleText = ($session['schedule_id'] ?? null) === null
@@ -55,7 +60,8 @@ function guru_session_header(array $session, string $activeMenu = '', bool $show
     <section class="flex flex-col gap-4 rounded-2xl border border-[#dfe7dd] bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><span class="inline-flex rounded-full bg-[#e8f1e7] px-3 py-1 text-xs font-semibold text-[#31583c]"><?= attendara_ui_escape($statusLabel) ?></span><span class="text-sm text-slate-500"><?= attendara_ui_escape($session['subject_name'] ?? '') ?></span></div><h2 class="mt-2 text-lg font-semibold text-[#303832]"><?= attendara_ui_escape($session['class_name'] ?? '') ?></h2><p class="mt-1 text-sm text-slate-600"><?= attendara_ui_escape($scheduleText . ' · ' . ($session['semester'] ?? '') . ' · ' . date('d M Y', strtotime((string) $session['tanggal']))) ?></p></div>
         <?php if ($isOngoing): ?>
-            <div class="flex shrink-0 flex-wrap gap-2"><button id="open-finish" type="button" class="min-h-10 rounded-lg bg-[#4e7a5d] px-4 text-sm font-semibold text-white hover:bg-[#41684f]">Selesaikan Sesi</button><button id="open-cancel" type="button" class="min-h-10 rounded-lg border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50">Batalkan Sesi</button></div>
+            <div class="flex shrink-0 flex-wrap gap-2"><button id="open-finish" type="button" data-tap-count="<?= (int) ($session['jumlah_tap'] ?? 0) ?>" data-nonpresent-count="<?= $attendanceCounts['nonpresent_count'] ?>" data-roster-count="<?= $attendanceCounts['roster_count'] ?>"<?= $finishReady ? '' : ' disabled title="Samakan tap dan kehadiran dulu."' ?> class="min-h-10 rounded-lg bg-[#4e7a5d] px-4 text-sm font-semibold text-white hover:bg-[#41684f] disabled:cursor-not-allowed disabled:opacity-50">Selesaikan Sesi</button><button id="open-cancel" type="button" class="min-h-10 rounded-lg border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50">Batalkan Sesi</button></div>
+            <?php if (!$finishReady): ?><p id="finish-disabled-help" class="text-sm text-amber-800 sm:w-full">Samakan tap dan kehadiran siswa.</p><?php endif; ?>
         <?php elseif ($status === 'selesai'): ?>
             <form method="post" action="sesi-aktif.php?id=<?= $sessionId ?>" onsubmit="return window.confirm('Tandai sesi ini sebagai dibatalkan?')"><input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>"><input type="hidden" name="session_id" value="<?= $sessionId ?>"><input type="hidden" name="action" value="cancel_session"><button type="submit" class="min-h-10 rounded-lg border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50">Tandai Sesi Dibatalkan</button></form>
         <?php endif; ?>
@@ -66,7 +72,7 @@ function guru_session_header(array $session, string $activeMenu = '', bool $show
         </nav>
     <?php endif; ?>
     <?php if ($isOngoing): ?>
-        <dialog id="finish-dialog" class="w-[min(28rem,calc(100%-2rem))] rounded-2xl border border-[#dfe7dd] p-0 shadow-xl backdrop:bg-slate-900/30"><div class="p-6"><h2 class="text-lg font-semibold text-[#303832]">Selesaikan sesi?</h2><p class="mt-2 text-sm text-slate-600">Pastikan status kehadiran dan poin sudah diperiksa.</p><div class="mt-6 flex justify-end gap-2"><button type="button" data-close="finish-dialog" class="min-h-10 rounded-lg border border-[#dfe6de] px-4 text-sm font-semibold">Kembali</button><form method="post" action="sesi-aktif.php?id=<?= $sessionId ?>"><input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>"><input type="hidden" name="session_id" value="<?= $sessionId ?>"><input type="hidden" name="action" value="finish_session"><button type="submit" class="min-h-10 rounded-lg bg-[#4e7a5d] px-4 text-sm font-semibold text-white">Selesaikan</button></form></div></div></dialog>
+        <dialog id="finish-dialog" class="w-[min(28rem,calc(100%-2rem))] rounded-2xl border border-[#dfe7dd] p-0 shadow-xl backdrop:bg-slate-900/30"><div class="p-6"><h2 class="text-lg font-semibold text-[#303832]">Selesaikan sesi?</h2><p class="mt-2 text-sm text-slate-600">Pastikan status kehadiran dan poin sudah diperiksa.</p><div class="mt-6 flex justify-end gap-2"><button type="button" data-close="finish-dialog" class="min-h-10 rounded-lg border border-[#dfe6de] px-4 text-sm font-semibold">Kembali</button><form method="post" action="sesi-aktif.php?id=<?= $sessionId ?>"><input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>"><input type="hidden" name="session_id" value="<?= $sessionId ?>"><input type="hidden" name="action" value="finish_session"><button type="submit"<?= $finishReady ? '' : ' disabled' ?> class="min-h-10 rounded-lg bg-[#4e7a5d] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">Selesaikan</button></form></div></div></dialog>
         <dialog id="cancel-dialog" class="w-[min(28rem,calc(100%-2rem))] rounded-2xl border border-[#dfe7dd] p-0 shadow-xl backdrop:bg-slate-900/30"><div class="p-6"><h2 class="text-lg font-semibold text-[#303832]">Batalkan sesi?</h2><p class="mt-2 text-sm text-slate-600">Sesi ini akan ditandai batal.</p><div class="mt-6 flex justify-end gap-2"><button type="button" data-close="cancel-dialog" class="min-h-10 rounded-lg border border-[#dfe6de] px-4 text-sm font-semibold">Kembali</button><form method="post" action="sesi-aktif.php?id=<?= $sessionId ?>"><input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>"><input type="hidden" name="session_id" value="<?= $sessionId ?>"><input type="hidden" name="action" value="cancel_session"><button type="submit" class="min-h-10 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white">Batalkan Sesi</button></form></div></div></dialog>
         <script>
         const finishDialog = document.getElementById('finish-dialog');
@@ -74,6 +80,16 @@ function guru_session_header(array $session, string $activeMenu = '', bool $show
         document.getElementById('open-finish').addEventListener('click', () => finishDialog.showModal());
         document.getElementById('open-cancel').addEventListener('click', () => cancelDialog.showModal());
         document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.close).close()));
+        const finishButton = document.getElementById('open-finish');
+        window.addEventListener('attendara:tap-count', event => {
+            const tapCount = Number(event.detail.count);
+            finishButton.dataset.tapCount = String(tapCount);
+            const ready = tapCount + Number(finishButton.dataset.nonpresentCount) === Number(finishButton.dataset.rosterCount);
+            finishButton.disabled = !ready;
+            const finishSubmit = document.querySelector('#finish-dialog button[type="submit"]');
+            if (finishSubmit) finishSubmit.disabled = !ready;
+            document.getElementById('finish-disabled-help')?.toggleAttribute('hidden', ready);
+        });
         </script>
     <?php endif; ?>
     <?php

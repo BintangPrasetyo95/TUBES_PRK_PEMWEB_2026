@@ -113,7 +113,6 @@ guru_page_start('Tap Kehadiran', 'kelas.php');
         <p id="tap-feedback" class="col-span-2 min-h-10 text-sm text-slate-600" aria-live="polite">Cooldown antar-tap: 2 detik.</p>
     </aside>
 </section>
-<div class="flex flex-wrap gap-2"><a href="sesi-aktif.php?id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Kembali ke Sesi</a><a href="absensi.php?session_id=<?= (int) $sessionId ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white">Lanjut ke Data Siswa</a></div>
 <script>
 const tapToken = <?= $csrfJson ?>;
 const tapEndpoint = 'tap-sesi.php?session_id=<?= (int) $sessionId ?>';
@@ -158,6 +157,7 @@ tapButton.addEventListener('click', async () => {
         }
         document.getElementById('tap-count').textContent = String(result.tap_count);
         tapInput.value = String(result.tap_count);
+        window.dispatchEvent(new CustomEvent('attendara:tap-count', {detail: {count: result.tap_count}}));
         tapFeedback.textContent = 'Tap diterima pada ' + result.time + '.';
         applyCooldown(2);
     } catch (error) {

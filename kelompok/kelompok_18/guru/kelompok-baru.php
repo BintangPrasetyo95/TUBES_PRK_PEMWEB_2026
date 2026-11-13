@@ -16,6 +16,17 @@ $groupValueInput = '4';
 $minimumMaleInput = '0';
 $minimumFemaleInput = '0';
 $studentJson = '[]';
+$session = null;
+$rawSessionId = $_GET['session_id'] ?? '';
+if (!is_string($rawSessionId) && !is_int($rawSessionId)) {
+    http_response_code(422);
+    exit('Sesi tidak valid.');
+}
+$sessionId = $rawSessionId === '' ? null : filter_var($rawSessionId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+if ($rawSessionId !== '' && $sessionId === false) {
+    http_response_code(422);
+    exit('Sesi tidak valid.');
+}
 try {
     $profile = guruProfile();
     $activeSemester = guruActiveSemester();
@@ -25,6 +36,13 @@ try {
     if ($assignment === null) {
         http_response_code(404);
         exit('Penugasan tidak ditemukan.');
+    }
+    if ($sessionId !== null) {
+        $session = guruOwnedSession((int) $sessionId);
+        if ($session === null || (int) $session['assignment_id'] !== $assignmentId) {
+            http_response_code(404);
+            exit('Sesi tidak ditemukan.');
+        }
     }
     $students = guruGroupStudents($assignmentId);
     $studentJson = json_encode(array_map(static fn (array $student): array => [
@@ -64,7 +82,7 @@ try {
                 $pageError = 'Acak anggota terlebih dahulu sebelum menyimpan kelompok.';
             } else {
                 guruCreateGroups($assignmentId, $name, $memberGroups, $groupRule, $groupValue, $minimumMale, $minimumFemale);
-                header('Location: kelompok.php?assignment_id=' . $assignmentId);
+                header('Location: kelompok.php?' . ($sessionId !== null ? 'session_id=' . $sessionId : 'assignment_id=' . $assignmentId));
                 exit;
             }
         }
@@ -75,12 +93,15 @@ try {
     guruReportBackendError($exception);
 }
 
-guru_page_start('Tambah Kelompok', 'kelas.php');
+guru_page_start('Acak Kelompok', 'kelas.php');
 ?>
+<?php if ($session !== null): ?>
+<?php guru_session_header($session, 'groups'); ?>
+<?php endif; ?>
 <?php if ($pageError !== ''): ?><p class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert"><?= attendara_ui_escape($pageError) ?></p><?php endif; ?>
-<form id="group-form" method="post" action="kelompok-baru.php?assignment_id=<?= (int) $assignment['assignment_id'] ?>">
+<form id="group-form" method="post" action="kelompok-baru.php?assignment_id=<?= (int) $assignment['assignment_id'] ?><?= $sessionId !== null ? '&amp;session_id=' . (int) $sessionId : '' ?>">
     <section class="rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
-        <div><h2 class="text-lg font-semibold text-[#303832]">Bentuk Kelompok</h2><p class="mt-1 text-sm text-slate-600">Atur jumlah kelompok atau jumlah anggota, lalu acak anggota siswa.</p></div>
+        <div><h2 class="text-lg font-semibold text-[#303832]">Acak Kelompok</h2><p class="mt-1 text-sm text-slate-600">Atur jumlah kelompok atau jumlah anggota, lalu acak anggota siswa.</p></div>
         <p class="mt-1 text-sm text-slate-500"><?= attendara_ui_escape($assignment['name'] . ' · ' . $assignment['subject_name'] . ' · ' . $assignment['semester']) ?></p>
         <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
         <input type="hidden" name="assignment_id" value="<?= (int) $assignment['assignment_id'] ?>">
@@ -97,7 +118,6 @@ guru_page_start('Tambah Kelompok', 'kelas.php');
     </section>
 </form>
 <section class="space-y-4"><div><h2 class="text-lg font-semibold text-[#303832]">Hasil Pembagian</h2></div><div id="group-results" class="grid gap-4 md:grid-cols-2"></div></section>
-<a href="kelompok.php?assignment_id=<?= (int) $assignment['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f]">Kembali ke Kelompok</a>
 <script>
 const students = <?= $studentJson ?>;
 const rule = document.getElementById('group-rule');

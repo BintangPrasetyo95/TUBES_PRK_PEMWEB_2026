@@ -41,7 +41,7 @@ try {
             $pageError = 'Data sesi tidak valid. Muat ulang halaman lalu coba kembali.';
         } else {
             $newSessionId = guruStartSession((int) $class['assignment_id'], $scheduleId);
-            header('Location: sesi-aktif.php?id=' . $newSessionId);
+            header('Location: tap-sesi.php?session_id=' . $newSessionId);
             exit;
         }
     }

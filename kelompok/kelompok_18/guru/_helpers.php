@@ -457,6 +457,23 @@ function guruSessionRosterCount(int $sessionId): int
     return (int) $statement->fetchColumn();
 }
 
+/** Return the roster and non-present totals used to validate session completion. */
+function guruSessionAttendanceCounts(int $sessionId): array
+{
+    $statement = guruDb()->prepare(
+        "SELECT COUNT(*) AS roster_count,
+                COALESCE(SUM(CASE WHEN status <> 'hadir' THEN 1 ELSE 0 END), 0) AS nonpresent_count
+         FROM absensi WHERE sesi_pembelajaran_id = :session_id"
+    );
+    $statement->execute(['session_id' => $sessionId]);
+    $counts = $statement->fetch();
+
+    return [
+        'roster_count' => is_array($counts) ? (int) $counts['roster_count'] : 0,
+        'nonpresent_count' => is_array($counts) ? (int) $counts['nonpresent_count'] : 0,
+    ];
+}
+
 /** Correct the anonymous tap count while the owned session is still ongoing. */
 function guruCorrectTapCount(int $sessionId, int $tapCount): void
 {

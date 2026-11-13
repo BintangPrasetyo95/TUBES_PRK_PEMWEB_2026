@@ -8,8 +8,8 @@ require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/kata_terlarang.php';
 require_once __DIR__ . '/includes/fungsi/pengguna.php';
 
-// Kalau sudah login, langsung arahkan ke dashboard
-alihkanJikaSudahMasuk();
+// Kalau sudah login akun terdaftar, arahkan ke dashboard (Guest diizinkan membuka register)
+alihkanJikaSudahMasuk(true);
 
 // Variabel untuk menampung nilai input dan pesan error
 $errors = [];
@@ -41,6 +41,7 @@ if (isPost()) {
         $berhasil = daftarPenggunaBaru($nama, $email, $password, $peran);
 
         if ($berhasil) {
+            unset($_SESSION['guest']);
             flash('sukses', 'Pendaftaran berhasil! Silakan masuk menggunakan akun baru Anda.');
             redirect(BASE_URL . '/login.php');
         } else {

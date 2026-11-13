@@ -7,8 +7,8 @@ require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/csrf.php';
 require_once __DIR__ . '/includes/fungsi/pengguna.php';
 
-// Kalau pengguna sudah masuk, langsung arahkan ke dashboard masing-masing
-alihkanJikaSudahMasuk();
+// Kalau pengguna sudah masuk akun terdaftar, arahkan ke dashboard (Guest diizinkan membuka login)
+alihkanJikaSudahMasuk(true);
 
 // Ambil pesan notifikasi flash jika ada (misal: sukses register)
 $pesanFlash = flash();

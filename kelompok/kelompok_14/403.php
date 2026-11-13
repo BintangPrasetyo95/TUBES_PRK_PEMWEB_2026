@@ -70,9 +70,13 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
       &#8592; <?= e($labelKembali) ?>
     </a>
 
-    <?php if (!$sesiUser): ?>
-      <a href="login.php" class="btn btn-secondary">
-        &#128273; Masuk dengan Akun Lain
+    <?php if ($sesiUser): ?>
+      <a href="<?= e($root) ?>logout.php" class="btn btn-secondary">
+        &#128273; Keluar & Ganti Akun
+      </a>
+    <?php else: ?>
+      <a href="<?= e($root) ?>login.php" class="btn btn-secondary">
+        &#128273; Masuk Akun
       </a>
     <?php endif; ?>
   </div>

@@ -70,7 +70,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
       &#8592; <?= e($labelKembali) ?>
     </a>
 
-    <a href="index.php" class="btn btn-secondary">
+    <a href="<?= e($root) ?>index.php" class="btn btn-secondary">
       &#127968; Halaman Utama
     </a>
   </div>

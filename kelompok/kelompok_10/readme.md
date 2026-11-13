@@ -153,11 +153,50 @@ kelompok_10/
 4. **Koneksi Database Bawaan (`config/database.php`):**
    - Host: `127.0.0.1` | Port: `3306`
    - Database: `sisasense_db`
-   - User: `root` | Password: *(kosong)*
+   - User: `root` | Password: *(sesuai konfigurasi Laragon/MySQL lokal)*
 
 ---
 
-## 5. Menjalankan Pengujian Otomatis
+## 5. Panduan Deployment ke InfinityFree (Free Hosting)
+
+InfinityFree memiliki batasan hak akses MySQL cPanel (nama database harus diawali `if0_xxxxxxx_...` dan **dilarang** menggunakan perintah `CREATE DATABASE` atau `USE ...` di phpMyAdmin). 
+
+SisaSense menyediakan dua opsi yang 100% kompatibel dan siap pakai di InfinityFree:
+
+### Opsi A: Menggunakan Web Seeder Interaktif (`seeder.php`) — *Paling Mudah & Otomatis*
+1. Unggah seluruh file folder proyek ke direktori `htdocs/` di InfinityFree (via File Manager atau FileZilla FTP).
+2. Di vPanel InfinityFree, masuk ke menu **MySQL Databases** dan buat 1 database baru (misalnya: `if0_12345678_sisasense`).
+3. Konfigurasi kredensial database di `config/database.php` atau buat file `config/database.local.php` (lihat template `config/database.local.example.php`):
+   ```php
+   <?php
+   return [
+       'host'     => 'sql300.infinityfree.com', // MySQL Host Name dari vPanel
+       'database' => 'if0_12345678_sisasense',  // Nama Database dari vPanel
+       'username' => 'if0_12345678',            // Username Akun vPanel
+       'password' => 'PASSWORD_VPANEL_ANDA',    // Password Akun vPanel
+       'port'     => '3306',
+   ];
+   ```
+4. Buka URL seeder di browser:
+   ```text
+   http://<domain-anda>.infinityfreeapp.com/seeder.php
+   ```
+5. Klik **Eksekusi / Refresh**. Seeder akan secara otomatis membuat ke-8 tabel dan mengisi 3 akun demo, 5 kategori, 24 produk foto real, dan 24 batch stok FEFO!
+
+### Opsi B: Impor Manual via phpMyAdmin InfinityFree (`infinityfree_seeder.sql`)
+1. Buka vPanel InfinityFree &gt; **MySQL Databases** &gt; klik tombol **phpMyAdmin** pada database Anda.
+2. Klik tab **Import**.
+3. Pilih file `kelompok/kelompok_10/database/infinityfree_seeder.sql` (file ini **bebas** dari `CREATE DATABASE` dan `USE` sehingga 100% lolos tanpa error *Access Denied*).
+4. Klik tombol **Go / Kirim**.
+
+### Akun Demo Setelah Seeding (Password: `123`):
+- **Admin:** `admin` / `123` *(Akses Penuh: Dashboard, Master Produk, Laporan)*
+- **Kasir:** `kasir` / `123` *(Akses Kasir POS, Pembayaran Tunai/QRIS/Transfer/EDC, Cetak Struk)*
+- **Pembeli:** `pembeli` / `123` *(Akses Katalog Produk & Keranjang Belanja)*
+
+---
+
+## 6. Menjalankan Pengujian Otomatis
 
 Aplikasi dilengkapi test runner bawaan untuk memverifikasi logika bisnis, formula akuntansi, sanitasi keamanan XSS/CSRF, dan otorisasi 3 role:
 

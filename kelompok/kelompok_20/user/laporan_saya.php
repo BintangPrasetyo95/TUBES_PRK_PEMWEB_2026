@@ -1,5 +1,5 @@
 <?php
-// user/laporan_saya.php
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
@@ -78,7 +78,7 @@ require_once __DIR__ . '/../includes/header.php';
         </a>
     </div>
 
-    <!-- Kotak Filter Lega -->
+    <!-- Kotak Filter -->
     <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
         <form method="GET" action="/user/laporan_saya.php" style="display: flex; gap: 1.25rem; align-items: flex-end; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 180px;">
@@ -109,7 +109,7 @@ require_once __DIR__ . '/../includes/header.php';
         </form>
     </div>
 
-    <!-- Daftar Laporan (Format Kartu - Lega & Enak Dibaca) -->
+    <!-- Daftar Laporan -->
     <?php if (empty($daftarLaporan)): ?>
         <div class="card" style="text-align: center; padding: 3.5rem 1.5rem; color: var(--color-text-muted);">
             <?php if ($isFiltered): ?>
@@ -184,7 +184,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 Lihat Detail
                             </a>
 
-                            <!-- Tombol Edit & Hapus (Hanya muncul jika status Menunggu) -->
+                            <!-- Tombol Edit & Hapus (jika status Menunggu) -->
                             <?php if ($lap['status'] === 'menunggu'): ?>
                                 <a href="/user/edit.php?id=<?= (int)$lap['id'] ?>" class="btn btn-primary btn-sm">
                                     Edit

@@ -1,5 +1,5 @@
 <?php
-// user/kirim.php
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
@@ -171,7 +171,7 @@ require_once __DIR__ . '/../includes/header.php';
                        value="<?= sanitize($judul) ?>" required maxlength="255">
             </div>
 
-            <!-- Kategori & Lokasi (Grid 2 Kolom Lega) -->
+            <!-- Kategori & Lokasi -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div>
                     <label for="kategori_id" class="form-label">Kategori <span style="color: var(--color-danger);">*</span></label>

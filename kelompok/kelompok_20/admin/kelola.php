@@ -1,5 +1,5 @@
 <?php
-// admin/kelola.php - Halaman Semua Laporan (Publik & Privat)
+
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
@@ -7,7 +7,6 @@ wajibAdmin();
 
 $admin_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
 
-// PROSES FORM POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (function_exists('verifikasiCsrf')) {
         verifikasiCsrf();
@@ -15,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $aksi = $_POST['aksi'] ?? '';
 
-    // UBAH STATUS & BERI TANGGAPAN
     if ($aksi === 'update_status') {
         $laporan_id    = (int)($_POST['laporan_id'] ?? 0);
         $status_baru   = trim($_POST['status'] ?? '');
@@ -51,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // HAPUS LAPORAN
     if ($aksi === 'hapus_laporan') {
         $laporan_id = (int)($_POST['laporan_id'] ?? 0);
 
@@ -80,13 +77,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// FILTER & PENCARIAN
 $search         = trim($_GET['search'] ?? '');
 $filter_status  = $_GET['status'] ?? 'semua';
 $filter_jenis   = $_GET['jenis'] ?? 'semua';
 $filter_privasi = $_GET['privasi'] ?? 'semua';
 
-// Query Ambil Semua Laporan (Publik maupun Privat)
 $sql = "SELECT laporan.*, users.nama AS nama_pelapor, kategori.nama_kategori 
         FROM laporan 
         JOIN users ON laporan.user_id = users.id 
@@ -95,7 +90,6 @@ $sql = "SELECT laporan.*, users.nama AS nama_pelapor, kategori.nama_kategori
 
 $params = [];
 
-// Filter Kata Kunci Pencarian
 if (!empty($search)) {
     $sql .= " AND (laporan.judul LIKE :search OR laporan.isi LIKE :search OR laporan.lokasi LIKE :search OR users.nama LIKE :search)";
     $params[':search'] = '%' . $search . '%';
@@ -141,10 +135,9 @@ include '../includes/header.php';
         </a>
     </div>
 
-    <!-- Kotak Pencarian & Filter Luas -->
     <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
         <form method="GET" action="kelola.php">
-            <!-- Kolom Search -->
+
             <div style="margin-bottom: 1.25rem;">
                 <label for="search" class="form-label">Cari Laporan:</label>
                 <input type="text" id="search" name="search" value="<?= sanitize($search) ?>" 
@@ -152,7 +145,6 @@ include '../includes/header.php';
                        class="form-control">
             </div>
 
-            <!-- Deretan Dropdown Filter -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; align-items: end;">
                 <div>
                     <label for="filter-status" class="form-label">Status:</label>
@@ -190,7 +182,6 @@ include '../includes/header.php';
         </form>
     </div>
 
-    <!-- Tampilan Daftar Laporan (Bentuk Kartu Lega) -->
     <div style="margin-bottom: 1rem; font-size: 0.95rem; color: var(--color-text-muted);">
         Menampilkan <strong><?= count($daftar_laporan) ?></strong> laporan yang ditemukan.
     </div>
@@ -204,8 +195,7 @@ include '../includes/header.php';
         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             <?php foreach ($daftar_laporan as $row): ?>
                 <div class="card" style="padding: 1.5rem; margin-bottom: 0;">
-                    
-                    <!-- Header Kartu -->
+
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
                         <div>
                             <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase;">
@@ -228,12 +218,10 @@ include '../includes/header.php';
                         </div>
                     </div>
 
-                    <!-- Isi Ringkas -->
                     <p style="color: var(--color-text); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
                         <?= nl2br(sanitize($row['isi'])) ?>
                     </p>
 
-                    <!-- Info Pelapor & Tanggal -->
                     <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--color-border); font-size: 0.88rem; color: var(--color-text-muted);">
                         <div>
                             Pelapor: <strong style="color: var(--color-text);"><?= sanitize($row['nama_pelapor']) ?></strong>
@@ -245,7 +233,7 @@ include '../includes/header.php';
                         </div>
                         
                         <div style="display: flex; gap: 0.5rem;">
-                            <!-- Tombol Tindak Lanjuti -->
+
                             <button type="button" 
                                     onclick="document.getElementById('form-tindak-<?= $row['id'] ?>').style.display = document.getElementById('form-tindak-<?= $row['id'] ?>').style.display === 'none' ? 'block' : 'none'" 
                                     class="btn btn-primary btn-sm">
@@ -256,7 +244,7 @@ include '../includes/header.php';
                                 Detail Lengkap &rarr;
                             </a>
 
-                            <!-- Tombol Hapus -->
+
                             <form method="POST" action="kelola.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?');" style="display: inline;">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="aksi" value="hapus_laporan">
@@ -266,7 +254,6 @@ include '../includes/header.php';
                         </div>
                     </div>
 
-                    <!-- Kotak Form Tindak Lanjuti / Ubah Status & Tanggapan (Bisa Buka Tutup) -->
                     <div id="form-tindak-<?= $row['id'] ?>" style="display: none; margin-top: 1.25rem; padding: 1.25rem; background: var(--color-bg); border-radius: var(--radius); border: 1px solid var(--color-border);">
                         <h4 style="color: var(--color-primary); font-size: 1.05rem; margin-bottom: 0.75rem;">
                             Tindak Lanjuti Laporan #<?= (int)$row['id'] ?>

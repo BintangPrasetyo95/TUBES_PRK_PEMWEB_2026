@@ -23,9 +23,11 @@ try {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex font-sans">
-    <!-- Sidebar -->
     <aside class="w-64 bg-gray-900 text-white min-h-screen p-5 relative">
-        <h1 class="text-2xl font-bold mb-8 text-blue-400 border-b border-gray-700 pb-4">CiviLens Admin</h1>
+        <div class="flex items-center gap-3 mb-8">
+            <img src="../assets/CiviLens.png" alt="Logo CiviLens" class="h-8 w-auto">
+            <h1 class="text-xl font-bold text-white tracking-tight">CiviLens <span class="text-blue-400">Admin</span></h1>
+        </div>
         <nav class="space-y-4">
             <a href="dashboard.php" class="block py-2 px-4 rounded hover:bg-gray-700 transition">Dashboard Overview</a>
             <a href="kelola_hoaks.php" class="block py-2 px-4 bg-gray-800 rounded hover:bg-gray-700 transition">Kelola Lapor Hoaks</a>
@@ -36,7 +38,6 @@ try {
         </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="flex-1 p-8">
         <header class="mb-8">
             <h2 class="text-3xl font-semibold text-gray-800">Manajemen Laporan Hoaks</h2>

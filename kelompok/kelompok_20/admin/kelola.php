@@ -195,7 +195,11 @@ include '../includes/header.php';
         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             <?php foreach ($daftar_laporan as $row): ?>
                 <div class="card" style="padding: 1.5rem; margin-bottom: 0;">
+<<<<<<< HEAD
                     
+=======
+
+>>>>>>> upstream/main
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
                         <div>
                             <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase;">
@@ -244,6 +248,10 @@ include '../includes/header.php';
                                 Detail Lengkap &rarr;
                             </a>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/main
                             <form method="POST" action="kelola.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?');" style="display: inline;">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="aksi" value="hapus_laporan">

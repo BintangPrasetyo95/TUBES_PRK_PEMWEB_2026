@@ -76,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $kode = kelas_post_string('kode');
         $nama = kelas_post_string('nama');
         $tingkat = kelas_post_string('tingkat');
+        $semesterId = (int) ($_POST['semester_id'] ?? 0);
 
         // Server-side validation.
         if ($kode === '') {
@@ -90,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Nama kelas maksimal 100 karakter.';
         }
 
+        if ($semesterId <= 0) {
+            $errors[] = 'Semester wajib dipilih.';
+        }
+
         $tingkatValue = null;
         if ($tingkat !== '') {
             if (!ctype_digit($tingkat) || (int) $tingkat > 255) {
@@ -99,10 +104,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Uniqueness check with a friendly message.
+        // Uniqueness check with a friendly message. Kode kelas unik per semester.
         if ($errors === []) {
-            $sql = 'SELECT COUNT(*) FROM kelas WHERE kode = :kode';
-            $params = ['kode' => $kode];
+            $sql = 'SELECT COUNT(*) FROM kelas WHERE kode = :kode AND semester_id = :semester_id';
+            $params = ['kode' => $kode, 'semester_id' => $semesterId];
             if ($id > 0) {
                 $sql .= ' AND id <> :id';
                 $params['id'] = $id;
@@ -110,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $statement = $pdo->prepare($sql);
             $statement->execute($params);
             if ((int) $statement->fetchColumn() > 0) {
-                $errors[] = 'Kode kelas sudah digunakan.';
+                $errors[] = 'Kode kelas sudah digunakan pada semester ini.';
             }
         }
 
@@ -118,10 +123,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 if ($id === 0) {
                     $statement = $pdo->prepare(
-                        'INSERT INTO kelas (kode, nama, tingkat, is_active)
-                         VALUES (:kode, :nama, :tingkat, TRUE)'
+                        'INSERT INTO kelas (semester_id, kode, nama, tingkat, is_active)
+                         VALUES (:semester_id, :kode, :nama, :tingkat, TRUE)'
                     );
                     $statement->execute([
+                        'semester_id' => $semesterId,
                         'kode' => $kode,
                         'nama' => $nama,
                         'tingkat' => $tingkatValue,
@@ -129,9 +135,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     kelas_redirect_with_flash('success', 'Kelas berhasil ditambahkan.');
                 } else {
                     $statement = $pdo->prepare(
-                        'UPDATE kelas SET kode = :kode, nama = :nama, tingkat = :tingkat WHERE id = :id'
+                        'UPDATE kelas SET semester_id = :semester_id, kode = :kode, nama = :nama, tingkat = :tingkat WHERE id = :id'
                     );
                     $statement->execute([
+                        'semester_id' => $semesterId,
                         'kode' => $kode,
                         'nama' => $nama,
                         'tingkat' => $tingkatValue,
@@ -142,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } catch (PDOException $exception) {
                 error_log('ATTENDARA save kelas failed: ' . $exception->getMessage());
                 $errors[] = $exception->getCode() === '23000'
-                    ? 'Kode kelas sudah digunakan.'
+                    ? 'Kode kelas sudah digunakan pada semester ini.'
                     : 'Data kelas gagal disimpan.';
             }
         }
@@ -150,17 +157,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ---------------------------------------------------------------
-// Active semester is used to count students and show membership.
+// Active semester is used as the default value for the class form.
 // ---------------------------------------------------------------
 $statement = $pdo->prepare('SELECT id, nama FROM semester WHERE status = :status LIMIT 1');
 $statement->execute(['status' => 'aktif']);
 $activeSemester = $statement->fetch() ?: null;
 
+// Daftar semester untuk dropdown form kelas.
+$semesterList = $pdo->query(
+    'SELECT id, kode, nama, status FROM semester ORDER BY tanggal_mulai DESC, id DESC'
+)->fetchAll();
+
 // ---------------------------------------------------------------
-// Detail view: class info and its students in the active semester.
+// Detail view: class info and its students in the class's own semester.
 // ---------------------------------------------------------------
 if ($detailId > 0) {
-    $statement = $pdo->prepare('SELECT id, kode, nama, tingkat, is_active, created_at, updated_at FROM kelas WHERE id = :id LIMIT 1');
+    $statement = $pdo->prepare(
+        'SELECT k.id, k.semester_id, sm.nama AS semester_nama, sm.status AS semester_status,
+                k.kode, k.nama, k.tingkat, k.is_active, k.created_at, k.updated_at
+         FROM kelas AS k
+         INNER JOIN semester AS sm ON sm.id = k.semester_id
+         WHERE k.id = :id LIMIT 1'
+    );
     $statement->execute(['id' => $detailId]);
     $detailKelas = $statement->fetch();
 
@@ -168,48 +186,47 @@ if ($detailId > 0) {
         kelas_redirect_with_flash('error', 'Data kelas tidak ditemukan.');
     }
 
-    $anggota = [];
-    if ($activeSemester !== null) {
-        $statement = $pdo->prepare(
-            'SELECT s.nomor_induk, s.nama, s.is_active
-             FROM anggota_kelas AS ak
-             JOIN siswa AS s ON s.id = ak.siswa_id
-             WHERE ak.kelas_id = :kelas_id AND ak.semester_id = :semester_id
-             ORDER BY s.nama'
-        );
-        $statement->execute([
-            'kelas_id' => $detailId,
-            'semester_id' => (int) $activeSemester['id'],
-        ]);
-        $anggota = $statement->fetchAll();
-    }
+    $detailSemesterId = (int) $detailKelas['semester_id'];
+
+    $statement = $pdo->prepare(
+        'SELECT s.nomor_induk, s.nama, s.is_active
+         FROM anggota_kelas AS ak
+         JOIN siswa AS s ON s.id = ak.siswa_id
+         WHERE ak.kelas_id = :kelas_id AND ak.semester_id = :semester_id
+         ORDER BY s.nama'
+    );
+    $statement->execute([
+        'kelas_id' => $detailId,
+        'semester_id' => $detailSemesterId,
+    ]);
+    $anggota = $statement->fetchAll();
 
     admin_page_start('Detail Kelas', 'kelas.php');
     ?>
     <section class="space-y-4">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <h2 class="text-lg font-semibold text-[#20392a]"><?= h((string) $detailKelas['nama']) ?></h2>
-                <p class="mt-1 text-sm text-slate-600">Kode <?= h((string) $detailKelas['kode']) ?></p>
+                <h2 class="text-lg font-semibold text-[#303832]"><?= h((string) $detailKelas['nama']) ?></h2>
+                <p class="mt-1 text-sm text-[#64666a]">Kode <?= h((string) $detailKelas['kode']) ?></p>
             </div>
             <div class="flex items-center gap-2">
-                <a href="kelas.php?edit=<?= h((string) $detailKelas['id']) ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d]">Edit</a>
-                <a href="kelas.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Kembali</a>
+                <a href="kelas.php?edit=<?= h((string) $detailKelas['id']) ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#41684f]">Edit</a>
+                <a href="kelas.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#64666a] hover:bg-[#eff3ee]">Kembali</a>
             </div>
         </div>
 
-        <dl class="grid gap-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:grid-cols-2 sm:p-6">
+        <dl class="grid gap-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:grid-cols-2 sm:p-6">
             <div><dt class="text-sm font-medium text-slate-500">Tingkat</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) ($detailKelas['tingkat'] ?? '-')) ?></dd></div>
             <div><dt class="text-sm font-medium text-slate-500">Status</dt><dd class="mt-1 text-sm text-slate-800"><?= (bool) $detailKelas['is_active'] ? 'Aktif' : 'Nonaktif' ?></dd></div>
-            <div><dt class="text-sm font-medium text-slate-500">Semester</dt><dd class="mt-1 text-sm text-slate-800"><?= h($activeSemester !== null ? (string) $activeSemester['nama'] : '-') ?></dd></div>
+            <div><dt class="text-sm font-medium text-slate-500">Semester</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) ($detailKelas['semester_nama'] ?? '-')) ?></dd></div>
             <div><dt class="text-sm font-medium text-slate-500">Jumlah siswa</dt><dd class="mt-1 text-sm text-slate-800"><?= h((string) count($anggota)) ?></dd></div>
         </dl>
 
         <div class="space-y-3">
-            <h3 class="text-base font-semibold text-[#20392a]">Anggota Kelas (Semester Aktif)</h3>
-            <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-                <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-                    <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
+            <h3 class="text-base font-semibold text-[#303832]">Anggota Kelas</h3>
+            <div class="overflow-x-auto rounded-2xl border border-[#dfe6de] bg-white">
+                <table class="min-w-full divide-y divide-[#e6ebe5] text-left text-sm">
+                    <thead class="bg-[#eff3ee] text-xs uppercase tracking-wide text-[#64666a]">
                         <tr>
                             <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
                             <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nomor Induk</th>
@@ -217,16 +234,16 @@ if ($detailId > 0) {
                             <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Status</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#edf1ec] text-slate-700">
+                    <tbody class="divide-y divide-[#e6ebe5] text-[#414942]">
                         <?php if ($anggota === []): ?>
-                            <tr><td colspan="4" class="px-4 py-9 text-center text-slate-500">Belum ada siswa pada semester aktif.</td></tr>
+                            <tr><td colspan="4" class="px-4 py-9 text-center text-slate-500">Belum ada siswa pada kelas ini.</td></tr>
                         <?php else: ?>
                             <?php foreach ($anggota as $index => $siswa): ?>
-                                <tr class="hover:bg-[#f8faf7]">
-                                    <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
-                                    <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $siswa['nomor_induk']) ?></td>
+                                <tr class="hover:bg-[#fafbf9]">
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-center sm:px-5"><?= h((string) ($index + 1)) ?></td>
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-center sm:px-5"><?= h((string) $siswa['nomor_induk']) ?></td>
                                     <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $siswa['nama']) ?></td>
-                                    <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= (bool) $siswa['is_active'] ? 'Aktif' : 'Nonaktif' ?></td>
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-center sm:px-5"><?= (bool) $siswa['is_active'] ? 'Aktif' : 'Nonaktif' ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -245,26 +262,21 @@ if ($detailId > 0) {
 // ---------------------------------------------------------------
 $editKelas = null;
 if ($editId > 0) {
-    $statement = $pdo->prepare('SELECT id, kode, nama, tingkat FROM kelas WHERE id = :id LIMIT 1');
+    $statement = $pdo->prepare('SELECT id, semester_id, kode, nama, tingkat FROM kelas WHERE id = :id LIMIT 1');
     $statement->execute(['id' => $editId]);
     $editKelas = $statement->fetch() ?: null;
 }
 
-if ($activeSemester !== null) {
-    $statement = $pdo->prepare(
-        'SELECT k.id, k.kode, k.nama, k.tingkat, k.is_active, COUNT(ak.siswa_id) AS jumlah_siswa
-         FROM kelas AS k
-         LEFT JOIN anggota_kelas AS ak ON ak.kelas_id = k.id AND ak.semester_id = :semester_id
-         GROUP BY k.id, k.kode, k.nama, k.tingkat, k.is_active
-         ORDER BY k.kode'
-    );
-    $statement->execute(['semester_id' => (int) $activeSemester['id']]);
-} else {
-    $statement = $pdo->query(
-        'SELECT id, kode, nama, tingkat, is_active, 0 AS jumlah_siswa
-         FROM kelas ORDER BY kode'
-    );
-}
+$statement = $pdo->query(
+    'SELECT k.id, k.semester_id, sm.nama AS semester_nama, sm.status AS semester_status,
+            k.kode, k.nama, k.tingkat, k.is_active,
+            COUNT(ak.siswa_id) AS jumlah_siswa
+     FROM kelas AS k
+     INNER JOIN semester AS sm ON sm.id = k.semester_id
+     LEFT JOIN anggota_kelas AS ak ON ak.kelas_id = k.id AND ak.semester_id = k.semester_id
+     GROUP BY k.id, k.semester_id, sm.nama, sm.status, k.kode, k.nama, k.tingkat, k.is_active
+     ORDER BY sm.tanggal_mulai DESC, sm.id DESC, k.kode'
+);
 $kelasList = $statement->fetchAll();
 
 // Repopulate the form from the last POST when validation failed.
@@ -274,6 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
         'kode' => kelas_post_string('kode'),
         'nama' => kelas_post_string('nama'),
         'tingkat' => kelas_post_string('tingkat'),
+        'semester_id' => (int) ($_POST['semester_id'] ?? 0),
     ];
 } elseif ($editKelas !== null) {
     $formValues = [
@@ -281,6 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
         'kode' => (string) $editKelas['kode'],
         'nama' => (string) $editKelas['nama'],
         'tingkat' => (string) ($editKelas['tingkat'] ?? ''),
+        'semester_id' => (int) ($editKelas['semester_id'] ?? 0),
     ];
 } else {
     $formValues = [
@@ -288,117 +302,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
         'kode' => '',
         'nama' => '',
         'tingkat' => '',
+        'semester_id' => $activeSemester !== null ? (int) $activeSemester['id'] : 0,
     ];
 }
 
 $isEditing = $formValues['id'] > 0;
+$isFormPage = $isEditing
+    || (isset($_GET['form']) && $_GET['form'] === '1')
+    || ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save');
 
-admin_page_start($isEditing ? 'Edit Kelas' : 'Data Kelas', 'kelas.php');
-?>
-<section class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h2 class="text-lg font-semibold text-[#20392a]">Daftar Kelas</h2>
-            <p class="mt-1 text-sm text-slate-600">Jumlah siswa mengikuti semester aktif.</p>
-        </div>
-        <?php attendara_ui_button('Tambah Kelas', 'kelas.php'); ?>
-    </div>
+admin_page_start(
+    $isFormPage ? ($isEditing ? 'Edit Kelas' : 'Tambah Kelas') : 'Data Kelas',
+    'kelas.php',
+    $isFormPage ? null : ['label' => 'Tambah Kelas', 'href' => 'kelas.php?form=1'],
+    $isFormPage ? null : 'Kelola kelas dan jumlah siswa per semester.'
+);
 
-    <?php if ($flash !== null): ?>
-        <?php $flashType = ($flash['type'] ?? 'success') === 'error' ? 'error' : 'success'; ?>
-        <p role="status" class="rounded-xl px-4 py-3 text-sm <?= $flashType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' ?>">
-            <?= h((string) ($flash['message'] ?? '')) ?>
-        </p>
-    <?php endif; ?>
-
-    <p class="text-sm text-slate-500">
-        Data untuk <?= h($activeSemester !== null ? (string) $activeSemester['nama'] : 'semester aktif (belum ditetapkan)') ?>.
-    </p>
-
-    <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-        <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-            <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kode</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nama</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Tingkat</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Jumlah Siswa</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Status</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-[#edf1ec] text-slate-700">
-                <?php if ($kelasList === []): ?>
-                    <tr><td colspan="7" class="px-4 py-9 text-center text-slate-500">Belum ada data kelas.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($kelasList as $index => $kelas): ?>
-                        <tr class="hover:bg-[#f8faf7]">
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $kelas['kode']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $kelas['nama']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($kelas['tingkat'] ?? '-')) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $kelas['jumlah_siswa']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <?php if ((bool) $kelas['is_active']): ?>
-                                    <span class="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">Aktif</span>
-                                <?php else: ?>
-                                    <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">Nonaktif</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <div class="flex items-center gap-2">
-                                    <a href="kelas.php?detail=<?= h((string) $kelas['id']) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Detail</a>
-                                    <a href="kelas.php?edit=<?= h((string) $kelas['id']) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Edit</a>
-                                    <form method="post" action="kelas.php" class="inline">
-                                        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-                                        <input type="hidden" name="action" value="toggle">
-                                        <input type="hidden" name="kelas_id" value="<?= h((string) $kelas['id']) ?>">
-                                        <button type="submit" class="rounded-md px-2 py-1 text-xs font-semibold <?= (bool) $kelas['is_active'] ? 'text-red-700 hover:bg-red-50' : 'text-[#28583b] hover:bg-[#edf4ec]' ?>">
-                                            <?= (bool) $kelas['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section id="form-kelas" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <h2 class="text-base font-semibold text-[#20392a]"><?= $isEditing ? 'Edit Kelas' : 'Tambah Kelas' ?></h2>
-    <p class="mt-1 text-sm text-slate-600">Kelas dipakai untuk penempatan siswa dan penugasan guru per semester.</p>
-
-    <?php if ($errors !== []): ?>
-        <ul class="mt-4 space-y-1 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-            <?php foreach ($errors as $error): ?>
-                <li>• <?= h($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
-    <form method="post" action="kelas.php" class="mt-4 grid gap-4 sm:grid-cols-3">
-        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-        <input type="hidden" name="action" value="save">
-        <input type="hidden" name="id" value="<?= h((string) $formValues['id']) ?>">
-
-        <?php
-        attendara_ui_input('Kode', 'kode', $formValues['kode'], 'text', 'Contoh: X-A');
-        attendara_ui_input('Nama', 'nama', $formValues['nama'], 'text', 'Nama kelas');
-        attendara_ui_input('Tingkat (opsional)', 'tingkat', $formValues['tingkat'], 'number');
-        ?>
-
-        <div class="flex items-center gap-3 sm:col-span-3">
-            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
-                <?= $isEditing ? 'Simpan Perubahan' : 'Simpan Kelas' ?>
-            </button>
-            <?php if ($isEditing): ?>
-                <a href="kelas.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Batal</a>
-            <?php endif; ?>
-        </div>
-    </form>
-</section>
-<?php admin_page_end(); ?>
+require __DIR__ . ($isFormPage ? '/views/kelas-form.php' : '/views/kelas-list.php');
+admin_page_end();

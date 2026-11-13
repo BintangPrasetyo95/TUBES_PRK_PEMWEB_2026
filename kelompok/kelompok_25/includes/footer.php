@@ -1,10 +1,128 @@
 </main>
-<footer class="footer-rh mt-5">
-  <div class="container py-4 d-flex flex-column flex-md-row justify-content-between gap-2">
-    <div><strong>Ruang Hukum</strong><br><span class="small">Konsultasi hukum online yang mudah dan terpercaya.</span></div>
-    <div class="small align-self-md-end">&copy; <?= date('Y') ?> Kelompok 25 &middot; Pemrograman Web</div>
+<?php
+// Data footer: kontak dari config/kontak.php, daftar bidang hukum dari database.
+$kontak = require __DIR__ . '/../config/kontak.php';
+$bidangFooter = [];
+try {
+    $bidangFooter = db()->query('SELECT id, nama FROM bidang_hukum ORDER BY nama LIMIT 6')->fetchAll();
+} catch (Throwable $ex) {
+    $bidangFooter = []; // footer tetap tampil walau tabelnya belum ada
+}
+$userFooter = current_user();
+?>
+<footer class="rh-footer mt-5">
+  <div class="rh-footer-atas">
+    <div class="container">
+      <div class="row g-4 g-xl-5">
+
+        <!-- Kiri: logo, kontak, media sosial -->
+        <div class="col-lg-4">
+          <a class="rh-logo" href="<?= url('index.php') ?>" aria-label="Ruang Hukum, ke beranda">
+            <span class="rh-logo-lingkar"><i class="bi bi-bank2"></i></span>
+            <span class="rh-logo-teks">
+              <span class="rh-logo-nama">Ruang<br>Hukum</span>
+              <span class="rh-logo-sub">Konsultasi Online</span>
+            </span>
+          </a>
+
+          <ul class="rh-kontak list-unstyled">
+            <li>
+              <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
+              <address class="mb-0"><?= e($kontak['alamat']) ?></address>
+            </li>
+            <li>
+              <i class="bi bi-telephone-fill" aria-hidden="true"></i>
+              <span>Phone: <a href="tel:<?= e($kontak['telepon_tel']) ?>"><?= e($kontak['telepon']) ?></a></span>
+            </li>
+            <li>
+              <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+              <a href="mailto:<?= e($kontak['email']) ?>"><?= e($kontak['email']) ?></a>
+            </li>
+          </ul>
+
+          <div class="rh-sosial" aria-label="Media sosial Ruang Hukum">
+            <?php foreach ($kontak['sosial'] as $s): ?>
+              <a href="<?= e($s['url']) ?>" target="_blank" rel="noopener noreferrer"
+                 aria-label="<?= e($s['nama']) ?> Ruang Hukum" title="<?= e($s['nama']) ?>">
+                <i class="bi <?= e($s['ikon']) ?>" aria-hidden="true"></i>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        </div>
+
+        <!-- Kanan: kolom tautan, semuanya halaman milik Ruang Hukum sendiri -->
+        <nav class="col-lg-8" aria-label="Tautan footer">
+          <div class="row g-4">
+            <div class="col-6 col-md-3">
+              <h2 class="rh-footer-judul">Layanan</h2>
+              <ul class="rh-footer-daftar">
+                <li><a href="<?= url('klien/konsultasi_baru.php') ?>">Mulai Konsultasi</a></li>
+                <li><a href="<?= url('pengacara.php') ?>">Cari Pengacara</a></li>
+                <li><a href="<?= url('klien/dashboard.php') ?>">Riwayat Konsultasi</a></li>
+              </ul>
+            </div>
+
+            <div class="col-6 col-md-3">
+              <h2 class="rh-footer-judul">Bidang Hukum</h2>
+              <ul class="rh-footer-daftar">
+                <?php foreach ($bidangFooter as $b): ?>
+                  <li><a href="<?= url('pengacara.php?bidang=' . (int) $b['id']) ?>"><?= e($b['nama']) ?></a></li>
+                <?php endforeach; ?>
+                <?php if (!$bidangFooter): ?>
+                  <li><a href="<?= url('pengacara.php') ?>">Semua bidang</a></li>
+                <?php endif; ?>
+              </ul>
+            </div>
+
+            <div class="col-6 col-md-3">
+              <h2 class="rh-footer-judul">Info Hukum</h2>
+              <ul class="rh-footer-daftar">
+                <li><a href="<?= url('artikel.php') ?>">Artikel Hukum</a></li>
+                <li><a href="<?= url('faq.php') ?>">Bantuan &amp; FAQ</a></li>
+                <li><a href="<?= url('syarat.php') ?>">Syarat Penggunaan</a></li>
+              </ul>
+            </div>
+
+            <div class="col-6 col-md-3">
+              <h2 class="rh-footer-judul">Ruang Hukum</h2>
+              <ul class="rh-footer-daftar">
+                <li><a href="<?= url('tentang.php') ?>">Tentang Kami</a></li>
+                <li><a href="<?= url('auth/register.php?role=pengacara') ?>">Gabung sebagai Pengacara</a></li>
+                <?php if ($userFooter): ?>
+                  <li><a href="<?= url(dashboard_path($userFooter['role'])) ?>">Dashboard Saya</a></li>
+                <?php else: ?>
+                  <li><a href="<?= url('auth/login.php') ?>">Masuk</a></li>
+                  <li><a href="<?= url('auth/register.php') ?>">Daftar</a></li>
+                <?php endif; ?>
+              </ul>
+            </div>
+          </div>
+        </nav>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Bilah bawah -->
+  <div class="rh-footer-bawah">
+    <div class="container">
+      <div class="rh-hak-cipta">
+        <span class="rh-c" aria-hidden="true">C</span>
+        <span><?= date('Y') ?> Hak Cipta Milik Ruang Hukum</span>
+      </div>
+      <div class="rh-bawah-tautan">
+        <a href="<?= url('syarat.php') ?>">Syarat Penggunaan</a>
+        <span class="rh-titik" aria-hidden="true">&bull;</span>
+        <a href="<?= url('faq.php') ?>">Bantuan &amp; FAQ</a>
+      </div>
+      <div class="rh-catatan">Proyek Tugas Besar Pemrograman Web &middot; Kelompok 25 &middot; Universitas Lampung</div>
+    </div>
   </div>
 </footer>
+
+<button type="button" class="rh-ke-atas" id="tombolKeAtas" aria-label="Kembali ke atas" hidden>
+  <i class="bi bi-chevron-up" aria-hidden="true"></i>
+</button>
 
 <!-- Jendela konfirmasi bersama. Pakai di form: <form method="post" data-confirm="Yakin hapus?"> -->
 <div class="modal fade" id="modalKonfirmasi" tabindex="-1" aria-hidden="true">
@@ -141,6 +259,19 @@ document.querySelectorAll('.toast-rh').forEach(function (el) {
   }
   document.addEventListener('input', ulang);
   document.addEventListener('change', ulang);
+})();
+
+// 4) Tombol "kembali ke atas": muncul setelah halaman digulir ke bawah.
+(function () {
+  var tombol = document.getElementById('tombolKeAtas');
+  if (!tombol) { return; }
+  function atur() { tombol.hidden = (window.pageYOffset || document.documentElement.scrollTop) < 400; }
+  window.addEventListener('scroll', atur, { passive: true });
+  atur();
+  tombol.addEventListener('click', function () {
+    var pelan = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: pelan ? 'smooth' : 'auto' });
+  });
 })();
 </script>
 </body>

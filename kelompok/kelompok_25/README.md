@@ -59,7 +59,7 @@ kelompok_25/
 ├── pengacara/   dashboard, jawab konsultasi, profil
 ├── admin/       dashboard, verifikasi, pengguna, konsultasi, artikel, FAQ, bidang
 ├── includes/    header, footer, fungsi bantu (functions.php, auth.php), komponen
-├── config/      app.php, database.php, auth.php
+├── config/      app.php, database.php, auth.php, kontak.php (alamat, telepon, email, sosmed untuk footer)
 ├── assets/      css dan js
 ├── database/    schema.sql, migrasi_auth.sql, data_contoh.sql, data_artikel_faq.sql
 └── docs/        erd.png, erd.mmd, screenshots/

@@ -13,8 +13,13 @@ $bidang = $pdo->query('SELECT id, nama FROM bidang_hukum ORDER BY nama')->fetchA
 $galat = [];
 $in = ['role' => 'klien', 'nama' => '', 'username' => '', 'perusahaan' => '', 'telepon' => '', 'email' => '', 'bidang_id' => 0, 'no_izin' => ''];
 
+// Tautan "Gabung sebagai Pengacara" di footer membuka formulir ini dengan peran pengacara sudah terpilih.
+if (($_GET['role'] ?? '') === 'pengacara') {
+    $in['role'] = 'pengacara';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $in['role']       = ($_POST['role'] ?? 'klien') === 'pengacara' ? 'pengacara' : 'klien';
+    $in['role']       =($_POST['role'] ?? 'klien') === 'pengacara' ? 'pengacara' : 'klien';
     $in['nama']       = trim((string) ($_POST['nama'] ?? ''));
     $in['username']   = mb_strtolower(trim((string) ($_POST['username'] ?? '')));
     $in['perusahaan'] = trim((string) ($_POST['perusahaan'] ?? ''));

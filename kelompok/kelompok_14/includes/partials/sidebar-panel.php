@@ -5,9 +5,10 @@
 $root = $root ?? '';
 $halamanAktif = $halamanAktif ?? '';
 
-// Ambil data peran dan nama dari sesi
-$peran = $_SESSION['pengguna']['peran'] ?? 'pengajar';
-$namaPengguna = $_SESSION['pengguna']['nama'] ?? 'Pengguna';
+// Ambil data peran dan nama dari sesi (mendukung kunci 'user' dan 'pengguna')
+$sesiUser = $_SESSION['user'] ?? $_SESSION['pengguna'] ?? null;
+$peran = $sesiUser['peran'] ?? 'pengajar';
+$namaPengguna = $sesiUser['nama'] ?? 'Pengguna';
 
 // Tautan dashboard sesuai peran
 $linkDashboard = ($peran === 'admin') ? ($root . 'admin/dashboard.php') : ($root . 'pengajar/dashboard.php');

@@ -58,6 +58,7 @@ try {
     echo "5. Pelajar  : bima@siswa.com      | Password: password123\n";
     echo "6. Pelajar  : citra@siswa.com     | Password: password123\n";
     echo "--------------------------------------------------------\n";
+    echo "Tersedia 20 kuis lengkap dengan bank soal & kunci jawaban!\n";
     echo "Semua akun siap digunakan untuk pengujian fitur kelompok!\n";
 
 } catch (PDOException $e) {

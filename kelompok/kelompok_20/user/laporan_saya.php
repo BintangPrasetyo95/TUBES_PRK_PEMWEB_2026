@@ -144,7 +144,7 @@ require_once __DIR__ . '/../includes/header.php';
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
                             <?php if (!$lap['is_public']): ?>
-                                <span class="badge" style="background: #F0E6CB; color: #6B5420; border: 1px solid #DDD5C0;">Privat 🔒</span>
+                                <span class="badge" style="background: #F0E6CB; color: #6B5420; border: 1px solid #DDD5C0;">Privat</span>
                             <?php else: ?>
                                 <span class="badge" style="background: #E8ECE2; color: #34402A; border: 1px solid #C4CEB5;">Publik</span>
                             <?php endif; ?>

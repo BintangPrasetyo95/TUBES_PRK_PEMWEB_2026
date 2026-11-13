@@ -9,28 +9,24 @@ function get_rss_sources(): array {
             'id' => 'antara-politik',
             'name' => 'Antara News',
             'category' => 'Politik',
-            'badge_color' => 'bg-red-100 text-red-700 border-red-200',
             'url' => 'https://www.antaranews.com/rss/politik.xml'
         ],
         [
             'id' => 'antara-hukum',
             'name' => 'Antara News',
             'category' => 'Hukum & HAM',
-            'badge_color' => 'bg-amber-100 text-amber-700 border-amber-200',
             'url' => 'https://www.antaranews.com/rss/hukum.xml'
         ],
         [
             'id' => 'cnn-nasional',
             'name' => 'CNN Indonesia',
             'category' => 'Nasional',
-            'badge_color' => 'bg-blue-100 text-blue-700 border-blue-200',
             'url' => 'https://www.cnnindonesia.com/nasional/rss'
         ],
         [
             'id' => 'cnbc-news',
             'name' => 'CNBC Indonesia',
             'category' => 'Kebijakan Publik',
-            'badge_color' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
             'url' => 'https://www.cnbcindonesia.com/news/rss'
         ]
     ];
@@ -110,7 +106,6 @@ function get_fallback_news(): array {
             'timestamp' => time() - 3600,
             'source' => 'Antara News',
             'category' => 'Kebijakan Publik',
-            'badge_color' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
             'image' => 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=600&q=80'
         ],
         [
@@ -122,7 +117,6 @@ function get_fallback_news(): array {
             'timestamp' => time() - 7200,
             'source' => 'Antara News',
             'category' => 'Hukum & HAM',
-            'badge_color' => 'bg-amber-100 text-amber-700 border-amber-200',
             'image' => 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80'
         ]
     ];
@@ -168,7 +162,6 @@ foreach ($sources as $source) {
                     'timestamp' => $timestamp,
                     'source' => $source['name'],
                     'category' => $source['category'],
-                    'badge_color' => $source['badge_color'],
                     'image' => extract_rss_image($item)
                 ];
                 $count++;

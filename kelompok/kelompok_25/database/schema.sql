@@ -6,19 +6,23 @@ CREATE DATABASE IF NOT EXISTS ruang_hukum CHARACTER SET utf8mb4 COLLATE utf8mb4_
 USE ruang_hukum;
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS ulasan, balasan, konsultasi, artikel, faq, profil_pengacara, bidang_hukum, users;
+DROP TABLE IF EXISTS login_gagal, social_accounts, password_resets, remember_tokens, ulasan, balasan, konsultasi, artikel, faq, profil_pengacara, bidang_hukum, users;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 1. Pengguna (klien, pengacara, admin)
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nama VARCHAR(100) NOT NULL,
+  username VARCHAR(30) NULL UNIQUE,
   email VARCHAR(120) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   role ENUM('klien','pengacara','admin') NOT NULL DEFAULT 'klien',
+  perusahaan VARCHAR(120) NULL,
   telepon VARCHAR(20) NULL,
   foto VARCHAR(255) NULL,
   status ENUM('aktif','menunggu','ditolak','nonaktif') NOT NULL DEFAULT 'aktif',
+  terms_at DATETIME NULL,
+  last_login_at DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -106,6 +110,51 @@ CREATE TABLE faq (
   urutan INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
+-- 9. "Ingat akun saya": satu baris per perangkat. Yang disimpan hanya hash dari kode rahasia di cookie.
+CREATE TABLE remember_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  selector CHAR(24) NOT NULL UNIQUE,
+  validator_hash CHAR(64) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  user_agent VARCHAR(200) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 10. Lupa kata sandi: token sekali pakai (yang disimpan hanya hash-nya) dengan masa berlaku
+CREATE TABLE password_resets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 11. Akun media sosial (Google, LinkedIn, Facebook) yang tertaut ke pengguna
+CREATE TABLE social_accounts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  provider VARCHAR(20) NOT NULL,
+  provider_uid VARCHAR(191) NOT NULL,
+  email VARCHAR(120) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_provider_uid (provider, provider_uid),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 12. Catatan percobaan masuk yang gagal (pembatas percobaan agar kata sandi tidak ditebak terus-menerus)
+CREATE TABLE login_gagal (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  identitas VARCHAR(120) NOT NULL,
+  ip VARCHAR(45) NOT NULL,
+  created_at DATETIME NOT NULL,
+  INDEX idx_gagal_identitas (identitas, created_at),
+  INDEX idx_gagal_ip (ip, created_at)
+) ENGINE=InnoDB;
+
 -- ============================================================
 -- DATA AWAL
 -- Semua akun contoh memakai password: Admin123!
@@ -118,10 +167,10 @@ INSERT INTO bidang_hukum (nama, deskripsi) VALUES
 ('Hukum Bisnis', 'Pendirian usaha, kontrak bisnis, kekayaan intelektual'),
 ('Hukum Properti', 'Jual beli tanah, sertifikat, sengketa properti');
 
-INSERT INTO users (nama, email, password, role, status) VALUES
-('Administrator', 'admin@ruanghukum.test', '$2y$10$pKDP0IoBdLyxLKJqDGKavOIcbxWkYQYYGaLpeFS2GJL2lM..jS6Na', 'admin', 'aktif'),
-('Budi Klien', 'klien@ruanghukum.test', '$2y$10$pKDP0IoBdLyxLKJqDGKavOIcbxWkYQYYGaLpeFS2GJL2lM..jS6Na', 'klien', 'aktif'),
-('Sari Wulandari, S.H.', 'pengacara@ruanghukum.test', '$2y$10$pKDP0IoBdLyxLKJqDGKavOIcbxWkYQYYGaLpeFS2GJL2lM..jS6Na', 'pengacara', 'aktif');
+INSERT INTO users (nama, username, email, password, role, telepon, status) VALUES
+('Administrator', 'admin', 'admin@ruanghukum.test', '$2y$10$pKDP0IoBdLyxLKJqDGKavOIcbxWkYQYYGaLpeFS2GJL2lM..jS6Na', 'admin', '081200000001', 'aktif'),
+('Budi Klien', 'budi', 'klien@ruanghukum.test', '$2y$10$pKDP0IoBdLyxLKJqDGKavOIcbxWkYQYYGaLpeFS2GJL2lM..jS6Na', 'klien', '081200000002', 'aktif'),
+('Sari Wulandari, S.H.', 'sari', 'pengacara@ruanghukum.test', '$2y$10$pKDP0IoBdLyxLKJqDGKavOIcbxWkYQYYGaLpeFS2GJL2lM..jS6Na', 'pengacara', '081200000003', 'aktif');
 
 INSERT INTO profil_pengacara (user_id, bidang_id, bio, pengalaman_tahun, kota, no_izin) VALUES
 (3, 3, 'Berpengalaman menangani perkara keluarga dan waris.', 8, 'Bandar Lampung', 'ADV-0001');

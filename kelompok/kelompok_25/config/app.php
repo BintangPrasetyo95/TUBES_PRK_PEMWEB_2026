@@ -15,3 +15,7 @@ define('BASE_URL', rtrim(substr(ROOT_PATH, strlen($docRoot)), '/'));
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/auth.php';
+
+// Masuk otomatis bila ada cookie "Ingat akun saya" yang sah.
+auth_pulihkan_ingat();

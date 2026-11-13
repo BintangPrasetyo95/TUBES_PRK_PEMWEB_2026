@@ -17,7 +17,8 @@ $total = array_sum($hitung);
 
 // Riwayat konsultasi milik klien yang login
 $stmt = $pdo->prepare(
-    'SELECT k.id, k.judul, k.status, b.nama AS bidang, u.nama AS pengacara
+    'SELECT k.id, k.judul, k.status, k.pengacara_id, b.nama AS bidang, u.nama AS pengacara,
+            (SELECT COUNT(*) FROM ulasan ul WHERE ul.konsultasi_id = k.id) AS diulas
      FROM konsultasi k
      LEFT JOIN bidang_hukum b ON b.id = k.bidang_id
      LEFT JOIN users u ON u.id = k.pengacara_id
@@ -65,7 +66,10 @@ require_once __DIR__ . '/../includes/header.php';
               <td><?= e($r['bidang'] ?? '-') ?></td>
               <td><?= e($r['pengacara'] ?? 'Belum ada') ?></td>
               <td><span class="badge-status badge-<?= e($r['status']) ?>"><?= e(ucfirst($r['status'])) ?></span></td>
-              <td class="text-end">
+              <td class="text-end text-nowrap">
+                <?php if ($r['status'] === 'selesai' && !empty($r['pengacara_id']) && (int) $r['diulas'] === 0): ?>
+                  <a class="btn btn-sm btn-gold" href="<?= e(url('klien/konsultasi_detail.php?id=' . $r['id'] . '#ulasan')) ?>"><i class="bi bi-star"></i> Beri ulasan</a>
+                <?php endif; ?>
                 <a class="btn btn-sm btn-navy" href="<?= e(url('klien/konsultasi_detail.php?id=' . $r['id'])) ?>">Buka</a>
               </td>
             </tr>

@@ -1,35 +1,34 @@
 <?php
-/**
- * =================================================================
- * VIEW HTML5: Laporan Rekapitulasi Nilai & Pengaturan Bobot
- * Modul     : Perhitungan Nilai & Laporan Akademik
- * Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067)
- * =================================================================
- */
+
+$sesiKonteks   = $_SESSION['konteks_penilaian'] ?? [];
+$sesiKelas     = $sesiKonteks['id_kelas']     ?? '';
+$sesiMapel     = $sesiKonteks['id_mapel']     ?? '';
+$sesiPeriode   = $sesiKonteks['id_periode']   ?? '';
+$sesiPenugasan = $sesiKonteks['id_penugasan'] ?? '';
 ?>
-<!-- Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067) -->
-<div id="laporan-root">
-    <!-- Header Halaman -->
+<div id="laporan-root"
+     data-kelas="<?= e($sesiKelas) ?>"
+     data-mapel="<?= e($sesiMapel) ?>"
+     data-periode="<?= e($sesiPeriode) ?>"
+     data-penugasan="<?= e($sesiPenugasan) ?>">
     <div class="page-heading">
         <div>
             <p class="eyebrow">EVALUASI AKADEMIK & REKAP KELAS</p>
             <h1>Rekap nilai & laporan</h1>
-            <p>Pengaturan bobot evaluasi, kalkulasi nilai akhir otomatis, dan rekapitulasi capaian belajar siswa per kelas.</p>
+            <p>Pengaturan bobot evaluasi per mata pelajaran, kalkulasi nilai akhir otomatis, dan rekapitulasi capaian belajar siswa.</p>
         </div>
         <div class="heading-actions no-print">
             <button id="btn-hitung-ulang" class="primary" type="button">
-                <span>⚡</span> Hitung nilai akhir
+                Simpan & hitung rekap
             </button>
             <button id="btn-cetak-laporan" type="button">
-                <span>🖨️</span> Cetak rekap (PDF/Print)
+                Cetak rekap (PDF)
             </button>
         </div>
     </div>
 
-    <!-- Notifikasi Modul Laporan -->
     <div id="laporan-notice" class="message" hidden role="alert"></div>
 
-    <!-- Kop Cetak Resmi (Hanya Tampil Saat Dicetak / window.print()) -->
     <section class="print-header only-print" aria-hidden="true">
         <div class="print-brand">
             <h2>ARUNIKA — LAPORAN REKAPITULASI NILAI AKADEMIK</h2>
@@ -56,26 +55,41 @@
         </table>
     </section>
 
-    <!-- Toolbar Pemilihan Penugasan & Ringkasan Cepat -->
     <section class="panel no-print" style="margin-bottom: 20px;">
-        <div class="table-toolbar" style="flex-wrap: wrap; gap: 14px;">
-            <label class="search-label" style="min-width: 280px; margin-bottom: 0;">
-                Pilih penugasan mengajar:
-                <select id="select-penugasan" aria-label="Pilih penugasan mengajar">
-                    <option value="">Memuat daftar penugasan…</option>
-                </select>
-            </label>
-            <span id="badge-status-rekap" class="pill" style="align-self: center;">Pilih kelas</span>
+        <div class="table-toolbar" style="margin-bottom: 0; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; gap: 14px; flex-wrap: wrap; flex: 1;">
+                <label class="search-label" style="max-width: 220px; margin-bottom: 0;">
+                    Kelas
+                    <select id="lap-kelas" aria-label="Pilih kelas">
+                        <option value="">Memuat kelas…</option>
+                    </select>
+                </label>
+                <label class="search-label" style="max-width: 260px; margin-bottom: 0;">
+                    Mata pelajaran
+                    <select id="lap-mapel" aria-label="Pilih mata pelajaran">
+                        <option value="">Pilih mata pelajaran</option>
+                    </select>
+                </label>
+                <label class="search-label" style="max-width: 240px; margin-bottom: 0;">
+                    Periode penilaian
+                    <select id="lap-periode" aria-label="Pilih periode penilaian">
+                        <option value="">Pilih periode</option>
+                    </select>
+                </label>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <span id="badge-status-rekap" class="pill">Pilih mapel</span>
+                <small id="info-guru-pengampu" class="muted" style="font-size: 12px;"></small>
+            </div>
         </div>
     </section>
 
-    <!-- Panel Pengaturan Bobot Komponen Penilaian -->
     <section class="panel no-print" style="margin-bottom: 24px;">
         <div class="section-title">
             <div>
                 <p class="eyebrow">KOMPOSISI PENILAIAN</p>
                 <h2 style="font-size: 18px; margin-bottom: 4px;">Pengaturan bobot komponen nilai</h2>
-                <small class="muted">Tentukan persentase kontribusi setiap komponen terhadap nilai akhir. Total wajib tepat 100%.</small>
+                <small class="muted">Tentukan persentase kontribusi setiap komponen terhadap nilai akhir mata pelajaran ini. Total wajib tepat 100%.</small>
             </div>
             <span id="badge-total-bobot" class="pill" style="font-weight: bold;">Total: 100%</span>
         </div>
@@ -111,7 +125,6 @@
         </form>
     </section>
 
-    <!-- Ringkasan Statistik Kelas (Cards) -->
     <section class="stats" aria-label="Statistik capaian kelas" style="margin-bottom: 24px;">
         <article>
             <span>Rata-rata nilai kelas</span>
@@ -135,7 +148,6 @@
         </article>
     </section>
 
-    <!-- Tabel Rekapitulasi Nilai Siswa -->
     <section class="panel">
         <div class="table-toolbar no-print">
             <label class="search-label" style="margin-bottom: 0;">
@@ -154,27 +166,27 @@
                         <th>Nama siswa</th>
                         <th>Rata tugas</th>
                         <th>Rata kuis</th>
-                        <th>UTS</th>
-                        <th>UAS</th>
+                        <th>Rata UTS</th>
+                        <th>Rata UAS</th>
                         <th>Nilai akhir</th>
                         <th>Predikat</th>
+                        <th>Disiplin tugas</th>
                         <th>Kelengkapan</th>
                         <th class="no-print">Kuadran belajar</th>
                     </tr>
                 </thead>
                 <tbody id="body-rekap-nilai">
                     <tr>
-                        <td colspan="11" class="empty">Silakan pilih penugasan mengajar terlebih dahulu.</td>
+                        <td colspan="12" class="empty">Silakan pilih kelas, mata pelajaran, dan periode terlebih dahulu.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <p class="table-note no-print" id="catatan-tabel-rekap">
-            Nilai akhir dihitung secara otomatis berdasarkan rata-rata komponen terbobot. Siswa berstatus <em>Belum lengkap</em> masih memiliki komponen penilaian yang belum dinilai.
+            Nilai akhir dihitung secara otomatis berdasarkan komponen yang sudah dinilai (proporsional terhadap bobot terisi). Indeks disiplin dihitung khusus dari komponen <em>Tugas</em>.
         </p>
 
-        <!-- Tanda Tangan Cetak (Hanya Tampil Saat Dicetak) -->
         <div class="print-signature only-print">
             <div style="float: right; width: 260px; text-align: center; margin-top: 30px;">
                 <p>Bandar Lampung, <span id="print-tanggal-ttd">—</span></p>
@@ -187,8 +199,6 @@
     </section>
 </div>
 
-<!-- Styling Khusus Modul Laporan & Print -->
-<!-- Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067) -->
 <style>
     #laporan-root .bobot-grid {
         display: grid;
@@ -261,7 +271,6 @@
         color: #2b533d;
     }
 
-    /* Utilitas Khusus Cetak */
     .only-print { display: none !important; }
 
     @media print {
@@ -351,7 +360,6 @@
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
-        /* Rata kiri untuk nama siswa pada cetak */
         td:nth-child(3) {
             text-align: left !important;
         }
@@ -361,6 +369,28 @@
             padding: 0 !important;
             background: transparent !important;
             margin: 0 !important;
+        }
+        #laporan-root .stats {
+            gap: 8px !important;
+            margin: 0 0 12px 0 !important;
+        }
+        #laporan-root .stats article {
+            border: 1px solid #999 !important;
+            border-radius: 4px !important;
+            padding: 6px 10px !important;
+        }
+        #laporan-root .stats span {
+            font-size: 8pt !important;
+            color: #333 !important;
+        }
+        #laporan-root .stats strong {
+            font-size: 13pt !important;
+            line-height: 1.25 !important;
+            color: #000 !important;
+        }
+        #laporan-root .stats small {
+            font-size: 7.5pt !important;
+            color: #444 !important;
         }
         .badge-lengkap, .badge-belum {
             background: transparent !important;
@@ -380,4 +410,3 @@
         }
     }
 </style>
-

@@ -1,19 +1,36 @@
 <?php
+$sesiKonteks = $_SESSION['konteks_penilaian'] ?? [];
+$sesiKelas   = $sesiKonteks['id_kelas']   ?? '';
+$sesiMapel   = $sesiKonteks['id_mapel']   ?? '';
+$sesiPeriode = $sesiKonteks['id_periode'] ?? '';
 ?>
+<div id="pn-root"
+     data-kelas="<?= e($sesiKelas) ?>"
+     data-mapel="<?= e($sesiMapel) ?>"
+     data-periode="<?= e($sesiPeriode) ?>">
+
 <div class="page-heading">
     <div>
         <p class="eyebrow">MANAJEMEN PENILAIAN TERPADU</p>
         <h1>Penilaian</h1>
-        <p>Kelola Tugas, Kuis, UTS, dan UAS, lalu isi nilai siswa dalam satu kelas (0–100).</p>
+        <p>Kelola Penilaian Tugas, Kuis, UTS, dan UAS.</p>
     </div>
     <button id="pn-add" class="primary" type="button" hidden>+ Tambah penilaian</button>
 </div>
 
 <section class="panel">
-    <div class="table-toolbar" style="margin-bottom:0">
-        <label class="search-label" style="max-width:560px;margin-bottom:0">Kelas · Mata pelajaran · Periode
-            <select id="pn-konteks"><option value="">Memuat…</option></select>
-        </label>
+    <div class="table-toolbar" style="margin-bottom:0;flex-wrap:wrap">
+        <div style="display:flex;gap:14px;flex-wrap:wrap;flex:1">
+            <label class="search-label" style="max-width:220px;margin-bottom:0">Kelas
+                <select id="pn-kelas"><option value="">Pilih kelas</option></select>
+            </label>
+            <label class="search-label" style="max-width:260px;margin-bottom:0">Mata pelajaran
+                <select id="pn-mapel"><option value="">Pilih mata pelajaran</option></select>
+            </label>
+            <label class="search-label" style="max-width:240px;margin-bottom:0">Periode penilaian
+                <select id="pn-periode"><option value="">Pilih periode</option></select>
+            </label>
+        </div>
         <span id="pn-count" class="pill">—</span>
     </div>
 </section>
@@ -29,7 +46,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>No.</th><th>Judul</th><th>Jenis</th><th>Terisi</th><th>Rata-rata</th><th>Aksi</th>
+                    <th>No.</th><th>Judul</th><th>Jenis</th><th>Tenggat waktu</th><th>Terisi</th><th>Rata-rata</th><th>Aksi</th>
                 </tr>
             </thead>
             <tbody id="pn-body"></tbody>
@@ -88,16 +105,19 @@
     <form id="pn-form">
         <div>
             <label>Judul penilaian
-                <input name="judul_penilaian" required maxlength="100" placeholder="Contoh: Kuis Bab 1">
+                <input name="judul_penilaian" required maxlength="100" placeholder="Contoh: Tugas Bab 1">
             </label>
             <label>Jenis komponen
-                <select name="jenis_komponen" required>
+                <select name="jenis_komponen" id="pn-jenis" required>
                     <option value="">Pilih jenis komponen</option>
-                    <option>Tugas</option>
-                    <option>Kuis</option>
-                    <option>UTS</option>
-                    <option>UAS</option>
+                    <option value="Tugas">Tugas</option>
+                    <option value="Kuis">Kuis</option>
+                    <option value="UTS">UTS</option>
+                    <option value="UAS">UAS</option>
                 </select>
+            </label>
+            <label id="pn-tenggat-wrap" hidden>Tenggat waktu pengumpulan
+                <input type="datetime-local" name="tenggat_waktu" id="pn-tenggat">
             </label>
         </div>
         <p id="pn-form-error" class="error-text" role="alert"></p>
@@ -107,3 +127,5 @@
         </div>
     </form>
 </dialog>
+
+</div>

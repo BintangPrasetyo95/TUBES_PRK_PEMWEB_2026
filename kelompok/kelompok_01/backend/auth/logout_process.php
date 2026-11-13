@@ -24,5 +24,5 @@ if (ini_get('session.use_cookies')) {
 session_destroy();
 
 // Mengarahkan pengguna ke halaman login
-header('Location: ../../login.php');
+header('Location: /tubes_prk_pemweb_2026/kelompok/kelompok_01/login.php');
 exit;

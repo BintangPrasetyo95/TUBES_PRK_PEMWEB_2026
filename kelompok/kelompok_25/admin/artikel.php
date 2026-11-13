@@ -1,97 +1,152 @@
 <?php
-// MODUL ADMIN (Linda) - Daftar Artikel
+// MODUL ADMIN (Linda): kelola artikel. Daftar, cari, filter status, terbitkan/jadikan draft, hapus.
+// Ditulis ulang oleh Rafi (versi sebelumnya memakai $pdo, verify_csrf(), set_flash() yang tidak ada,
+// dan redirect ke halaman publik). Form tambah/ubah ada di artikel_form.php.
 require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../includes/admin_nav.php';
 require_role('admin');
 
-// Proses Hapus Artikel jika tombol hapus diklik
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi']) && $_POST['aksi'] === 'hapus') {
-    if (!verify_csrf()) {
-        set_flash('Token CSRF tidak valid.', 'danger');
-        redirect('artikel.php');
-    }
+$pdo = db();
+$kunciFilter = ['q', 'status', 'hal'];
 
-    $id = $_POST['id'] ?? null;
-    if ($id) {
-        $stmt = $pdo->prepare("DELETE FROM artikel WHERE id = ?");
-        $stmt->execute([$id]);
-        set_flash('Artikel berhasil dihapus.', 'success');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $balik = admin_kembali('admin/artikel.php', $_POST, $kunciFilter);
+    if (!csrf_valid()) {
+        flash('danger', 'Sesi formulir tidak valid. Muat ulang halaman lalu coba lagi.');
+        redirect($balik);
     }
-    redirect('artikel.php');
+    $id   = (int) ($_POST['id'] ?? 0);
+    $aksi = $_POST['aksi'] ?? '';
+    if ($id > 0 && $aksi === 'hapus') {
+        $st = $pdo->prepare('DELETE FROM artikel WHERE id = ?');
+        $st->execute([$id]);
+        flash($st->rowCount() > 0 ? 'success' : 'warning', $st->rowCount() > 0 ? 'Artikel berhasil dihapus.' : 'Artikel tidak ditemukan.');
+    } elseif ($id > 0 && in_array($aksi, ['terbit', 'draft'], true)) {
+        $st = $pdo->prepare('UPDATE artikel SET status = ? WHERE id = ?');
+        $st->execute([$aksi, $id]);
+        flash('success', $aksi === 'terbit' ? 'Artikel diterbitkan dan kini tampil di halaman Artikel.' : 'Artikel dikembalikan menjadi draft.');
+    }
+    redirect($balik);
 }
 
-// Ambil semua data artikel
-$stmt = $pdo->query("SELECT a.*, u.nama as penulis FROM artikel a LEFT JOIN users u ON a.penulis_id = u.id ORDER BY a.created_at DESC");
-$artikels = $stmt->fetchAll();
+$q      = mb_substr(trim((string) ($_GET['q'] ?? '')), 0, 60);
+$status = in_array($_GET['status'] ?? '', ['terbit', 'draft'], true) ? $_GET['status'] : '';
+$hal    = max(1, (int) ($_GET['hal'] ?? 1));
+$perHal = 15;
+
+$kondisi = ['1 = 1'];
+$param   = [];
+if ($q !== '') {
+    $kondisi[] = '(a.judul LIKE ? OR a.ringkasan LIKE ?)';
+    array_push($param, "%$q%", "%$q%");
+}
+if ($status !== '') {
+    $kondisi[] = 'a.status = ?';
+    $param[] = $status;
+}
+$where = implode(' AND ', $kondisi);
+
+$st = $pdo->prepare("SELECT COUNT(*) FROM artikel a WHERE $where");
+$st->execute($param);
+$total    = (int) $st->fetchColumn();
+$totalHal = max(1, (int) ceil($total / $perHal));
+$hal      = min($hal, $totalHal);
+
+$st = $pdo->prepare(
+    "SELECT a.id, a.judul, a.slug, a.status, a.created_at, b.nama AS bidang, u.nama AS penulis
+     FROM artikel a
+     LEFT JOIN bidang_hukum b ON b.id = a.bidang_id
+     LEFT JOIN users u ON u.id = a.penulis_id
+     WHERE $where ORDER BY a.created_at DESC, a.id DESC LIMIT ? OFFSET ?"
+);
+foreach ($param as $i => $v) {
+    $st->bindValue($i + 1, $v);
+}
+$st->bindValue(count($param) + 1, $perHal, PDO::PARAM_INT);
+$st->bindValue(count($param) + 2, ($hal - 1) * $perHal, PDO::PARAM_INT);
+$st->execute();
+$daftar = $st->fetchAll();
+
+$hitung = ['terbit' => 0, 'draft' => 0];
+foreach ($pdo->query('SELECT status, COUNT(*) AS n FROM artikel GROUP BY status')->fetchAll() as $r) {
+    $hitung[$r['status']] = (int) $r['n'];
+}
+$filterAktif = ['q' => $q, 'status' => $status, 'hal' => $hal > 1 ? $hal : ''];
 
 $judul = 'Kelola Artikel';
 require_once __DIR__ . '/../includes/header.php';
 ?>
+<div class="container ad-wrap">
+  <?php admin_kepala('artikel', 'Kelola Artikel', $hitung['terbit'] . ' artikel terbit dan ' . $hitung['draft'] . ' draft. Hanya artikel terbit yang terlihat oleh pengunjung.'); ?>
 
-<div class="container page-head my-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2>Kelola Artikel</h2>
-            <p class="text-secondary mb-0">Daftar artikel dan publikasi hukum.</p>
-        </div>
-        <a href="artikel_form.php" class="btn btn-primary">+ Tambah Artikel</a>
+  <form class="ad-filter" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <label class="form-label" for="a-q">Cari</label>
+        <div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input class="form-control" id="a-q" name="q" type="search" value="<?= e($q) ?>" placeholder="Judul atau ringkasan"></div>
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="a-status">Status</label>
+        <select class="form-select" id="a-status" name="status">
+          <option value="">Semua</option>
+          <option value="terbit" <?= $status === 'terbit' ? 'selected' : '' ?>>Terbit</option>
+          <option value="draft" <?= $status === 'draft' ? 'selected' : '' ?>>Draft</option>
+        </select>
+      </div>
+      <div class="col-3 col-md-1 d-grid"><button class="btn btn-navy" type="submit">Cari</button></div>
+      <div class="col-3 col-md-1 d-grid"><a class="btn btn-outline-secondary" href="<?= e(url('admin/artikel.php')) ?>" title="Hapus filter"><i class="bi bi-x-lg"></i></a></div>
+      <div class="col-12 col-md-2 d-grid"><a class="btn btn-gold" href="<?= e(url('admin/artikel_form.php')) ?>"><i class="bi bi-plus-lg"></i> Tulis Artikel</a></div>
     </div>
+  </form>
 
-    <?php if (has_flash()): ?>
-        <div class="alert alert-<?= flash_type() ?> alert-dismissible fade show" role="alert">
-            <?= flash() ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+  <div class="ad-card">
+    <?php if (!$daftar): ?>
+      <div class="ad-kosong"><i class="bi bi-journal-x"></i><?= ($q !== '' || $status !== '') ? 'Tidak ada artikel yang cocok dengan filter.' : 'Belum ada artikel. Klik "Tulis Artikel" untuk membuat yang pertama.' ?></div>
+    <?php else: ?>
+    <div class="table-responsive">
+      <table class="table ad-table">
+        <thead><tr><th>Artikel</th><th>Bidang</th><th>Penulis</th><th>Status</th><th>Tanggal</th><th class="text-end">Aksi</th></tr></thead>
+        <tbody>
+        <?php foreach ($daftar as $a): ?>
+          <tr>
+            <td><div class="ad-potong fw-semibold"><?= e($a['judul']) ?></div><span class="ad-sub">/<?= e($a['slug']) ?></span></td>
+            <td><?= e($a['bidang'] ?? 'Umum') ?></td>
+            <td><?= e($a['penulis'] ?? '-') ?></td>
+            <td><?= admin_pil($a['status']) ?></td>
+            <td><?= e(tgl($a['created_at'])) ?></td>
+            <td class="text-end">
+              <span class="ad-aksi">
+                <a class="btn btn-outline-secondary btn-ad" href="<?= e(url('artikel_detail.php?slug=' . rawurlencode($a['slug']))) ?>" target="_blank" title="Lihat di situs"><i class="bi bi-box-arrow-up-right"></i></a>
+                <a class="btn btn-outline-secondary btn-ad" href="<?= e(url('admin/artikel_form.php?id=' . (int) $a['id'])) ?>">Ubah</a>
+                <form method="post">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="id" value="<?= (int) $a['id'] ?>">
+                  <input type="hidden" name="aksi" value="<?= $a['status'] === 'terbit' ? 'draft' : 'terbit' ?>">
+                  <?php foreach ($filterAktif as $kk => $v): ?><input type="hidden" name="<?= $kk ?>" value="<?= e($v) ?>"><?php endforeach; ?>
+                  <button class="btn btn-outline-secondary btn-ad" type="submit"><?= $a['status'] === 'terbit' ? 'Jadikan draft' : 'Terbitkan' ?></button>
+                </form>
+                <form method="post" data-confirm="Artikel &quot;<?= e($a['judul']) ?>&quot; akan dihapus permanen." data-confirm-judul="Hapus artikel?" data-confirm-ok="Ya, hapus" data-confirm-tipe="danger">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="id" value="<?= (int) $a['id'] ?>">
+                  <input type="hidden" name="aksi" value="hapus">
+                  <?php foreach ($filterAktif as $kk => $v): ?><input type="hidden" name="<?= $kk ?>" value="<?= e($v) ?>"><?php endforeach; ?>
+                  <button class="btn btn-outline-danger btn-ad" type="submit" title="Hapus"><i class="bi bi-trash"></i></button>
+                </form>
+              </span>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
     <?php endif; ?>
+  </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>No</th>
-                            <th>Judul</th>
-                            <th>Penulis</th>
-                            <th>Status</th>
-                            <th>Tanggal Buat</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($artikels)): ?>
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">Belum ada artikel.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($artikels as $index => $a): ?>
-                                <tr>
-                                    <td><?= $index + 1 ?></td>
-                                    <td><?= e($a['judul']) ?></td>
-                                    <td><?= e($a['penulis'] ?? 'Admin') ?></td>
-                                    <td>
-                                        <?php if ($a['status'] === 'terbit'): ?>
-                                            <span class="badge bg-success">Terbit</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary">Draft</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= e($a['created_at']) ?></td>
-                                    <td>
-                                        <a href="artikel_form.php?id=<?= e($a['id']) ?>" class="btn btn-warning btn-sm">Ubah</a>
-                                        <form method="POST" class="d-inline">
-                                            <?= csrf_field() ?>
-                                            <input type="hidden" name="id" value="<?= e($a['id']) ?>">
-                                            <button type="submit" name="aksi" value="hapus" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus artikel ini?')">Hapus</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+    <span class="text-muted small">Menampilkan <?= count($daftar) ?> dari <?= $total ?> artikel</span>
+    <div><?= art_pagination($hal, $totalHal, 'admin/artikel.php', ['q' => $q, 'status' => $status]) ?></div>
+  </div>
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

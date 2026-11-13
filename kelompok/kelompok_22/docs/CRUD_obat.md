@@ -20,6 +20,7 @@ Data obat disimpan dalam tabel `obat` dengan beberapa kolom berikut:
 - `id_obat`: ID setiap obat.
 - `nama_obat`: Nama obat.
 - `id_kategori`: Kategori obat.
+- `harga`: Harga per kemasan dalam Rupiah.
 - `stok`: Jumlah stok obat.
 - `indikasi`: Deskripsi dan kegunaan obat.
 - `aturan_pakai`: Aturan penggunaan dan dosis.
@@ -30,11 +31,11 @@ Data obat disimpan dalam tabel `obat` dengan beberapa kolom berikut:
 
 **a. Daftar Obat (`index.php`)**
 
-Halaman ini menampilkan daftar obat yang sudah tersimpan di database. Informasi yang ditampilkan meliputi gambar (thumbnail), nama obat, kategori, stok, status stok, serta tombol untuk mengubah dan menghapus data.
+Halaman ini menampilkan daftar obat yang sudah tersimpan di database. Informasi yang ditampilkan meliputi gambar (thumbnail), nama obat, kategori, harga, stok, status stok, serta tombol untuk mengubah dan menghapus data.
 
 **b. Tambah Obat (`tambah.php`)**
 
-Admin dapat menambahkan obat melalui form yang berisi nama obat, kategori, stok, gambar (opsional), indikasi, aturan pakai, dan peringatan. Data akan diperiksa terlebih dahulu sebelum disimpan ke database.
+Admin dapat menambahkan obat melalui form yang berisi nama obat, kategori, harga, stok, gambar (opsional), indikasi, aturan pakai, dan peringatan. Data akan diperiksa terlebih dahulu sebelum disimpan ke database.
 
 **c. Ubah Obat (`ubah.php`)**
 
@@ -74,6 +75,8 @@ Beberapa pemeriksaan dan pengamanan yang diterapkan pada modul ini:
 
 - Memastikan data yang wajib diisi tidak kosong.
 - Memeriksa agar stok berupa angka bulat dan tidak bernilai negatif.
+- Memeriksa agar harga berupa angka bulat 0 sampai 99.999.999 (tanpa titik atau koma).
+- Memastikan kategori yang dipilih benar-benar ada di database.
 - Membatasi nama obat maksimal 150 karakter.
 - Menggunakan prepared statement pada query database.
 - Menggunakan `htmlspecialchars()` untuk mengamankan data yang ditampilkan.
@@ -113,8 +116,8 @@ Daftar Obat
 
 ## 9. Prasyarat Menjalankan
 
-- **Kolom `gambar`** harus ada di tabel `obat`. Jika belum ada, jalankan `database/migrasi_gambar.sql` di phpMyAdmin:
-  `ALTER TABLE obat ADD COLUMN IF NOT EXISTS gambar VARCHAR(255) DEFAULT 'default.jpg';`
+- Database sudah diimpor dari `database/klikobat.sql`. Berkas ini sudah memuat kolom `gambar` pada tabel `obat`, sehingga **tidak diperlukan migrasi tambahan**.
 - File `assets/images/obat/default.jpg` harus tersedia sebagai gambar bawaan.
+- Folder `assets/images/obat/` harus dapat ditulis oleh server (agar upload gambar berfungsi).
 - Login admin: akses `admin/login.php` dengan akun default `admin` / `password`, lalu buka `admin/obat/index.php`.
-- Apache dan MySQL pada XAMPP harus aktif.
+- Apache dan MySQL pada XAMPP/Laragon harus aktif.

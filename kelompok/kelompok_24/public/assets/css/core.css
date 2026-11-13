@@ -749,7 +749,7 @@ p {
     left: 0;
     z-index: 1030;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     height: 62px;
     padding: 0 6px;
     border-top: 1px solid var(--line);

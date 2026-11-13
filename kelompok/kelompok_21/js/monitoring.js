@@ -38,18 +38,31 @@
         timerPesan = setTimeout(() => { el.hidden = true; }, 4000);
     }
 
-    async function muatPenugasan() {
+        async function muatPenugasan() {
         const data = await panggil(`${API}?aksi=penugasan`);
         const sel = $('mon-penugasan');
         sel.innerHTML = data.length
-            ? data.map((p) => `<option value="${p.id_penugasan}">${esc(p.nama_kelas)} · ${esc(p.nama_mapel)} (${esc(p.tahun_ajaran)} ${esc(p.semester)})</option>`).join('')
-            : '<option value="">Tidak ada penugasan</option>';
+            ? data.map((p) => {
+                const label = p.id_penugasan
+                    ? `${esc(p.nama_kelas)} · ${esc(p.nama_mapel)} (${esc(p.tahun_ajaran)} ${esc(p.semester)})`
+                    : `${esc(p.nama_kelas)} · belum ada penugasan`;
+                return `<option value="${p.id_penugasan ?? ''}">${label}</option>`;
+            }).join('')
+            : '<option value="">Tidak ada kelas</option>';
         if (data.length) await muatTugas();
-        else $('mon-body').innerHTML = '<tr><td colspan="5" class="empty">Anda belum punya penugasan mengajar.</td></tr>';
+        else $('mon-body').innerHTML = '<tr><td colspan="5" class="empty">Belum ada kelas yang bisa dipantau.</td></tr>';
     }
+    
 
-    async function muatTugas() {
+       async function muatTugas() {
         const id = $('mon-penugasan').value;
+        if (!id) {
+            $('mon-kelas').hidden = true;
+            $('mon-tugas').innerHTML = '<option value="">Belum ada tugas</option>';
+            $('mon-body').innerHTML = '<tr><td colspan="5" class="empty">Kelas ini belum punya penugasan atau tugas.</td></tr>';
+            $('mon-ringkasan').textContent = '0 tugas';
+            return;
+        }
         const data = await panggil(`${API}?aksi=tugas&id_penugasan=${encodeURIComponent(id)}`);
         const sel = $('mon-tugas');
         sel.innerHTML = data.length
@@ -57,6 +70,7 @@
             : '<option value="">Belum ada tugas</option>';
         if (data.length) await muatDaftar();
         else {
+            $('mon-kelas').hidden = true;
             $('mon-body').innerHTML = '<tr><td colspan="5" class="empty">Belum ada tugas pada penugasan ini.</td></tr>';
             $('mon-ringkasan').textContent = '0 tugas';
         }
@@ -66,6 +80,11 @@
         const id = $('mon-tugas').value;
         const d = await panggil(`${API}?aksi=daftar&id_penilaian=${encodeURIComponent(id)}`);
         bisaUbah = d.bisa_ubah;
+                const elKelas = $('mon-kelas');
+        if (d.kelas) {
+            elKelas.textContent = 'Kelas: ' + d.kelas.nama_kelas;
+            elKelas.hidden = false;
+        }
         const r = d.ringkasan;
         $('mon-ringkasan').textContent =
             `Tepat ${r['Tepat waktu']} · Terlambat ${r['Terlambat']} · Belum ${r['Belum mengumpulkan']} · Belum jatuh tempo ${r['Belum jatuh tempo']}`;

@@ -3,6 +3,8 @@
 Tugas Besar Praktikum Pemrograman Web 2026, Teknik Informatika Universitas Lampung
 **Kelompok 17** | Tema: **Fakultas FISIP** (Ilmu Sosial & Ilmu Politik)
 
+https://github.com/ThoriqAbdillahhh/TUBES_PRK_PEMWEB_2026/tree/staging/kelompok/kelompok_17
+
 KabarSi FISIP adalah portal untuk dua hal: menerbitkan berita kampus, dan menampung aspirasi mahasiswa. Mahasiswa bisa mengirim aspirasi (dengan nama atau anonim), memantau statusnya, dan berdiskusi lewat komentar. Admin menerbitkan berita dan menyeleksi aspirasi sebelum ditampilkan ke publik.
 
 ## Anggota Tim
@@ -96,18 +98,17 @@ Akun mahasiswa baru bisa dibuat lewat halaman **Daftar**.
 kelompok_17/
 ├── admin/          # Panel admin (dashboard, kelola berita, kelola aspirasi)
 ├── api/            # Endpoint API (aspirasi, berita, kategori, komentar, users)
-├── assets/         # Gambar dan aset statis
 ├── auth/           # Login, register, logout
 ├── components/     # Komponen tampilan bersama (header, footer, navigasi admin)
 ├── config/         # Koneksi database (PDO)
-├── css/            # css detail berita dan  
+├── css/            # css aspirasi dan detail berita
 ├── includes/       # Helper (CSRF, otorisasi admin, unggah gambar)
 ├── js/             # JavaScript
-├── user/           # Dashboard dan form aspirasi mahasiswa
 ├── uploads/        # Gambar berita yang diunggah admin
-├── index.php            # Beranda
-├── berita_detail.php    # Detail berita + komentar
+├── user/           # Dashboard dan form aspirasi mahasiswa
 ├── aspirasi_detail.php  # Detail aspirasi + diskusi
+├── berita_detail.php    # Detail berita + komentar
+├── index.php            # Beranda
 └── kabarsi.sql          # Skema database + data awal
 ```
 
@@ -194,5 +195,36 @@ Pada tabel `komentar`, tepat satu dari `id_berita` atau `id_aspirasi` terisi, sa
 
 ## Catatan Pengerjaan
 
-**31 Oktober**
+**31 Oktober 2026**
 - Membuat struktur folder dan menentukan serta membuat ERD.
+
+**01 November 2026**
+- Merancang struktur database utama serta
+- Melakukan pengujian kueri SQL dan integrasi berkas database
+- Membangun sistem autentikasi
+
+**04 November 2026**
+- Memperbaiki sistem login
+- Memuat halaman admin
+- Membuat halaman dashboard aspirasi untuk pengguna serta membangun fitur dasar penyampaian aspirasi
+
+**07 November 2026**
+- Pembaruan desain antarmuka admin versi kedua
+- Mengembangkan halaman dashboard utama untuk pengguna
+
+**09 November 2026**
+- Merapikan struktur folder dan arsitektur kode proyek agar lebih terorganisir
+- Mengembangkan dan mengintegrasikan endpoint API
+- Melanjutkan pengembangan dan penyempurnaan fitur aspirasi di sisi pengguna
+
+**11 November 2026**
+- Memperbarui desain tampilan halaman aspirasi
+- Menambahkan fitur kolom komentar pada bagian berita dan aspirasi
+- Menyempurnakan tampilan terbaru pada halaman admin
+
+**12 November 2026**
+- Melakukan perbaikan pada tampilan halaman login dan registrasi
+- Memperbarui desain antarmuka dashboard utama, termasuk perbaikan halaman admin dan halaman aspirasi
+
+**13 November 2026**
+- Menggabungkan seluruh fitur dan perbaikan terbaru ke dalam lingkungan uji coba (staging) untuk tahap evaluasi akhir

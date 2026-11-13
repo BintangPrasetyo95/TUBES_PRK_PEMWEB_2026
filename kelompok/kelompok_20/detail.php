@@ -2,7 +2,6 @@
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/functions.php';
 
-// Ambil ID laporan dari parameter URL
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 if ($id <= 0) {
@@ -11,7 +10,6 @@ if ($id <= 0) {
     exit;
 }
 
-// Ambil data laporan dari database
 $stmt = $pdo->prepare("
     SELECT l.*, k.nama_kategori, u.nama AS nama_pelapor
     FROM laporan l
@@ -28,8 +26,6 @@ if (!$laporan) {
     exit;
 }
 
-// Cek hak akses jika laporan bersifat privat (is_public = 0)
-// Hanya pemilik laporan dan admin yang boleh melihat
 if ((int)$laporan['is_public'] === 0) {
     $currentUserId = $_SESSION['user_id'] ?? 0;
     $isOwner = isLogin() && ((int)$currentUserId === (int)$laporan['user_id']);
@@ -42,7 +38,6 @@ if ((int)$laporan['is_public'] === 0) {
     }
 }
 
-// Ambil semua tanggapan admin untuk laporan ini
 $stmtTanggapan = $pdo->prepare("
     SELECT t.*, u.nama AS nama_admin
     FROM tanggapan t
@@ -55,15 +50,33 @@ $daftarTanggapan = $stmtTanggapan->fetchAll(PDO::FETCH_ASSOC);
 
 $pageTitle = 'Detail Laporan: ' . $laporan['judul'];
 require_once __DIR__ . '/includes/header.php';
+
+$kembaliUrl = '/laporan_publik.php';
+$kembaliLabel = 'Kembali ke Laporan Publik';
+
+if (isAdmin()) {
+    $kembaliUrl = '/admin/kelola.php';
+    $kembaliLabel = 'Kembali ke Kelola Laporan';
+} elseif (isLogin()) {
+    $currentUserId = $_SESSION['user_id'] ?? 0;
+    if ((int)$currentUserId === (int)$laporan['user_id']) {
+        $kembaliUrl = '/user/laporan_saya.php';
+        $kembaliLabel = 'Kembali ke Laporan Saya';
+    }
+}
+
+if (!empty($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'laporan_saya.php') !== false) {
+    $kembaliUrl = '/user/laporan_saya.php';
+    $kembaliLabel = 'Kembali ke Laporan Saya';
+}
 ?>
 
 <div style="margin-bottom: 1.5rem;">
-    <a href="/laporan_publik.php" style="color: var(--color-primary); text-decoration: none; font-size: 0.95rem; font-weight: 600;">
-        &larr; Kembali ke Daftar Laporan
+    <a href="<?= $kembaliUrl ?>" style="color: var(--color-primary); text-decoration: none; font-size: 0.95rem; font-weight: 600;">
+        &larr; <?= $kembaliLabel ?>
     </a>
 </div>
 
-<!-- Informasi Utama Laporan -->
 <article class="card">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
         <div>
@@ -79,7 +92,6 @@ require_once __DIR__ . '/includes/header.php';
         </div>
     </div>
 
-    <!-- Metadata Laporan -->
     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; font-size: 0.9rem; color: var(--color-text-muted); padding: 0.75rem 0; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); margin-bottom: 1.25rem;">
         <div>Pelapor: <strong style="color: var(--color-text);"><?= sanitize($laporan['nama_pelapor']) ?></strong></div>
         <div>Lokasi: <strong style="color: var(--color-text);"><?= sanitize($laporan['lokasi'] ?? '-') ?></strong></div>
@@ -89,12 +101,10 @@ require_once __DIR__ . '/includes/header.php';
         <?php endif; ?>
     </div>
 
-    <!-- Isi Laporan -->
     <div style="font-size: 1rem; line-height: 1.7; color: var(--color-text); margin-bottom: 1.5rem;">
         <?= nl2br(sanitize($laporan['isi'])) ?>
     </div>
 
-    <!-- Foto Lampiran (jika ada) -->
     <?php if (!empty($laporan['foto'])): ?>
         <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">
             <div style="font-size: 0.9rem; font-weight: 600; color: var(--color-primary); margin-bottom: 0.5rem;">
@@ -109,7 +119,6 @@ require_once __DIR__ . '/includes/header.php';
     <?php endif; ?>
 </article>
 
-<!-- Riwayat Tanggapan Admin -->
 <section class="card">
     <h2 class="card-title" style="font-size: 1.25rem; margin-bottom: 1rem;">
         Tanggapan Resmi Pihak Kampus
@@ -143,4 +152,3 @@ require_once __DIR__ . '/includes/header.php';
 <?php
 require_once __DIR__ . '/includes/footer.php';
 ?>
-

@@ -80,6 +80,27 @@ function guruActiveAssignments(int $guruId, int $semesterId): array
     return $statement->fetchAll();
 }
 
+/** Fetch a teacher's assignments across semesters, with active semesters listed first. */
+function guruAssignmentsAcrossSemesters(int $guruId): array
+{
+    $statement = guruDb()->prepare(
+        "SELECT pg.id AS assignment_id, k.id, k.kode AS code, k.nama AS name,
+                k.tingkat AS level, s.id AS semester_id, s.nama AS semester,
+                s.status AS semester_status, s.tanggal_mulai AS semester_start,
+                mp.id AS subject_id, mp.nama AS subject_name
+         FROM penugasan_guru pg
+         INNER JOIN kelas k ON k.id = pg.kelas_id
+         INNER JOIN semester s ON s.id = k.semester_id
+         INNER JOIN mata_pelajaran mp ON mp.id = pg.mata_pelajaran_id
+         WHERE pg.guru_id = :guru_id AND (s.status <> 'aktif' OR k.is_active = 1)
+         ORDER BY CASE WHEN s.status = 'aktif' THEN 0 ELSE 1 END,
+                  s.tanggal_mulai DESC, k.nama, mp.nama, pg.id"
+    );
+    $statement->execute(['guru_id' => $guruId]);
+
+    return $statement->fetchAll();
+}
+
 /** Fetch schedules belonging to the teacher's active-semester assignments. */
 function guruActiveSchedules(int $guruId, int $semesterId): array
 {

@@ -39,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             && !str_contains($returnTo, "\n")
         ) {
             header('Location: ' . $returnTo);
+        } elseif ($action === 'finish_session') {
+            header('Location: arsip-pembelajaran.php');
         } elseif ($action === 'cancel_session') {
             $cancelledSession = guruOwnedSession($sessionId);
             if ($cancelledSession === null) {

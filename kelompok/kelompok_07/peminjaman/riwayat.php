@@ -13,24 +13,22 @@ if (!isset($_SESSION['user']['id'])) {
 $user_id = $_SESSION['user']['id'];
 $pdo = db();
 
-$stmtAutoReject = $pdo->prepare(
+$pdo->exec(
     "UPDATE peminjaman
      SET status = 'ditolak',
-         catatan_admin = 'Ditolak otomatis oleh sistem karena belum diproses admin selama 3 hari.'
-     WHERE user_id = ?
-       AND status = 'menunggu'
-       AND created_at < (NOW() - INTERVAL 3 DAY)"
+         catatan_admin = 'Ditolak otomatis oleh sistem karena belum diproses admin lebih dari 3 hari.'
+     WHERE status = 'menunggu'
+       AND DATEDIFF(NOW(), created_at) > 3"
 );
-$stmtAutoReject->execute([$user_id]);
 
 $stmt = $pdo->prepare(
-    'SELECT p.kode, p.tanggal_pinjam, p.tanggal_kembali_rencana, p.status,
-            a.nama AS nama_alat, dp.jumlah
+    'SELECT p.kode, p.tanggal_pinjam, p.tanggal_kembali_rencana, p.keperluan, p.status,
+            a.nama AS nama_alat, a.kode AS kode_alat, dp.jumlah
      FROM peminjaman p
      JOIN detail_peminjaman dp ON p.id = dp.peminjaman_id
      JOIN alat a ON dp.alat_id = a.id
      WHERE p.user_id = ?
-     ORDER BY p.created_at DESC'
+     ORDER BY p.created_at DESC, p.id DESC'
 );
 $stmt->execute([$user_id]);
 $riwayats = $stmt->fetchAll();
@@ -75,23 +73,27 @@ require __DIR__ . '/../includes/header.php';
             <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">Kode / Alat</th>
+                        <th scope="col">Kode Transaksi</th>
+                        <th scope="col">Alat / Ruang</th>
                         <th scope="col">Tgl Pinjam</th>
-                        <th scope="col">Tgl Kembali</th>
+                        <th scope="col">Rencana Kembali</th>
                         <th scope="col">Jumlah</th>
+                        <th scope="col">Keperluan</th>
                         <th scope="col">Status</th>
                     </tr>
                 </thead>
                 <tbody>
 <?php foreach ($riwayats as $row): ?>
                     <tr>
+                        <td class="nowrap"><strong><?= e($row['kode']) ?></strong></td>
                         <td>
-                            <strong><?= e($row['kode']) ?></strong>
-                            <span class="riwayat-alat"><?= e($row['nama_alat']) ?></span>
+                            <strong><?= e($row['nama_alat']) ?></strong>
+                            <span class="riwayat-alat">Kode alat: <?= e($row['kode_alat']) ?></span>
                         </td>
                         <td class="nowrap"><?= e(format_tanggal($row['tanggal_pinjam'])) ?></td>
                         <td class="nowrap"><?= e(format_tanggal($row['tanggal_kembali_rencana'])) ?></td>
                         <td class="nowrap"><?= (int) $row['jumlah'] ?> unit</td>
+                        <td class="riwayat-keperluan"><?= e($row['keperluan']) ?></td>
                         <td><?= status_badge($row['status']) ?></td>
                     </tr>
 <?php endforeach; ?>

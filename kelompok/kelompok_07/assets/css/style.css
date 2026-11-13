@@ -155,6 +155,10 @@ svg {
 .nowrap { white-space: nowrap; }
 .print-only { display: none; }
 
+[hidden] {
+    display: none !important;
+}
+
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -1307,6 +1311,21 @@ input[type="file"].form-control {
     border-top: 1px dashed var(--color-border);
 }
 
+.alat-card__aksi {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.alat-card__aksi > .btn:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.alat-card__detail {
+    position: relative;
+    z-index: 2;
+}
+
 .alat-card__info {
     display: flex;
     align-items: center;
@@ -1761,6 +1780,75 @@ input[type="file"].form-control {
 .legend-status p {
     margin: 0;
     font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+.riwayat-keperluan {
+    min-width: 180px;
+    max-width: 280px;
+    color: var(--color-muted);
+}
+
+.detail-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-5);
+    align-items: start;
+}
+
+.detail-foto {
+    padding: 10px;
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+}
+
+.detail-isi .alat-card__tags {
+    flex-wrap: wrap;
+    margin-bottom: var(--space-3);
+}
+
+.detail-isi h2 {
+    margin-bottom: var(--space-1);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+}
+
+.detail-spek {
+    display: grid;
+    gap: 0;
+    margin: var(--space-4) 0 var(--space-5);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+
+.detail-spek div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.detail-spek div:last-child {
+    border-bottom: 0;
+}
+
+.detail-spek dt {
+    color: var(--color-muted);
+    font-weight: 600;
+}
+
+.detail-spek dd {
+    margin: 0;
+    font-weight: 700;
+    color: var(--color-ink);
+    text-align: right;
+}
+
+.detail-deskripsi {
+    white-space: pre-line;
     color: var(--color-muted);
 }
 
@@ -2243,7 +2331,8 @@ input[type="file"].form-control {
         position: static;
     }
 
-    .ajukan-layout {
+    .ajukan-layout,
+    .detail-layout {
         grid-template-columns: 1fr;
     }
 

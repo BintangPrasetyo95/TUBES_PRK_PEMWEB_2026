@@ -135,11 +135,14 @@ function alat_card(array $alat): void
                 <span>Stok <strong><?= (int) $alat['stok'] ?></strong></span>
                 <span class="alat-card__lokasi"><?= ikon('lokasi', 'ikon ikon--sm') ?><?= e($alat['lokasi'] ?: 'Lokasi belum diisi') ?></span>
             </p>
+            <div class="alat-card__aksi">
 <?php if ($habis): ?>
-            <span class="btn btn-block btn-disabled" aria-hidden="true">Stok habis</span>
+                <span class="btn btn-disabled" aria-hidden="true">Stok habis</span>
 <?php else: ?>
-            <span class="btn btn-block btn-neon" aria-hidden="true"><?= e($aksi['label']) ?><?= ikon('panah', 'ikon ikon--sm') ?></span>
+                <span class="btn btn-neon" aria-hidden="true"><?= e($aksi['label']) ?><?= ikon('panah', 'ikon ikon--sm') ?></span>
 <?php endif; ?>
+                <a href="<?= e(url('alat/detail.php?id=' . (int) $alat['id'])) ?>" class="btn btn-outline alat-card__detail" aria-label="Lihat detail <?= e($alat['nama']) ?>">Detail</a>
+            </div>
         </div>
     </div>
 </article>

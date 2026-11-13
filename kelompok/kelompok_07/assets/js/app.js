@@ -44,6 +44,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('[data-live-search]').forEach((input) => {
+        const grid = document.getElementById(input.dataset.liveSearch);
+        const empty = document.querySelector(`[data-live-empty="${input.dataset.liveSearch}"]`);
+
+        if (!grid) {
+            return;
+        }
+
+        const items = Array.from(grid.children);
+
+        input.addEventListener('input', () => {
+            const keyword = input.value.toLowerCase().trim();
+            let visible = 0;
+
+            items.forEach((item) => {
+                const match = item.textContent.toLowerCase().includes(keyword);
+                item.hidden = !match;
+                visible += match ? 1 : 0;
+            });
+
+            grid.hidden = visible === 0;
+
+            if (empty) {
+                empty.hidden = visible !== 0;
+            }
+        });
+    });
+
     document.querySelectorAll('[data-print]').forEach((button) => {
         button.addEventListener('click', () => window.print());
     });

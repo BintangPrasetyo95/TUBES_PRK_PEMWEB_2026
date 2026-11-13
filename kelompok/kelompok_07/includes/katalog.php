@@ -35,9 +35,11 @@ function katalog_cari(array $filter = [], ?int $batas = null): array
     $parameter = [];
 
     if (($filter['q'] ?? '') !== '') {
-        $syarat[] = '(a.nama LIKE :cari_nama OR a.kode LIKE :cari_kode)';
-        $parameter['cari_nama'] = '%' . $filter['q'] . '%';
-        $parameter['cari_kode'] = '%' . $filter['q'] . '%';
+        $syarat[] = '(a.nama LIKE :cari_nama OR a.kode LIKE :cari_kode OR a.lokasi LIKE :cari_lokasi OR a.deskripsi LIKE :cari_deskripsi)';
+
+        foreach (['cari_nama', 'cari_kode', 'cari_lokasi', 'cari_deskripsi'] as $nama) {
+            $parameter[$nama] = '%' . $filter['q'] . '%';
+        }
     }
 
     if (($filter['kategori'] ?? null) !== null) {
@@ -104,8 +106,8 @@ function render_katalog_filter(array $filter, array $daftarKategori, string $act
     ?>
 <form method="get" action="<?= e($action) ?>" class="filter-bar" role="search">
     <div class="filter-field filter-field--search">
-        <label for="filter-q" class="form-label">Cari nama atau kode</label>
-        <input type="search" id="filter-q" name="q" class="form-control" placeholder="Contoh: Osiloskop atau EL-002" value="<?= e($filter['q']) ?>">
+        <label for="filter-q" class="form-label">Cari nama, kode, atau lokasi</label>
+        <input type="search" id="filter-q" name="q" class="form-control" placeholder="Contoh: Osiloskop, EL-002, Lemari B" value="<?= e($filter['q']) ?>" autocomplete="off" data-live-search="katalog-grid">
     </div>
     <div class="filter-field">
         <label for="filter-kategori" class="form-label">Kategori</label>
@@ -158,10 +160,15 @@ function render_katalog_hasil(array $daftarAlat, array $filter, string $action, 
 <?php endif; ?>
 </div>
 <?php else: ?>
-<div class="alat-grid">
+<div id="katalog-grid" class="alat-grid">
 <?php foreach ($daftarAlat as $alat): ?>
     <?php alat_card($alat); ?>
 <?php endforeach; ?>
+</div>
+<div class="empty-state card" data-live-empty="katalog-grid" hidden>
+    <?= ikon('cari') ?>
+    <h3>Tidak ada hasil yang cocok</h3>
+    <p class="text-muted">Tidak ada alat yang cocok dengan kata kunci tersebut. Tekan Terapkan untuk mencari di semua data.</p>
 </div>
 <?php endif; ?>
     <?php

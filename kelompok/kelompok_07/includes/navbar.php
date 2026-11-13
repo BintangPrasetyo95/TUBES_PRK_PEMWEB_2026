@@ -5,13 +5,13 @@ $user = current_user();
 $menusByRole = [
     'tamu' => [
         ['label' => 'Beranda', 'path' => 'index.php'],
-        ['label' => 'Daftar Alat', 'path' => 'alat/index.php'],
+        ['label' => 'Daftar Alat', 'path' => 'alat/index.php', 'aktif' => ['alat/detail.php']],
         ['label' => 'Cara Pinjam', 'path' => 'index.php#cara-pinjam'],
         ['label' => 'FAQ', 'path' => 'index.php#faq'],
     ],
     'peminjam' => [
         ['label' => 'Beranda', 'path' => 'index.php'],
-        ['label' => 'Daftar Alat', 'path' => 'alat/index.php'],
+        ['label' => 'Daftar Alat', 'path' => 'alat/index.php', 'aktif' => ['alat/detail.php']],
         ['label' => 'Ajukan Peminjaman', 'path' => 'peminjaman/index.php', 'aktif' => ['peminjaman/ajukan.php']],
         ['label' => 'Riwayat', 'path' => 'peminjaman/riwayat.php'],
         ['label' => 'FAQ', 'path' => 'index.php#faq'],

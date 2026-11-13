@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($id === 0) {
                     $statement = $pdo->prepare(
                         "INSERT INTO semester (kode, nama, tanggal_mulai, tanggal_selesai, status)
-                         VALUES (:kode, :nama, :tanggal_mulai, :tanggal_selesai, 'belum_aktif')"
+                         VALUES (:kode, :nama, :tanggal_mulai, :tanggal_selesai, 'direncanakan')"
                     );
                     $statement->execute([
                         'kode' => $kode,
@@ -210,120 +210,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
 }
 
 $isEditing = $formValues['id'] > 0;
+$isFormPage = $isEditing
+    || (isset($_GET['form']) && $_GET['form'] === '1')
+    || ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save');
 
 /** Map a semester status to a Tailwind badge class pair. */
 function semester_status_badge_class(string $status): string
 {
     return match ($status) {
-        'aktif' => 'bg-green-50 text-green-700',
+        'aktif' => 'bg-[#e8f0e9] text-[#3f6548]',
         'selesai' => 'bg-slate-100 text-slate-600',
         default => 'bg-amber-50 text-amber-700',
     };
 }
 
-admin_page_start($isEditing ? 'Edit Semester' : 'Data Semester', 'semester.php');
-?>
-<section class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h2 class="text-lg font-semibold text-[#20392a]">Daftar Semester</h2>
-            <p class="mt-1 text-sm text-slate-600">Hanya satu semester yang berstatus aktif.</p>
-        </div>
-        <?php attendara_ui_button('Tambah Semester', 'semester.php'); ?>
-    </div>
+admin_page_start(
+    $isFormPage ? ($isEditing ? 'Edit Semester' : 'Tambah Semester') : 'Data Semester',
+    'semester.php',
+    $isFormPage ? null : ['label' => 'Tambah Semester', 'href' => 'semester.php?form=1'],
+    $isFormPage ? null : 'Hanya satu semester yang berstatus aktif.'
+);
 
-    <?php if ($flash !== null): ?>
-        <?php $flashType = ($flash['type'] ?? 'success') === 'error' ? 'error' : 'success'; ?>
-        <p role="status" class="rounded-xl px-4 py-3 text-sm <?= $flashType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' ?>">
-            <?= h((string) ($flash['message'] ?? '')) ?>
-        </p>
-    <?php endif; ?>
-
-    <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-        <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-            <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Kode</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nama</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Tanggal Mulai</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Tanggal Selesai</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Status</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-[#edf1ec] text-slate-700">
-                <?php if ($semesterList === []): ?>
-                    <tr><td colspan="7" class="px-4 py-9 text-center text-slate-500">Belum ada data semester.</td></tr>
-                <?php else: ?>
-                    <?php foreach ($semesterList as $index => $semester): ?>
-                        <?php $status = (string) $semester['status']; ?>
-                        <tr class="hover:bg-[#f8faf7]">
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $semester['kode']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $semester['nama']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $semester['tanggal_mulai']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $semester['tanggal_selesai']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium <?= h(semester_status_badge_class($status)) ?>"><?= h($status) ?></span>
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <div class="flex items-center gap-2">
-                                    <a href="semester.php?edit=<?= h((string) $semester['id']) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Edit</a>
-                                    <?php if ($status !== 'aktif'): ?>
-                                        <form method="post" action="semester.php" class="inline">
-                                            <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-                                            <input type="hidden" name="action" value="activate">
-                                            <input type="hidden" name="semester_id" value="<?= h((string) $semester['id']) ?>">
-                                            <button type="submit" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Jadikan Aktif</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="px-2 py-1 text-xs font-semibold text-green-700">Aktif</span>
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section id="form-semester" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <h2 class="text-base font-semibold text-[#20392a]"><?= $isEditing ? 'Edit Semester' : 'Tambah Semester' ?></h2>
-    <p class="mt-1 text-sm text-slate-600">
-        Semester baru dibuat dengan status belum aktif. Riwayat semester lama tetap tersimpan.
-    </p>
-
-    <?php if ($errors !== []): ?>
-        <ul class="mt-4 space-y-1 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-            <?php foreach ($errors as $error): ?>
-                <li>• <?= h($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
-    <form method="post" action="semester.php" class="mt-4 grid gap-4 sm:grid-cols-2">
-        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-        <input type="hidden" name="action" value="save">
-        <input type="hidden" name="id" value="<?= h((string) $formValues['id']) ?>">
-
-        <?php
-        attendara_ui_input('Kode', 'kode', $formValues['kode'], 'text', 'Contoh: 2026-GANJIL');
-        attendara_ui_input('Nama', 'nama', $formValues['nama'], 'text', 'Contoh: 2026/2027 Ganjil');
-        attendara_ui_input('Tanggal mulai', 'tanggal_mulai', $formValues['tanggal_mulai'], 'date');
-        attendara_ui_input('Tanggal selesai', 'tanggal_selesai', $formValues['tanggal_selesai'], 'date');
-        ?>
-
-        <div class="flex items-center gap-3 sm:col-span-2">
-            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
-                <?= $isEditing ? 'Simpan Perubahan' : 'Simpan Semester' ?>
-            </button>
-            <?php if ($isEditing): ?>
-                <a href="semester.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Batal</a>
-            <?php endif; ?>
-        </div>
-    </form>
-</section>
-<?php admin_page_end(); ?>
+require __DIR__ . ($isFormPage ? '/views/semester-form.php' : '/views/semester-list.php');
+admin_page_end();

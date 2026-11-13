@@ -2,13 +2,14 @@
 require __DIR__ . '/includes/auth.php';
 requireLogin();
 $menus = ['beranda' => 'Beranda', 'kelas' => 'Data kelas', 'siswa' => 'Data siswa',
-    'mapel' => 'Mata pelajaran', 'periode' => 'Periode penilaian', 'penugasan' => 'Penugasan guru', 'klasifikasi' => 'Klasifikasi siswa', 'laporan' => 'Rekap & laporan', 'profil' => 'Profil saya'];
+    'mapel' => 'Mata pelajaran', 'periode' => 'Periode penilaian', 'penugasan' => 'Penugasan guru', 
+    'penilaian' => 'Penilaian', 'klasifikasi' => 'Klasifikasi siswa', 'monitoring' => 'Pengumpulan tugas','laporan' => 'Rekap & laporan', 'kualitatif' => 'Catatan kualitatif', 'profil' => 'Profil saya'];
 $page = $_GET['halaman'] ?? 'beranda';
 if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemukan.'); }
 ?>
 <!doctype html>
 <html lang="id">
-    <head>
+     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="<?= e($_SESSION['csrf']) ?>">
@@ -16,11 +17,22 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
         <link rel="stylesheet" href="css/style.css">
         <?php if ($page === 'klasifikasi'): ?>
             <script src="js/klasifikasi.js" defer></script>
+        <?php elseif ($page === 'penilaian'): ?>
+        <script src="js/penilaian.js" defer></script>
         <?php elseif ($page === 'laporan'): ?>
             <!-- Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067) -->
             <script src="js/kalkulasi.js" defer></script>
+        <?php elseif ($page === 'monitoring'): ?>
+            <!-- Dikerjakan oleh: Dwi Septy (NPM. 2465061006) -->
+            <script src="js/monitoring.js" defer></script>
+        <?php elseif ($page === 'kualitatif'): ?>
+            <!-- Dikerjakan oleh: Nova Arundyna Inzani -->
+            <script src="js/kualitatif.js" defer></script>
         <?php else: ?>
             <script src="js/app.js" defer></script>
+            <?php if ($page === 'profil' && isAdmin()): ?>
+            <script src="js/akun_guru.js" defer></script>
+            <?php endif; ?>
         <?php endif; ?>
     </head>
     <body data-page="<?= e($page) ?>" data-role="<?= e($_SESSION['guru']['peran']) ?>" data-guru="<?= e($_SESSION['guru']['id_guru']) ?>">
@@ -138,11 +150,20 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
                             <small>Data pada ringkasan mengikuti hak akses akun yang sedang masuk.</small>
                         </section>
                     </div>
+                <?php elseif ($page === 'penilaian'): ?>
+                <?php include __DIR__ . '/views/penilaian.php'; ?>
                 <?php elseif ($page === 'klasifikasi'): ?>
                 <?php include __DIR__ . '/views/klasifikasi.php'; ?>
                 <?php elseif ($page === 'laporan'): ?>
                 <!-- Dikerjakan oleh: Jehan Reza Pahlevi (NPM. 2415061067) -->
                 <?php include __DIR__ . '/views/laporan.php'; ?>
+                 <?php elseif ($page === 'monitoring'): ?>
+                <!-- Dikerjakan oleh: Dwi Septy (NPM. 2465061006) -->
+                <?php include __DIR__ . '/views/monitoring.php'; ?>
+
+                <?php elseif ($page === 'kualitatif'): ?>
+                <!-- Dikerjakan oleh: Nova Arundyna Inzani -->
+                <?php include __DIR__ . '/views/kualitatif.php'; ?>
 
                 <?php elseif ($page === 'profil'): ?>
                     <div class="page-heading">
@@ -168,6 +189,9 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
                             <button class="primary" type="submit">Simpan profil</button>
                         </form>
                     </section>
+                    <?php if (isAdmin()): ?>
+                    <?php include __DIR__ . '/views/akun_guru.php'; ?>
+                    <?php endif; ?>
                 <?php else: ?>
                     <div class="page-heading">
                         <div>
@@ -219,4 +243,3 @@ if (!isset($menus[$page])) { http_response_code(404); exit('Halaman tidak ditemu
         </div>
     </body>
 </html>
-

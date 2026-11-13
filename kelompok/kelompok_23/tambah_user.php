@@ -1,15 +1,8 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: auth/login.php");
-    exit;
-}
-
-if ($_SESSION['role'] !== 'admin') {
-    header("Location: dashboard.php");
-    exit;
-}
+require_once __DIR__ . '/includes/role_guard.php';
+requireRole(['Admin']);
 ?>
 
 <!DOCTYPE html>
@@ -103,7 +96,7 @@ if ($_SESSION['role'] !== 'admin') {
 
     <div class="form-content">
 
-        <form action="proses_tambah_user.php" method="POST">
+        <form action="proses_tambah_user.php" method="POST" enctype="multipart/form-data">
 
             <div class="mb-3">
                 <label class="form-label">Nama Lengkap</label>
@@ -136,6 +129,15 @@ if ($_SESSION['role'] !== 'admin') {
                     <option value="admin">Admin</option>
                     <option value="kasir">Kasir</option>
                 </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Foto Profil</label>
+                <input type="file" name="photo" class="form-control"
+                       accept="image/jpeg,image/png,image/webp">
+                <small class="text-muted">
+                    Format JPG/PNG/WebP, maks 2 MB. Opsional.
+                </small>
             </div>
 
             <div class="d-flex justify-content-between flex-wrap gap-2">

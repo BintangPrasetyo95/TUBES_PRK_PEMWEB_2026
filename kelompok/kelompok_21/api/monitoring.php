@@ -68,8 +68,9 @@ function monPenugasan(PDO $pdo, int $id): array
 function monTugas(PDO $pdo, int $idPenilaian): array
 {
     $stmt = $pdo->prepare('SELECT n.id_penilaian, n.id_penugasan, n.judul_penilaian, n.jenis_komponen,
-            n.tenggat_waktu, p.id_guru, p.id_kelas
+            n.tenggat_waktu, p.id_guru, p.id_kelas, k.nama_kelas
         FROM PENILAIAN n JOIN PENUGASAN_MENGAJAR p ON p.id_penugasan = n.id_penugasan
+        JOIN KELAS k ON k.id_kelas = p.id_kelas
         WHERE n.id_penilaian = ?');
     $stmt->execute([$idPenilaian]);
     $row = $stmt->fetch();
@@ -86,11 +87,11 @@ function monBolehUbah(array $row, int $idGuru): bool
 
 /* ---------- GET: penugasan milik guru ---------- */
 if ($method === 'GET' && $aksi === 'penugasan') {
-    $sql = 'SELECT p.id_penugasan, p.id_guru, k.nama_kelas, m.nama_mapel, pr.tahun_ajaran, pr.semester
-        FROM PENUGASAN_MENGAJAR p
-        JOIN KELAS k ON k.id_kelas = p.id_kelas
-        JOIN MATA_PELAJARAN m ON m.id_mapel = p.id_mapel
-        JOIN PERIODE_PENILAIAN pr ON pr.id_periode = p.id_periode';
+    $sql = 'SELECT k.id_kelas, k.nama_kelas, p.id_penugasan, p.id_guru, m.nama_mapel, pr.tahun_ajaran, pr.semester
+        FROM KELAS k
+        LEFT JOIN PENUGASAN_MENGAJAR p ON p.id_kelas = k.id_kelas
+        LEFT JOIN MATA_PELAJARAN m ON m.id_mapel = p.id_mapel
+        LEFT JOIN PERIODE_PENILAIAN pr ON pr.id_periode = p.id_periode';
     if (isAdmin()) {
         $stmt = $pdo->query($sql . ' ORDER BY k.nama_kelas, m.nama_mapel');
     } else {
@@ -98,7 +99,9 @@ if ($method === 'GET' && $aksi === 'penugasan') {
         $stmt->execute([$idGuru, $idGuru]);
     }
     $hasil = $stmt->fetchAll();
-    foreach ($hasil as &$h) $h['bisa_ubah'] = monBolehUbah($h, $idGuru);
+    foreach ($hasil as &$h) {
+        $h['bisa_ubah'] = $h['id_penugasan'] !== null && monBolehUbah($h, $idGuru);
+    }
     respond($hasil);
 }
 
@@ -152,13 +155,14 @@ if ($method === 'GET' && $aksi === 'daftar') {
     }
     respond([
         'tugas' => ['id_penilaian' => (int)$t['id_penilaian'], 'judul' => $t['judul_penilaian'], 'tenggat' => $t['tenggat_waktu']],
+         'kelas' => ['id_kelas' => (int)$t['id_kelas'], 'nama_kelas' => $t['nama_kelas']],
         'bisa_ubah' => monBolehUbah($t, $idGuru),
         'ringkasan' => $ringkas,
         'siswa' => $hasil,
     ]);
 }
 
-/* ---------- GET: riwayat satu siswa pada satu tugas ---------- */
+
 if ($method === 'GET' && $aksi === 'riwayat') {
     $t = monTugas($pdo, positiveId($_GET['id_penilaian'] ?? 0));
     $idSiswa = positiveId($_GET['id_siswa'] ?? 0);
@@ -170,7 +174,7 @@ if ($method === 'GET' && $aksi === 'riwayat') {
     respond($stmt->fetchAll());
 }
 
-/* ---------- POST: catat atau kosongkan waktu pengumpulan ---------- */
+
 if ($method === 'POST' && $aksi === 'catat') {
     $input   = inputData();
     $t       = monTugas($pdo, positiveId($input['id_penilaian'] ?? 0));
@@ -195,7 +199,7 @@ if ($method === 'POST' && $aksi === 'catat') {
     $stmt->execute([$idSiswa, $t['id_penilaian']]);
     $lama = $stmt->fetch();
 
-    // Hanya dua kolom milik modul ini yang diubah. Kolom nilai (milik Rio) tidak disentuh.
+    
     if ($lama) {
         $stmt = $pdo->prepare('UPDATE NILAI_DAN_PENGUMPULAN SET waktu_pengumpulan = ?, status_pengumpulan = ?
             WHERE id_siswa = ? AND id_penilaian = ?');

@@ -41,7 +41,7 @@ CREATE TABLE `aspirasi` (
   `judul_aspirasi` VARCHAR(255) NOT NULL,
   `isi_aspirasi` TEXT NOT NULL,
   `tanggal_kirim` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `status` ENUM('menunggu', 'ditinjau', 'selesai') NOT NULL DEFAULT 'menunggu',
+  `status` ENUM('menunggu', 'ditolak', 'publikasi') NOT NULL DEFAULT 'menunggu',
   `is_anonim` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id_aspirasi`),
   FOREIGN KEY (`id_user`) REFERENCES `users`(`id_user`) ON DELETE CASCADE,

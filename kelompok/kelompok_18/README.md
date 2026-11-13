@@ -34,12 +34,18 @@ Siswa tidak memiliki akun. Akun hanya tersedia untuk Admin dan Guru.
 
 ### Langkah instalasi dengan Laragon
 
-1. Letakkan folder proyek di direktori web Laragon, misalnya `www/attendara`.
-2. Jalankan Apache/Nginx dan MySQL dari Laragon.
-3. Buat database kosong bernama `attendara`, atau gunakan nama database lain dan sesuaikan konfigurasinya.
-4. Impor `database/attendara.sql` ke database kosong untuk membuat tabel.
-5. (Opsional) Impor `database/attendara_dummy.sql` setelah skema dibuat untuk mengisi contoh data. Seed ini hanya untuk database kosong dan hanya boleh diimpor sekali.
-6. Buka `http://localhost/attendara/login.php` (sesuaikan URL dengan nama folder proyek).
+1. Pastikan Git sudah terpasang, lalu buka terminal pada direktori `www` Laragon.
+2. Clone repository proyek:
+
+   ```powershell
+   git clone https://github.com/Kedolce/TUBES_PRK_PEMWEB_2026.git
+   ```
+
+3. Folder aplikasi berada di `TUBES_PRK_PEMWEB_2026/kelompok/kelompok_18`. Jalankan Apache/Nginx dan MySQL dari Laragon.
+4. Buat database kosong bernama `attendara`, atau gunakan nama database lain dan sesuaikan konfigurasinya.
+5. Impor `database/attendara.sql` ke database kosong untuk membuat tabel.
+6. (Opsional) Impor `database/attendara_dummy.sql` setelah skema dibuat untuk mengisi contoh data. Seed ini hanya untuk database kosong dan hanya boleh diimpor sekali.
+7. Buka `http://localhost/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_18/login.php` (sesuaikan URL dengan lokasi folder aplikasi).
 
 Koneksi memakai variabel environment PHP berikut. Untuk Laragon lokal, jika tidak diatur, host default `127.0.0.1`, database `attendara`, username `root`, dan password kosong.
 
@@ -68,27 +74,8 @@ Seed contoh berisi 90 siswa (nomor induk 1000–1089), 6 kelas yang membagi sisw
 ## Struktur database dan ERD
 
 ERD berdasarkan database [database/attendara.sql](database/attendara.sql), sedangkan contoh data berada di [database/attendara_dummy.sql](database/attendara_dummy.sql).
-```mermaid
-erDiagram
-    USERS ||--o| GURU : profil
-    SEMESTER ||--o{ KELAS : memiliki
-    SISWA ||--o{ ANGGOTA_KELAS : ditempatkan
-    KELAS ||--o{ ANGGOTA_KELAS : berisi
-    GURU ||--o{ PENUGASAN_GURU : menerima
-    MATA_PELAJARAN ||--o{ PENUGASAN_GURU : diajarkan
-    KELAS ||--o{ PENUGASAN_GURU : mendapat
-    PENUGASAN_GURU ||--o{ JADWAL_MENGAJAR : dijadwalkan
-    JADWAL_MENGAJAR ||--o{ SESI_PEMBELAJARAN : menjadi_sesi
-    SESI_PEMBELAJARAN ||--o{ ABSENSI : memiliki
-    SISWA ||--o{ ABSENSI : tercatat
-    USERS ||--o{ ABSENSI : mencatat
-    PENUGASAN_GURU ||--o{ KELOMPOK : memiliki
-    KELOMPOK ||--o{ ANGGOTA_KELOMPOK : berisi
-    SISWA ||--o{ ANGGOTA_KELOMPOK : menjadi_anggota
-    SESI_PEMBELAJARAN ||--o{ POIN_KEAKTIFAN : mencatat
-    SISWA ||--o{ POIN_KEAKTIFAN : menerima
-    USERS ||--o{ POIN_KEAKTIFAN : mencatat
-```
+
+![ERD ATTENDARA](assets/ERD%20attendara.png)
 
 Ringkasan relasi:
 

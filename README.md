@@ -1,187 +1,258 @@
-# 🔥 FINAL PROJECT (TUGAS BESAR)
-## Praktikum Pemrograman Web 2026 — Teknik Informatika Universitas Lampung
+# Aspiraku
 
-Selamat datang di repositori pusat **Tugas Besar Praktikum Pemrograman Web** Laboratorium Komputer Teknik Informatika Universitas Lampung (`Praktikum-LabKom-TI-Unila`). Repositori ini menggunakan arsitektur terpusat (*monorepo*) yang dilengkapi dengan sistem otomatisasi **CI/CD (GitHub Actions)** untuk memvalidasi setiap pengumpulan kode dari masing-masing kelompok.
+**Portal Pengaduan dan Aspirasi Publik / Kampus**
+Tugas Besar Praktikum Pemrograman Web 2026, Teknik Informatika Universitas Lampung
+Tema 03: Fakultas FISIP (Portal Pengaduan & Aspirasi Publik)
 
----
+Aspiraku adalah website tempat mahasiswa dan warga kampus menyampaikan **pengaduan** (keluhan) dan **aspirasi** (saran) secara daring, lengkap dengan foto pendukung. Admin menerima laporan, mengubah status penanganannya (Menunggu, Diproses, Selesai), lalu menulis tanggapan yang bisa dibaca oleh pelapor. Laporan yang ditandai publik bisa dilihat dan dicari oleh siapa saja.
 
-## 📌 Daftar Tema Sistem (8 Tema Fakultas)
-Setiap kelompok wajib membangun **1 (satu) sistem secara *native*** (HTML, CSS, JavaScript, PHP Native, dan MySQL/MariaDB tanpa *framework* backend) berdasarkan salah satu dari 8 tema fakultas di bawah ini.
+## Anggota Kelompok 20
 
-> ⚠️ **Aturan Pemilihan Tema:**
-> 1. **Batas Kuota:** Setiap tema fakultas **maksimal hanya dapat dipilih oleh 4 (empat) kelompok**.
-> 2. **Relevansi Sistem:** Sistem yang dibangun wajib berkaitan langsung dengan bidang keilmuan, layanan, atau operasional dari fakultas yang dipilih (misalnya: jika memilih **Fakultas Kedokteran**, maka sistem wajib berkaitan dengan layanan kesehatan, rekam medis, klinik, atau apotek).
-> 3. **Koordinasi Pemilihan:** Pemilihan tema dilakukan melalui koordinasi bersama Asisten Praktikum (mekanisme *first-come, first-served* sesuai ketentuan asisten).
+| Nama | Peran |
+|---|---|
+| Dhani | Ketua, fondasi proyek, integrator |
+| Nabila | Autentikasi dan profil |
+| Ridho | Halaman publik dan API |
+| Ica | Laporan pengguna dan dokumentasi |
+| Abil | Panel admin dan data contoh |
 
-| Kode | Tema Fakultas | Deskripsi Ruang Lingkup Sistem | Kuota |
-| :---: | :--- | :--- | :---: |
-| **01** | **Fakultas Teknik** | Sistem yang berkaitan dengan rekayasa teknologi dan keteknikan, seperti manajemen proyek konstruksi/infrastruktur, pemantauan energi/kelistrikan, inventaris alat & manajemen laboratorium teknik, sistem keselamatan kerja (K3), bengkel permesinan, perancangan tata ruang/arsitektur, atau monitoring perangkat industri. | Maks. 4 Kelompok |
-| **02** | **Fakultas FEB (Ekonomi & Bisnis)** | Sistem yang berkaitan dengan sektor ekonomi, tata kelola keuangan, dan bisnis, seperti pencatatan akuntansi & pembukuan, sistem kasir (*point of sale* / POS), manajemen persediaan/gudang, koperasi mahasiswa/karyawan, perencanaan anggaran, sistem pembiayaan/investasi mikro, atau analisis performa penjualan. | Maks. 4 Kelompok |
-| **03** | **Fakultas FISIP (Ilmu Sosial & Ilmu Politik)** | Sistem yang berkaitan dengan tata kelola sosial, kepemerintahan, dan komunikasi publik, seperti layanan administrasi kependudukan/birokrasi desa/kampus, portal pengaduan & aspirasi publik, sistem *e-voting* atau jajak pendapat, kehumasan (*public relations*), portal media pers/jurnalistik kampus, atau pengelolaan organisasi sosial. | Maks. 4 Kelompok |
-| **04** | **Fakultas Hukum** | Sistem yang berkaitan dengan regulasi hukum, administrasi peradilan, dan layanan legalitas, seperti sistem bantuan hukum (LBH), pencatatan rekam perkara/kasus pidana & perdata, repositori arsip peraturan perundang-undangan & regulasi kampus, penjadwalan persidangan semu (*moot court*), konsultasi hukum online, atau manajemen perizinan kontrak. | Maks. 4 Kelompok |
-| **05** | **Fakultas FKIP (Keguruan & Ilmu Pendidikan)** | Sistem yang berkaitan dengan dunia pendidikan, administrasi akademik sekolah/kampus, dan proses belajar-mengajar, seperti *Learning Management System* (LMS) sederhana, presensi & penilaian rapor digital, bimbingan konseling (BK), penjadwalan guru/dosen mengajar, evaluasi kurikulum, atau portal pelatihan tenaga pendidik. | Maks. 4 Kelompok |
-| **06** | **Fakultas Kedokteran** | Sistem yang berkaitan dengan layanan medis, fasilitas kesehatan, dan manajemen pasien, seperti pendaftaran antrean pasien klinik/RS, rekam medis elektronik (*electronic health record*), penjadwalan dokter/tenaga medis, manajemen stok obat & resep apotek, reservasi konsultasi medis, atau sistem informasi donor darah. | Maks. 4 Kelompok |
-| **07** | **Fakultas MIPA (Matematika & Ilmu Pengetahuan Alam)** | Sistem yang berkaitan dengan sains murni, komputasi saintifik, dan pengelolaan laboratorium, seperti sistem peminjaman instrumen & inventaris bahan kimia laboratorium, pencatatan limbah penelitian B3, pemantauan stasiun cuaca & kualitas lingkungan, pengolahan/visualisasi data riset saintifik, atau reservasi observatorium astronomi. | Maks. 4 Kelompok |
-| **08** | **Fakultas Pertanian** | Sistem yang berkaitan dengan agribisnis, pemanfaatan sumber daya hayati, dan ketahanan pangan, seperti pencatatan siklus panen & budidaya tanaman pangan/hortikultura, manajemen perkebunan, pencatatan hasil ternak & budidaya perikanan, inventaris pupuk dan bibit, logistik distribusi hasil tani, atau monitoring kesuburan lahan pertanian. | Maks. 4 Kelompok |
+## Teknologi
 
----
+- HTML5, CSS3, JavaScript
+- PHP Native (tanpa framework backend), PHP 8.2 atau lebih baru
+- MySQL / MariaDB, diakses lewat PDO
+- Tanpa library atau CDN dari luar
 
-## 📂 Struktur Direktori Repositori
-Seluruh kelompok bekerja di dalam direktori `kelompok/` pada folder kelompoknya masing-masing. **Dilarang keras** mengubah file di luar folder kelompok sendiri.
+## Fitur
+
+**Pengunjung (Guest)**
+- Melihat beranda, statistik laporan, dan 5 laporan publik terbaru
+- Melihat daftar laporan publik dengan pencarian langsung (live search tanpa memuat ulang halaman), filter kategori dan jenis, serta pagination (10 laporan per halaman)
+- Melihat detail laporan publik beserta tanggapan admin
+- Mendaftar akun dan masuk (kolom password punya tombol lihat atau sembunyikan)
+- Membuat tautan reset lewat **Lupa Password** bila lupa kata sandi
+
+**Pengguna (Pelapor)**
+- Mengirim laporan (pengaduan atau aspirasi) dengan judul, isi, kategori, lokasi, foto opsional, dan pilihan tampil publik atau tidak
+- Pratinjau foto sebelum dikirim
+- Melihat daftar Laporan Saya beserta status dan tanggapan admin, dengan filter jenis dan status
+- Mengedit dan menghapus laporan sendiri, **hanya selama status masih Menunggu**
+- Mengubah profil (nama, email, password) dan melihat ringkasan aktivitas laporan (total, menunggu, diproses, selesai)
+
+**Admin**
+- Dashboard berisi statistik, 5 laporan terbaru, dan grafik batang persentase pengaduan dan aspirasi
+- Semua Laporan: cari berdasarkan judul, isi, lokasi, atau nama pelapor; filter status, jenis, dan privasi (publik atau privat); ubah status, tulis tanggapan, hapus laporan
+- Kelola Kategori: tambah dan hapus kategori
+- Daftar Pengguna (hanya baca): lihat akun terdaftar, jumlah laporan tiap akun, cari berdasarkan nama atau email, dan filter peran
+- Rekap laporan per periode yang bisa dicetak
+
+**Keamanan yang dipakai**
+- Query memakai PDO prepared statement
+- Output PHP lewat `sanitize()` (`htmlspecialchars`), data dari API di JavaScript memakai fungsi `esc()`
+- Password disimpan dengan `password_hash()` dan dicek dengan `password_verify()`
+- Pengecekan hak akses (`wajibLogin()` dan `wajibAdmin()`) dan kepemilikan data pada query
+- Unggahan foto hanya JPG atau PNG, maksimal 2 MB, MIME asli dicek dengan `finfo`, nama file diacak
+- Token CSRF pada semua form POST (login, register, profil, halaman `user/*`, serta Kelola Laporan dan Kategori di admin)
+- Pembatasan login gagal: 5 kali gagal dalam 15 menit pada satu email akan menunda login selama 15 menit
+- Reset password memakai token acak yang disimpan dalam bentuk hash SHA-256, berlaku 15 menit, dan hanya bisa dipakai sekali
+
+## Kebutuhan Sistem
+
+- PHP 8.2 atau lebih baru dengan ekstensi `pdo_mysql` dan `fileinfo` aktif
+- MySQL atau MariaDB yang sedang berjalan (bisa dari XAMPP, Laragon, atau instalasi sendiri)
+- Git
+
+Cek di terminal:
+
+```bash
+php -v
+php -m
+```
+
+Pastikan `pdo_mysql` dan `fileinfo` muncul di daftar `php -m`.
+
+## Instalasi
+
+### 1. Ambil kode
+
+Repositori kelompok (fork milik Dhani): https://github.com/dhani210905/TUBES_PRK_PEMWEB_2026
+
+```bash
+git clone https://github.com/dhani210905/TUBES_PRK_PEMWEB_2026.git
+cd TUBES_PRK_PEMWEB_2026/kelompok/kelompok_20
+```
+
+Kode sistem kami ada di folder `kelompok/kelompok_20/`. Repositori pusat Tugas Besar ada di https://github.com/Praktikum-LabKom-TI-Unila/TUBES_PRK_PEMWEB_2026.
+
+### 2. Nyalakan MySQL
+
+Jalankan MySQL / MariaDB lewat XAMPP atau Laragon (tombol Start pada modul MySQL).
+
+### 3. Cek pengaturan database
+
+Buka `config/database.php`. Bawaannya seperti ini:
+
+```php
+$db_host = 'localhost';
+$db_name = 'tubes_ppw';
+$db_user = 'root';
+$db_pass = '';
+```
+
+Kalau MySQL di komputermu memakai user atau password yang berbeda, ubah di file ini.
+
+### 4. Database dibuat otomatis
+
+Kamu **tidak perlu mengimpor SQL secara manual**. Saat halaman pertama dibuka, `config/database.php` akan:
+
+1. Membuat database `tubes_ppw` bila belum ada
+2. Mengecek tabel `users`, `kategori`, `laporan`, dan `tanggapan`
+3. Jika ada tabel yang belum ada, otomatis mengimpor `database/database.sql` (struktur tabel dan 5 kategori awal) lalu `database/seed.sql` (akun contoh dan laporan contoh)
+
+Tabel `percobaan_login` dibuat otomatis oleh `login.php` saat pertama kali dipakai.
+
+> Kalau lebih suka manual, impor `database/database.sql` lalu `database/seed.sql` lewat phpMyAdmin ke database `tubes_ppw`.
+
+### 5. Jalankan server
+
+Jalankan perintah ini **dari dalam folder `kelompok_20`**:
+
+```bash
+php -S localhost:8000
+```
+
+Lalu buka **http://localhost:8000** di browser.
+
+> Penting: semua tautan di aplikasi diawali `/`, jadi server harus dijalankan dari dalam folder `kelompok_20`. Jangan membuka file lewat `file://`, dan jangan menaruhnya di subfolder `htdocs` tanpa mengubah tautan.
+
+## Akun Contoh (dari `seed.sql`)
+
+| Peran | Email | Password |
+|---|---|---|
+| Admin | `admin@fisip.unila.ac.id` | `PasswordSementara123` |
+| Pengguna | `budi.santoso@mhs.unila.ac.id` | `PasswordSementara123` |
+| Pengguna | `siti.rahma@mhs.unila.ac.id` | `PasswordSementara123` |
+| Pengguna | `ahmad.fauzi@mhs.unila.ac.id` | `PasswordSementara123` |
+
+Password di atas hanya untuk demo dan pengujian. Ganti sebelum dipakai sungguhan. Akun admin tidak bisa dibuat lewat halaman Daftar, hanya lewat `seed.sql` atau SQL langsung.
+
+## Cara Penggunaan
+
+### Sebagai pengunjung
+1. Buka beranda untuk melihat statistik dan laporan terbaru.
+2. Buka **Laporan Publik**, lalu ketik kata kunci di kolom pencarian. Hasil muncul otomatis. Gunakan filter kategori dan jenis (tombol **Terapkan Filter** dan **Reset** tersedia), atau tombol halaman di bawah.
+3. Klik sebuah laporan untuk melihat detail dan tanggapan admin.
+
+### Sebagai pengguna (pelapor)
+1. Klik **Daftar**, isi nama, email, dan password (minimal 6 karakter), lalu **Masuk**.
+2. Klik **Sampaikan Laporan**, pilih jenis (pengaduan atau aspirasi), isi judul, isi laporan, kategori, dan lokasi. Foto boleh ditambahkan (JPG atau PNG, maksimal 2 MB). Hilangkan centang "tampilkan publik" bila laporan ingin dilihat sendiri dan admin saja.
+3. Pantau status di **Laporan Saya**. Selama status masih *Menunggu*, laporan masih bisa diedit atau dihapus.
+4. Ubah data akun di **Profil**. Di halaman ini juga ada ringkasan jumlah laporanmu berdasarkan status.
+
+### Lupa password
+1. Di halaman Masuk, klik **Lupa Password?**.
+2. Isi email akun yang terdaftar, lalu klik **Buat Tautan Reset**.
+3. Karena sistem belum mengirim email, tautan reset ditampilkan langsung di halaman (tertulis "Simulasi"). Klik tautan itu.
+4. Isi password baru (minimal 6 karakter) dan konfirmasinya. Tautan berlaku 15 menit dan hanya bisa dipakai sekali.
+
+### Sebagai admin
+1. Masuk dengan akun admin, kamu diarahkan ke **Dashboard**.
+2. Buka **Semua Laporan**. Cari dengan kata kunci atau pakai filter status, jenis, dan privasi. Klik tombol tindak lanjut pada laporan untuk mengubah status dan menulis tanggapan, atau hapus laporan yang tidak pantas.
+3. Buka **Kelola Kategori** untuk menambah atau menghapus kategori. Menghapus kategori tidak menghapus laporan, kategorinya akan tampil `-`.
+4. Buka **Pengguna** untuk melihat daftar akun dan jumlah laporan masing-masing. Halaman ini hanya baca, admin tidak bisa mengubah atau menghapus akun dari sini.
+5. Untuk rekap cetak, klik **Rekap Cetak** di menu, pilih rentang tanggal, status, atau jenis, lalu cetak dari browser.
+
+### Alur status laporan
+
+```
+Menunggu  ->  Diproses  ->  Selesai
+```
+
+Admin boleh mengubah status ke status mana pun, termasuk untuk mengoreksi kesalahan.
+
+## Struktur Folder
 
 ```text
-TUBES_PRK_PEMWEB_2026/
-├── .github/
-│   ├── workflows/
-│   │   └── pr-validation.yml       # Robot CI/CD (JANGAN DIUBAH)
-│   └── pull_request_template.md    # Template PR (JANGAN DIUBAH)
-├── kelompok/
-│   ├── README.md                   # Petunjuk direktori kelompok (JANGAN DIUBAH)
-│   ├── kelompok_01/                # Folder khusus Kelompok 01
-│   │   ├── assets/
-│   │   ├── config/
-│   │   ├── database/               # Simpan file .sql di sini
-│   │   ├── index.php
-│   │   └── README.md               # Dokumentasi sistem Kelompok 01
-│   ├── kelompok_02/                # Folder khusus Kelompok 02
-│   └── ...
-├── .gitignore
-└── README.md                       # Dokumentasi utama (JANGAN DIUBAH)
+kelompok_20/
+├── index.php            login.php         register.php      logout.php
+├── laporan_publik.php   detail.php        profil.php
+├── lupa_password.php    reset_password.php
+├── api/
+│   └── laporan.php          # endpoint JSON untuk live search
+├── user/
+│   ├── kirim.php  laporan_saya.php  edit.php  hapus.php
+├── admin/
+│   ├── dashboard.php  kelola.php  kategori.php  pengguna.php  rekap.php
+├── config/
+│   └── database.php         # koneksi PDO dan setup database otomatis
+├── includes/
+│   ├── functions.php  header.php  footer.php
+├── assets/
+│   ├── css/style.css
+│   ├── js/app.js  auth.js  ui.js
+│   └── uploads/             # foto laporan
+├── database/
+│   ├── database.sql         # struktur tabel dan kategori awal
+│   └── seed.sql             # akun dan laporan contoh
+└── README.md
 ```
 
----
+## Database
 
-## 🚀 Panduan Setup & Alur Kerja Kolaborasi (Best Practice)
+Empat tabel utama:
 
-Untuk memudahkan kolaborasi multi-anggota di dalam satu kelompok tanpa saling menimpa kode, repositori ini merekomendasikan penggunaan **Branch `staging` sebagai branch integrasi internal kelompok** sebelum diajukan ke repositori utama LabKom:
+| Tabel | Isi |
+|---|---|
+| `users` | akun pengguna dan admin (`role` = `user` atau `admin`) |
+| `kategori` | daftar kategori laporan (nama unik) |
+| `laporan` | pengaduan dan aspirasi (jenis, judul, isi, lokasi, foto, `is_public`, status) |
+| `tanggapan` | tanggapan admin untuk tiap laporan |
 
-```mermaid
-flowchart TD
-    subgraph RepoUtama["🏢 Repositori Pusat (LabKom TI Unila)"]
-        MainUpstream["upstream / main"]
-    end
+Relasi penting: menghapus laporan ikut menghapus tanggapannya, dan menghapus kategori mengubah `kategori_id` laporan menjadi `NULL`.
 
-    subgraph RepoFork["👥 Repositori Fork Kelompok (GitHub Ketua/Perwakilan)"]
-        MainFork["origin / main (Khusus Mirror & Sync Upstream)"]
-        Staging["origin / staging (Branch Integrasi Kelompok)"]
-        Feat1["feat/kelompok-XX-auth (Anggota 1)"]
-        Feat2["feat/kelompok-XX-crud (Anggota 2)"]
-    end
+Dua tabel tambahan dibuat otomatis saat halamannya pertama dipakai: `percobaan_login` (pembatasan login gagal, dibuat oleh `login.php`) dan `password_resets` (token reset password, dibuat oleh `lupa_password.php`).
 
-    MainUpstream -- "1. Fork" --> MainFork
-    MainFork -- "2. Buat branch staging" --> Staging
-    Staging -- "3. Cabang pengerjaan fitur" --> Feat1
-    Staging -- "3. Cabang pengerjaan fitur" --> Feat2
-    Feat1 -- "4. PR & Review Internal Kelompok" --> Staging
-    Feat2 -- "4. PR & Review Internal Kelompok" --> Staging
-    Staging -- "5. Pull Request Final ke LabKom" --> MainUpstream
-    MainUpstream -- "6. git pull upstream main" --> MainFork
-    MainFork -- "7. git merge main" --> Staging
+## API
+
+`GET /api/laporan.php?search=kata&kategori=ID&jenis=JENIS&page=N`
+
+Dipakai oleh halaman Laporan Publik. Hanya mengembalikan laporan yang `is_public = 1` dan tidak pernah memuat email atau password pelapor. Mengembalikan JSON:
+
+```json
+{
+  "status": "success",
+  "message": "Data berhasil diambil",
+  "data": [ ... ],
+  "total_pages": 1,
+  "current_page": 1
+}
 ```
 
----
+Kode respons: `200` berhasil, `405` bila bukan metode GET, `500` bila terjadi kesalahan server (pesan umum saja).
 
-### Langkah-Langkah Pengerjaan:
+## Keterbatasan yang Diketahui
 
-### 1. Fork Repositori & Undang Anggota Kelompok
-1. Buka repositori utama: `https://github.com/Praktikum-LabKom-TI-Unila/TUBES_PRK_PEMWEB_2026`
-2. Perwakilan kelompok (Ketua) klik tombol **Fork** di pojok kanan atas.
-3. Di repositori hasil *fork*, buka menu **Settings** > **Collaborators** > klik **Add people**, lalu tambahkan akun GitHub seluruh anggota kelompok agar semuanya memiliki akses *push*.
+- Fitur Lupa Password masih **simulasi**: sistem tidak mengirim email, tautan reset ditampilkan langsung di halaman. Selain itu pesan "Email tidak ditemukan" memungkinkan orang menebak email yang terdaftar. Untuk dipakai sungguhan, tautan harus dikirim lewat email dan pesannya dibuat sama untuk semua kasus.
+- Belum ada notifikasi email, chat antara pelapor dan admin, dan mode gelap.
 
-### 2. Clone Repositori Fork ke Komputer Lokal
-Seluruh anggota kelompok membuka Terminal / Git Bash di folder `www` Laragon atau `htdocs` XAMPP masing-masing:
+## Pemecahan Masalah
+
+| Masalah | Penyebab dan solusi |
+|---|---|
+| "Koneksi database gagal" | MySQL belum menyala, atau user dan password di `config/database.php` tidak cocok |
+| "could not find driver" | Ekstensi `pdo_mysql` belum aktif di `php.ini` |
+| Tampilan tanpa CSS atau tautan error 404 | Server tidak dijalankan dari dalam folder `kelompok_20` |
+| Foto gagal diunggah | Ukuran di atas 2 MB, bukan JPG atau PNG, atau folder `assets/uploads/` tidak bisa ditulis |
+| Tidak bisa login setelah beberapa kali salah | Pembatasan login aktif, tunggu 15 menit |
+| "Tautan reset password tidak valid atau sudah kedaluwarsa" | Tautan sudah lewat 15 menit atau sudah dipakai. Buat tautan baru lewat Lupa Password |
+| Ingin mengulang data dari awal | Hapus database `tubes_ppw` di phpMyAdmin, lalu buka aplikasi lagi, data akan dibuat ulang otomatis |
+
+## Catatan Pengumpulan
+
+File ini diletakkan di `kelompok/kelompok_20/README.md`. Seluruh kode berada di `kelompok/kelompok_20/`, dan Pull Request ke repositori pusat hanya boleh mengubah folder tersebut. Sebelum PR final, pastikan semua file `.php` lolos pengecekan sintaks:
+
 ```bash
-git clone https://github.com/<username-ketua>/TUBES_PRK_PEMWEB_2026.git
-cd TUBES_PRK_PEMWEB_2026
+find . -name "*.php" -exec php -l {} \;
 ```
 
-### 3. Tambahkan Remote `upstream` (Wajib untuk Semua Anggota)
-Hubungkan repositori lokal Anda langsung dengan repositori utama LabKom:
-```bash
-git remote add upstream https://github.com/Praktikum-LabKom-TI-Unila/TUBES_PRK_PEMWEB_2026.git
-git remote -v
-```
-
-### 4. Setup Branch Integrasi Kelompok (`staging`)
-1. **Ketua Kelompok** membuat branch `staging` dari `main` dan mengunggahnya ke GitHub fork:
-   ```bash
-   git checkout main
-   git checkout -b staging
-   git push -u origin staging
-   ```
-2. **Anggota Kelompok Lainnya** cukup mengambil branch tersebut ke lokal masing-masing:
-   ```bash
-   git fetch origin
-   git checkout staging
-   ```
-
-### 5. Pengerjaan Fitur Masing-Masing Anggota
-Setiap anggota membuat branch fitur spesifik yang dicabangkan dari **`staging`**:
-```bash
-# Pastikan berada di staging dan sudah versi terbaru
-git checkout staging
-git pull origin staging
-
-# Buat branch fitur baru
-git checkout -b feat/kelompok-01-autentikasi
-```
-
-Kerjakan kode **hanya di dalam folder `kelompok/kelompok_XX/`**:
-- ✅ **Format folder:** `kelompok/kelompok_01/`, `kelompok/kelompok_02/`, dst. (huruf kecil semua, 2 digit angka).
-- Lakukan commit dan push ke repo fork kelompok:
-  ```bash
-  git status
-  git add kelompok/kelompok_01/
-  git commit -m "feat(kelompok_01): menyelesaikan halaman login dan session"
-  git push origin feat/kelompok-01-autentikasi
-  ```
-
-### 6. Review Internal Kelompok (PR ke Branch `staging`)
-1. Buka repo fork di GitHub, buat Pull Request dari branch fitur Anda menuju branch **`staging`** di repo fork kelompok Anda sendiri.
-2. Rekan sekelompok memeriksa kode dan melakukan *Merge* ke `staging`.
-3. Seluruh anggota melakukan `git pull origin staging` untuk menguji aplikasi secara utuh di server lokal masing-masing (memastikan tidak ada error PHP dan database sinkron).
-
-### 7. Lakukan Pull Request (PR) Final ke Repositori Utama LabKom
-Setelah sistem di branch `staging` sudah lengkap, stabil, dan dites lolos di lokal:
-1. Buka repositori fork di GitHub, lalu klik **Compare & pull request**.
-2. Atur arah PR dengan tepat:
-   - **base repository:** `Praktikum-LabKom-TI-Unila/TUBES_PRK_PEMWEB_2026` (branch: `main`)
-   - **head repository:** `<username-ketua>/TUBES_PRK_PEMWEB_2026` (branch: `staging`)
-3. Isi deskripsi PR sesuai *template* yang telah disediakan dan kirimkan PR.
-4. Bot CI/CD akan otomatis memvalidasi folder isolasi, ukuran file (maks. 5MB), dan sintaks PHP.
-
----
-
-## 🔄 Cara Sinkronisasi Repo Setelah PR Di-Merge oleh Asisten
-Setelah Pull Request kelompok Anda disetujui dan di-*merge* ke `main` LabKom oleh Asisten, lakukan sinkronisasi berikut:
-```bash
-# 1. Perbarui branch main lokal dari repositori LabKom
-git checkout main
-git pull upstream main
-git push origin main
-
-# 2. Sinkronkan branch staging agar sejajar dengan main terbaru
-git checkout staging
-git merge main
-git push origin staging
-```
-
----
-
-## 🤖 Aturan Validasi Otomatis (CI/CD Rules)
-Setiap Pull Request yang masuk akan diperiksa secara otomatis oleh **GitHub Actions**. Tombol **Merge** akan terkunci otomatis apabila PR Anda melanggar salah satu dari 4 aturan berikut:
-
-1. **Isolasi Direktori Ketat:**
-   - PR **hanya boleh** berisi perubahan di dalam folder `kelompok/kelompok_XX/` milik kelompok Anda sendiri.
-   - Mengubah file di *root* (`README.md`, `.gitignore`), folder `.github/`, atau `kelompok/README.md` akan membuat CI/CD **Gagal (❌)**.
-2. **Satu PR = Satu Kelompok:**
-   - Satu Pull Request tidak boleh menyentuh lebih dari satu folder `kelompok_XX` sekaligus.
-3. **Batas Ukuran File (Maksimal 5 MB):**
-   - Dilarang mengunggah file berukuran lebih dari **5 MB** per file (seperti video mentah, file `.zip` / `.rar`, atau *installer*).
-4. **Bebas *Syntax Error* PHP (`PHP Linter`):**
-   - Seluruh file `.php` yang Anda unggah akan diuji menggunakan *PHP 8.2 Linter* (`php -l`). Jika terdapat kesalahan sintaks (seperti kurang titik koma `;` atau kurung kurawal `{}` tidak tertutup), PR akan **ditolak otomatis**.
-
----
-
-## 📞 Bantuan & Kendala Teknis
-Jika mengalami kendala terkait *merge conflict* atau kegagalan CI/CD yang tidak dapat diselesaikan, silakan hubungi **Asisten Praktikum Pemrograman Web** dengan menyertakan tautan (*link*) Pull Request kelompok Anda.
+Pastikan juga tidak ada file di atas 5 MB dan folder `assets/uploads/` hanya berisi `.gitkeep`.

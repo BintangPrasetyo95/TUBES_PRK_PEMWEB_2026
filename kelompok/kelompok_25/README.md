@@ -16,10 +16,10 @@ Aplikasi dibangun dengan **PHP Native (8.2+, tanpa framework)**, **MySQL/MariaDB
 | No | Nama Anggota | NPM | Kelas | Peran Utama |
 |----|--------------|-----|-------|-------------|
 | 1 | **Rafi Zakwan Ekaputra** | 2455061008 | B | **Ketua Tim**: Arsitektur & Fondasi, Desain Sistem, Database, Autentikasi & Profil, Halaman Publik, Modul Admin, Rating & Ulasan, Integrasi & QA, Manajer Git |
-| 2 | Nadya Putri Gusnarni (Nday) | 2415061043 | D | Fullstack: Modul Pengacara |
-| 3 | Nafiza Fadhila Hasanah | 2455061011 | D | Fullstack: Halaman Publik (versi awal Beranda, Daftar Pengacara, FAQ, Tentang) |
-| 4 | Aziz Muhammad Sultan Ghani | 2415061012 | C | Fullstack: Modul Klien |
-| 5 | Linda Syahrun Putri | 2215061129 | E | Fullstack: Modul Admin (versi awal) & Artikel |
+| 2 | Nadya Putri Gusnarni (Nday) | 2415061043 | D | Modul Pengacara |
+| 3 | Nafiza Fadhila Hasanah | 2455061011 | D | Halaman Publik (versi awal Beranda, Daftar Pengacara, FAQ, Tentang) |
+| 4 | Aziz Muhammad Sultan Ghani | 2415061012 | C | Modul Klien |
+| 5 | Linda Syahrun Putri | 2215061129 | E | Fullstack: (versi awal) & Artikel |
 
 ### Ringkasan Kontribusi (dari riwayat Git)
 

@@ -6,8 +6,7 @@ require_once '../config/koneksi.php';
 $response = ["status" => "error", "message" => "Gagal mengambil data obat", "data" => []];
 
 try {
-    // Tambahkan `gambar` pada klausa SELECT
-    $query = "SELECT id_obat, nama_obat, id_kategori, gambar, stok, indikasi, aturan_pakai, peringatan FROM obat WHERE 1=1";
+    $query = "SELECT id_obat, nama_obat, id_kategori, harga, gambar, stok, indikasi, aturan_pakai, peringatan FROM obat WHERE 1=1";
     $params = [];
     $types = "";
 
@@ -28,7 +27,12 @@ try {
         $types .= "ss";
     }
 
+    $query .= " ORDER BY id_obat DESC";
+
     $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        throw new RuntimeException($conn->error);
+    }
 
     if (!empty($params)) {
         $stmt->bind_param($types, ...$params);
@@ -39,9 +43,6 @@ try {
     
     $obat = [];
     while ($row = $result->fetch_assoc()) {
-        // Cek jika field gambar ada dan tidak kosong, gunakan nama filenya. Jika kosong, gunakan fallback default.jpg
-        $row['gambar_url'] = !empty($row['gambar']) ? 'assets/images/obat/' . $row['gambar'] : 'assets/images/obat/default.jpg';
-        
         $obat[] = $row;
     }
     

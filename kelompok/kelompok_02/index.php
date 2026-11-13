@@ -9,7 +9,15 @@ $categoryId = max(0, (int) ($_GET['category'] ?? 0));
 
 $categories = $pdo->query('SELECT id, name FROM categories ORDER BY name ASC')->fetchAll();
 
-$sql = "SELECT e.*, c.name AS category_name
+$sql = "SELECT e.*, c.name AS category_name,
+        COALESCE(
+            NULLIF(e.image, ''),
+            (SELECT ei.image_path
+             FROM equipment_images ei
+             WHERE ei.equipment_id = e.id
+             ORDER BY ei.sort_order ASC, ei.id ASC
+             LIMIT 1)
+        ) AS cover_image
         FROM equipment e
         INNER JOIN categories c ON c.id = e.category_id
         WHERE 1=1";
@@ -94,15 +102,22 @@ require __DIR__ . '/includes/header.php';
                     $item['model'] ?? '',
                     $item['category_name'] ?? '',
                 ]);
+                $coverImage = trim((string) ($item['cover_image'] ?? ($item['image'] ?? '')));
             ?>
             <article class="equipment-card"
                      data-search="<?= e(mb_strtolower($searchIndex, 'UTF-8')) ?>"
                      data-category="<?= (int) $item['category_id'] ?>">
-                <a class="equipment-image equipment-image-placeholder" href="<?= url('detail.php?id=' . (int) $item['id']) ?>" aria-label="Lihat detail <?= e($item['equipment_name']) ?>">
-                    <span class="placeholder-code">LABCAT / EQUIPMENT</span>
-                    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="8" width="32" height="32" rx="7"/><path d="M18 17h12M18 24h12M18 31h7"/></svg>
-                    <span class="placeholder-caption">Foto alat belum ditambahkan</span>
-                </a>
+                <?php if ($coverImage !== ''): ?>
+                    <a class="equipment-image" href="<?= url('detail.php?id=' . (int) $item['id']) ?>" aria-label="Lihat detail <?= e($item['equipment_name']) ?>">
+                        <img src="<?= e(image_url($coverImage)) ?>" alt="Foto <?= e($item['equipment_name']) ?>" loading="lazy">
+                    </a>
+                <?php else: ?>
+                    <a class="equipment-image equipment-image-placeholder" href="<?= url('detail.php?id=' . (int) $item['id']) ?>" aria-label="Lihat detail <?= e($item['equipment_name']) ?>">
+                        <span class="placeholder-code">LABCAT / EQUIPMENT</span>
+                        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="8" width="32" height="32" rx="7"/><path d="M18 17h12M18 24h12M18 31h7"/></svg>
+                        <span class="placeholder-caption">Foto alat belum ditambahkan</span>
+                    </a>
+                <?php endif; ?>
                 <div class="equipment-card-body">
                     <div class="card-meta"><span class="category-dot"></span><?= e($item['category_name']) ?></div>
                     <h3><a href="<?= url('detail.php?id=' . (int) $item['id']) ?>"><?= e($item['equipment_name']) ?></a></h3>

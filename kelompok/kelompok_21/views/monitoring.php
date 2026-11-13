@@ -8,6 +8,7 @@
         </div>
     </div>
     <div id="mon-pesan" class="message" hidden></div>
+    <p id="mon-kelas" class="muted" hidden></p>
     <section class="panel">
         <div class="table-toolbar">
             <label class="search-label">Penugasan <select id="mon-penugasan"></select></label>

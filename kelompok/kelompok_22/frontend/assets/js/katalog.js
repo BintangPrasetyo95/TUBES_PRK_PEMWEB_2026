@@ -40,13 +40,19 @@ const escapeHTML = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
 ));
 const ikon = (n) => `<svg class="ic" aria-hidden="true"><use href="#i-${n}"/></svg>`;
-// Pisahkan nama dan kekuatan sediaan: "Paracetamol 500 mg" -> "Paracetamol" + kapsul mono "500 mg"
+// Pisahkan nama dan kekuatan sediaan: "Paracetamol 500 mg" -> "Paracetamol" + keterangan kekuatan "500 mg"
 const judul = (nama) => {
-    const m = String(nama ?? '').match(/^(.+?)\s+(\d[\d.,]*\s?(?:mg|mcg|g|ml|iu|%).*)$/i);
+    const m = String(nama ?? '').match(/^(.+?)\s+(\d[\d.,]*\s?(?:mg|mcg|g|ml|iu|%)(?![a-z]).*)$/i);
     return m ? `${escapeHTML(m[1])}<span class="kekuatan">${escapeHTML(m[2])}</span>` : escapeHTML(nama);
 };
 const stokHTML = (s, n) => `<strong>${s.t}</strong><span>${s.k === 'low' ? 'sisa ' : ''}<b>${n}</b> unit</span>`;
-const status = (s) => (s <= 0 ? { k: 'out', t: 'Habis' } : s <= 5 ? { k: 'low', t: 'Menipis' } : { k: 'ok', t: 'Tersedia' });
+const hargaHTML = (harga) => {
+    const nilai = Number(harga);
+    return Number.isFinite(nilai) && nilai > 0
+        ? `<p class="harga-obat">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(nilai)} <span>/ kemasan</span></p>`
+        : '';
+};
+const status = (s) => (s <= 0 ? { k: 'out', t: 'Habis' } : s <= 10 ? { k: 'low', t: 'Menipis' } : { k: 'ok', t: 'Tersedia' });
 
 const TEMA = [
     [/nyeri|analges|demam|antipiret/i, 'bolt', '#2563EB'],
@@ -95,28 +101,62 @@ async function muatData() {
 }
 
 /* ------------------------------- Ilustrasi SVG ---------------------------- */
+const GAMBAR_OBAT = {
+    1: '../assets/images/obat/paracetamol.png',
+    2: '../assets/images/obat/ibuprofen.png',
+    3: '../assets/images/obat/asam-mefenamat.png',
+    4: '../assets/images/obat/sanmol-sirup.png',
+    5: '../assets/images/obat/obh-combi.png',
+    6: '../assets/images/obat/siladex-mucolytic-&-expectorant.png',
+    7: '../assets/images/obat/tremenza-sirup.png',
+    8: '../assets/images/obat/degrol-hisap-dequalinium.png',
+    9: '../assets/images/obat/promag-tablet-kunyah.png',
+    10: '../assets/images/obat/mylanta-cair.png',
+    11: '../assets/images/obat/diatabs.png',
+    12: '../assets/images/obat/oralit.png',
+    13: '../assets/images/obat/vitamin-c.png',
+    14: '../assets/images/obat/imboost-force.png',
+    15: '../assets/images/obat/sangobion.png',
+    16: '../assets/images/obat/farmaku-neurobion.png',
+    17: '../assets/images/obat/betadine-antiseptic-solution.png',
+    18: '../assets/images/obat/hansaplast-kain-elastis.png',
+    19: '../assets/images/obat/rivanol-kompres-luka.png',
+    20: '../assets/images/obat/bioplacenton-gel.png',
+};
+
+function visualObat(o, warna, besar = false) {
+    const fallback = botol(warna, o.nama_obat, o.nama_kategori, besar);
+    const namaFile = String(o.gambar ?? '').trim();
+    const gambarApi = namaFile && namaFile !== 'default.jpg' && !/[\\/]/.test(namaFile)
+        ? `../assets/images/obat/${encodeURIComponent(namaFile)}`
+        : null;
+    const gambar = gambarApi || GAMBAR_OBAT[o.id_obat];
+    return gambar
+        ? `<img class="gambar-obat" src="${gambar}" alt="Kemasan ${escapeHTML(o.nama_obat)}"><span class="gambar-fallback" hidden>${fallback}</span>`
+        : fallback;
+}
+
+function pasangFallbackGambar(root) {
+    root.querySelectorAll('.gambar-obat').forEach((gambar) => {
+        gambar.addEventListener('error', () => {
+            gambar.hidden = true;
+            gambar.nextElementSibling.hidden = false;
+        }, { once: true });
+    });
+}
+
 function botol(warna, nama = '', kat = '', besar = false) {
-    const teks = besar
-        ? `<text x="60" y="114" text-anchor="middle" font-size="9" font-weight="800" fill="#0F172A">${escapeHTML(nama.split(' ')[0].slice(0, 11))}</text>` +
-        `<text x="60" y="127" text-anchor="middle" font-size="6.5" font-weight="600" fill="${warna}">${escapeHTML(kat.slice(0, 18))}</text>`
-        : '';
     return `<svg viewBox="0 0 120 170" aria-hidden="true" font-family="Bricolage Grotesque,sans-serif">
     <ellipse cx="60" cy="163" rx="40" ry="5" fill="#0F172A" opacity=".08"/>
     <rect x="40" y="6" width="40" height="22" rx="7" fill="${warna}"/>
     <rect x="28" y="24" width="64" height="136" rx="18" fill="#fff" stroke="#CBD5E1" stroke-width="2"/>
     <rect x="28" y="64" width="64" height="74" fill="${warna}" opacity=".12"/>
-    <path d="M60 74v20M50 84h20" stroke="${warna}" stroke-width="6" stroke-linecap="round"/>${teks}
+    <path d="M60 74v20M50 84h20" stroke="${warna}" stroke-width="6" stroke-linecap="round"/>
   </svg>`;
 }
 
 const kosong = () => `<div class="empty">
-  <div class="empty-art"><svg viewBox="0 0 100 100" width="96" height="96" aria-hidden="true">
-    <path d="M14 38 50 22l36 16v38L50 92 14 76z" fill="#fff" stroke="#CBD5E1" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M14 38l36 16 36-16M50 54v38" fill="none" stroke="#CBD5E1" stroke-width="3"/>
-    <rect x="34" y="6" width="18" height="24" rx="5" fill="#BFDBFE"/>
-    <circle cx="74" cy="30" r="14" fill="#2563EB"/><path d="M74 23v14M67 30h14" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-  </svg></div>
-  <h3>Obat Tidak Ditemukan!</h3>
+  <h3>Obat tidak ditemukan</h3>
   <p>Coba kata kunci lain atau pilih kategori yang berbeda, atau tampilkan kembali seluruh obat.</p>
   <button type="button" class="btn-primary" id="btn-reset-semua">Tampilkan Semua Obat</button>
 </div>`;
@@ -133,8 +173,7 @@ function renderKategori() {
     const semua = { id_kategori: 'semua', nama_kategori: 'Semua Obat' };
     $('#kategori-list').innerHTML = [semua, ...state.kategori].map((k) => {
         const id = String(k.id_kategori);
-        const ik = id === 'semua' ? 'grid' : tema(k.nama_kategori).ikon;
-        return `<button type="button" class="chip" data-id="${escapeHTML(id)}" aria-pressed="${id === state.aktif}"><span class="ico">${ikon(ik)}</span>${escapeHTML(k.nama_kategori)}</button>`;
+        return `<button type="button" class="chip" data-id="${escapeHTML(id)}" aria-pressed="${id === state.aktif}">${escapeHTML(k.nama_kategori)}</button>`;
     }).join('');
 }
 const tandaiAktif = () => document.querySelectorAll('.chip').forEach((c) =>
@@ -142,26 +181,30 @@ const tandaiAktif = () => document.querySelectorAll('.chip').forEach((c) =>
 
 function daftarTerfilter() {
     const q = state.q.trim().toLowerCase();
-    return state.obat.filter((o) =>
-        (state.aktif === 'semua' || String(o.id_kategori) === state.aktif) &&
-        (!q || [o.nama_obat, o.indikasi, o.nama_kategori].some((v) => String(v ?? '').toLowerCase().includes(q))));
+    return state.obat
+        .filter((o) =>
+            (state.aktif === 'semua' || String(o.id_kategori) === state.aktif) &&
+            (!q || [o.nama_obat, o.indikasi, o.nama_kategori].some((v) => String(v ?? '').toLowerCase().includes(q))))
+        .sort((a, b) => a.nama_obat.localeCompare(b.nama_obat, 'id'));
 }
 
 function kartu(o) {
     const s = status(o.stok), t = tema(o.nama_kategori), nama = escapeHTML(o.nama_obat);
+    const adaTag = state.aktif === 'semua'; // tag kategori redundan saat kategori sedang difilter
     return `<article class="medicine-card${s.k === 'out' ? ' habis' : ''}" data-id="${escapeHTML(o.id_obat)}">
-    <div class="thumb">
-      <span class="tag">${escapeHTML(o.nama_kategori)}</span>
-      ${botol(t.warna)}
+    <div class="thumb${adaTag ? '' : ' tanpa-tag'}">
+      ${adaTag ? `<span class="tag">${escapeHTML(o.nama_kategori)}</span>` : ''}
+      ${visualObat(o, t.warna)}
     </div>
     <div class="card-body">
       <h3 class="card-name">${judul(o.nama_obat)}</h3>
+      ${state.sumberLokal ? '' : hargaHTML(o.harga)}
       <p class="card-ind">${escapeHTML(o.indikasi)}</p>
       <div class="dose">${ikon('clock')}<span>${escapeHTML(o.aturan_pakai)}</span></div>
     </div>
     <div class="card-foot">
       <div class="stok st-${s.k}">${stokHTML(s, o.stok)}</div>
-      <button type="button" class="btn-detail" aria-label="Lihat detail ${nama}">Detail ${ikon('plus')}</button>
+      <button type="button" class="btn-detail" aria-label="Lihat detail ${nama}">Detail</button>
     </div>
   </article>`;
 }
@@ -170,6 +213,7 @@ function renderGrid() {
     const data = daftarTerfilter();
     $('#info-jumlah-obat').innerHTML = `Menampilkan <b>${data.length}</b> obat`;
     $('#katalog-grid').innerHTML = data.length ? data.map((o) => kartu(o)).join('') : kosong();
+    pasangFallbackGambar($('#katalog-grid'));
 }
 function transisi() {
     const g = $('#katalog-grid');
@@ -183,12 +227,14 @@ const modalTerbuka = () => !$('#modal-detail').hidden;
 
 window.bukaModalDetail = function (o) {
     const s = status(o.stok), t = tema(o.nama_kategori);
-    $('#modal-visual').innerHTML = botol(t.warna, o.nama_obat, o.nama_kategori, true);
+    $('#modal-visual').innerHTML = visualObat(o, t.warna, true);
+    pasangFallbackGambar($('#modal-visual'));
     $('#modal-tags').innerHTML = `<span class="tag">${escapeHTML(o.nama_kategori)}</span>`;
     $('#modal-nama').innerHTML = judul(o.nama_obat);
     const ms = $('#modal-stok');
     ms.className = `stok st-${s.k}`;
     ms.innerHTML = stokHTML(s, o.stok);
+    $('#modal-harga').innerHTML = state.sumberLokal ? '' : hargaHTML(o.harga);
     $('#modal-indikasi').textContent = o.indikasi;
     $('#modal-aturan').textContent = o.aturan_pakai;
     $('#modal-peringatan').textContent = o.peringatan;

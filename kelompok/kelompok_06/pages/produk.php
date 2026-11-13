@@ -1,33 +1,34 @@
 <?php
-// =====================================================
-// FLASH POS - DATA MASTER PRODUK
-// CREATE, READ, UPDATE, DELETE + AUTO KODE PRODUK
-// =====================================================
+
+// Cadangan jika ekstensi mbstring tidak aktif di PHP.
+if (!function_exists('mb_substr')) {
+    function mb_substr($teks, $mulai, $panjang = null) {
+        return $panjang === null ? substr($teks, $mulai) : substr($teks, $mulai, $panjang);
+    }
+}
+if (!function_exists('mb_strtolower')) {
+    function mb_strtolower($teks) {
+        return strtolower($teks);
+    }
+}
 
 $pesan = '';
 $jenis_pesan = '';
-
-// =====================================================
-// CSRF TOKEN
-// =====================================================
 
 if (empty($_SESSION['csrf_produk'])) {
     $_SESSION['csrf_produk'] = bin2hex(random_bytes(32));
 }
 
-// =====================================================
-// FUNGSI MENENTUKAN PREFIX KODE BERDASARKAN KATEGORI
-// =====================================================
-
 function prefixProduk($nama_kategori) {
     $nama = strtolower($nama_kategori);
 
-    if (strpos($nama, 'kopi') !== false) {
-        return 'KOP';
-    } elseif (strpos($nama, 'non-kopi') !== false ||
-              strpos($nama, 'non kopi') !== false ||
-              strpos($nama, 'teh') !== false) {
+    // "Non-Kopi" harus dicek lebih dulu, karena mengandung kata "kopi".
+    if (strpos($nama, 'non-kopi') !== false ||
+        strpos($nama, 'non kopi') !== false ||
+        strpos($nama, 'teh') !== false) {
         return 'NON';
+    } elseif (strpos($nama, 'kopi') !== false) {
+        return 'KOP';
     } elseif (strpos($nama, 'makanan') !== false) {
         return 'MKN';
     } elseif (strpos($nama, 'snack') !== false ||
@@ -38,10 +39,73 @@ function prefixProduk($nama_kategori) {
     return 'KAT';
 }
 
-// =====================================================
-// FUNGSI GENERATE KODE PRODUK OTOMATIS
-// Menggunakan MySQL GET_LOCK agar tidak bentrok
-// =====================================================
+// Menyimpan gambar produk ke uploads/produk/. Mengembalikan nama file,
+// atau null jika tidak ada file yang diunggah. Melempar Exception jika tidak valid.
+function simpanGambarProduk($file) {
+
+    if (!is_array($file) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        return null;
+    }
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception('Upload gambar gagal. Coba lagi.');
+    }
+
+    if ($file['size'] > 2 * 1024 * 1024) {
+        throw new Exception('Ukuran gambar maksimal 2 MB.');
+    }
+
+    $info = @getimagesize($file['tmp_name']);
+    $mime = $info['mime'] ?? '';
+
+    $ekstensi = [
+        'image/jpeg' => 'jpg',
+        'image/png'  => 'png',
+        'image/webp' => 'webp',
+    ];
+
+    if (!isset($ekstensi[$mime])) {
+        throw new Exception('Format gambar harus JPG, PNG, atau WEBP.');
+    }
+
+    $folder = __DIR__ . '/../uploads/produk/';
+
+    if (!is_dir($folder) && !mkdir($folder, 0755, true)) {
+        throw new Exception('Folder uploads/produk tidak bisa dibuat.');
+    }
+
+    $nama_file = 'produk_' . bin2hex(random_bytes(8)) . '.' . $ekstensi[$mime];
+
+    if (!move_uploaded_file($file['tmp_name'], $folder . $nama_file)) {
+        throw new Exception('Gagal menyimpan file gambar.');
+    }
+
+    return $nama_file;
+}
+
+function hapusFileGambar($nama_file) {
+    if (!$nama_file) {
+        return;
+    }
+
+    $path = __DIR__ . '/../uploads/produk/' . basename($nama_file);
+
+    if (is_file($path)) {
+        @unlink($path);
+    }
+}
+
+function urlGambarProduk($nama_file) {
+    if (!$nama_file) {
+        return '';
+    }
+
+    $nama_file = basename($nama_file);
+
+    return is_file(__DIR__ . '/../uploads/produk/' . $nama_file)
+        ? 'uploads/produk/' . rawurlencode($nama_file)
+        : '';
+}
 
 function generateKodeProduk($conn, $prefix) {
 
@@ -115,10 +179,6 @@ function generateKodeProduk($conn, $prefix) {
     }
 }
 
-// =====================================================
-// PROSES TAMBAH DAN EDIT PRODUK
-// =====================================================
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     isset($_POST['simpan_produk'])) {
 
@@ -156,7 +216,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
             $stok = (int)$stok_input;
             $status = $stok > 0 ? 'tersedia' : 'habis';
 
-            // Pastikan kategori tersedia
+            $deskripsi = mb_substr(trim($_POST['deskripsi'] ?? ''), 0, 160);
+            $gambar_baru = null;
+            $upload_gagal = false;
+
+            try {
+                $gambar_baru = simpanGambarProduk($_FILES['gambar'] ?? null);
+            } catch (Throwable $e) {
+                $pesan = $e->getMessage();
+                $jenis_pesan = 'error';
+                $upload_gagal = true;
+            }
+
             $cek_kategori = mysqli_prepare(
                 $conn,
                 "SELECT nama_kategori
@@ -187,12 +258,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
             } else {
 
-                // ==============================
-                // UPDATE PRODUK
-                // Kode lama tetap dipertahankan
-                // ==============================
+                if ($upload_gagal) {
 
-                if ($id > 0) {
+                    // Pesan error upload sudah diisi di atas.
+
+                } elseif ($id > 0) {
 
                     $cek_produk = mysqli_prepare(
                         $conn,
@@ -214,10 +284,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
                     if (!$produk_ada) {
 
+                        hapusFileGambar($gambar_baru);
+
                         $pesan = 'Produk tidak ditemukan.';
                         $jenis_pesan = 'error';
 
                     } else {
+
+                        // Simpan nama gambar lama supaya bisa dihapus jika diganti.
+                        $q_lama = mysqli_prepare(
+                            $conn,
+                            "SELECT gambar FROM products WHERE id = ?"
+                        );
+                        mysqli_stmt_bind_param($q_lama, "i", $id);
+                        mysqli_stmt_execute($q_lama);
+                        mysqli_stmt_bind_result($q_lama, $gambar_lama);
+                        mysqli_stmt_fetch($q_lama);
+                        mysqli_stmt_close($q_lama);
 
                         $stmt = mysqli_prepare(
                             $conn,
@@ -226,24 +309,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
                                  nama_produk = ?,
                                  harga = ?,
                                  stok = ?,
-                                 status = ?
+                                 status = ?,
+                                 deskripsi = ?,
+                                 gambar = COALESCE(?, gambar)
                              WHERE id = ?"
                         );
 
                         mysqli_stmt_bind_param(
                             $stmt,
-                            "isdisi",
+                            "isdisssi",
                             $kategori,
                             $nama,
                             $harga,
                             $stok,
                             $status,
+                            $deskripsi,
+                            $gambar_baru,
                             $id
                         );
 
                         if (mysqli_stmt_execute($stmt)) {
 
                             mysqli_stmt_close($stmt);
+
+                            // Gambar diganti: hapus file lama.
+                            if ($gambar_baru && $gambar_lama) {
+                                hapusFileGambar($gambar_lama);
+                            }
 
                             echo "<script>
                                 window.location.replace(
@@ -254,6 +346,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
                         } else {
 
+                            hapusFileGambar($gambar_baru);
+
                             $pesan = 'Gagal mengubah produk.';
                             $jenis_pesan = 'error';
                         }
@@ -262,11 +356,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
                     }
 
                 } else {
-
-                    // ==============================
-                    // CREATE PRODUK
-                    // KODE DIBUAT OTOMATIS
-                    // ==============================
 
                     try {
 
@@ -281,16 +370,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
                             $conn,
                             "INSERT INTO products
                             (category_id, kode_produk, nama_produk,
-                             harga, stok, status)
-                            VALUES (?, ?, ?, ?, ?, ?)"
+                             gambar, deskripsi, harga, stok, status)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                         );
 
                         mysqli_stmt_bind_param(
                             $stmt,
-                            "issdis",
+                            "issssdis",
                             $kategori,
                             $kode,
                             $nama,
+                            $gambar_baru,
+                            $deskripsi,
                             $harga,
                             $stok,
                             $status
@@ -309,6 +400,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
                         } else {
 
+                            hapusFileGambar($gambar_baru);
+
                             $pesan = 'Gagal menyimpan produk.';
                             $jenis_pesan = 'error';
                         }
@@ -316,6 +409,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
                         mysqli_stmt_close($stmt);
 
                     } catch (Throwable $e) {
+
+                        hapusFileGambar($gambar_baru);
 
                         $pesan = $e->getMessage();
                         $jenis_pesan = 'error';
@@ -325,10 +420,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
         }
     }
 }
-
-// =====================================================
-// PROSES HAPUS PRODUK
-// =====================================================
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     isset($_POST['hapus_produk'])) {
@@ -348,7 +439,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
     } else {
 
-        // Cek apakah produk pernah digunakan dalam transaksi
         $cek = mysqli_prepare(
             $conn,
             "SELECT id
@@ -368,6 +458,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
         } else {
 
+            $q_img = mysqli_prepare(
+                $conn,
+                "SELECT gambar FROM products WHERE id = ?"
+            );
+            mysqli_stmt_bind_param($q_img, "i", $id);
+            mysqli_stmt_execute($q_img);
+            mysqli_stmt_bind_result($q_img, $gambar_hapus);
+            mysqli_stmt_fetch($q_img);
+            mysqli_stmt_close($q_img);
+
             $hapus = mysqli_prepare(
                 $conn,
                 "DELETE FROM products WHERE id = ?"
@@ -379,6 +479,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
                 mysqli_stmt_execute($hapus) &&
                 mysqli_stmt_affected_rows($hapus) > 0
             ) {
+
+                hapusFileGambar($gambar_hapus);
 
                 mysqli_stmt_close($hapus);
                 mysqli_stmt_close($cek);
@@ -403,10 +505,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     }
 }
 
-// =====================================================
-// NOTIFIKASI
-// =====================================================
-
 if (isset($_GET['status'])) {
 
     $notifikasi = [
@@ -420,10 +518,6 @@ if (isset($_GET['status'])) {
         $jenis_pesan = 'success';
     }
 }
-
-// =====================================================
-// STATISTIK
-// =====================================================
 
 $q_statistik = mysqli_query(
     $conn,
@@ -442,10 +536,6 @@ $q_kategori_total = mysqli_query(
 
 $total_kategori = mysqli_fetch_assoc($q_kategori_total)['total'];
 
-// =====================================================
-// DATA KATEGORI
-// =====================================================
-
 $q_kategori = mysqli_query(
     $conn,
     "SELECT * FROM categories ORDER BY nama_kategori ASC"
@@ -456,10 +546,6 @@ $kategori_list = [];
 while ($k = mysqli_fetch_assoc($q_kategori)) {
     $kategori_list[] = $k;
 }
-
-// =====================================================
-// DATA PRODUK
-// =====================================================
 
 $q_produk = mysqli_query(
     $conn,
@@ -476,13 +562,7 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 }
 ?>
 
-<!-- =====================================================
-     TAMPILAN HALAMAN PRODUK
-===================================================== -->
-
 <div class="space-y-6">
-
-    <!-- JUDUL DAN TOMBOL TAMBAH -->
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
@@ -504,8 +584,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
     </div>
 
-    <!-- NOTIFIKASI -->
-
     <?php if ($pesan): ?>
 
         <div class="p-4 rounded-lg text-sm
@@ -518,8 +596,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
         </div>
 
     <?php endif; ?>
-
-    <!-- STATISTIK -->
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
@@ -549,8 +625,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
     </div>
 
-    <!-- TABEL PRODUK -->
-
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
 
         <div class="p-5 border-b border-slate-100">
@@ -564,8 +638,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
             </p>
 
         </div>
-
-        <!-- PENCARIAN -->
 
         <div class="p-4">
 
@@ -605,7 +677,25 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                             </td>
 
                             <td class="px-5 py-4 font-medium">
-                                <?= htmlspecialchars($row['nama_produk']) ?>
+
+                                <?php $img_row = urlGambarProduk($row['gambar'] ?? ''); ?>
+
+                                <div class="flex items-center gap-3">
+
+                                    <?php if ($img_row): ?>
+                                        <img src="<?= htmlspecialchars($img_row) ?>"
+                                            alt=""
+                                            class="w-10 h-10 rounded-lg object-cover">
+                                    <?php else: ?>
+                                        <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center text-xs">
+                                            Foto
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <span><?= htmlspecialchars($row['nama_produk']) ?></span>
+
+                                </div>
+
                             </td>
 
                             <td class="px-5 py-4">
@@ -637,8 +727,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
                                 <div class="flex justify-center gap-2">
 
-                                    <!-- EDIT -->
-
                                     <button type="button"
                                         onclick="editProduk(this)"
 
@@ -648,14 +736,14 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                                         data-kategori="<?= (int)$row['category_id'] ?>"
                                         data-harga="<?= htmlspecialchars($row['harga'], ENT_QUOTES) ?>"
                                         data-stok="<?= (int)$row['stok'] ?>"
+                                        data-deskripsi="<?= htmlspecialchars($row['deskripsi'] ?? '', ENT_QUOTES) ?>"
+                                        data-gambar="<?= htmlspecialchars($img_row, ENT_QUOTES) ?>"
 
                                         class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs hover:bg-blue-100">
 
                                         Edit
 
                                     </button>
-
-                                    <!-- HAPUS -->
 
                                     <form method="POST"
                                         onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
@@ -707,10 +795,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
 </div>
 
-<!-- =====================================================
-     MODAL TAMBAH DAN EDIT
-===================================================== -->
-
 <div id="modalProduk"
     class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50">
 
@@ -730,7 +814,7 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
         </div>
 
-        <form method="POST" class="space-y-4">
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
 
             <input type="hidden"
                 name="csrf_token"
@@ -740,8 +824,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                 name="id_produk"
                 id="id_produk"
                 value="">
-
-            <!-- KODE PRODUK OTOMATIS -->
 
             <div>
 
@@ -761,8 +843,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
             </div>
 
-            <!-- NAMA PRODUK -->
-
             <div>
 
                 <label class="block text-sm font-medium mb-1">
@@ -778,7 +858,47 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
             </div>
 
-            <!-- KATEGORI -->
+            <div>
+
+                <label class="block text-sm font-medium mb-1">
+                    Deskripsi Singkat
+                </label>
+
+                <input type="text"
+                    name="deskripsi"
+                    id="deskripsi"
+                    maxlength="160"
+                    placeholder="Contoh: Espresso dengan susu dan gula aren"
+                    class="w-full border border-slate-200 rounded-lg p-2.5 text-sm">
+
+            </div>
+
+            <div>
+
+                <label class="block text-sm font-medium mb-1">
+                    Foto Produk
+                </label>
+
+                <div class="flex items-center gap-3">
+
+                    <img id="previewGambar"
+                        src=""
+                        alt=""
+                        class="w-16 h-16 rounded-lg object-cover bg-slate-100 hidden">
+
+                    <input type="file"
+                        name="gambar"
+                        id="gambar"
+                        accept="image/jpeg,image/png,image/webp"
+                        class="text-sm w-full">
+
+                </div>
+
+                <p class="text-xs text-slate-400 mt-1">
+                    JPG, PNG, atau WEBP. Maksimal 2 MB. Kosongkan jika tidak ingin mengubah foto.
+                </p>
+
+            </div>
 
             <div>
 
@@ -806,8 +926,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                 </select>
 
             </div>
-
-            <!-- HARGA DAN STOK -->
 
             <div class="grid grid-cols-2 gap-3">
 
@@ -845,8 +963,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
             </div>
 
-            <!-- TOMBOL -->
-
             <div class="flex justify-end gap-2 pt-3">
 
                 <button type="button"
@@ -873,13 +989,8 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
 </div>
 
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
 <script>
 
-// MEMBUKA MODAL TAMBAH
 function bukaModal() {
 
     document.getElementById('judulModal').textContent = 'Tambah Produk';
@@ -890,11 +1001,14 @@ function bukaModal() {
     document.getElementById('category_id').value = '';
     document.getElementById('harga').value = '';
     document.getElementById('stok').value = '';
+    document.getElementById('deskripsi').value = '';
+    document.getElementById('gambar').value = '';
+
+    setPreview('');
 
     tampilkanModal();
 }
 
-// MEMBUKA MODAL EDIT
 function editProduk(tombol) {
 
     document.getElementById('judulModal').textContent = 'Edit Produk';
@@ -905,11 +1019,35 @@ function editProduk(tombol) {
     document.getElementById('category_id').value = tombol.dataset.kategori;
     document.getElementById('harga').value = tombol.dataset.harga;
     document.getElementById('stok').value = tombol.dataset.stok;
+    document.getElementById('deskripsi').value = tombol.dataset.deskripsi || '';
+    document.getElementById('gambar').value = '';
+
+    setPreview(tombol.dataset.gambar || '');
 
     tampilkanModal();
 }
 
-// MENAMPILKAN MODAL
+function setPreview(src) {
+
+    const img = document.getElementById('previewGambar');
+
+    if (src) {
+        img.src = src;
+        img.classList.remove('hidden');
+    } else {
+        img.removeAttribute('src');
+        img.classList.add('hidden');
+    }
+}
+
+document.getElementById('gambar').addEventListener('change', function () {
+
+    if (this.files && this.files[0]) {
+        setPreview(URL.createObjectURL(this.files[0]));
+    }
+
+});
+
 function tampilkanModal() {
 
     const modal = document.getElementById('modalProduk');
@@ -918,7 +1056,6 @@ function tampilkanModal() {
     modal.classList.add('flex');
 }
 
-// MENUTUP MODAL
 function tutupModal() {
 
     const modal = document.getElementById('modalProduk');
@@ -927,7 +1064,6 @@ function tutupModal() {
     modal.classList.remove('flex');
 }
 
-// PENCARIAN PRODUK
 document.getElementById('cariProduk').addEventListener('input', function () {
 
     const kataKunci = this.value.toLowerCase();

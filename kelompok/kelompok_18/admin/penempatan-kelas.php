@@ -281,19 +281,12 @@ if ($semesterId > 0) {
     $semesterRecap = $statement->fetchAll();
 }
 
-admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
+admin_page_start('Penempatan Kelas', 'penempatan-kelas.php', null, 'Penempatan disimpan per semester. Riwayat semester lama tidak ditimpa.');
 ?>
 <section class="space-y-4">
-    <div>
-        <h2 class="text-lg font-semibold text-[#20392a]">Penempatan Siswa</h2>
-        <p class="mt-1 text-sm text-slate-600">
-            Penempatan disimpan per semester. Riwayat semester lama tidak ditimpa.
-        </p>
-    </div>
-
     <?php if ($flash !== null): ?>
         <?php $flashType = ($flash['type'] ?? 'success') === 'error' ? 'error' : 'success'; ?>
-        <p role="status" class="rounded-xl px-4 py-3 text-sm <?= $flashType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' ?>">
+        <p role="status" class="rounded-xl px-4 py-3 text-sm <?= $flashType === 'error' ? 'bg-red-50 text-red-700' : 'bg-[#e8f0e9] text-[#3f6548]' ?>">
             <?= h((string) ($flash['message'] ?? '')) ?>
         </p>
     <?php endif; ?>
@@ -306,10 +299,10 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
         </ul>
     <?php endif; ?>
 
-    <form method="get" action="penempatan-kelas.php" class="grid gap-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:p-6">
+    <form method="get" action="penempatan-kelas.php" class="grid gap-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:p-6">
         <div>
             <label for="filter-semester" class="mb-1.5 block text-sm font-medium text-slate-700">Semester</label>
-            <select id="filter-semester" name="semester_id" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm">
+            <select id="filter-semester" name="semester_id" class="min-h-10 w-full rounded-lg border border-[#dfe6de] bg-white px-3 text-sm">
                 <?php if ($semesterList === []): ?>
                     <option value="0">Belum ada semester</option>
                 <?php else: ?>
@@ -323,7 +316,7 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
         </div>
         <div>
             <label for="filter-kelas" class="mb-1.5 block text-sm font-medium text-slate-700">Kelas</label>
-            <select id="filter-kelas" name="kelas_id" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm">
+            <select id="filter-kelas" name="kelas_id" class="min-h-10 w-full rounded-lg border border-[#dfe6de] bg-white px-3 text-sm">
                 <?php if ($kelasList === []): ?>
                     <option value="0">Belum ada kelas</option>
                 <?php else: ?>
@@ -336,7 +329,7 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
             </select>
         </div>
         <div class="flex items-end">
-            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
+            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#41684f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#679173] focus-visible:ring-offset-2">
                 Tampilkan
             </button>
         </div>
@@ -344,21 +337,21 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
 </section>
 
 <?php if ($selectedSemester === null || $selectedKelas === null): ?>
-    <section class="rounded-2xl border border-[#e2e9e2] bg-white p-5 text-sm text-slate-600 sm:p-6">
+    <section class="rounded-2xl border border-[#dfe6de] bg-white p-5 text-sm text-slate-600 sm:p-6">
         Tambahkan semester dan kelas terlebih dahulu sebelum menempatkan siswa.
     </section>
 <?php else: ?>
     <section class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div class="space-y-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
+        <div class="space-y-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
             <div>
-                <h2 class="text-base font-semibold text-[#20392a]">Tempatkan Siswa</h2>
+                <h2 class="text-base font-semibold text-[#303832]">Tempatkan Siswa</h2>
                 <p class="mt-1 text-sm text-slate-600">
                     <?= h((string) $selectedKelas['nama']) ?> · <?= h((string) $selectedSemester['nama']) ?>
                 </p>
             </div>
 
             <?php if ($candidateStudents === []): ?>
-                <p class="rounded-xl bg-[#f3f6f1] px-4 py-3 text-sm text-[#526257]">
+                <p class="rounded-xl bg-[#eff3ee] px-4 py-3 text-sm text-[#5b645b]">
                     Semua siswa aktif sudah memiliki penempatan pada semester ini.
                 </p>
             <?php else: ?>
@@ -371,17 +364,17 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <label for="cari-siswa" class="text-sm font-medium text-slate-700">Pilih siswa</label>
                         <label class="inline-flex items-center gap-2 text-sm text-slate-600">
-                            <input id="pilih-semua" type="checkbox" class="h-4 w-4 rounded border-[#bac9ba] text-[#1e5638] focus:ring-[#376c4d]"> Pilih semua
+                            <input id="pilih-semua" type="checkbox" class="h-4 w-4 rounded border-[#bac9ba] text-[#4e7a5d] focus:ring-[#679173]"> Pilih semua
                         </label>
                     </div>
 
-                    <input id="cari-siswa" type="search" placeholder="Cari nama atau nomor induk" class="min-h-10 w-full rounded-lg border border-[#d8e2d8] bg-white px-3 text-sm focus:border-[#376c4d] focus:outline-none focus:ring-2 focus:ring-[#e6efe6]">
+                    <input id="cari-siswa" type="search" placeholder="Cari nama atau nomor induk" class="min-h-10 w-full rounded-lg border border-[#dfe6de] bg-white px-3 text-sm focus:border-[#679173] focus:outline-none focus:ring-2 focus:ring-[#eaf1ea]">
 
-                    <div id="daftar-siswa" class="max-h-80 space-y-1 overflow-y-auto rounded-xl border border-[#e2e9e2] p-2">
+                    <div id="daftar-siswa" class="max-h-80 space-y-1 overflow-y-auto rounded-xl border border-[#dfe6de] p-2">
                         <?php foreach ($candidateStudents as $student): ?>
                             <?php $searchText = mb_strtolower($student['nomor_induk'] . ' ' . $student['nama']); ?>
-                            <label class="student-row flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-[#f3f6f1]" data-search="<?= h($searchText) ?>">
-                                <input type="checkbox" name="siswa_ids[]" value="<?= h((string) $student['id']) ?>" class="h-4 w-4 rounded border-[#bac9ba] text-[#1e5638] focus:ring-[#376c4d]">
+                            <label class="student-row flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-[#eff3ee]" data-search="<?= h($searchText) ?>">
+                                <input type="checkbox" name="siswa_ids[]" value="<?= h((string) $student['id']) ?>" class="h-4 w-4 rounded border-[#bac9ba] text-[#4e7a5d] focus:ring-[#679173]">
                                 <span class="min-w-0">
                                     <span class="block text-sm font-medium text-slate-700"><?= h((string) $student['nama']) ?></span>
                                     <span class="block text-xs text-slate-500"><?= h((string) $student['nomor_induk']) ?></span>
@@ -393,7 +386,7 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
 
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <span class="text-sm text-slate-500"><?= h((string) count($candidateStudents)) ?> siswa tersedia</span>
-                        <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
+                        <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#41684f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#679173] focus-visible:ring-offset-2">
                             Tempatkan Siswa
                         </button>
                     </div>
@@ -430,31 +423,31 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
             <?php endif; ?>
         </div>
 
-        <div class="space-y-4 rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
+        <div class="space-y-4 rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
             <div>
-                <h2 class="text-base font-semibold text-[#20392a]">Rekap Semester</h2>
+                <h2 class="text-base font-semibold text-[#303832]">Rekap Semester</h2>
                 <p class="mt-1 text-sm text-slate-600"><?= h((string) $selectedSemester['nama']) ?></p>
             </div>
-            <div class="overflow-x-auto rounded-xl border border-[#e2e9e2]">
-                <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-                    <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
+            <div class="overflow-x-auto rounded-xl border border-[#dfe6de]">
+                <table class="min-w-full divide-y divide-[#e6ebe5] text-left text-sm">
+                    <thead class="bg-[#eff3ee] text-xs uppercase tracking-wide text-slate-500">
                         <tr>
                             <th scope="col" class="px-4 py-3 font-semibold">Kelas</th>
                             <th scope="col" class="px-4 py-3 font-semibold">Jumlah Siswa</th>
                             <th scope="col" class="px-4 py-3 font-semibold">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#edf1ec] text-slate-700">
+                    <tbody class="divide-y divide-[#e6ebe5] text-slate-700">
                         <?php foreach ($semesterRecap as $recap): ?>
                             <?php $recapId = (int) $recap['kelas_id']; ?>
-                            <tr class="<?= $recapId === $kelasId ? 'bg-[#f8faf7]' : '' ?>">
+                            <tr class="<?= $recapId === $kelasId ? 'bg-[#fafbf9]' : '' ?>">
                                 <td class="px-4 py-3"><?= h((string) $recap['nama']) ?></td>
-                                <td class="px-4 py-3"><?= h((string) (int) $recap['jumlah']) ?></td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3 text-center"><?= h((string) (int) $recap['jumlah']) ?></td>
+                                <td class="px-4 py-3 text-center">
                                     <?php if ($recapId === $kelasId): ?>
-                                        <span class="text-xs font-semibold text-green-700">Dipilih</span>
+                                        <span class="text-xs font-semibold text-[#3f6548]">Dipilih</span>
                                     <?php else: ?>
-                                        <a href="penempatan-kelas.php?semester_id=<?= h((string) $semesterId) ?>&amp;kelas_id=<?= h((string) $recapId) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Lihat</a>
+                                        <a href="penempatan-kelas.php?semester_id=<?= h((string) $semesterId) ?>&amp;kelas_id=<?= h((string) $recapId) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#4e7a5d] hover:bg-[#e8f0e9]">Lihat</a>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -467,15 +460,15 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
 
     <section class="space-y-4">
         <div>
-            <h2 class="text-lg font-semibold text-[#20392a]">Siswa pada Kelas</h2>
+            <h2 class="text-lg font-semibold text-[#303832]">Siswa pada Kelas</h2>
             <p class="mt-1 text-sm text-slate-600">
                 <?= h((string) $selectedKelas['nama']) ?> · <?= h((string) $selectedSemester['nama']) ?> · <?= h((string) count($placedStudents)) ?> siswa
             </p>
         </div>
 
-        <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-            <table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-                <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
+        <div class="overflow-x-auto rounded-2xl border border-[#dfe6de] bg-white">
+            <table class="min-w-full divide-y divide-[#e6ebe5] text-left text-sm">
+                <thead class="bg-[#eff3ee] text-xs uppercase tracking-wide text-slate-500">
                     <tr>
                         <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
                         <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nomor Induk</th>
@@ -483,16 +476,16 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php');
                         <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[#edf1ec] text-slate-700">
+                <tbody class="divide-y divide-[#e6ebe5] text-slate-700">
                     <?php if ($placedStudents === []): ?>
                         <tr><td colspan="4" class="px-4 py-9 text-center text-slate-500">Belum ada siswa di kelas ini.</td></tr>
                     <?php else: ?>
                         <?php foreach ($placedStudents as $index => $placement): ?>
-                            <tr class="hover:bg-[#f8faf7]">
-                                <td class="px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
-                                <td class="px-4 py-3.5 sm:px-5"><?= h((string) $placement['nomor_induk']) ?></td>
+                            <tr class="hover:bg-[#fafbf9]">
+                        <td class="px-4 py-3.5 text-center sm:px-5"><?= h((string) ($index + 1)) ?></td>
+                        <td class="px-4 py-3.5 text-center sm:px-5"><?= h((string) $placement['nomor_induk']) ?></td>
                                 <td class="px-4 py-3.5 sm:px-5"><?= h((string) $placement['nama']) ?></td>
-                                <td class="px-4 py-3.5 sm:px-5">
+                        <td class="px-4 py-3.5 text-center sm:px-5">
                                     <form method="post" action="penempatan-kelas.php" class="inline" onsubmit="return confirm('Keluarkan siswa ini dari kelas?');">
                                         <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
                                         <input type="hidden" name="action" value="remove">

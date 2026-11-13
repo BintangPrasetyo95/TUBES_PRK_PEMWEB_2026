@@ -8,11 +8,21 @@ function db(): PDO
         return $connection;
     }
 
-    $host = getenv('DB_HOST') ?: '127.0.0.1';
-    $port = getenv('DB_PORT') ?: '3306';
-    $database = getenv('DB_NAME') ?: 'sisasense_db';
-    $username = getenv('DB_USER') ?: 'root';
-    $password = getenv('DB_PASSWORD') ?: '';
+    // Mendukung override database via file database.local.php (opsional untuk InfinityFree / hosting)
+    $localConfig = [];
+    $localConfigFile = __DIR__ . '/database.local.php';
+    if (file_exists($localConfigFile)) {
+        $loaded = require $localConfigFile;
+        if (is_array($loaded)) {
+            $localConfig = $loaded;
+        }
+    }
+
+    $host = $localConfig['host'] ?? (getenv('DB_HOST') ?: '127.0.0.1');
+    $port = (string) ($localConfig['port'] ?? (getenv('DB_PORT') ?: '3306'));
+    $database = $localConfig['database'] ?? (getenv('DB_NAME') ?: 'sisasense_db');
+    $username = $localConfig['username'] ?? (getenv('DB_USER') ?: 'root');
+    $password = $localConfig['password'] ?? (getenv('DB_PASSWORD') ?: 'fadhlan100');
     $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
 
     $connection = new PDO($dsn, $username, $password, [

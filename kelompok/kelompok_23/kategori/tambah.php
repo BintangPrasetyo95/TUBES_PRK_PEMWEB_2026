@@ -1,11 +1,8 @@
-
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../auth/login.php");
-    exit;
-}
+require_once __DIR__ . '/../includes/role_guard.php';
+requireRole(['Admin']);
 
 require_once __DIR__ . '/../config/database.php';
 
@@ -35,6 +32,8 @@ if (isset($_POST['simpan'])) {
         } else {
             $error = "Gagal menyimpan kategori: " . $conn->error;
         }
+
+        $stmt->close();
     }
 }
 

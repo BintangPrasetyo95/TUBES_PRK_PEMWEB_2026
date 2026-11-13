@@ -1,17 +1,29 @@
-
 <?php
-if (!isset($judulHalaman)) {
-    $judulHalaman = "Dashboard Admin";
-}
-?>
+$halaman = $_SERVER['SCRIPT_NAME'] ?? '';
 
+$aktifDashboard = basename(dirname($halaman)) === 'admin';
+$aktifObat      = strpos($halaman, '/admin/obat/') !== false;
+$aktifKategori  = strpos($halaman, '/admin/kategori/') !== false;
+
+if (!isset($judulHalaman)) {
+    if ($aktifObat) {
+        $judulHalaman = "Data Obat";
+    } elseif ($aktifKategori) {
+        $judulHalaman = "Data Kategori";
+    } else {
+        $judulHalaman = "Dashboard";
+    }
+}
+
+$baseAdmin = "/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22";
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($judulHalaman) ?> | KlikObat</title>
-    <link rel="stylesheet" href="/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_22/frontend/assets/css/admin.css">
+    <title><?= htmlspecialchars($judulHalaman) ?> | Admin KlikObat</title>
+    <link rel="stylesheet" href="<?= $baseAdmin ?>/frontend/assets/css/admin.css">
 </head>
 <body>
 
@@ -20,7 +32,15 @@ if (!isset($judulHalaman)) {
     <?php require_once __DIR__ . "/sidebar.php"; ?>
 
     <main class="admin-main">
+
         <header class="admin-header">
-            <h1><?= htmlspecialchars($judulHalaman) ?></h1>
-            <div class="admin-user">Admin KlikObat</div>
+            <div class="header-title">
+                <h1><?= htmlspecialchars($judulHalaman) ?></h1>
+            </div>
+
+            <div class="admin-user">
+                <span class="user-name">Admin KlikObat</span>
+            </div>
         </header>
+
+        <div class="admin-content">

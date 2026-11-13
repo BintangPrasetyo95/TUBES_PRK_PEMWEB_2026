@@ -13,6 +13,6 @@ return [
     'sosial' => [
         ['nama' => 'Instagram', 'ikon' => 'bi-instagram', 'url' => 'https://www.instagram.com/ruanghukumidn'],
         ['nama' => 'TikTok',    'ikon' => 'bi-tiktok',    'url' => 'https://www.tiktok.com/@ruanghukumindonesia'],
-        ['nama' => 'Facebook',  'ikon' => 'bi-facebook',  'url' => 'https://www.facebook.com/share/1buHyqaos3/'],
+        ['nama' => 'Facebook',  'ikon' => 'bi-facebook',  'url' => 'https://www.facebook.com/share/1ACeHsNsQn/'],
     ],
 ];

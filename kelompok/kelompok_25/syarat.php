@@ -21,7 +21,6 @@ $bagian = [
       <h2 class="h5 mt-4"><?= $i + 1 ?>. <?= e($jdl) ?></h2>
       <p class="mb-0"><?= e($isi) ?></p>
     <?php endforeach; ?>
-    <p class="small text-secondary border-top pt-3 mt-4 mb-0">Catatan: Ruang Hukum adalah proyek tugas besar mata kuliah Pemrograman Web (Kelompok 25), Universitas Lampung. Seluruh data akun dan konsultasi di situs ini bersifat contoh untuk keperluan belajar.</p>
   </div>
 </div>
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

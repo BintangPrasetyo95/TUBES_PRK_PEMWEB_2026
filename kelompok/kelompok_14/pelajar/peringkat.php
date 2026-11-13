@@ -131,7 +131,11 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   <!-- Podium Juara 1, 2, 3 -->
   <div class="podium-grid">
     <?php
-    $ikonMedali = [1 => '&#129351;', 2 => '&#129352;', 3 => '&#129353;'];
+    $ikonMedali = [
+        1 => '<i class="fa-solid fa-medal" style="color: #eab308;"></i>',
+        2 => '<i class="fa-solid fa-medal" style="color: #94a3b8;"></i>',
+        3 => '<i class="fa-solid fa-medal" style="color: #d97706;"></i>'
+    ];
     $labelJuara = [1 => 'Peringkat 1', 2 => 'Peringkat 2', 3 => 'Peringkat 3'];
     ?>
     <?php foreach ($topTiga as $juara): ?>
@@ -141,7 +145,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
       $adalahSaya = ($juara['pelajar_id'] === $pelajarId);
       ?>
       <div class="card podium-card <?= $kelasTambahan ?>">
-        <div class="podium-medali" aria-hidden="true"><?= $ikonMedali[$no] ?? '&#127942;' ?></div>
+        <div class="podium-medali" aria-hidden="true"><?= $ikonMedali[$no] ?? '<i class="fa-solid fa-trophy"></i>' ?></div>
         <span class="badge <?= $no === 1 ? 'badge-menunggu' : 'badge-sedang' ?>">
           <?= e($labelJuara[$no] ?? ('Peringkat ' . $no)) ?>
         </span>
@@ -196,7 +200,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 <?php else: ?>
   <!-- Tampilan Kosong Jika Belum Ada Data Peringkat -->
   <div class="card empty-state">
-    <div class="empty-state-ikon" aria-hidden="true">&#127942;</div>
+    <div class="empty-state-ikon" aria-hidden="true"><i class="fa-solid fa-trophy"></i></div>
     <h2>Papan Peringkat Masih Kosong</h2>
     <p>Belum ada pelajar yang menyelesaikan kuis pada kategori <strong><?= e($namaTopikAktif) ?></strong>. Jadilah yang pertama meraih posisi #1!</p>
     <a href="<?= $root ?>kuis/katalog.php" class="btn btn-primary">Cari Kuis Sekarang &rarr;</a>

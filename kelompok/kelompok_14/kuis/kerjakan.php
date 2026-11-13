@@ -328,7 +328,7 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
           <!-- Baris Header Soal -->
           <div class="soal-header">
             <span class="soal-nomor-label">Soal <?= $nomorSoal ?> dari <?= $totalSoal ?></span>
-            <span class="soal-poin-badge">&#9733; <?= (int)$soal['poin'] ?> Poin</span>
+            <span class="soal-poin-badge"><i class="fa-solid fa-star"></i> <?= (int)$soal['poin'] ?> Poin</span>
           </div>
 
           <!-- Teks Pertanyaan Soal -->
@@ -386,10 +386,10 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
             <div class="umpan-balik-status">
               <?php if ($sudah): ?>
                 <?php if ($soal['status_benar']): ?>
-                  <span aria-hidden="true">&#10004;</span>
+                  <span aria-hidden="true"><i class="fa-solid fa-check"></i></span>
                   <span>Benar! Jawaban kamu tepat.</span>
                 <?php else: ?>
-                  <span aria-hidden="true">&#10008;</span>
+                  <span aria-hidden="true"><i class="fa-solid fa-xmark"></i></span>
                   <span>Belum tepat. Kunci jawaban: <?= e($soal['kunci_label']) ?></span>
                 <?php endif; ?>
               <?php endif; ?>
@@ -468,7 +468,7 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
          RINGKASAN HASIL MODUS PRATINJAU (DIHITUNG DI SISI KLIEN)
          ====================================================================== -->
     <div id="hasilPratinjauBox" class="soal-card pratinjau-selesai-card" style="display: none;">
-      <div class="pratinjau-icon-selesai" aria-hidden="true">&#127942;</div>
+      <div class="pratinjau-icon-selesai" aria-hidden="true"><i class="fa-solid fa-trophy"></i></div>
       <h2 style="margin-bottom: 8px;">Simulasi Pratinjau Selesai</h2>
       <p style="color: var(--teks-2); margin-bottom: 22px;">
         Berikut adalah simulasi hasil pengerjaan kuis <strong><?= e($kuis['judul']) ?></strong>. Data ini tidak disimpan ke database.
@@ -512,7 +512,7 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
      ======================================================================== -->
 <div class="modal-backdrop" id="modalKeluar" role="dialog" aria-modal="true" aria-labelledby="judulModalKeluar">
   <div class="modal-card">
-    <div style="font-size: 2.8rem; margin-bottom: 12px;" aria-hidden="true">&#9888;</div>
+    <div style="font-size: 2.8rem; margin-bottom: 12px; color: var(--accent);" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></div>
     <h2 id="judulModalKeluar" style="font-size: 1.35rem; margin-bottom: 8px;">Keluar dari <?= $isModePratinjau ? 'Pratinjau' : 'Kuis' ?>?</h2>
     <p style="color: var(--teks-2); font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px;">
       <?php if ($isModePratinjau): ?>
@@ -537,7 +537,7 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
      ======================================================================== -->
 <div class="modal-backdrop" id="modalSelesai" role="dialog" aria-modal="true" aria-labelledby="judulModalSelesai">
   <div class="modal-card">
-    <div style="font-size: 2.8rem; margin-bottom: 12px;" aria-hidden="true">&#127937;</div>
+    <div style="font-size: 2.8rem; margin-bottom: 12px; color: var(--primary);" aria-hidden="true"><i class="fa-solid fa-flag-checkered"></i></div>
     <h2 id="judulModalSelesai" style="font-size: 1.35rem; margin-bottom: 8px;">Kumpulkan Jawaban Kuis?</h2>
     <p style="color: var(--teks); font-size: 0.95rem; line-height: 1.5; margin-bottom: 8px;" id="pesanKonfirmasiSelesai">
       Apakah kamu yakin ingin mengakhiri sesi kuis ini?

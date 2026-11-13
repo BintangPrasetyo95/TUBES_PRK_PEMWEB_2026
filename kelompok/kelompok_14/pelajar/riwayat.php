@@ -147,7 +147,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
           <h2 class="riwayat-judul"><?= e($item['judul_kuis']) ?></h2>
 
           <p class="riwayat-meta">
-            &#128197; <?= e(formatTanggal($item['waktu_mulai'])) ?>
+            <i class="fa-solid fa-calendar-days"></i> <?= e(formatTanggal($item['waktu_mulai'])) ?>
             &bull; Benar: <strong><?= (int) $item['jumlah_benar'] ?></strong>
             &bull; Salah: <strong><?= (int) $item['jumlah_salah'] ?></strong>
           </p>
@@ -158,7 +158,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
             <div class="riwayat-skor">Belum Selesai</div>
             <div class="aksi-group">
               <a href="<?= $root ?>kuis/kerjakan.php?id=<?= (int) $item['kuis_id'] ?>" class="btn btn-sm btn-primary">
-                &#9654; Lanjutkan
+                <i class="fa-solid fa-play"></i> Lanjutkan
               </a>
             </div>
           <?php else: ?>
@@ -211,7 +211,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 <?php else: ?>
   <!-- Tampilan Kosong Jika Tidak Ada Riwayat -->
   <div class="card empty-state">
-    <div class="empty-state-ikon" aria-hidden="true">&#128221;</div>
+    <div class="empty-state-ikon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></div>
     <h2>Belum Ada Riwayat yang Ditemukan</h2>
     <?php if ($filterTopikId > 0 || $tanggalMulai !== '' || $tanggalSelesai !== ''): ?>
       <p>Tidak ada pengerjaan kuis yang cocok dengan filter yang kamu pilih. Coba ubah atau reset filter.</p>

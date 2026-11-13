@@ -147,8 +147,8 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
             <p id="hasilPersenAkhir">0%</p>
 
             <div class="form-group">
-                <span class="badge badge-terbit">&#10003; Benar: <strong id="hasilJumlahBenar">0</strong></span>
-                <span class="badge badge-ditolak">&#10007; Salah / Kosong: <strong id="hasilJumlahSalah">0</strong></span>
+                <span class="badge badge-terbit"><i class="fa-solid fa-circle-check"></i> Benar: <strong id="hasilJumlahBenar">0</strong></span>
+                <span class="badge badge-ditolak"><i class="fa-solid fa-circle-xmark"></i> Salah / Kosong: <strong id="hasilJumlahSalah">0</strong></span>
             </div>
 
             <p class="form-helper">

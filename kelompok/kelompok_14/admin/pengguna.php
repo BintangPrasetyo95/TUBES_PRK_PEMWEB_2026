@@ -68,6 +68,7 @@ $daftarPengguna = daftarSemuaPengguna($filterPeran, $filterStatus, $cari);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kelola Pengguna - <?= e(NAMA_APLIKASI) ?></title>
     <script src="<?= e(BASE_URL) ?>/assets/js/tema-init.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="<?= e(BASE_URL) ?>/assets/css/tema.css">
     <link rel="stylesheet" href="<?= e(BASE_URL) ?>/assets/css/dasar.css">
     <link rel="stylesheet" href="<?= e(BASE_URL) ?>/assets/css/komponen.css">

@@ -34,8 +34,10 @@
 }
 
 .kuis-filter-tab-aktif {
-  background-color: var(--utama);
-  color: #ffffff;
+  background-color: var(--primary) !important;
+  color: var(--teks) !important;
+  font-weight: 700 !important;
+  box-shadow: var(--clay-tekan) !important;
 }
 
 .kuis-cari-form {

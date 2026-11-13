@@ -49,7 +49,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 <!-- Kartu Konten Error 403 -->
 <div class="card error-card">
   <div class="error-ikon" aria-hidden="true">
-    &#128683;
+    <i class="fa-solid fa-ban"></i>
   </div>
 
   <span class="badge badge-sulit error-badge">
@@ -67,16 +67,16 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
   <!-- Tombol Aksi Navigasi -->
   <div class="error-aksi">
     <a href="<?= e($linkKembali) ?>" class="btn btn-primary">
-      &#8592; <?= e($labelKembali) ?>
+      <i class="fa-solid fa-arrow-left"></i> <?= e($labelKembali) ?>
     </a>
 
     <?php if ($sesiUser): ?>
       <a href="<?= e($root) ?>logout.php" class="btn btn-secondary">
-        &#128273; Keluar & Ganti Akun
+        <i class="fa-solid fa-right-from-bracket"></i> Keluar & Ganti Akun
       </a>
     <?php else: ?>
       <a href="<?= e($root) ?>login.php" class="btn btn-secondary">
-        &#128273; Masuk Akun
+        <i class="fa-solid fa-right-to-bracket"></i> Masuk Akun
       </a>
     <?php endif; ?>
   </div>

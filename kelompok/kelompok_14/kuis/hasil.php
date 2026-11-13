@@ -62,7 +62,7 @@ if (!$isGuest) {
         require_once __DIR__ . '/../includes/partials/header-pelajar.php';
         ?>
         <div class="card" style="max-width: 600px; margin: 48px auto; text-align: center; padding: 48px 24px;">
-          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true">&#128274;</div>
+          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true"><i class="fa-solid fa-lock"></i></div>
           <h1 style="font-size: 1.7rem; margin-bottom: 12px;">Hasil Kuis Tidak Ditemukan</h1>
           <p style="color: var(--teks-2); margin-bottom: 28px; line-height: 1.5;">
             Data hasil pengerjaan tidak tersedia atau Anda tidak memiliki hak akses untuk melihat hasil kuis ini.
@@ -106,7 +106,7 @@ if (!$isGuest) {
         require_once __DIR__ . '/../includes/partials/header-pelajar.php';
         ?>
         <div class="card" style="max-width: 600px; margin: 48px auto; text-align: center; padding: 48px 24px;">
-          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true">&#128506;</div>
+          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true"><i class="fa-solid fa-map-location-dot"></i></div>
           <h1 style="font-size: 1.7rem; margin-bottom: 12px;">Hasil Kuis Tidak Tersedia</h1>
           <p style="color: var(--teks-2); margin-bottom: 28px; line-height: 1.5;">
             Hasil pengerjaan dalam Mode Tamu hanya disimpan sementara di sesi browser dan akan hilang ketika sesi berakhir.
@@ -201,11 +201,11 @@ if (!empty($hasil['waktu_mulai']) && !empty($hasil['waktu_selesai'])) {
 // Tentukan ucapan apresiasi sesuai skor persen
 $persenSkor = (int) $hasil['persen_nilai'];
 if ($persenSkor >= 85) {
-    $ucapan = 'Luar Biasa! Hasil yang sangat memuaskan! &#127881;';
+    $ucapan = 'Luar Biasa! Hasil yang sangat memuaskan! <i class="fa-solid fa-champagne-glasses"></i>';
 } elseif ($persenSkor >= 65) {
-    $ucapan = 'Bagus Sekali! Terus tingkatkan belajarmu! &#128079;';
+    $ucapan = 'Bagus Sekali! Terus tingkatkan belajarmu! <i class="fa-solid fa-hands-clapping"></i>';
 } else {
-    $ucapan = 'Tetap Semangat! Pelajari pembahasannya dan coba lagi ya! &#128170;';
+    $ucapan = 'Tetap Semangat! Pelajari pembahasannya dan coba lagi ya! <i class="fa-solid fa-dumbbell"></i>';
 }
 
 // ----------------------------------------------------------------------------
@@ -222,7 +222,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   <!-- Banner Ajakan Daftar Khusus Pengguna Tamu (HSL-02, AC-16) -->
   <div class="alert alert-info" style="margin: 24px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div>
-      <strong>&#9432; Mode Tamu (Sementara):</strong>
+      <strong><i class="fa-solid fa-circle-info"></i> Mode Tamu (Sementara):</strong>
       Skor dan pembahasan ini hanya disimpan sementara di browsermu dan akan hilang ketika sesi berakhir. Daftar akun Pelajar gratis agar seluruh riwayat nilaimu tersimpan permanen!
     </div>
     <a href="<?= $root ?>register.php" class="btn btn-primary" style="text-decoration: none;">
@@ -246,9 +246,9 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
     <span class="badge badge-sedang"><?= e($hasil['nama_topik']) ?></span>
     <span class="badge badge-mudah"><?= e($hasil['nama_tingkat']) ?></span>
     <?php if ($hasil['status'] === 'waktu_habis'): ?>
-      <span class="badge badge-sulit">&#9201; Waktu Habis</span>
+      <span class="badge badge-sulit"><i class="fa-solid fa-stopwatch"></i> Waktu Habis</span>
     <?php else: ?>
-      <span class="badge badge-terbit">&#10004; Selesai</span>
+      <span class="badge badge-terbit"><i class="fa-solid fa-check"></i> Selesai</span>
     <?php endif; ?>
   </div>
 
@@ -260,7 +260,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
     <div style="font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; color: var(--teks-2); margin-bottom: 6px;">
       Skor Akhir Kamu
     </div>
-    <div style="font-size: 3.5rem; font-weight: 800; color: var(--primer); line-height: 1.1;">
+    <div style="font-size: 3.5rem; font-weight: 800; color: var(--primary); line-height: 1.1;">
       <?= (int)$hasil['skor'] ?> <span style="font-size: 1.6rem; font-weight: 600; color: var(--teks-2);">/ <?= (int)$hasil['skor_maksimal'] ?></span>
     </div>
     <div style="margin-top: 10px;">
@@ -273,19 +273,19 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   <!-- Grid Bento Statistik Pengerjaan -->
   <div class="bento-grid" style="margin-bottom: 32px; text-align: center;">
     <div class="card card-sm" style="background-color: var(--permukaan);">
-      <div style="font-size: 1.6rem; color: #2e7d32; margin-bottom: 4px;">&#10004;</div>
+      <div style="font-size: 1.6rem; color: #2e7d32; margin-bottom: 4px;"><i class="fa-solid fa-circle-check"></i></div>
       <div style="font-size: 1.5rem; font-weight: 700;"><?= (int)$hasil['jumlah_benar'] ?></div>
       <div style="font-size: 0.88rem; color: var(--teks-2);">Jawaban Benar</div>
     </div>
 
     <div class="card card-sm" style="background-color: var(--permukaan);">
-      <div style="font-size: 1.6rem; color: #c62828; margin-bottom: 4px;">&#10008;</div>
+      <div style="font-size: 1.6rem; color: #c62828; margin-bottom: 4px;"><i class="fa-solid fa-circle-xmark"></i></div>
       <div style="font-size: 1.5rem; font-weight: 700;"><?= (int)$hasil['jumlah_salah'] ?></div>
       <div style="font-size: 0.88rem; color: var(--teks-2);">Salah / Kosong</div>
     </div>
 
     <div class="card card-sm" style="background-color: var(--permukaan);">
-      <div style="font-size: 1.6rem; margin-bottom: 4px;">&#9201;</div>
+      <div style="font-size: 1.6rem; margin-bottom: 4px;"><i class="fa-solid fa-stopwatch"></i></div>
       <div style="font-size: 1.25rem; font-weight: 700; margin-top: 6px;"><?= e($teksDurasi) ?></div>
       <div style="font-size: 0.88rem; color: var(--teks-2);">Waktu Pengerjaan</div>
     </div>
@@ -295,14 +295,14 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
     <?php if ($statusKuisSaatIni === 'terbit'): ?>
       <a href="detail.php?id=<?= $kuisId ?>" class="btn btn-primary" style="text-decoration: none;">
-        &#8635; Ulangi Kuis
+        <i class="fa-solid fa-rotate-right"></i> Ulangi Kuis
       </a>
     <?php endif; ?>
     <a href="katalog.php" class="btn btn-outline" style="text-decoration: none;">
-      &#128218; Cari Kuis Lain
+      <i class="fa-solid fa-magnifying-glass"></i> Cari Kuis Lain
     </a>
     <a href="<?= $isGuest ? $root . 'guest/dashboard.php' : $root . 'pelajar/dashboard.php' ?>" class="btn btn-secondary" style="text-decoration: none;">
-      &#127968; Ke Dashboard
+      <i class="fa-solid fa-house"></i> Ke Dashboard
     </a>
   </div>
 </div>
@@ -346,11 +346,11 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
       <div class="soal-header">
         <span class="soal-nomor-label">Soal <?= $nomor ?></span>
         <?php if ($isBenar): ?>
-          <span class="badge badge-terbit">&#10004; Benar (+<?= (int)$soal['poin'] ?> poin)</span>
+          <span class="badge badge-terbit"><i class="fa-solid fa-check"></i> Benar (+<?= (int)$soal['poin'] ?> poin)</span>
         <?php elseif ($sudahDijawab): ?>
-          <span class="badge badge-ditolak">&#10008; Belum Tepat (0 poin)</span>
+          <span class="badge badge-ditolak"><i class="fa-solid fa-xmark"></i> Belum Tepat (0 poin)</span>
         <?php else: ?>
-          <span class="badge badge-sedang">&#9898; Tidak Dijawab (0 poin)</span>
+          <span class="badge badge-sedang"><i class="fa-solid fa-circle"></i> Tidak Dijawab (0 poin)</span>
         <?php endif; ?>
       </div>
 
@@ -397,13 +397,13 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
       <div class="umpan-balik-box <?= $isBenar ? 'benar' : 'salah' ?>" style="margin-top: 0;">
         <div class="umpan-balik-status">
           <?php if ($isBenar): ?>
-            <span>&#10004; Jawaban kamu sudah benar!</span>
+            <span><i class="fa-solid fa-check"></i> Jawaban kamu sudah benar!</span>
           <?php else: ?>
-            <span>&#10008; Kunci jawaban yang benar adalah opsi <strong><?= e($labelKunci) ?></strong>.</span>
+            <span><i class="fa-solid fa-xmark"></i> Kunci jawaban yang benar adalah opsi <strong><?= e($labelKunci) ?></strong>.</span>
           <?php endif; ?>
         </div>
         <div class="umpan-balik-pembahasan">
-          <strong>&#128161; Pembahasan:</strong>
+          <strong><i class="fa-solid fa-lightbulb"></i> Pembahasan:</strong>
           <div style="margin-top: 4px;">
             <?= nl2br(e($soal['pembahasan'] ?? 'Tidak ada pembahasan tambahan untuk soal ini.')) ?>
           </div>

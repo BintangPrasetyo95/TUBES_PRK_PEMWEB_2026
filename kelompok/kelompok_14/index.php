@@ -47,13 +47,13 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
   <!-- Tombol Aksi Utama (Call to Action) -->
   <div class="landing-cta">
     <a href="guest.php" class="btn btn-primary">
-      &#128640; Coba Langsung (Mode Tamu)
+      <i class="fa-solid fa-rocket"></i> Coba Langsung (Mode Tamu)
     </a>
     <a href="login.php" class="btn btn-secondary">
-      &#128273; Masuk Akun
+      <i class="fa-solid fa-right-to-bracket"></i> Masuk Akun
     </a>
     <a href="register.php" class="btn btn-outline">
-      &#128221; Daftar Pelajar
+      <i class="fa-solid fa-user-plus"></i> Daftar Pelajar
     </a>
   </div>
 </div>
@@ -68,7 +68,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
   <div class="bento-grid">
     <!-- Fitur 1: Interaktif & Timer -->
     <div class="card">
-      <div class="fitur-ikon" aria-hidden="true">&#9201;</div>
+      <div class="fitur-ikon" aria-hidden="true"><i class="fa-solid fa-stopwatch"></i></div>
       <h3 class="card-title">Timer &amp; Pembahasan Instan</h3>
       <p>
         Kerjakan soal pilihan ganda dengan hitung mundur waktu. Langsung dapatkan skor dan pembahasan lengkap setelah menjawab tiap soal.
@@ -77,7 +77,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 
     <!-- Fitur 2: 4 Pilihan Tema Pastel -->
     <div class="card">
-      <div class="fitur-ikon" aria-hidden="true">&#127912;</div>
+      <div class="fitur-ikon" aria-hidden="true"><i class="fa-solid fa-palette"></i></div>
       <h3 class="card-title">4 Pilihan Tema Pastel</h3>
       <p>
         Sesuaikan gaya tampilan favoritmu: <em>Sky Bubblegum, Lavender Dream, Mint Cloud,</em> atau <em>Peach Pop</em> tanpa kedip layar.
@@ -86,7 +86,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 
     <!-- Fitur 3: Papan Peringkat & Riwayat -->
     <div class="card">
-      <div class="fitur-ikon" aria-hidden="true">&#127942;</div>
+      <div class="fitur-ikon" aria-hidden="true"><i class="fa-solid fa-trophy"></i></div>
       <h3 class="card-title">Peringkat &amp; Riwayat Skor</h3>
       <p>
         Pantau performamu, pertahankan streak belajar harian, dan bersaing secara sehat dengan pelajar lainnya di leaderboard.
@@ -95,7 +95,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 
     <!-- Fitur 4: Kuis Terverifikasi -->
     <div class="card">
-      <div class="fitur-ikon" aria-hidden="true">&#128218;</div>
+      <div class="fitur-ikon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></div>
       <h3 class="card-title">Kualitas Soal Terjaga</h3>
       <p>
         Kuis disusun langsung oleh pengajar terdaftar dan melalui kurasi moderasi admin sebelum dapat diakses di katalog publik.
@@ -104,7 +104,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 
     <!-- Fitur 5: Mode Tamu Praktis -->
     <div class="card">
-      <div class="fitur-ikon" aria-hidden="true">&#10024;</div>
+      <div class="fitur-ikon" aria-hidden="true"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
       <h3 class="card-title">Mode Tamu Tanpa Ribet</h3>
       <p>
         Ingin langsung berlatih tanpa mendaftar akun? Cukup masukkan nama panggilan dan kamu bisa langsung mencoba kuis publik.
@@ -113,7 +113,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 
     <!-- Fitur 6: Aksesibilitas Mobile-First -->
     <div class="card">
-      <div class="fitur-ikon" aria-hidden="true">&#128241;</div>
+      <div class="fitur-ikon" aria-hidden="true"><i class="fa-solid fa-mobile-screen-button"></i></div>
       <h3 class="card-title">Nyaman di Semua Perangkat</h3>
       <p>
         Tampilan mobile-first yang responsif dari layar smartphone 360 px hingga desktop dengan kontras warna yang nyaman di mata.

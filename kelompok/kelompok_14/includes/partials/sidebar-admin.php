@@ -16,12 +16,12 @@ $totalAntrian = function_exists('jumlahAntrian') ? jumlahAntrian() : 0;
         <ul class="sidebar-menu">
             <li>
                 <a href="<?= e(BASE_URL) ?>/admin/dashboard.php" class="sidebar-link <?= $halamanAktif === 'dashboard.php' ? 'active' : '' ?>">
-                    Dashboard
+                    <i class="fa-solid fa-chart-pie"></i> Dashboard
                 </a>
             </li>
             <li>
                 <a href="<?= e(BASE_URL) ?>/admin/persetujuan.php" class="sidebar-link <?= ($halamanAktif === 'persetujuan.php' || $halamanAktif === 'tinjau.php') ? 'active' : '' ?>">
-                    Persetujuan
+                    <i class="fa-solid fa-clipboard-check"></i> Persetujuan
                     <?php if ($totalAntrian > 0): ?>
                         <span class="sidebar-badge"><?= (int)$totalAntrian ?></span>
                     <?php endif; ?>
@@ -29,27 +29,27 @@ $totalAntrian = function_exists('jumlahAntrian') ? jumlahAntrian() : 0;
             </li>
             <li>
                 <a href="<?= e(BASE_URL) ?>/admin/pengguna.php" class="sidebar-link <?= $halamanAktif === 'pengguna.php' ? 'active' : '' ?>">
-                    Pengguna
+                    <i class="fa-solid fa-users"></i> Pengguna
                 </a>
             </li>
             <li>
                 <a href="<?= e(BASE_URL) ?>/admin/mapel.php" class="sidebar-link <?= $halamanAktif === 'mapel.php' ? 'active' : '' ?>">
-                    Mapel &amp; Tingkat
+                    <i class="fa-solid fa-book-open"></i> Mapel &amp; Tingkat
                 </a>
             </li>
             <li>
                 <a href="<?= e(BASE_URL) ?>/admin/moderasi.php" class="sidebar-link <?= $halamanAktif === 'moderasi.php' ? 'active' : '' ?>">
-                    Moderasi
+                    <i class="fa-solid fa-shield-halved"></i> Moderasi
                 </a>
             </li>
             <li>
                 <a href="<?= e(BASE_URL) ?>/profil.php" class="sidebar-link">
-                    Profil Saya
+                    <i class="fa-solid fa-user"></i> Profil Saya
                 </a>
             </li>
             <li>
                 <a href="<?= e(BASE_URL) ?>/logout.php" class="sidebar-link">
-                    Keluar
+                    <i class="fa-solid fa-right-from-bracket"></i> Keluar
                 </a>
             </li>
         </ul>

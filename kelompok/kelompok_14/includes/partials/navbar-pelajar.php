@@ -30,7 +30,7 @@ $linkBeranda = $isGuest ? ($root . 'guest/dashboard.php') : ($root . 'pelajar/da
 
     <!-- Tombol Menu untuk tampilan HP -->
     <button type="button" class="menu-toggle" id="tombolMenu" aria-label="Buka menu navigasi" aria-expanded="false">
-      &#9776;
+      <i class="fa-solid fa-bars"></i>
     </button>
 
     <nav class="navbar-menu" id="menuNav" aria-label="Menu Pelajar">

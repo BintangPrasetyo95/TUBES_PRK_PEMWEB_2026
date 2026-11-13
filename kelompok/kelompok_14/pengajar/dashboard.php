@@ -40,7 +40,7 @@ require_once __DIR__ . '/../includes/partials/header-panel.php';
 ?>
 
 <div class="card">
-    <h1 class="card-title">Halo, <?= e($namaPengajar) ?>! 👋</h1>
+    <h1 class="card-title">Halo, <?= e($namaPengajar) ?>! <i class="fa-solid fa-hand"></i></h1>
     <p class="form-helper">Selamat datang di panel pengajar DynaQuiz. Berikut ringkasan kuis Anda.</p>
     <div class="form-group">
         <a href="kuis-form.php" class="btn btn-primary">+ Buat Kuis Baru</a>

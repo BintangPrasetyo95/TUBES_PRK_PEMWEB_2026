@@ -1,5 +1,6 @@
 <?php
 // Fungsi-fungsi untuk mengelola data pengguna (user) dan autentikasi
+require_once __DIR__ . '/../kata_terlarang.php';
 
 // 1. Cari 1 data pengguna berdasarkan alamat email
 function cariPenggunaByEmail($email) {
@@ -44,11 +45,13 @@ function validasiRegister($data) {
     $konfirmasi = $data['konfirmasi_password'] ?? '';
     $peran = $data['peran'] ?? '';
 
-    // Validasi nama lengkap (2 sampai 100 karakter)
+    // Validasi nama lengkap (2 sampai 100 karakter dan bebas kata terlarang)
     if ($nama === '') {
         $errors['nama'] = 'Nama lengkap wajib diisi.';
     } elseif (strlen($nama) < 2 || strlen($nama) > 100) {
         $errors['nama'] = 'Nama lengkap harus antara 2 sampai 100 karakter.';
+    } elseif (cekKataTerlarang($nama)) {
+        $errors['nama'] = 'Nama lengkap mengandung kata yang tidak diizinkan.';
     }
 
     // Validasi email (format valid, maksimal 150 karakter, dan belum terdaftar)
@@ -171,6 +174,14 @@ function ubahNamaPengguna($id, $namaBaru) {
         return [
             'berhasil' => false,
             'pesan'    => 'Nama lengkap harus antara 2 sampai 100 karakter.'
+        ];
+    }
+
+    // Validasi kata terlarang (SEC-13, AUT-03)
+    if (cekKataTerlarang($namaBaru)) {
+        return [
+            'berhasil' => false,
+            'pesan'    => 'Nama lengkap mengandung kata yang tidak diizinkan.'
         ];
     }
 

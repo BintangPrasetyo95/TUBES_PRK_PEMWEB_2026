@@ -49,7 +49,7 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
 <!-- Kartu Konten Error 404 -->
 <div class="card error-card">
   <div class="error-ikon" aria-hidden="true">
-    &#128506;
+    <i class="fa-solid fa-map-location-dot"></i>
   </div>
 
   <span class="badge badge-sedang error-badge">
@@ -67,11 +67,11 @@ require_once __DIR__ . '/includes/partials/header-publik.php';
   <!-- Tombol Aksi Navigasi -->
   <div class="error-aksi">
     <a href="<?= e($linkKembali) ?>" class="btn btn-primary">
-      &#8592; <?= e($labelKembali) ?>
+      <i class="fa-solid fa-arrow-left"></i> <?= e($labelKembali) ?>
     </a>
 
     <a href="<?= e($root) ?>index.php" class="btn btn-secondary">
-      &#127968; Halaman Utama
+      <i class="fa-solid fa-house"></i> Halaman Utama
     </a>
   </div>
 </div>

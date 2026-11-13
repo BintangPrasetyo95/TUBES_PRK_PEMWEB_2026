@@ -112,7 +112,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 <!-- Header Katalog & Sapaan -->
 <div class="card" style="margin: 24px 0 32px 0; padding: 32px 28px;">
   <span class="badge badge-sedang" style="margin-bottom: 12px;">Eksplorasi Soal</span>
-  <h1 style="font-size: 2.2rem; margin-bottom: 8px;">Katalog Kuis Interaktif &#128218;</h1>
+  <h1 style="font-size: 2.2rem; margin-bottom: 8px;">Katalog Kuis Interaktif <i class="fa-solid fa-book-open"></i></h1>
   <p style="color: var(--teks); font-size: 1.05rem; margin: 0; max-width: 720px;">
     Temukan beragam latihan soal pilihan ganda dari berbagai mata pelajaran dan jenjang pendidikan. Kerjakan kuis untuk mengasah kemampuan dan pantau skor terbaikmu!
   </p>
@@ -123,7 +123,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   <div class="card" style="margin-bottom: 32px; padding: 24px; border: 2px dashed var(--primer-2);">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
       <div style="max-width: 480px;">
-        <h2 style="font-size: 1.25rem; margin-bottom: 4px;">Punya Kode Kuis dari Guru? &#128272;</h2>
+        <h2 style="font-size: 1.25rem; margin-bottom: 4px;">Punya Kode Kuis dari Guru? <i class="fa-solid fa-key"></i></h2>
         <p style="color: var(--teks-2); font-size: 0.95rem; margin: 0;">
           Masukkan kode kuis privat untuk membuka latihan soal khusus kelasmu.
         </p>
@@ -198,7 +198,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
     <!-- Tombol Aksi Filter -->
     <div style="display: flex; gap: 8px;">
       <button type="submit" class="btn btn-primary" style="padding: 10px 18px;">
-        &#128269; Cari
+        <i class="fa-solid fa-magnifying-glass"></i> Cari
       </button>
       <?php if (!empty($kataKunci) || !empty($filterTopikId) || !empty($filterTingkatId)): ?>
         <a href="katalog.php" class="btn btn-outline" style="text-decoration: none; padding: 10px 14px;">
@@ -222,7 +222,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 <!-- Grid Bento Daftar Kuis (KAT-01, KAT-02) -->
 <?php if (empty($daftarKuisTampil)): ?>
   <div class="card" style="padding: 48px 24px; text-align: center; margin-bottom: 40px;">
-    <div style="font-size: 3rem; margin-bottom: 12px;">&#128269;</div>
+    <div style="font-size: 3rem; margin-bottom: 12px;"><i class="fa-solid fa-magnifying-glass"></i></div>
     <h3 style="font-size: 1.3rem; margin-bottom: 8px;">Kuis Tidak Ditemukan</h3>
     <p style="color: var(--teks-2); max-width: 480px; margin: 0 auto 20px auto;">
       Tidak ada kuis publik yang cocok dengan kata kunci atau filter yang kamu pilih. Silakan ubah filter atau gunakan kata kunci lain.
@@ -265,10 +265,10 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
           <!-- Metadata Kuis -->
           <div style="font-size: 0.88rem; color: var(--teks-2); margin-bottom: 20px;">
             <div style="margin-bottom: 4px;">
-              &#128221; <strong><?= (int)$kuis['jumlah_soal'] ?></strong> Soal &bull; &#9201; <strong><?= (int)$kuis['durasi'] ?></strong> Menit
+              <i class="fa-solid fa-list-check"></i> <strong><?= (int)$kuis['jumlah_soal'] ?></strong> Soal &bull; <i class="fa-solid fa-stopwatch"></i> <strong><?= (int)$kuis['durasi'] ?></strong> Menit
             </div>
             <div>
-              &#127979; <?= e($kuis['tingkat']) ?> &bull; &#128100; <?= e($kuis['pengajar']) ?>
+              <i class="fa-solid fa-graduation-cap"></i> <?= e($kuis['tingkat']) ?> &bull; <i class="fa-solid fa-chalkboard-user"></i> <?= e($kuis['pengajar']) ?>
             </div>
           </div>
         </div>

@@ -184,10 +184,10 @@ require_once __DIR__ . '/../includes/partials/header-panel.php';
         soal lengkap: <strong><?= e($kelengkapan['soal_lengkap']) ?></strong>
     </p>
     <?php if ($kelengkapan['lengkap']) { ?>
-        <div class="alert alert-sukses">&#10003; Kuis sudah lengkap dan siap diajukan.</div>
+        <div class="alert alert-sukses"><i class="fa-solid fa-circle-check"></i> Kuis sudah lengkap dan siap diajukan.</div>
     <?php } else { ?>
         <div class="alert alert-galat">
-            <p>&#10007; Kuis belum lengkap:</p>
+            <p><i class="fa-solid fa-circle-xmark"></i> Kuis belum lengkap:</p>
             <ul>
                 <?php foreach ($kelengkapan['errors'] as $alasan) { ?>
                     <li><?= e($alasan) ?></li>

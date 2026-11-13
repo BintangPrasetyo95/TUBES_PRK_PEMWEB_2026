@@ -72,7 +72,7 @@ if (!$kuis || $kuis['status'] !== 'terbit') {
     require_once __DIR__ . '/../includes/partials/header-pelajar.php';
     ?>
     <div class="card" style="max-width: 600px; margin: 48px auto; text-align: center; padding: 48px 24px;">
-      <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true">&#128506;</div>
+      <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true"><i class="fa-solid fa-map-location-dot"></i></div>
       <h1 style="font-size: 1.8rem; margin-bottom: 12px;">Kuis Tidak Ditemukan (404)</h1>
       <p style="color: var(--teks-2); font-size: 1rem; margin-bottom: 28px; line-height: 1.5;">
         Kuis yang kamu cari tidak tersedia, belum dipublikasikan, atau telah ditarik dari sistem.
@@ -97,7 +97,7 @@ if ($kuis['akses'] === 'privat') {
         require_once __DIR__ . '/../includes/partials/header-pelajar.php';
         ?>
         <div class="card" style="max-width: 600px; margin: 48px auto; text-align: center; padding: 48px 24px;">
-          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true">&#128274;</div>
+          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true"><i class="fa-solid fa-lock"></i></div>
           <h1 style="font-size: 1.8rem; margin-bottom: 12px;">Kuis Privat Khusus Pelajar</h1>
           <p style="color: var(--teks-2); font-size: 1rem; margin-bottom: 28px; line-height: 1.5;">
             Kuis ini bersifat privat dan hanya dapat diakses oleh Pelajar terdaftar yang memiliki kode kuis. Pengguna tamu tidak diizinkan membuka kuis ini.
@@ -130,7 +130,7 @@ if ($kuis['akses'] === 'privat') {
         require_once __DIR__ . '/../includes/partials/header-pelajar.php';
         ?>
         <div class="card" style="max-width: 600px; margin: 48px auto; text-align: center; padding: 48px 24px;">
-          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true">&#128272;</div>
+          <div style="font-size: 3.5rem; margin-bottom: 16px;" aria-hidden="true"><i class="fa-solid fa-key"></i></div>
           <h1 style="font-size: 1.8rem; margin-bottom: 12px;">Kuis Privat Terkunci</h1>
           <p style="color: var(--teks-2); font-size: 1rem; margin-bottom: 28px; line-height: 1.5;">
             Kuis ini memerlukan kode akses dari pengajar. Silakan masukkan kode kuis terlebih dahulu melalui halaman katalog.
@@ -216,7 +216,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   ?>
   <div class="alert alert-info" style="margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
     <div>
-      <strong>&#9201; Kamu sedang mengerjakan kuis ini!</strong>
+      <strong><i class="fa-solid fa-stopwatch"></i> Kamu sedang mengerjakan kuis ini!</strong>
       <div>Sisa waktu pengerjaan: <strong><?= $sisaMenit ?> menit <?= $sisaDetikSisa ?> detik</strong>. Jawaban yang sudah kamu kirim tetap tersimpan aman.</div>
     </div>
     <a href="kerjakan.php?id=<?= $kuisId ?>" class="btn btn-primary" style="text-decoration: none;">
@@ -232,9 +232,9 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
     <span class="badge badge-sedang"><?= e($kuis['topik']) ?></span>
     <span class="badge badge-mudah"><?= e($kuis['tingkat']) ?></span>
     <?php if ($kuis['akses'] === 'privat'): ?>
-      <span class="badge badge-sulit">&#128274; Kuis Privat (Kode: <?= e($kuis['kode']) ?>)</span>
+      <span class="badge badge-sulit"><i class="fa-solid fa-lock"></i> Kuis Privat (Kode: <?= e($kuis['kode']) ?>)</span>
     <?php else: ?>
-      <span class="badge badge-sedang">&#127760; Kuis Publik</span>
+      <span class="badge badge-sedang"><i class="fa-solid fa-earth-americas"></i> Kuis Publik</span>
     <?php endif; ?>
   </div>
 
@@ -254,28 +254,28 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   <div class="bento-grid" style="margin-bottom: 32px;">
     <!-- Info 1: Jumlah Soal -->
     <div class="card" style="padding: 20px; text-align: center; background-color: var(--permukaan);">
-      <div style="font-size: 2rem; margin-bottom: 4px;">&#128221;</div>
+      <div style="font-size: 2rem; margin-bottom: 4px;"><i class="fa-solid fa-list-check"></i></div>
       <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 4px;"><?= (int)$kuis['jumlah_soal'] ?> Soal</div>
       <div style="color: var(--teks-2); font-size: 0.88rem;">Pilihan Ganda</div>
     </div>
 
     <!-- Info 2: Durasi Waktu -->
     <div class="card" style="padding: 20px; text-align: center; background-color: var(--permukaan);">
-      <div style="font-size: 2rem; margin-bottom: 4px;">&#9201;</div>
+      <div style="font-size: 2rem; margin-bottom: 4px;"><i class="fa-solid fa-stopwatch"></i></div>
       <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 4px;"><?= (int)$kuis['durasi_menit'] ?> Menit</div>
       <div style="color: var(--teks-2); font-size: 0.88rem;">Batas Pengerjaan</div>
     </div>
 
     <!-- Info 3: Total Skor Maksimal -->
     <div class="card" style="padding: 20px; text-align: center; background-color: var(--permukaan);">
-      <div style="font-size: 2rem; margin-bottom: 4px;">&#127942;</div>
+      <div style="font-size: 2rem; margin-bottom: 4px;"><i class="fa-solid fa-trophy"></i></div>
       <div style="font-size: 1.5rem; font-weight: bold; margin-bottom: 4px;"><?= (int)$kuis['total_poin'] ?> Poin</div>
       <div style="color: var(--teks-2); font-size: 0.88rem;">Skor Maksimal</div>
     </div>
 
     <!-- Info 4: Pengajar / Penyusun -->
     <div class="card" style="padding: 20px; text-align: center; background-color: var(--permukaan);">
-      <div style="font-size: 2rem; margin-bottom: 4px;">&#128104;&#8205;&#127979;</div>
+      <div style="font-size: 2rem; margin-bottom: 4px;"><i class="fa-solid fa-chalkboard-user"></i></div>
       <div style="font-size: 1.15rem; font-weight: bold; margin-bottom: 4px;"><?= e($kuis['pengajar']) ?></div>
       <div style="color: var(--teks-2); font-size: 0.88rem;">Penyusun Kuis</div>
     </div>
@@ -328,11 +328,11 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
   <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
     <?php if ($sedangBerjalan): ?>
       <a href="kerjakan.php?id=<?= $kuisId ?>" class="btn btn-primary" style="padding: 14px 32px; font-size: 1.15rem; text-decoration: none;">
-        &#9654; Lanjutkan Pengerjaan Kuis &rarr;
+        <i class="fa-solid fa-play"></i> Lanjutkan Pengerjaan Kuis &rarr;
       </a>
     <?php else: ?>
       <a href="kerjakan.php?id=<?= $kuisId ?>" class="btn btn-primary" style="padding: 14px 32px; font-size: 1.15rem; text-decoration: none;">
-        &#9654; Mulai Kerjakan Kuis Sekarang &rarr;
+        <i class="fa-solid fa-play"></i> Mulai Kerjakan Kuis Sekarang &rarr;
       </a>
     <?php endif; ?>
 
@@ -369,7 +369,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
                 <?php endif; ?>
               </td>
               <td style="padding: 12px;">
-                &#10004; <?= (int)$tes['jumlah_benar'] ?> &bull; &#10008; <?= (int)$tes['jumlah_salah'] ?>
+                <i class="fa-solid fa-check" style="color: #2e7d32;"></i> <?= (int)$tes['jumlah_benar'] ?> &bull; <i class="fa-solid fa-xmark" style="color: #c62828;"></i> <?= (int)$tes['jumlah_salah'] ?>
               </td>
               <td style="padding: 12px; font-weight: bold;">
                 <?= (int)$tes['skor'] ?> / <?= (int)$tes['skor_maksimal'] ?>

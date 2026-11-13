@@ -465,9 +465,15 @@
   transition: background-color 0.2s ease;
 }
 
-.navbar-link:hover,
-.navbar-link.active {
+.navbar-link:hover {
   background-color: var(--latar);
+}
+
+.navbar-link.active {
+  background-color: var(--primary);
+  color: var(--teks);
+  font-weight: 700;
+  box-shadow: var(--clay-tekan);
 }
 
 /* Mobile responsive menu */
@@ -549,6 +555,8 @@
 
 .sidebar-link.active {
   background-color: var(--primary);
+  color: var(--teks);
+  font-weight: 700;
   box-shadow: var(--clay-tekan);
 }
 

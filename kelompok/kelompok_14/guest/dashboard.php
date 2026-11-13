@@ -55,7 +55,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 <section class="card guest-sapaan" aria-label="Sapaan Tamu">
   <span class="badge badge-sedang guest-badge">Mode Tamu (Guest)</span>
   <h1 class="guest-judul">
-    Halo, <span><?= e($namaTamu) ?></span>! &#128075;
+    Halo, <span><?= e($namaTamu) ?></span>! <i class="fa-solid fa-hand"></i>
   </h1>
   <p class="guest-deskripsi">
     Selamat datang di DynaQuiz. Kamu bisa langsung mencoba latihan soal pilihan ganda di bawah ini tanpa perlu login.
@@ -64,7 +64,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 
 <!-- Catatan Informasi Mode Tamu (HSL-07) -->
 <div class="alert alert-info guest-alert">
-  <span class="guest-alert-ikon" aria-hidden="true">&#9432;</span>
+  <span class="guest-alert-ikon" aria-hidden="true"><i class="fa-solid fa-circle-info"></i></span>
   <div>
     <strong>Catatan Mode Tamu:</strong> Skor dan riwayat pengerjaan hanya disimpan sementara di sesi browser ini. Jika ingin nilaimu tercatat permanen dan masuk ke papan peringkat, silakan daftarkan akun Pelajar.
   </div>
@@ -81,10 +81,10 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
     </div>
     <div class="guest-cta-tombol">
       <a href="<?= $root ?>register.php" class="btn btn-primary">
-        &#128221; Daftar Akun Pelajar
+        <i class="fa-solid fa-user-plus"></i> Daftar Akun Pelajar
       </a>
       <a href="<?= $root ?>login.php" class="btn btn-outline">
-        &#128273; Masuk Akun
+        <i class="fa-solid fa-right-to-bracket"></i> Masuk Akun
       </a>
     </div>
   </div>
@@ -104,7 +104,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 
   <?php if (empty($daftarKuis)): ?>
     <div class="card empty-state">
-      <div class="empty-state-ikon" aria-hidden="true">&#128218;</div>
+      <div class="empty-state-ikon" aria-hidden="true"><i class="fa-solid fa-book-open"></i></div>
       <h3>Belum Ada Kuis Publik</h3>
       <p>Kuis publik yang telah disetujui akan muncul di sini. Silakan cek kembali nanti atau hubungi pengajar.</p>
       <a href="<?= $root ?>kuis/katalog.php" class="btn btn-primary">Buka Katalog Kuis</a>
@@ -144,7 +144,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 
             <!-- Informasi Jumlah Soal dan Durasi -->
             <p class="guest-kuis-info">
-              &#128221; <?= $jumlahSoal ?> Soal &bull; &#9201; <?= $durasiMenit ?> Menit &bull; <?= e($tingkatTeks) ?>
+              <i class="fa-solid fa-pen-to-square"></i> <?= $jumlahSoal ?> Soal &bull; <i class="fa-solid fa-stopwatch"></i> <?= $durasiMenit ?> Menit &bull; <?= e($tingkatTeks) ?>
             </p>
           </div>
 

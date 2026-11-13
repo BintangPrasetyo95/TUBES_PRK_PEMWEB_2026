@@ -152,13 +152,14 @@
 }
 
 .opsi-item.opsi-terpilih {
-  border-color: var(--primer);
-  background-color: var(--permukaan);
+  border-color: var(--primary);
+  background-color: var(--kartu);
 }
 
 .opsi-item.opsi-terpilih .opsi-label {
-  background-color: var(--primer);
-  color: #ffffff;
+  background-color: var(--primary);
+  color: var(--teks);
+  font-weight: 800;
 }
 
 /* Keadaan Umpan Balik: BENAR (Hijau) */
@@ -283,14 +284,16 @@
 
 /* Nomor Soal Aktif yang Sedang Dibuka */
 .btn-nomor.nomor-aktif {
-  border: 2px solid var(--primer);
+  border: 3px solid var(--teks);
   box-shadow: var(--clay-tekan);
-  background-color: var(--kartu);
+  background-color: var(--accent);
+  color: var(--teks);
+  font-weight: 800;
 }
 
 /* Nomor Soal yang Sudah Terjawab */
 .btn-nomor.nomor-terjawab {
-  background-color: var(--primer-2);
+  background-color: var(--primary);
   color: var(--teks);
 }
 

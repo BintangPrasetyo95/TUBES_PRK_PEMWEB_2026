@@ -130,25 +130,25 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 <!-- 3. Statistik Utama & Streak Harian (HSL-05, HSL-06, KT-06) -->
 <section class="stats-grid-4" aria-label="Statistik Belajar">
   <article class="card stat-card">
-    <div class="stat-ikon" aria-hidden="true">&#127919;</div>
+    <div class="stat-ikon" aria-hidden="true"><i class="fa-solid fa-bullseye"></i></div>
     <div class="stat-angka"><?= (int) $statistik['rata_rata_skor'] ?>%</div>
     <div class="stat-ket">Rata-rata Skor</div>
   </article>
 
   <article class="card stat-card">
-    <div class="stat-ikon" aria-hidden="true">&#9989;</div>
+    <div class="stat-ikon" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div>
     <div class="stat-angka"><?= (int) $statistik['total_selesai'] ?></div>
     <div class="stat-ket">Kuis Selesai</div>
   </article>
 
   <article class="card stat-card">
-    <div class="stat-ikon" aria-hidden="true">&#128221;</div>
+    <div class="stat-ikon" aria-hidden="true"><i class="fa-solid fa-pen-to-square"></i></div>
     <div class="stat-angka"><?= (int) $statistik['total_latihan'] ?></div>
     <div class="stat-ket">Total Percobaan</div>
   </article>
 
   <article class="card stat-card">
-    <div class="stat-ikon" aria-hidden="true">&#128293;</div>
+    <div class="stat-ikon" aria-hidden="true"><i class="fa-solid fa-fire"></i></div>
     <div class="stat-angka"><?= (int) $statistik['streak_hari'] ?> Hari</div>
     <div class="stat-ket">Streak Belajar (WIB)</div>
   </article>
@@ -163,7 +163,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 
   <?php if (empty($rekomendasiKuis)): ?>
     <div class="card empty-state">
-      <div class="empty-state-ikon" aria-hidden="true">&#127881;</div>
+      <div class="empty-state-ikon" aria-hidden="true"><i class="fa-solid fa-champagne-glasses"></i></div>
       <h3>Semua Kuis Publik Sudah Dicoba</h3>
       <p>Kamu sudah mencoba semua kuis publik yang tersedia saat ini. Kunjungi katalog untuk mengulang kuis favoritmu.</p>
       <a href="<?= $root ?>kuis/katalog.php" class="btn btn-primary">Buka Katalog Kuis</a>
@@ -215,7 +215,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
 
   <?php if (empty($topLima)): ?>
     <div class="card empty-state">
-      <div class="empty-state-ikon" aria-hidden="true">&#127942;</div>
+      <div class="empty-state-ikon" aria-hidden="true"><i class="fa-solid fa-trophy"></i></div>
       <h3>Papan Peringkat Masih Kosong</h3>
       <p>Jadilah pelajar pertama yang menyelesaikan kuis untuk masuk ke jajaran peringkat teratas.</p>
       <a href="<?= $root ?>kuis/katalog.php" class="btn btn-primary">Mulai Kuis</a>

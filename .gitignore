@@ -3,3 +3,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+
+# Konfigurasi database per-komputer (dibuat otomatis oleh install.php)
+kelompok/kelompok_23/config/database.local.php

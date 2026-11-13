@@ -17,25 +17,57 @@ if (isset($_POST['simpan'])) {
     $price       = $_POST['price'];
     $stock       = $_POST['stock'];
     $min_stock   = $_POST['min_stock'];
-    
-    $image = $_FILES['image']['name'];
-    $tmp   = $_FILES['image']['tmp_name'];
-    
-    if ($image != "") {
-        move_uploaded_file($tmp, "../assets/img/" . $image);
+
+    $image = null;
+
+    // --- Upload gambar (opsional) ---
+    if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        if ($_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            $error = "Gagal mengunggah gambar.";
+        } else {
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->file($_FILES['image']['tmp_name']);
+
+            $allowedMime = [
+                'image/jpeg' => 'jpg',
+                'image/png'  => 'png',
+                'image/webp' => 'webp',
+            ];
+
+            if (!isset($allowedMime[$mime])) {
+                $error = "Format gambar harus JPG, PNG, atau WEBP.";
+            } elseif ($_FILES['image']['size'] > 2 * 1024 * 1024) {
+                $error = "Ukuran gambar maksimal 2 MB.";
+            } else {
+                $ext = $allowedMime[$mime];
+                $fileName = bin2hex(random_bytes(16)) . '.' . $ext;
+                $targetPath = __DIR__ . '/../assets/img/' . $fileName;
+
+                if (!move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
+                    $error = "Gagal menyimpan gambar.";
+                } else {
+                    $image = $fileName;
+                }
+            }
+        }
     }
 
     if (empty($category_id) || empty($sku) || empty($name) || empty($price)) {
         $error = "Semua kolom bertanda (*) wajib diisi!";
-    } else {
+    } elseif (empty($error)) {
         $stmt = $conn->prepare("INSERT INTO products (category_id, sku, name, price, stock, min_stock, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->bind_param("issdiis", $category_id, $sku, $name, $price, $stock, $min_stock, $image);
-        
+
         if ($stmt->execute()) {
             header("Location: index.php?status=berhasil");
             exit;
         } else {
             $error = "Gagal menyimpan produk: " . $conn->error;
+
+            // Hapus file gambar jika penyimpanan produk gagal, supaya tidak jadi sampah.
+            if ($image !== null) {
+                @unlink(__DIR__ . '/../assets/img/' . $image);
+            }
         }
     }
 }

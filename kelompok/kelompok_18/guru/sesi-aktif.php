@@ -24,7 +24,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         guruEndSession($sessionId, $action === 'finish_session' ? 'selesai' : 'dibatalkan');
-        header('Location: sesi-aktif.php?id=' . $sessionId);
+        $returnTo = $_POST['return_to'] ?? null;
+        $returnParts = is_string($returnTo) ? parse_url($returnTo) : false;
+        if (
+            $action === 'cancel_session'
+            && is_string($returnTo)
+            && is_array($returnParts)
+            && !isset($returnParts['scheme'])
+            && !isset($returnParts['host'])
+            && str_starts_with($returnTo, '/')
+            && !str_starts_with($returnTo, '//')
+            && !str_contains($returnTo, "\\")
+            && !str_contains($returnTo, "\r")
+            && !str_contains($returnTo, "\n")
+        ) {
+            header('Location: ' . $returnTo);
+        } elseif ($action === 'cancel_session') {
+            $cancelledSession = guruOwnedSession($sessionId);
+            if ($cancelledSession === null) {
+                http_response_code(404);
+                exit('Sesi tidak ditemukan.');
+            }
+            header('Location: kelas-detail.php?assignment_id=' . (int) $cancelledSession['assignment_id']);
+        } else {
+            header('Location: sesi-aktif.php?id=' . $sessionId);
+        }
         exit;
     } catch (DomainException $exception) {
         http_response_code(409);

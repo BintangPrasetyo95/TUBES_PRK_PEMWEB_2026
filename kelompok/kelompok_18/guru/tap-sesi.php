@@ -103,7 +103,7 @@ guru_page_start('Tap Kehadiran', 'kelas.php');
     <button id="anonymous-tap" type="button"<?= $tapCount >= $rosterCount ? ' disabled' : '' ?> aria-label="Catat satu tap kehadiran" class="flex min-h-[19rem] flex-col items-center justify-center rounded-3xl bg-[#4e7a5d] px-6 text-white shadow-sm transition hover:bg-[#41684f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#b6d2ba] disabled:cursor-not-allowed disabled:bg-slate-400 lg:min-h-[26rem]"><span class="text-3xl font-semibold sm:text-4xl"><?= $tapCount >= $rosterCount ? 'Batas Tap Tercapai' : 'TAP KEHADIRAN' ?></span><span class="mt-3 text-sm text-white/80">Tekan tombol ini atau gunakan Space</span></button>
     <aside class="grid grid-cols-2 content-start gap-3">
         <div class="rounded-2xl border border-[#dfe6de] bg-white p-3 text-center"><p class="text-xs font-semibold uppercase tracking-wide text-[#526257]">Tap tercatat</p><p class="mt-2 text-3xl font-bold tabular-nums text-[#173e2b]"><span id="tap-count"><?= (int) $tapCount ?></span><span class="text-base font-medium text-slate-400"> / <span id="roster-count"><?= (int) $rosterCount ?></span></span></p></div>
-        <form method="post" action="tap-sesi.php?session_id=<?= (int) $sessionId ?>" class="rounded-2xl border border-[#dfe6de] bg-white p-3">
+        <form method="post" action="tap-sesi.php?session_id=<?= (int) $sessionId ?>" data-session-navigation class="rounded-2xl border border-[#dfe6de] bg-white p-3">
         <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
         <input type="hidden" name="action" value="correct_count">
         <input type="hidden" name="session_id" value="<?= (int) $sessionId ?>">

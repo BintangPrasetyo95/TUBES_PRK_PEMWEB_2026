@@ -74,6 +74,7 @@ try {
 
 guru_page_start('Tambah Poin Keaktifan', 'kelas.php');
 ?>
+<?php guru_session_header($session, 'attendance'); ?>
 <?php if ($pageError !== ''): ?><p class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert"><?= attendara_ui_escape($pageError) ?></p><?php endif; ?>
 <section class="max-w-2xl rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
     <div><h2 class="text-lg font-semibold text-[#303832]"><?= attendara_ui_escape($student['name']) ?></h2><p class="mt-1 text-sm text-slate-500"><?= attendara_ui_escape($student['number']) ?> · <?= attendara_ui_escape($session['class_name'] . ' · ' . $session['semester']) ?></p></div>

@@ -1296,6 +1296,8 @@ function guruEndSession(int $sessionId, string $status): void
                 'terminal_status' => 'dibatalkan', 'session_id' => $sessionId,
                 'ongoing_status' => 'berlangsung',
             ]);
+        } elseif ($session['status'] === 'dibatalkan') {
+            // Treat repeated cancellation as success so a stale page can retry safely.
         } elseif ($session['status'] === 'selesai') {
             // Cancellation of a completed session changes only its terminal label.
             $update = $pdo->prepare(

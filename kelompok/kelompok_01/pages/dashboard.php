@@ -53,7 +53,7 @@ $pageTitle = 'Dashboard';
                             <header class="dashboard-intro">
                                 <p class="dashboard-eyebrow">CATATAN KELUARGA</p>
                                 <h1 id="dashboardTitle">Ringkasan keluarga</h1>
-                                <p>Uang yang masuk, keluar, dan tersimpan—dirangkum apa adanya.</p>
+                                <p>Uang yang masuk, keluar, dan tersimpan dirangkum apa adanya.</p>
                             </header>
 
                         <article class="balance-card card" aria-labelledby="balanceTitle">
@@ -62,7 +62,7 @@ $pageTitle = 'Dashboard';
                                     <span class="balance-card__dot" aria-hidden="true"></span>
                                     <p id="balanceTitle">Saldo keseluruhan</p>
                                 </div>
-                                <span class="balance-period">Semua waktu</span>
+                                
                             </div>
 
                             <div class="balance-card__main">

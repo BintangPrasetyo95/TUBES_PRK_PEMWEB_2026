@@ -114,5 +114,5 @@ try {
     $_SESSION['error'] = $e->getMessage();
 }
 
-header('Location: ../../pages/anggaran.php');
+header('Location: ../../pages/budget.php');
 exit;

@@ -3,19 +3,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const menuToggle = document.getElementById("menuToggle");
     const sidebar = document.getElementById("sidebar");
 
-    const logoutBtn = document.getElementById("logoutBtn");
+    const logoutButtons = document.querySelectorAll("#logoutBtn, [data-logout-trigger]");
     const logoutModal = document.getElementById("logoutModal");
     const logoutCancel = document.getElementById("logoutCancel");
 
     // ---------- Sidebar (HP) ----------
     if (menuToggle && sidebar) {
         menuToggle.addEventListener("click", function () {
-            sidebar.classList.toggle("open");
+            const isOpen = sidebar.classList.toggle("open");
+            menuToggle.setAttribute("aria-expanded", String(isOpen));
+            menuToggle.setAttribute("aria-label", isOpen ? "Tutup navigasi utama" : "Buka navigasi utama");
         });
 
-        sidebar.querySelectorAll(".menu-item").forEach(function (item) {
+        sidebar.querySelectorAll(".menu-item, .sidebar-logout").forEach(function (item) {
             item.addEventListener("click", function () {
                 sidebar.classList.remove("open");
+                menuToggle.setAttribute("aria-expanded", "false");
+                menuToggle.setAttribute("aria-label", "Buka navigasi utama");
             });
         });
     }
@@ -31,10 +35,12 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.classList.remove("modal-open");
     }
 
-    if (logoutBtn && logoutModal) {
-        logoutBtn.addEventListener("click", function (event) {
-            event.preventDefault();
-            bukaModal();
+    if (logoutModal) {
+        logoutButtons.forEach(function (logoutBtn) {
+            logoutBtn.addEventListener("click", function (event) {
+                event.preventDefault();
+                bukaModal();
+            });
         });
 
         if (logoutCancel) {
@@ -54,6 +60,10 @@ document.addEventListener("DOMContentLoaded", function () {
             tutupModal();
         } else if (sidebar) {
             sidebar.classList.remove("open");
+            if (menuToggle) {
+                menuToggle.setAttribute("aria-expanded", "false");
+                menuToggle.setAttribute("aria-label", "Buka navigasi utama");
+            }
         }
     });
 });

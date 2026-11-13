@@ -5,17 +5,14 @@ session_start();
 
 require_once __DIR__ . '/../../config/database.php';
 
-// Memastikan data dikirim menggunakan POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../../login.php');
     exit;
 }
 
-// Mengambil data dari form
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 
-// Validasi input
 if ($email === '' || $password === '') {
     $_SESSION['error'] = 'Email dan password wajib diisi.';
     header('Location: ../../login.php');
@@ -29,24 +26,18 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 try {
-    // Memanggil stored procedure login
     $stmt = $pdo->prepare('CALL sp_login(?)');
     $stmt->execute([$email]);
 
-    // Mengambil data pengguna
     $user = $stmt->fetch();
-
-    // Menutup cursor PDO
     $stmt->closeCursor();
 
-    // Memeriksa akun dan password
     if (!$user || !password_verify($password, $user['password'])) {
         $_SESSION['error'] = 'Email atau password salah.';
         header('Location: ../../login.php');
         exit;
     }
 
-    // Membuat session baru setelah login berhasil
     session_regenerate_id(true);
 
     $_SESSION['user'] = [
@@ -56,8 +47,12 @@ try {
         'role' => $user['role']
     ];
 
-    // Mengarahkan pengguna ke halaman utama
-    header('Location: ../../pages/dashboard.php');
+    if ($user['role'] === 'admin') {
+        header('Location: ../../pages/admin_dashboard.php');
+    } else {
+        header('Location: ../../pages/dashboard.php');
+    }
+
     exit;
 
 } catch (PDOException $e) {
@@ -65,4 +60,3 @@ try {
     header('Location: ../../login.php');
     exit;
 }
-

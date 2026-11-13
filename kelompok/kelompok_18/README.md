@@ -67,8 +67,7 @@ Seed contoh berisi 90 siswa (nomor induk 1000–1089), 6 kelas yang membagi sisw
 
 ## Struktur database dan ERD
 
-Skema aktual dibuat oleh [database/attendara.sql](database/attendara.sql), sedangkan contoh data berada di [database/attendara_dummy.sql](database/attendara_dummy.sql). Penjelasan atribut, aturan integritas, dan pertimbangan desain tersedia di [docs/ERD.md](docs/ERD.md).
-
+ERD berdasarkan database [database/attendara.sql](database/attendara.sql), sedangkan contoh data berada di [database/attendara_dummy.sql](database/attendara_dummy.sql).
 ```mermaid
 erDiagram
     USERS ||--o| GURU : profil

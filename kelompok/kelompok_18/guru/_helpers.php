@@ -771,11 +771,7 @@ function guruCreateGroups(
     int $minimumMale,
     int $minimumFemale
 ): void {
-    $namePrefix = trim($namePrefix);
-    $length = function_exists('mb_strlen') ? mb_strlen($namePrefix, 'UTF-8') : strlen($namePrefix);
-    if ($namePrefix === '' || $length > 80) {
-        throw new DomainException('Nama kelompok wajib diisi dan maksimal 80 karakter.');
-    }
+    // Keep the legacy argument for existing forms; names are now generated server-side.
     if (!in_array($groupRule, ['groups', 'members'], true) || $groupValue < 1 || $groupValue > 20) {
         throw new DomainException('Kriteria pembagian kelompok tidak valid.');
     }
@@ -812,12 +808,10 @@ function guruCreateGroups(
         }
 
         $existingGroupsQuery = $pdo->prepare(
-            'SELECT id FROM kelompok WHERE penugasan_guru_id = :assignment_id LIMIT 1 FOR UPDATE'
+            'SELECT id FROM kelompok WHERE penugasan_guru_id = :assignment_id FOR UPDATE'
         );
         $existingGroupsQuery->execute(['assignment_id' => $assignmentId]);
-        if ($existingGroupsQuery->fetchColumn() !== false) {
-            throw new DomainException('Kelompok untuk penugasan ini sudah tersedia. Edit kelompok yang ada untuk mempertahankan satu pembagian roster.');
-        }
+        $existingGroupIds = array_map('intval', $existingGroupsQuery->fetchAll(PDO::FETCH_COLUMN));
 
         $rosterQuery = $pdo->prepare(
             'SELECT sis.id, sis.jenis_kelamin
@@ -850,7 +844,7 @@ function guruCreateGroups(
         $groupCount = $groupRule === 'groups'
             ? $groupValue
             : (int) ceil($studentCount / $groupValue);
-        if ($groupCount > $studentCount || ($groupRule === 'groups' && $groupCount > 20)) {
+        if ($groupCount > $studentCount || $groupCount > 20) {
             throw new DomainException('Jumlah kelompok tidak boleh melebihi siswa dan maksimal 20 kelompok.');
         }
         if (count($memberGroups) !== $groupCount) {
@@ -910,9 +904,15 @@ function guruCreateGroups(
         }
 
 
-        $duplicateName = $pdo->prepare(
-            'SELECT id FROM kelompok WHERE penugasan_guru_id = :assignment_id AND nama = :name LIMIT 1'
-        );
+        // Replace only this assignment's active grouping; session history does not reference groups.
+        if ($existingGroupIds !== []) {
+            $deleteMembers = $pdo->prepare('DELETE FROM anggota_kelompok WHERE kelompok_id = :group_id');
+            $deleteGroup = $pdo->prepare('DELETE FROM kelompok WHERE id = :group_id AND penugasan_guru_id = :assignment_id');
+            foreach ($existingGroupIds as $existingGroupId) {
+                $deleteMembers->execute(['group_id' => $existingGroupId]);
+                $deleteGroup->execute(['group_id' => $existingGroupId, 'assignment_id' => $assignmentId]);
+            }
+        }
         $insertGroup = $pdo->prepare(
             'INSERT INTO kelompok (penugasan_guru_id, nama) VALUES (:assignment_id, :name)'
         );
@@ -920,14 +920,10 @@ function guruCreateGroups(
             'INSERT INTO anggota_kelompok (kelompok_id, siswa_id) VALUES (:group_id, :student_id)'
         );
         foreach (array_values($memberGroups) as $index => $members) {
-            $groupName = $namePrefix . ' ' . ($index + 1);
+            $groupName = 'Kelompok ' . ($index + 1);
             $groupLength = function_exists('mb_strlen') ? mb_strlen($groupName, 'UTF-8') : strlen($groupName);
             if ($groupLength > 100) {
                 throw new DomainException('Nama kelompok melebihi batas database.');
-            }
-            $duplicateName->execute(['assignment_id' => $assignmentId, 'name' => $groupName]);
-            if ($duplicateName->fetchColumn() !== false) {
-                throw new DomainException('Nama kelompok sudah digunakan pada penugasan ini.');
             }
             $insertGroup->execute(['assignment_id' => $assignmentId, 'name' => $groupName]);
             $newGroupId = (int) $pdo->lastInsertId();
@@ -936,6 +932,50 @@ function guruCreateGroups(
             }
         }
         $pdo->commit();
+    } catch (Throwable $exception) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        throw $exception;
+    }
+}
+
+/** Delete one group owned by the authenticated teacher while retaining session history. */
+function guruDeleteGroup(int $groupId): int
+{
+    $user = currentUser();
+    $semester = guruActiveSemester();
+    if ($user === null || $semester === null) {
+        throw new DomainException('Akun Guru atau semester aktif tidak tersedia.');
+    }
+
+    $pdo = guruDb();
+    $pdo->beginTransaction();
+    try {
+        $groupQuery = $pdo->prepare(
+            'SELECT kg.id, kg.penugasan_guru_id AS assignment_id
+             FROM kelompok kg
+             INNER JOIN penugasan_guru pg ON pg.id = kg.penugasan_guru_id
+             INNER JOIN guru g ON g.id = pg.guru_id
+             INNER JOIN kelas k ON k.id = pg.kelas_id AND k.is_active = 1
+             INNER JOIN semester sem ON sem.id = k.semester_id AND sem.status = :active_status
+             WHERE kg.id = :group_id AND g.user_id = :user_id AND k.semester_id = :semester_id
+             LIMIT 1 FOR UPDATE'
+        );
+        $groupQuery->execute([
+            'active_status' => 'aktif', 'group_id' => $groupId,
+            'user_id' => $user['id'], 'semester_id' => $semester['id'],
+        ]);
+        $group = $groupQuery->fetch();
+        if (!is_array($group)) {
+            throw new DomainException('Kelompok tidak ditemukan atau bukan milik Anda.');
+        }
+        $deleteMembers = $pdo->prepare('DELETE FROM anggota_kelompok WHERE kelompok_id = :group_id');
+        $deleteMembers->execute(['group_id' => $groupId]);
+        $deleteGroup = $pdo->prepare('DELETE FROM kelompok WHERE id = :group_id');
+        $deleteGroup->execute(['group_id' => $groupId]);
+        $pdo->commit();
+        return (int) $group['assignment_id'];
     } catch (Throwable $exception) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();

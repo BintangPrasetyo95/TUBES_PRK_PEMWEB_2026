@@ -52,6 +52,11 @@ guru_page_start('Pengaturan Kelas', 'kelas.php');
         <?php endif; ?>
     </article>
 </section>
+<section class="rounded-2xl border border-[#dfe6de] bg-white p-5 sm:p-6">
+    <h2 class="text-base font-semibold text-[#303832]">Pengelolaan Kelompok</h2>
+    <p class="mt-2 text-sm text-slate-600">Bentuk, atur ulang, atau kelola kelompok siswa untuk penugasan mata pelajaran ini.</p>
+    <a href="kelompok.php?assignment_id=<?= (int) $class['assignment_id'] ?>" class="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#4e7a5d] px-4 py-2 text-sm font-semibold text-white hover:bg-[#41684f]">Kelola Kelompok</a>
+</section>
 <p class="rounded-xl border border-[#dfe7dd] bg-[#eff3ee] px-4 py-3 text-sm text-[#526257]">Data kelas, penugasan, dan jadwal dikelola melalui administrasi sekolah.</p>
 <a href="kelas-detail.php?assignment_id=<?= (int) $class['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Kembali ke Detail Kelas</a>
 <?php guru_page_end(); ?>

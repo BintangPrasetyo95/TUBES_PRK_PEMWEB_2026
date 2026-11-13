@@ -64,11 +64,11 @@ async function muatDataKlasifikasi() {
                 listBintang.appendChild(pill);
                 cBintang++;
             } else if (rajinTugas && !lulusUjian) {
-                siswa.labelKlasifikasi = "Jarang kumpul & nilai tinggi";
+                siswa.labelKlasifikasi = "Rajin & nilai rendah";
                 listButuh.appendChild(pill);
                 cButuh++;
             } else if (!rajinTugas && lulusUjian) {
-                siswa.labelKlasifikasi = "Rajin & nilai rendah";
+                siswa.labelKlasifikasi = "Jarang kumpul & nilai tinggi";
                 listBakat.appendChild(pill);
                 cBakat++;
             } else {

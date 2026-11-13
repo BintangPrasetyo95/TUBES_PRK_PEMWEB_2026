@@ -40,8 +40,8 @@ include '../includes/header.php';
                                 <span class="text-sm">Stok: <span class="font-bold text-blue-600"><?= e($row['stok']) ?></span></span>
                             </div>
                             
-                            <a href="ajukan.php?id=<?= $row['id'] ?>" class="block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-200">
-                                Pinjam Alat
+                           <a href="ajukan.php?id=<?= e($row['id']) ?>" class="block w-full text-center bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white hover:text-white font-semibold py-2 px-4 rounded transition-all duration-200">
+                             Pinjam Alat
                             </a>
                         </div>
                     </div>

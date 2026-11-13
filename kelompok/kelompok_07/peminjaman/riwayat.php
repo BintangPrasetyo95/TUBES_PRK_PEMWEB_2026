@@ -12,6 +12,19 @@ if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
 $user_id = $_SESSION['user']['id'];
 $pdo = db();
 
+// --- Fitur Auto-Reject (3 Hari) ---
+// Membatalkan otomatis pengajuan yang menggantung lebih dari 3 hari
+$queryAutoReject = "
+    UPDATE peminjaman 
+    SET status = 'ditolak', 
+        catatan_admin = 'Ditolak otomatis oleh sistem karena belum diproses admin selama 3 hari.'
+    WHERE user_id = ? 
+      AND status = 'menunggu' 
+      AND created_at < (NOW() - INTERVAL 3 DAY)
+";
+$stmtAutoReject = $pdo->prepare($queryAutoReject);
+$stmtAutoReject->execute([$user_id]);
+
 // Query JOIN 3 Tabel: peminjaman, detail_peminjaman, dan alat
 // Hanya ambil milik user yang sedang login
 $query = "

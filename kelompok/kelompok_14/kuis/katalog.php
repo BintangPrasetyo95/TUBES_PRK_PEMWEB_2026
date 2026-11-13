@@ -293,7 +293,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
         $paramPrev['page'] = $halamanSekarang - 1;
         $linkPrev = 'katalog.php?' . http_build_query($paramPrev);
         ?>
-        <a href="<?= e($linkPrev) ?>" class="btn btn-sm btn-outline" style="text-decoration: none;">&larr; Sebelumnya</a>
+        <a href="<?= e($linkPrev) ?>" class="btn btn-sm btn-outline" style="text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;">&larr; Sebelumnya</a>
       <?php endif; ?>
 
       <!-- Tombol Angka Halaman -->
@@ -307,7 +307,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
         <a 
           href="<?= e($linkPage) ?>" 
           class="btn btn-sm <?= $isActive ? 'btn-primary' : 'btn-outline' ?>" 
-          style="text-decoration: none; min-width: 36px; text-align: center;"
+          style="text-decoration: none; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center;"
         >
           <?= $i ?>
         </a>
@@ -320,7 +320,7 @@ require_once __DIR__ . '/../includes/partials/header-pelajar.php';
         $paramNext['page'] = $halamanSekarang + 1;
         $linkNext = 'katalog.php?' . http_build_query($paramNext);
         ?>
-        <a href="<?= e($linkNext) ?>" class="btn btn-sm btn-outline" style="text-decoration: none;">Selanjutnya &rarr;</a>
+        <a href="<?= e($linkNext) ?>" class="btn btn-sm btn-outline" style="text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;">Selanjutnya &rarr;</a>
       <?php endif; ?>
     </div>
   <?php endif; ?>

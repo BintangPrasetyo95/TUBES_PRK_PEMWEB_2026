@@ -449,15 +449,15 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
        BARIS NAVIGASI BAWAH (SEBELUMNYA, LANJUT, SELESAI - KRJ-02)
        ======================================================================== -->
   <div class="nav-kerjakan">
-    <button type="button" class="btn btn-outline" id="btnSebelumnya" disabled style="min-width: 130px;">
+    <button type="button" class="btn btn-outline btn-nav-kuis" id="btnSebelumnya" disabled>
       &larr; Sebelumnya
     </button>
 
-    <div style="display: flex; gap: 10px; align-items: center;">
+    <div class="nav-kerjakan-aksi">
       <button type="button" class="btn btn-primer-2" id="btnSelesaiCepat" style="display: none;">
         Selesai Kuis
       </button>
-      <button type="button" class="btn btn-primary" id="btnLanjut" style="min-width: 140px;">
+      <button type="button" class="btn btn-primary btn-nav-kuis" id="btnLanjut">
         Lanjut &rarr;
       </button>
     </div>
@@ -467,29 +467,29 @@ require_once __DIR__ . '/../includes/partials/header-fokus.php';
     <!-- ======================================================================
          RINGKASAN HASIL MODUS PRATINJAU (DIHITUNG DI SISI KLIEN)
          ====================================================================== -->
-    <div id="hasilPratinjauBox" class="soal-card" style="display: none; text-align: center; padding: 32px 24px;">
-      <div style="font-size: 2.5rem; margin-bottom: 10px;" aria-hidden="true">&#127942;</div>
+    <div id="hasilPratinjauBox" class="soal-card pratinjau-selesai-card" style="display: none;">
+      <div class="pratinjau-icon-selesai" aria-hidden="true">&#127942;</div>
       <h2 style="margin-bottom: 8px;">Simulasi Pratinjau Selesai</h2>
       <p style="color: var(--teks-2); margin-bottom: 22px;">
         Berikut adalah simulasi hasil pengerjaan kuis <strong><?= e($kuis['judul']) ?></strong>. Data ini tidak disimpan ke database.
       </p>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px;">
-        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+      <div class="pratinjau-grid-stat">
+        <div class="pratinjau-stat-item">
           <div style="font-size: 0.85rem; color: var(--teks-2);">Skor Simulasi</div>
           <div style="font-size: 1.4rem; font-weight: 700; color: var(--primer);">
             <span id="pratinjauSkor">0</span> / <span id="pratinjauMaks"><?= (int)$skorMaksimal ?></span>
           </div>
         </div>
-        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+        <div class="pratinjau-stat-item">
           <div style="font-size: 0.85rem; color: var(--teks-2);">Persentase</div>
           <div style="font-size: 1.4rem; font-weight: 700;" id="pratinjauPersen">0%</div>
         </div>
-        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+        <div class="pratinjau-stat-item">
           <div style="font-size: 0.85rem; color: var(--teks-2);">Jawaban Benar</div>
           <div style="font-size: 1.4rem; font-weight: 700; color: #15803d;" id="pratinjauBenar">0</div>
         </div>
-        <div style="background: var(--latar); border: 1px solid var(--garis); border-radius: 10px; padding: 14px;">
+        <div class="pratinjau-stat-item">
           <div style="font-size: 0.85rem; color: var(--teks-2);">Belum Tepat / Kosong</div>
           <div style="font-size: 1.4rem; font-weight: 700; color: #b91c1c;" id="pratinjauSalah">0</div>
         </div>

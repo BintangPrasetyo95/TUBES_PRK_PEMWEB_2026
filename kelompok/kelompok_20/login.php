@@ -154,6 +154,13 @@ require_once __DIR__ . '/includes/header.php';
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Masuk</button>
     </form>
 
+    <div style="text-align:right; margin-top:0.75rem; font-size:0.9rem;">
+    <a href="lupa_password.php"
+       style="color:var(--color-primary);">
+        Lupa Password?
+    </a>
+</div>
+
     <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--color-text-muted);">
         Belum memiliki akun? <a href="/register.php" style="color: var(--color-primary); font-weight: 600;">Daftar di sini</a>
     </div>

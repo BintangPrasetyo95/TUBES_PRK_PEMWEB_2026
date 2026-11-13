@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var alerts = document.querySelectorAll('.alert');
 
     alerts.forEach(function (alertBox) {
-        if (alertBox.classList.contains('alert-js-error')) {
-            return;
-        }
+        if (alertBox.classList.contains('alert-js-error') || alertBox.classList.contains('alert-persistent')) {
+        return;
+}
 
         var durasi = alertBox.classList.contains('alert-success') ? 4000 : 7000;
         alertBox.style.transition = 'opacity 0.5s ease, transform 0.5s ease, margin 0.5s ease';

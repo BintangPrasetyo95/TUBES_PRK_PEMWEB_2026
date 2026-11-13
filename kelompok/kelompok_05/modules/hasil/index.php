@@ -24,7 +24,7 @@ $analysis = $st->fetch();
 $hasil = $analysis && $analysis['hasil_json'] ? json_decode($analysis['hasil_json'], true, 512, JSON_THROW_ON_ERROR) : [];
 if (!is_array($hasil)) throw new UnexpectedValueException('Hasil analisis tidak berbentuk daftar.');
 $bolehAnalisis = (int) $case['user_id'] === (int) $user['id'] && $user['role'] === 'pengguna'
-    && !in_array($case['status'], ['sedang_ditinjau', 'selesai'], true);
+    && $case['status'] !== 'sedang_ditinjau';
 $page_title = 'Hasil analisis';
 require __DIR__ . '/../../includes/header.php';
 ?>
@@ -32,7 +32,7 @@ require __DIR__ . '/../../includes/header.php';
     <h1>Hasil pemeriksaan</h1>
     <h2><?= e($case['judul']) ?></h2>
     <p><?= e($case['jenis']) ?> · <?= status_badge($case['status']) ?></p>
-    <?php if (!$analysis): ?><p>Belum ada hasil analisis. Jalankan pemeriksaan ulang untuk membuat hasil.</p><?php else: ?>
+    <?php if (!$analysis): ?><p>Belum ada hasil analisis. Jalankan analisis untuk membuat hasil.</p><?php else: ?>
         <p>Kelengkapan: <strong><?= e(number_format((float) $analysis['persentase'], 2, ',', '.')) ?>%</strong>
             (<?= e($analysis['jumlah_terpenuhi']) ?> dari <?= e($analysis['jumlah_berlaku']) ?> persyaratan berlaku)</p>
         <p>Analisis terakhir: <?= e($analysis['created_at']) ?></p>
@@ -41,7 +41,7 @@ require __DIR__ . '/../../includes/header.php';
         <a class="btn" href="<?= e(base_url('modules/laporan/index.php?case=' . (int) $caseId)) ?>">Lihat laporan</a>
         <?php if ($bolehAnalisis): ?><form method="post" action="<?= e(base_url('modules/analisis/engine.php')) ?>" class="no-print">
             <?= csrf_field() ?><input type="hidden" name="case_id" value="<?= e($caseId) ?>">
-            <button class="btn btn-primary" type="submit">Periksa Ulang</button>
+            <button class="btn btn-primary" type="submit"><?= $analysis ? 'Periksa Ulang' : 'Jalankan Analisis' ?></button>
         </form><?php endif; ?>
     </div>
 </section>

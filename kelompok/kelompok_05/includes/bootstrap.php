@@ -1,7 +1,7 @@
 <?php
 // WAJIB di-require paling awal oleh SEMUA halaman. Dari modules/<fitur>/ tulis:
 //   require_once __DIR__ . '/../../includes/bootstrap.php';
-// Hanya PIC yang boleh mengubah file ini.
+
 
 define('APP_ROOT', dirname(__DIR__));
 

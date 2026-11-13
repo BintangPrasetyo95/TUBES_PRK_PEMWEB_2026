@@ -1,4 +1,4 @@
-// Pembantu antarmuka CEKHAK (JavaScript murni). Hanya PIC yang boleh mengubah file ini.
+// Pembantu antarmuka CEKHAK (JavaScript murni). 
 // Prinsip: data dari server atau pengguna ditulis lewat textContent (aman dari XSS), bukan innerHTML.
 (function () {
   'use strict';

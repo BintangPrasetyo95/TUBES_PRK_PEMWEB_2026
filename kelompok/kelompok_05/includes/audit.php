@@ -1,5 +1,5 @@
 <?php
-// Pencatatan aktivitas penting ke tabel audit_logs. Hanya PIC yang boleh mengubah file ini.
+// Pencatatan aktivitas penting ke tabel audit_logs. 
 //   audit_log('buat_pemeriksaan', 'cases', $case_id, 'Surat Kuasa');
 
 function audit_log(string $aksi, string $entitas, ?int $id = null, string $detail = ''): void

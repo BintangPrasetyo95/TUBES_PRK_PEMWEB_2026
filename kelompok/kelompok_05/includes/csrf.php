@@ -1,5 +1,5 @@
 <?php
-// Proteksi CSRF untuk form POST. Hanya PIC yang boleh mengubah file ini.
+// Proteksi CSRF untuk form POST. 
 //   Di form, tulis csrf_field() di dalam tag form (dengan tag echo pendek).
 //   Di handler:  csrf_check();   (panggil sebelum membaca $_POST)
 

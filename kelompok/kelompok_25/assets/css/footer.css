@@ -45,7 +45,6 @@
 .rh-bawah-tautan a { color: #fff; text-decoration: none; }
 .rh-bawah-tautan a:hover { color: var(--gold); }
 .rh-titik { color: var(--gold); }
-.rh-catatan { flex-basis: 100%; margin-top: .25rem; padding-top: .6rem; border-top: 1px solid rgba(255,255,255,.14); font-size: .78rem; color: rgba(255,255,255,.65); }
 .rh-footer-bawah a:focus-visible { outline-color: var(--gold); }
 
 /* ----- Tombol kembali ke atas ----- */

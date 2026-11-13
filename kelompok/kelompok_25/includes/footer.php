@@ -87,6 +87,7 @@ $userFooter = current_user();
               <h2 class="rh-footer-judul">Ruang Hukum</h2>
               <ul class="rh-footer-daftar">
                 <li><a href="<?= url('tentang.php') ?>">Tentang Kami</a></li>
+                <li><a href="<?= url('tentang.php#kontak') ?>">Hubungi Kami</a></li>
                 <li><a href="<?= url('auth/register.php?role=pengacara') ?>">Gabung sebagai Pengacara</a></li>
                 <?php if ($userFooter): ?>
                   <li><a href="<?= url(dashboard_path($userFooter['role'])) ?>">Dashboard Saya</a></li>
@@ -115,7 +116,6 @@ $userFooter = current_user();
         <span class="rh-titik" aria-hidden="true">&bull;</span>
         <a href="<?= url('faq.php') ?>">Bantuan &amp; FAQ</a>
       </div>
-      <div class="rh-catatan">Proyek Tugas Besar Pemrograman Web &middot; Kelompok 25 &middot; Universitas Lampung</div>
     </div>
   </div>
 </footer>

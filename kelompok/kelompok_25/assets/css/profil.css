@@ -35,3 +35,17 @@
 @media (max-width: 575.98px) {
   .container.page-head { padding-left: calc(var(--bs-gutter-x, 1.5rem) * .5); padding-right: calc(var(--bs-gutter-x, 1.5rem) * .5); }
 }
+
+/* Penanda menu aktif: halaman yang sedang dibuka diberi garis emas dan teks putih (header.php). */
+.navbar-rh .navbar-nav .nav-link.active { color: #fff; }
+@media (min-width: 992px) {
+  .navbar-rh .navbar-nav .nav-link { position: relative; }
+  .navbar-rh .navbar-nav .nav-link.active::after { content: ''; position: absolute; left: .5rem; right: .5rem; bottom: -.15rem; height: 3px; border-radius: 3px; background: var(--gold); }
+}
+@media (max-width: 991.98px) {
+  .navbar-rh .navbar-nav .nav-link.active { padding-left: .75rem; border-left: 3px solid var(--gold); border-radius: 0 6px 6px 0; background: rgba(255,255,255,.07); }
+}
+
+/* Angka sejajar: font judul (Playfair Display) bawaannya memakai angka gaya lama yang naik-turun
+   (contoh "87" atau "4,6" terlihat miring). Dipaksa memakai angka lurus yang sama tinggi di seluruh situs. */
+body { font-variant-numeric: lining-nums; }

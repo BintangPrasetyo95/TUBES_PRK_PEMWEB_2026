@@ -6,6 +6,32 @@
 $judul = $judul ?? APP_NAME;
 $user  = current_user();
 $profilSaya = $user ? auth_profil_saya((int) $user['id']) : [];
+
+// Menu mana yang sedang dibuka? Dibaca dari lokasi file halaman, jadi artikel.php (publik)
+// tidak tertukar dengan admin/artikel.php. Halaman boleh menimpanya: $menuAktif = 'faq';
+$menuAktif = $menuAktif ?? (function (): string {
+    $akar = realpath(__DIR__ . '/..');
+    $file = realpath($_SERVER['SCRIPT_FILENAME'] ?? '');
+    if (!$akar || !$file || stripos($file, $akar) !== 0) {
+        return '';
+    }
+    $rel = str_replace('\\', '/', ltrim(substr($file, strlen($akar)), '\\/'));
+    return [
+        'index.php'          => 'beranda',
+        'pengacara.php'      => 'pengacara',
+        'artikel.php'        => 'artikel',
+        'artikel_detail.php' => 'artikel',
+        'faq.php'            => 'faq',
+        'tentang.php'        => 'tentang',
+    ][$rel] ?? '';
+})();
+$menuUtama = [
+    'beranda'   => ['index.php', 'Beranda'],
+    'pengacara' => ['pengacara.php', 'Pengacara'],
+    'artikel'   => ['artikel.php', 'Artikel'],
+    'faq'       => ['faq.php', 'FAQ'],
+    'tentang'   => ['tentang.php', 'Tentang Kami'],
+];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -30,11 +56,9 @@ $profilSaya = $user ? auth_profil_saya((int) $user['id']) : [];
     </button>
     <div class="collapse navbar-collapse" id="menu">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="<?= url('index.php') ?>">Beranda</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= url('pengacara.php') ?>">Pengacara</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= url('artikel.php') ?>">Artikel</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= url('faq.php') ?>">FAQ</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= url('tentang.php') ?>">Tentang Kami</a></li>
+        <?php foreach ($menuUtama as $mnKunci => [$mnBerkas, $mnNama]): ?>
+          <li class="nav-item"><a class="nav-link<?= $menuAktif === $mnKunci ? ' active' : '' ?>" href="<?= url($mnBerkas) ?>"<?= $menuAktif === $mnKunci ? ' aria-current="page"' : '' ?>><?= $mnNama ?></a></li>
+        <?php endforeach; ?>
       </ul>
       <div class="d-flex flex-column flex-lg-row gap-2 align-items-stretch align-items-lg-center">
         <?php if ($user): ?>

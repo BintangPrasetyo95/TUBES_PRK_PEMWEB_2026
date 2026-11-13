@@ -39,28 +39,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $judul = 'Masuk';
-$stat = auth_statistik();
+$tanpaKerangka = true;   // halaman penuh tanpa navbar/footer situs
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <link rel="stylesheet" href="<?= e(url('assets/css/auth.css')) ?>">
-<div class="auth-wrap">
-  <div class="container">
-    <div class="auth-kartu">
-      <aside class="auth-panel d-none d-lg-flex">
-        <div>
-          <div class="auth-logo"><i class="bi bi-bank2"></i> Ruang Hukum</div>
-          <h2>Konsultasi hukum yang lebih dekat dan terpercaya.</h2>
-          <ul class="auth-manfaat">
-            <li><i class="bi bi-patch-check"></i> Pengacara terverifikasi admin</li>
-            <li><i class="bi bi-shield-lock"></i> Percakapan tersimpan aman dan rahasia</li>
-            <li><i class="bi bi-chat-square-text"></i> Jawaban jelas, langsung dari praktisi</li>
-          </ul>
-        </div>
-        <div class="auth-angka">
-          <div><b><?= (int) $stat['pengacara'] ?></b><span>pengacara aktif</span></div>
-          <div><b><?= (int) $stat['konsultasi'] ?></b><span>konsultasi dijawab</span></div>
-        </div>
-      </aside>
+<div class="auth-layar">
+  <?php auth_panel('Konsultasi hukum yang lebih dekat dan terpercaya.', [
+      ['bi-patch-check', 'Pengacara terverifikasi admin'],
+      ['bi-shield-lock', 'Percakapan tersimpan aman dan rahasia'],
+      ['bi-chat-square-text', 'Jawaban jelas, langsung dari praktisi'],
+  ]); ?>
+
+  <div class="auth-sisi">
+    <div class="auth-atas"><?= auth_logo('d-lg-none') ?><?= auth_kembali() ?></div>
 
       <section class="auth-isi">
         <h1 class="auth-judul">Masuk</h1>
@@ -95,7 +86,6 @@ require_once __DIR__ . '/../includes/header.php';
 
         <p class="text-center mt-4 mb-0 small">Belum punya akun? <a href="<?= e(url('auth/register.php')) ?>">Daftar</a></p>
       </section>
-    </div>
   </div>
 </div>
 <script src="<?= e(url('assets/js/auth.js')) ?>"></script>

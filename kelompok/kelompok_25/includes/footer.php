@@ -1,4 +1,6 @@
 </main>
+<?php $tanpaKerangka = $tanpaKerangka ?? false; ?>
+<?php if (!$tanpaKerangka): ?>
 <?php
 // Data footer: kontak dari config/kontak.php, daftar bidang hukum dari database.
 $kontak = require __DIR__ . '/../config/kontak.php';
@@ -123,6 +125,7 @@ $userFooter = current_user();
 <button type="button" class="rh-ke-atas" id="tombolKeAtas" aria-label="Kembali ke atas" hidden>
   <i class="bi bi-chevron-up" aria-hidden="true"></i>
 </button>
+<?php endif; ?>
 
 <!-- Jendela konfirmasi bersama. Pakai di form: <form method="post" data-confirm="Yakin hapus?"> -->
 <div class="modal fade" id="modalKonfirmasi" tabindex="-1" aria-hidden="true">

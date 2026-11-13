@@ -32,10 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $judul = 'Simulasi ' . $nama;
+$tanpaKerangka = true;   // halaman penuh tanpa navbar/footer situs
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <link rel="stylesheet" href="<?= e(url('assets/css/auth.css')) ?>">
-<div class="auth-tengah">
+<div class="auth-polos">
+  <?= auth_logo() ?>
   <div class="auth-kartu-kecil">
     <div class="demo-banner"><i class="bi bi-info-circle-fill"></i> <span><strong>Mode simulasi.</strong> Halaman ini meniru layar persetujuan <?= e($nama) ?> untuk keperluan demo. Tidak terhubung ke <?= e($nama) ?> yang asli.</span></div>
     <div class="text-center my-3"><span class="logo-sosial sosial-<?= e($kunci) ?>"><?php if ($kunci === 'google'): ?><img class="ikon-google" src="<?= e(url('assets/img/google-g.svg')) ?>" alt="" width="28" height="28"><?php else: ?><i class="bi <?= e($daftar[$kunci]['ikon']) ?>"></i><?php endif; ?></span></div>
@@ -59,5 +61,6 @@ require_once __DIR__ . '/../includes/header.php';
       <a class="btn btn-link w-100 mt-2" href="<?= e(url('auth/login.php')) ?>">Batal</a>
     </form>
   </div>
+  <?= auth_kembali() ?>
 </div>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

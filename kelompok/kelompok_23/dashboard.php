@@ -6,7 +6,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['user_id'])) {
-    header("Location: auth/login.php");
+    require_once __DIR__ . '/config/setup_helpers.php';
+    header('Location: ' . febmart_to_root() . 'auth/login.php');
     exit;
 }
 

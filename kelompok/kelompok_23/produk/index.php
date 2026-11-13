@@ -163,10 +163,16 @@ require_once __DIR__ . '/../includes/helper.php';
 
                                         <td class="text-center">
 
-                                            <?php if (!empty($data['image'])): ?>
+                                            <?php
+                                            $gambarProduk = $data['image'] ?? '';
+                                            $gambarAda = !empty($gambarProduk)
+                                                && is_file(__DIR__ . '/../assets/img/' . basename($gambarProduk));
+                                            ?>
+
+                                            <?php if ($gambarAda): ?>
 
                                                 <img
-                                                    src="../assets/img/<?= htmlspecialchars($data['image']); ?>"
+                                                    src="../assets/img/<?= htmlspecialchars(basename($gambarProduk)); ?>"
                                                     alt="Gambar produk"
                                                     width="50"
                                                     height="50"

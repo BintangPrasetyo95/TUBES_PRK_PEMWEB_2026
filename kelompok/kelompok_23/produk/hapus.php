@@ -5,14 +5,22 @@ requireRole(['Admin']);
 require_once __DIR__ . '/../config/database.php';
 
 if (isset($_GET['id'])) {
-    $id = $_GET['id'];
+    $id = (int) $_GET['id'];
 
-    $query = $conn->query("SELECT image FROM products WHERE id = '$id'");
-    $data = $query->fetch_assoc();
+    $stmt = $conn->prepare("SELECT image FROM products WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_assoc();
+    $stmt->close();
 
     if ($data) {
-        if (!empty($data['image']) && file_exists("../assets/img/" . $data['image'])) {
-            unlink("../assets/img/" . $data['image']);
+        if (!empty($data['image'])) {
+            $oldImagePath = __DIR__ . '/../assets/img/' . basename($data['image']);
+
+            if (file_exists($oldImagePath)) {
+                @unlink($oldImagePath);
+            }
         }
 
         $stmt = $conn->prepare("DELETE FROM products WHERE id = ?");

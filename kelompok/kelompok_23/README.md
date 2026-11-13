@@ -172,22 +172,23 @@ cd kelompok/kelompok_23
 2. Klik tombol **Start All**.
 3. Pastikan service **Apache** dan **MySQL** sudah berstatus *Running*.
 
-### Langkah 5 – Buat Database
-1. Buka **phpMyAdmin** melalui browser (`http://localhost/phpmyadmin`).
-2. Impor satu file `database/febmart.sql`. File ini membuat database, tabel, akun awal, serta data contoh produk dan transaksi.
-
-### Langkah 6 – Konfigurasi Database
-Sesuaikan konfigurasi koneksi database pada file:
-```text
-config/database.php
-```
-Pastikan host, username, password, dan nama database sesuai dengan konfigurasi MySQL lokal Anda.
-
-### Langkah 7 – Jalankan Website
+### Langkah 5 – Jalankan Website
 Buka browser dan akses alamat berikut:
 ```text
 http://localhost/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_23/
 ```
+
+### Langkah 6 – Instalasi Database Otomatis
+Database dibuat **secara otomatis** dan tidak perlu diimpor manual melalui phpMyAdmin.
+
+- Jika MySQL memakai pengaturan default (host `localhost`, user `root`, tanpa password — umumnya Laragon/XAMPP), sistem langsung membuat database `febmart`, seluruh tabel, dan data contoh sendiri saat pertama kali dibuka.
+- Jika kredensial MySQL berbeda, sistem akan mengalihkan ke halaman **`install.php`**. Isi form host, username, password, dan nama database (sekali saja), lalu klik **Instal / Perbaiki Database**. Sistem akan:
+  1. Menguji koneksi MySQL.
+  2. Membuat database otomatis (jika belum ada).
+  3. Membuat seluruh tabel dan data contoh dari `database/febmart.sql`.
+  4. Menyimpan kredensial ke `config/database.local.php` (khusus komputer ini, tidak ikut tersimpan di git).
+
+> Catatan: jika tabel inti hilang atau rusak, sistem juga memperbaikinya secara otomatis saat halaman dibuka. Akun awal yang dibuat: `adminfebmart` (admin) dan `kasir01` (kasir).
 
 ---
 

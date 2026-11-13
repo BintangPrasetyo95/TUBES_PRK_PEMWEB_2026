@@ -123,33 +123,33 @@ INSERT INTO products
     (category_id, sku, name, description, price, stock, min_stock, image)
 SELECT categories.id, product_seed.sku, product_seed.name,
        product_seed.description, product_seed.price, product_seed.stock,
-       product_seed.min_stock, NULL
+       product_seed.min_stock, product_seed.image
 FROM (
-    SELECT 'FBM-SEED-001' AS sku, 'Makanan Ringan' AS category_name, 'Keripik Singkong' AS name, 'Keripik singkong rasa original 150 g.' AS description, 12000.00 AS price, 35 AS stock, 5 AS min_stock
-    UNION ALL SELECT 'FBM-SEED-002', 'Makanan Ringan', 'Biskuit Cokelat', 'Biskuit cokelat kemasan 200 g.', 9500.00, 28, 5
-    UNION ALL SELECT 'FBM-SEED-003', 'Makanan Ringan', 'Wafer Vanila', 'Wafer vanila kemasan 180 g.', 7500.00, 32, 5
-    UNION ALL SELECT 'FBM-SEED-004', 'Makanan Ringan', 'Roti Tawar', 'Roti tawar putih isi 10 lembar.', 18000.00, 18, 4
-    UNION ALL SELECT 'FBM-SEED-005', 'Minuman', 'Air Mineral 600 ml', 'Air mineral botol 600 ml.', 4000.00, 60, 10
-    UNION ALL SELECT 'FBM-SEED-006', 'Minuman', 'Teh Botol 350 ml', 'Teh siap minum botol 350 ml.', 6500.00, 40, 8
-    UNION ALL SELECT 'FBM-SEED-007', 'Minuman', 'Susu UHT 1 L', 'Susu UHT plain kemasan 1 liter.', 8500.00, 24, 5
-    UNION ALL SELECT 'FBM-SEED-008', 'Minuman', 'Kopi Instan', 'Kopi instan sachet isi 10.', 12000.00, 30, 5
-    UNION ALL SELECT 'FBM-SEED-009', 'Bahan Pokok', 'Beras 5 kg', 'Beras putih kemasan 5 kg.', 72000.00, 20, 5
-    UNION ALL SELECT 'FBM-SEED-010', 'Bahan Pokok', 'Minyak Goreng 1 L', 'Minyak goreng kemasan 1 liter.', 18500.00, 26, 5
-    UNION ALL SELECT 'FBM-SEED-011', 'Bahan Pokok', 'Gula Pasir 1 kg', 'Gula pasir kemasan 1 kg.', 17000.00, 22, 5
-    UNION ALL SELECT 'FBM-SEED-012', 'Bahan Pokok', 'Telur Ayam 1 kg', 'Telur ayam negeri per kilogram.', 30000.00, 16, 5
-    UNION ALL SELECT 'FBM-SEED-013', 'Perawatan Diri', 'Sabun Mandi', 'Sabun mandi batang 90 g.', 6000.00, 40, 8
-    UNION ALL SELECT 'FBM-SEED-014', 'Perawatan Diri', 'Sampo 170 ml', 'Sampo perawatan rambut kemasan 170 ml.', 23000.00, 20, 5
-    UNION ALL SELECT 'FBM-SEED-015', 'Perawatan Diri', 'Pasta Gigi 120 g', 'Pasta gigi keluarga kemasan 120 g.', 15000.00, 24, 5
-    UNION ALL SELECT 'FBM-SEED-016', 'Perawatan Diri', 'Sikat Gigi', 'Sikat gigi dewasa bulu lembut.', 9000.00, 25, 5
-    UNION ALL SELECT 'FBM-SEED-017', 'Kebersihan Rumah', 'Detergen 1 kg', 'Detergen bubuk kemasan 1 kg.', 22000.00, 18, 5
-    UNION ALL SELECT 'FBM-SEED-018', 'Kebersihan Rumah', 'Sabun Cuci Piring 700 ml', 'Sabun cuci piring cair 700 ml.', 12000.00, 20, 5
-    UNION ALL SELECT 'FBM-SEED-019', 'Kebersihan Rumah', 'Pembersih Lantai 800 ml', 'Pembersih lantai cair 800 ml.', 16000.00, 15, 4
-    UNION ALL SELECT 'FBM-SEED-020', 'Alat Tulis', 'Buku Tulis', 'Buku tulis 40 lembar.', 6000.00, 50, 10
-    UNION ALL SELECT 'FBM-SEED-021', 'Alat Tulis', 'Pulpen', 'Pulpen tinta hitam.', 3500.00, 60, 10
-    UNION ALL SELECT 'FBM-SEED-022', 'Alat Tulis', 'Pensil', 'Pensil kayu HB.', 2500.00, 45, 10
-    UNION ALL SELECT 'FBM-SEED-023', 'Produk Beku', 'Nugget Ayam 500 g', 'Nugget ayam beku kemasan 500 g.', 42000.00, 14, 4
-    UNION ALL SELECT 'FBM-SEED-024', 'Produk Beku', 'Sosis Sapi 500 g', 'Sosis sapi beku kemasan 500 g.', 26000.00, 16, 4
-    UNION ALL SELECT 'FBM-SEED-025', 'Produk Beku', 'Kentang Goreng 500 g', 'Kentang goreng beku kemasan 500 g.', 32000.00, 12, 4
+    SELECT 'FBM-SEED-001' AS sku, 'Makanan Ringan' AS category_name, 'Keripik Singkong' AS name, 'Keripik singkong rasa original 150 g.' AS description, 12000.00 AS price, 35 AS stock, 5 AS min_stock, 'keripik.jpg' AS image
+    UNION ALL SELECT 'FBM-SEED-002', 'Makanan Ringan', 'Biskuit Cokelat', 'Biskuit cokelat kemasan 200 g.', 9500.00, 28, 5, 'biskuit_cokelat.jpg'
+    UNION ALL SELECT 'FBM-SEED-003', 'Makanan Ringan', 'Wafer Vanila', 'Wafer vanila kemasan 180 g.', 7500.00, 32, 5, 'wafer_vanilla.jpg'
+    UNION ALL SELECT 'FBM-SEED-004', 'Makanan Ringan', 'Roti Tawar', 'Roti tawar putih isi 10 lembar.', 18000.00, 18, 4, 'roti_tawar.jpg'
+    UNION ALL SELECT 'FBM-SEED-005', 'Minuman', 'Air Mineral 600 ml', 'Air mineral botol 600 ml.', 4000.00, 60, 10, 'aqua.jpg'
+    UNION ALL SELECT 'FBM-SEED-006', 'Minuman', 'Teh Botol 350 ml', 'Teh siap minum botol 350 ml.', 6500.00, 40, 8, 'teh.jpg'
+    UNION ALL SELECT 'FBM-SEED-007', 'Minuman', 'Susu UHT 1 L', 'Susu UHT plain kemasan 1 liter.', 8500.00, 24, 5, 'susu.jpg'
+    UNION ALL SELECT 'FBM-SEED-008', 'Minuman', 'Kopi Instan', 'Kopi instan sachet isi 10.', 12000.00, 30, 5, 'kopi.jpg'
+    UNION ALL SELECT 'FBM-SEED-009', 'Bahan Pokok', 'Beras 5 kg', 'Beras putih kemasan 5 kg.', 72000.00, 20, 5, 'beras.jpg'
+    UNION ALL SELECT 'FBM-SEED-010', 'Bahan Pokok', 'Minyak Goreng 1 L', 'Minyak goreng kemasan 1 liter.', 18500.00, 26, 5, 'minyak_goreng.jpg'
+    UNION ALL SELECT 'FBM-SEED-011', 'Bahan Pokok', 'Gula Pasir 1 kg', 'Gula pasir kemasan 1 kg.', 17000.00, 22, 5, 'gula.jpg'
+    UNION ALL SELECT 'FBM-SEED-012', 'Bahan Pokok', 'Telur Ayam 1 kg', 'Telur ayam negeri per kilogram.', 30000.00, 16, 5, 'telur.jpg'
+    UNION ALL SELECT 'FBM-SEED-013', 'Perawatan Diri', 'Sabun Mandi', 'Sabun mandi batang 90 g.', 6000.00, 40, 8, 'sabun.jpg'
+    UNION ALL SELECT 'FBM-SEED-014', 'Perawatan Diri', 'Sampo 170 ml', 'Sampo perawatan rambut kemasan 170 ml.', 23000.00, 20, 5, 'shampo.jpg'
+    UNION ALL SELECT 'FBM-SEED-015', 'Perawatan Diri', 'Pasta Gigi 120 g', 'Pasta gigi keluarga kemasan 120 g.', 15000.00, 24, 5, 'pasta_gigi.jpg'
+    UNION ALL SELECT 'FBM-SEED-016', 'Perawatan Diri', 'Sikat Gigi', 'Sikat gigi dewasa bulu lembut.', 9000.00, 25, 5, 'sikat_gigi.jpg'
+    UNION ALL SELECT 'FBM-SEED-017', 'Kebersihan Rumah', 'Detergen 1 kg', 'Detergen bubuk kemasan 1 kg.', 22000.00, 18, 5, 'deterjen_bubuk.png'
+    UNION ALL SELECT 'FBM-SEED-018', 'Kebersihan Rumah', 'Sabun Cuci Piring 700 ml', 'Sabun cuci piring cair 700 ml.', 12000.00, 20, 5, 'sabun_cuci_piring.jpg'
+    UNION ALL SELECT 'FBM-SEED-019', 'Kebersihan Rumah', 'Pembersih Lantai 800 ml', 'Pembersih lantai cair 800 ml.', 16000.00, 15, 4, 'pembersihlantai.jpg'
+    UNION ALL SELECT 'FBM-SEED-020', 'Alat Tulis', 'Buku Tulis', 'Buku tulis 40 lembar.', 6000.00, 50, 10, 'buku_tulis.jpg'
+    UNION ALL SELECT 'FBM-SEED-021', 'Alat Tulis', 'Pulpen', 'Pulpen tinta hitam.', 3500.00, 60, 10, 'pulpen.jpg'
+    UNION ALL SELECT 'FBM-SEED-022', 'Alat Tulis', 'Pensil', 'Pensil kayu HB.', 2500.00, 45, 10, 'pensil.jpg'
+    UNION ALL SELECT 'FBM-SEED-023', 'Produk Beku', 'Nugget Ayam 500 g', 'Nugget ayam beku kemasan 500 g.', 42000.00, 14, 4, 'nugget.jpg'
+    UNION ALL SELECT 'FBM-SEED-024', 'Produk Beku', 'Sosis Sapi 500 g', 'Sosis sapi beku kemasan 500 g.', 26000.00, 16, 4, 'sosis.jpg'
+    UNION ALL SELECT 'FBM-SEED-025', 'Produk Beku', 'Kentang Goreng 500 g', 'Kentang goreng beku kemasan 500 g.', 32000.00, 12, 4, 'kentang.jpg'
 ) AS product_seed
 INNER JOIN categories ON categories.name = product_seed.category_name
 ON DUPLICATE KEY UPDATE

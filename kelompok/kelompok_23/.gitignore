@@ -1,0 +1,2 @@
+# File konfigurasi database per-komputer (dibuat otomatis oleh install.php)
+config/database.local.php

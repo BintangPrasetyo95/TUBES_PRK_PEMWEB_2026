@@ -1,8 +1,12 @@
 <?php
+require_once __DIR__ . '/../config/setup_helpers.php';
+
 function requireRole(array $allowedRoles): void
 {
+    $root = febmart_to_root();
+
     if (!isset($_SESSION['user_id'])) {
-        header("Location: auth/login.php");
+        header('Location: ' . $root . 'auth/login.php');
         exit;
     }
 
@@ -11,7 +15,7 @@ function requireRole(array $allowedRoles): void
     $allowedRoles = array_map('strtolower', $allowedRoles);
 
     if (!in_array($userRole, $allowedRoles, true)) {
-        header("Location: dashboard.php");
+        header('Location: ' . $root . 'dashboard.php');
         exit;
     }
 }

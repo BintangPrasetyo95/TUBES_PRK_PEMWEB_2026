@@ -53,7 +53,7 @@ require_once __DIR__ . '/includes/header.php';
                     Total: <?= $result->num_rows; ?> Pengguna
                 </span>
 
-                <a href="tambah_user.php" class="btn-save">
+                <a href="tambah_user.php" class="btn btn-warning fw-bold text-dark">
                     <i class="bi bi-person-plus me-1"></i>
                     Tambah Pengguna
                 </a>

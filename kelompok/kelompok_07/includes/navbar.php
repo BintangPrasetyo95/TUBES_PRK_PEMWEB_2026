@@ -10,7 +10,7 @@ $menusByRole = [
     'peminjam' => [
         ['label' => 'Beranda', 'path' => 'index.php'],
         ['label' => 'Daftar Alat', 'path' => 'alat/index.php'],
-        ['label' => 'Ajukan Peminjaman', 'path' => 'peminjaman/ajukan.php'],
+        ['label' => 'Ajukan Peminjaman', 'path' => 'peminjaman/index.php'],
         ['label' => 'Riwayat', 'path' => 'peminjaman/riwayat.php'],
     ],
     'admin' => [
@@ -38,6 +38,10 @@ $menus = $menusByRole[$activeRole] ?? $menusByRole['tamu'];
         <nav class="navbar-menu">
             <ul class="navbar-links">
 <?php foreach ($menus as $menu): ?>
+    <?php
+                $isActive = is_current_page($menu['path']) || ($menu['path'] === 'peminjaman/index.php' && is_current_page('peminjaman/ajukan.php'))
+    || ($menu['path'] === 'alat/index.php' && is_current_page('alat/detail.php'));
+                ?>
                 <li>
                     <a href="<?= e(url($menu['path'])) ?>" class="<?= is_current_page($menu['path']) ? 'active' : '' ?>"><?= e($menu['label']) ?></a>
                 </li>

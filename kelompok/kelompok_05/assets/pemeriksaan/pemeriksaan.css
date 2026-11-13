@@ -1,0 +1,29 @@
+/* Gaya khusus modul Pemeriksaan (Peran C). Memakai variabel dari theme.css. */
+.checklist-ringkas { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); padding: var(--space); }
+.checklist-judul { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; margin-bottom: .4rem; }
+.daftar-belum { margin: .25rem 0 0; padding-left: 1.2rem; }
+
+.persyaratan { padding: var(--space); border: 1px solid var(--c-border); border-radius: var(--radius); background: var(--c-surface); scroll-margin-top: 5rem; }
+.persyaratan.has-error { border-color: var(--c-bad); }
+.persyaratan small { display: block; }
+.persyaratan .hint { color: var(--c-info); }
+.wajib { color: var(--c-bad); }
+.penanda { display: inline-block; width: 1.4rem; height: 1.4rem; line-height: 1.4rem; text-align: center; border-radius: 50%; font-size: .85rem; margin-right: .35rem; border: 1px solid var(--c-border); color: var(--c-muted); }
+.penanda-terpenuhi { background: var(--c-ok); border-color: var(--c-ok); color: var(--c-surface); }
+.penanda-belum { border-color: var(--c-bad); color: var(--c-bad); }
+.cek-baris { display: flex; align-items: center; gap: .5rem; font-weight: 400; }
+
+.berkas-item { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; padding: .35rem 0; }
+.berkas-nama { flex: 1 1 12rem; word-break: break-all; }
+.berkas-unggah { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin: .35rem 0; }
+.sumber { margin-top: .5rem; font-size: .9rem; color: var(--c-muted); }
+.sumber summary { cursor: pointer; }
+
+.aksi-form { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: var(--space); }
+.aksi-bahaya { margin-top: calc(var(--space) * 1.5); padding-top: var(--space); border-top: 1px dashed var(--c-border); }
+
+.notif-item { border-left: 4px solid var(--c-border); padding: .6rem var(--space); margin-bottom: .6rem; }
+.notif-baru { border-left-color: var(--c-warn); background: var(--c-bg); }
+.notif-meta { font-size: .9rem; color: var(--c-muted); margin-bottom: .25rem; }
+
+.jenis-info { margin-top: .5rem; padding: .6rem .8rem; background: var(--c-bg); border-radius: var(--radius); font-size: .95rem; }

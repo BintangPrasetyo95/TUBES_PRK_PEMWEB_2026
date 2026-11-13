@@ -127,12 +127,12 @@ if (isPost()) {
 
                     <div class="form-group">
                         <label for="email" class="form-label">Alamat Email (Tidak dapat diubah)</label>
-                        <input type="email" id="email" class="form-control" value="<?= e($userData['email']) ?>" readonly style="opacity: 0.8; cursor: not-allowed;">
+                        <input type="email" id="email" class="form-control" value="<?= e($userData['email']) ?>" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="peran" class="form-label">Peran Akun</label>
-                        <input type="text" id="peran" class="form-control" value="<?= ucfirst(e($userData['peran'])) ?>" readonly style="opacity: 0.8; cursor: not-allowed;">
+                        <input type="text" id="peran" class="form-control" value="<?= ucfirst(e($userData['peran'])) ?>" readonly>
                     </div>
 
                     <div class="form-group">

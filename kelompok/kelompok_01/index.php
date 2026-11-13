@@ -1,4 +1,9 @@
 <?php
+
+date_default_timezone_set('Asia/Jakarta');
+$ip = $_SERVER['HTTP_X_FORWARDED_FOR']
+    ?? $_SERVER['REMOTE_ADDR'];
+
 session_start();
 
 if (isset($_SESSION['user'])) {
@@ -13,6 +18,8 @@ if (isset($_SESSION['user'])) {
     }
     exit;
 }
-
 header('Location: login.php');
 exit;
+
+?>
+

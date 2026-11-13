@@ -134,6 +134,8 @@ small {
     border-right: 1px solid var(--line);
     display: flex;
     flex-direction: column;
+    overflow-y: auto;        
+    scrollbar-gutter: stable;
 }
 
 .nav-label {
@@ -182,6 +184,19 @@ nav a.active {
 .sidebar-note p {
     font-size: 11px;
     margin: 8px 0 0;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #d8ded4;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #aebdb0;
 }
 
 .logout {
@@ -901,14 +916,7 @@ footer span {
     }
 }
 
-
-
-
-
-
-/* ========================================================
-   MODUL KLASIFIKASI BELAJAR SISWA (NATASYA ARDIANA)
-======================================================== */
+/* (KLASIFIKASI BELAJAR SISWA (NATASYA ARDIANA) */
 .arunika-wrapper {
     background: #ffffff;
     padding: 30px;

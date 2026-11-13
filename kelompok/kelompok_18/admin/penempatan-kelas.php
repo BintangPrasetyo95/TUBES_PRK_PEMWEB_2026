@@ -64,12 +64,12 @@ if ($isPost) {
 
     $kelasExists = false;
     if ($kelasId > 0) {
-        $statement = $pdo->prepare('SELECT COUNT(*) FROM kelas WHERE id = :id AND is_active = TRUE');
-        $statement->execute(['id' => $kelasId]);
+        $statement = $pdo->prepare('SELECT COUNT(*) FROM kelas WHERE id = :id AND semester_id = :semester_id AND is_active = TRUE');
+        $statement->execute(['id' => $kelasId, 'semester_id' => $semesterId]);
         $kelasExists = (int) $statement->fetchColumn() > 0;
     }
     if (!$kelasExists) {
-        $errors[] = 'Kelas yang dipilih tidak ditemukan atau sudah nonaktif.';
+        $errors[] = 'Kelas yang dipilih tidak ditemukan, tidak termasuk semester ini, atau sudah nonaktif.';
     }
 
     if ($action === 'place' && $errors === []) {
@@ -108,7 +108,7 @@ if ($isPost) {
                 );
                 $statement->execute(array_merge([$semesterId], $studentIds));
                 if ((int) $statement->fetchColumn() > 0) {
-                    $errors[] = 'Sebagian siswa sudah memiliki penempatan pada semester ini. Muat ulang halaman.';
+                    $errors[] = 'Sebagian siswa sudah ditempatkan pada kelas lain di semester ini. Keluarkan siswa tersebut dari kelas lamanya terlebih dahulu, lalu tempatkan kembali.';
                 }
             }
 
@@ -141,7 +141,7 @@ if ($isPost) {
                     }
                     error_log('ATTENDARA place siswa failed: ' . $exception->getMessage());
                     $errors[] = $exception->getCode() === '23000'
-                        ? 'Sebagian siswa sudah memiliki penempatan pada semester ini.'
+                        ? 'Sebagian siswa sudah ditempatkan pada kelas lain di semester ini. Keluarkan siswa tersebut dari kelas lamanya terlebih dahulu, lalu tempatkan kembali.'
                         : 'Penempatan siswa gagal disimpan.';
                 }
             }
@@ -194,25 +194,26 @@ $semesterList = $pdo->query(
      ORDER BY (status = 'aktif') DESC, tanggal_mulai DESC, id DESC"
 )->fetchAll();
 
-$kelasList = $pdo->query(
-    'SELECT id, kode, nama, tingkat FROM kelas WHERE is_active = TRUE ORDER BY tingkat IS NULL, tingkat, nama'
-)->fetchAll();
-
 $semesterIds = array_map(static fn (array $row): int => (int) $row['id'], $semesterList);
-$kelasIds = array_map(static fn (array $row): int => (int) $row['id'], $kelasList);
 
-// Fall back to the active semester / first class when the request has no valid context.
+// Keep the semester unselected until the Admin chooses one.
 if (!in_array($semesterId, $semesterIds, true)) {
     $semesterId = 0;
-    foreach ($semesterList as $semester) {
-        if ($semesterId === 0 || $semester['status'] === 'aktif') {
-            $semesterId = (int) $semester['id'];
-        }
-        if ($semester['status'] === 'aktif') {
-            break;
-        }
-    }
 }
+
+// A class belongs to exactly one semester; only show classes from the selected one.
+$statement = $pdo->prepare(
+    'SELECT id, kode, nama, tingkat FROM kelas
+     WHERE is_active = TRUE AND semester_id = :semester_id
+     ORDER BY tingkat IS NULL, tingkat, nama'
+);
+$kelasList = [];
+if ($semesterId > 0) {
+    $statement->execute(['semester_id' => $semesterId]);
+    $kelasList = $statement->fetchAll();
+}
+$kelasIds = array_map(static fn (array $row): int => (int) $row['id'], $kelasList);
+
 if (!in_array($kelasId, $kelasIds, true)) {
     $kelasId = $kelasIds === [] ? 0 : (int) $kelasIds[0];
 }
@@ -273,11 +274,15 @@ if ($semesterId > 0) {
                 COALESCE(SUM(ak.kelas_id = :current_kelas), 0) AS jumlah_kelas_ini
          FROM kelas k
          LEFT JOIN anggota_kelas ak ON ak.kelas_id = k.id AND ak.semester_id = :semester_id
-         WHERE k.is_active = TRUE
+         WHERE k.is_active = TRUE AND k.semester_id = :class_semester_id
          GROUP BY k.id, k.nama
          ORDER BY k.tingkat IS NULL, k.tingkat, k.nama'
     );
-    $statement->execute(['semester_id' => $semesterId, 'current_kelas' => $kelasId]);
+    $statement->execute([
+        'semester_id' => $semesterId,
+        'class_semester_id' => $semesterId,
+        'current_kelas' => $kelasId,
+    ]);
     $semesterRecap = $statement->fetchAll();
 }
 
@@ -306,6 +311,7 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php', null, 'Penempatan d
                 <?php if ($semesterList === []): ?>
                     <option value="0">Belum ada semester</option>
                 <?php else: ?>
+                    <option value="0" <?= $semesterId === 0 ? 'selected' : '' ?>>Pilih semester</option>
                     <?php foreach ($semesterList as $semester): ?>
                         <option value="<?= h((string) $semester['id']) ?>" <?= (int) $semester['id'] === $semesterId ? 'selected' : '' ?>>
                             <?= h((string) $semester['nama']) ?><?= $semester['status'] === 'aktif' ? ' (aktif)' : '' ?>
@@ -317,8 +323,10 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php', null, 'Penempatan d
         <div>
             <label for="filter-kelas" class="mb-1.5 block text-sm font-medium text-slate-700">Kelas</label>
             <select id="filter-kelas" name="kelas_id" class="min-h-10 w-full rounded-lg border border-[#dfe6de] bg-white px-3 text-sm">
-                <?php if ($kelasList === []): ?>
-                    <option value="0">Belum ada kelas</option>
+                <?php if ($semesterId === 0): ?>
+                    <option value="0" selected>Pilih semester terlebih dahulu</option>
+                <?php elseif ($kelasList === []): ?>
+                    <option value="0">Belum ada kelas pada semester ini</option>
                 <?php else: ?>
                     <?php foreach ($kelasList as $kelas): ?>
                         <option value="<?= h((string) $kelas['id']) ?>" <?= (int) $kelas['id'] === $kelasId ? 'selected' : '' ?>>
@@ -336,9 +344,13 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php', null, 'Penempatan d
     </form>
 </section>
 
-<?php if ($selectedSemester === null || $selectedKelas === null): ?>
+<?php if ($selectedSemester === null): ?>
     <section class="rounded-2xl border border-[#dfe6de] bg-white p-5 text-sm text-slate-600 sm:p-6">
-        Tambahkan semester dan kelas terlebih dahulu sebelum menempatkan siswa.
+        Pilih semester terlebih dahulu untuk menampilkan kelas dan mengatur penempatan siswa.
+    </section>
+<?php elseif ($selectedKelas === null): ?>
+    <section class="rounded-2xl border border-[#dfe6de] bg-white p-5 text-sm text-slate-600 sm:p-6">
+        Belum ada kelas aktif pada semester ini. Tambahkan kelas untuk semester yang dipilih terlebih dahulu.
     </section>
 <?php else: ?>
     <section class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -352,7 +364,7 @@ admin_page_start('Penempatan Kelas', 'penempatan-kelas.php', null, 'Penempatan d
 
             <?php if ($candidateStudents === []): ?>
                 <p class="rounded-xl bg-[#eff3ee] px-4 py-3 text-sm text-[#5b645b]">
-                    Semua siswa aktif sudah memiliki penempatan pada semester ini.
+                    Semua siswa aktif sudah memiliki penempatan pada semester ini. Semester yang sudah lewat tetap dapat dipilih; untuk memindahkan siswa dalam semester yang sama, keluarkan dulu dari kelas sebelumnya.
                 </p>
             <?php else: ?>
                 <form method="post" action="penempatan-kelas.php" class="space-y-3">

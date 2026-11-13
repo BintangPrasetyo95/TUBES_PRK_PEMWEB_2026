@@ -1,8 +1,7 @@
--- ATTENDARA sample data for the target schema in attendara.sql.
--- Import this file ONCE after creating an empty schema.
+﻿-- ATTENDARA sample data for the target schema in attendara.sql.
+-- Import once after creating a new, empty schema.
 -- Demo logins: admin/admin and guru1/guru1 through guru5/guru5.
--- Password hashes were generated with PHP password_hash(..., PASSWORD_DEFAULT).
--- Demo passwords are intentionally simple; never use these accounts in production.
+-- Demo passwords are for local development only.
 
 USE attendara;
 
@@ -17,189 +16,362 @@ INSERT INTO users (id, username, password_hash, role, is_active) VALUES
 (6, 'guru5', '$2y$12$UHcfzx8Xj7VA4vw4I0W059eTmUpRZd08QWWSDK0z25zefx6q.sjzEO', 'guru', TRUE);
 
 INSERT INTO guru (id, user_id, nomor_induk, nama, email, no_telepon, is_active) VALUES
-(1, 2, 'G-2026-001', 'Andi Pratama, S.Pd.', 'andi.pratama@example.test', '081200000101', TRUE),
-(2, 3, 'G-2026-002', 'Siti Rahmawati, S.Pd.', 'siti.rahmawati@example.test', '081200000102', TRUE),
-(3, 4, 'G-2026-003', 'Budi Santoso, S.Pd.', 'budi.santoso@example.test', '081200000103', TRUE),
-(4, 5, 'G-2026-004', 'Dewi Anggraini, S.Pd.', 'dewi.anggraini@example.test', '081200000104', TRUE),
-(5, 6, 'G-2026-005', 'Rizky Hidayat, S.Kom.', 'rizky.hidayat@example.test', '081200000105', TRUE);
+(1, 2, '198501012010011001', 'Andi Pratama, S.Pd.', 'andi.pratama@example.test', '081200000101', TRUE),
+(2, 3, '198602022011012002', 'Siti Rahmawati, S.Pd.', 'siti.rahmawati@example.test', '081200000102', TRUE),
+(3, 4, '198703032012031003', 'Budi Santoso, S.Pd.', 'budi.santoso@example.test', '081200000103', TRUE),
+(4, 5, '198804042013042004', 'Dewi Anggraini, S.Pd.', 'dewi.anggraini@example.test', '081200000104', TRUE),
+(5, 6, '198905052014051005', 'Rizky Hidayat, S.Kom.', 'rizky.hidayat@example.test', '081200000105', TRUE);
 
 INSERT INTO siswa (id, nomor_induk, nama, jenis_kelamin, tanggal_lahir, is_active) VALUES
-(1, 'SMA-2026-001', 'Ahmad Fauzi', 'L', '2010-01-14', TRUE),
-(2, 'SMA-2026-002', 'Rizal Ramadhan', 'L', '2010-02-21', TRUE),
-(3, 'SMA-2026-003', 'Dimas Saputra', 'L', '2010-03-08', TRUE),
-(4, 'SMA-2026-004', 'Fajar Nugraha', 'L', '2010-04-17', TRUE),
-(5, 'SMA-2026-005', 'Arif Hidayat', 'L', '2010-05-03', TRUE),
-(6, 'SMA-2026-006', 'Bagas Pratama', 'L', '2010-06-12', TRUE),
-(7, 'SMA-2026-007', 'Ilham Maulana', 'L', '2010-07-26', TRUE),
-(8, 'SMA-2026-008', 'Reza Firmansyah', 'L', '2010-08-19', TRUE),
-(9, 'SMA-2026-009', 'Yoga Kurniawan', 'L', '2010-09-11', TRUE),
-(10, 'SMA-2026-010', 'Naufal Akbar', 'L', '2010-10-05', TRUE),
-(11, 'SMA-2026-011', 'Farhan Hakim', 'L', '2010-11-22', TRUE),
-(12, 'SMA-2026-012', 'Aldi Setiawan', 'L', '2010-12-09', TRUE),
-(13, 'SMA-2026-013', 'Rafi Alamsyah', 'L', '2010-01-29', TRUE),
-(14, 'SMA-2026-014', 'Galih Permana', 'L', '2010-02-13', TRUE),
-(15, 'SMA-2026-015', 'Daffa Putra', 'L', '2010-03-24', TRUE),
-(16, 'SMA-2026-016', 'Bima Arya', 'L', '2010-04-06', TRUE),
-(17, 'SMA-2026-017', 'Kevin Wijaya', 'L', '2010-05-28', TRUE),
-(18, 'SMA-2026-018', 'Zidan Maulana', 'L', '2010-06-15', TRUE),
-(19, 'SMA-2026-019', 'Aisyah Putri', 'P', '2010-01-18', TRUE),
-(20, 'SMA-2026-020', 'Nabila Safitri', 'P', '2010-02-27', TRUE),
-(21, 'SMA-2026-021', 'Putri Maharani', 'P', '2010-03-12', TRUE),
-(22, 'SMA-2026-022', 'Zahra Amelia', 'P', '2010-04-23', TRUE),
-(23, 'SMA-2026-023', 'Intan Permatasari', 'P', '2010-05-16', TRUE),
-(24, 'SMA-2026-024', 'Citra Lestari', 'P', '2010-06-07', TRUE),
-(25, 'SMA-2026-025', 'Alya Rahma', 'P', '2010-07-20', TRUE),
-(26, 'SMA-2026-026', 'Dinda Aprilia', 'P', '2010-08-03', TRUE),
-(27, 'SMA-2026-027', 'Salsabila Nurfadila', 'P', '2010-09-14', TRUE),
-(28, 'SMA-2026-028', 'Annisa Khairunnisa', 'P', '2010-10-25', TRUE),
-(29, 'SMA-2026-029', 'Tiara Anindya', 'P', '2010-11-08', TRUE),
-(30, 'SMA-2026-030', 'Nadia Oktaviani', 'P', '2010-12-19', TRUE),
-(31, 'SMA-2026-031', 'Rara Puspitasari', 'P', '2010-01-07', TRUE),
-(32, 'SMA-2026-032', 'Farah Zahra', 'P', '2010-02-16', TRUE),
-(33, 'SMA-2026-033', 'Mutiara Sari', 'P', '2010-03-29', TRUE),
-(34, 'SMA-2026-034', 'Sheila Anjani', 'P', '2010-04-11', TRUE),
-(35, 'SMA-2026-035', 'Fitria Kusuma', 'P', '2010-05-22', TRUE),
-(36, 'SMA-2026-036', 'Vina Anggraini', 'P', '2010-06-30', TRUE),
-(37, 'SMA-2026-037', 'Arkan Prakoso', 'L', '2010-07-13', TRUE),
-(38, 'SMA-2026-038', 'Rangga Firmanda', 'L', '2010-08-24', TRUE),
-(39, 'SMA-2026-039', 'Fikri Ramadhan', 'L', '2010-09-06', TRUE),
-(40, 'SMA-2026-040', 'Hafiz Maulana', 'L', '2010-10-17', TRUE),
-(41, 'SMA-2026-041', 'Raka Wibowo', 'L', '2010-11-29', TRUE),
-(42, 'SMA-2026-042', 'Dhani Saputra', 'L', '2010-12-12', TRUE),
-(43, 'SMA-2026-043', 'Laras Wulandari', 'P', '2010-07-04', TRUE),
-(44, 'SMA-2026-044', 'Mega Pertiwi', 'P', '2010-08-15', TRUE),
-(45, 'SMA-2026-045', 'Salma Nurfauziah', 'P', '2010-09-27', TRUE),
-(46, 'SMA-2026-046', 'Niken Maharani', 'P', '2010-10-09', TRUE),
-(47, 'SMA-2026-047', 'Gita Apriliani', 'P', '2010-11-18', TRUE),
-(48, 'SMA-2026-048', 'Kirana Puspita', 'P', '2010-12-26', TRUE);
+(1, '1000', 'Ahmad Fauzi', 'L', '2009-01-01', TRUE),
+(2, '1001', 'Rizal Firmansyah', 'L', '2009-02-02', TRUE),
+(3, '1002', 'Dimas Putra', 'L', '2009-03-03', TRUE),
+(4, '1003', 'Fajar Lestari', 'L', '2009-04-04', TRUE),
+(5, '1004', 'Arif Puspitasari', 'L', '2009-05-05', TRUE),
+(6, '1005', 'Bagas Pratama', 'L', '2009-06-06', TRUE),
+(7, '1006', 'Ilham Alamsyah', 'L', '2009-07-07', TRUE),
+(8, '1007', 'Reza Maharani', 'L', '2009-08-08', TRUE),
+(9, '1008', 'Yoga Anindya', 'L', '2009-09-09', TRUE),
+(10, '1009', 'Naufal Nugraha', 'L', '2009-10-10', TRUE),
+(11, '1010', 'Farhan Hakim', 'L', '2009-11-11', TRUE),
+(12, '1011', 'Aldi Amelia', 'L', '2009-12-12', TRUE),
+(13, '1012', 'Rafi Nurfadila', 'L', '2009-01-13', TRUE),
+(14, '1013', 'Galih Ramadhan', 'L', '2009-02-14', TRUE),
+(15, '1014', 'Daffa Kurniawan', 'L', '2009-03-15', TRUE),
+(16, '1015', 'Bima Arya', 'L', '2009-04-16', TRUE),
+(17, '1016', 'Kevin Rahma', 'L', '2009-05-17', TRUE),
+(18, '1017', 'Zidan Anggraini', 'L', '2009-06-18', TRUE),
+(19, '1018', 'Aisyah Maulana', 'P', '2009-07-19', TRUE),
+(20, '1019', 'Nabila Permana', 'P', '2009-08-20', TRUE),
+(21, '1020', 'Putri Permatasari', 'P', '2009-09-21', TRUE),
+(22, '1021', 'Zahra Oktaviani', 'P', '2009-10-22', TRUE),
+(23, '1022', 'Intan Hidayat', 'P', '2009-11-23', TRUE),
+(24, '1023', 'Citra Setiawan', 'P', '2009-12-24', TRUE),
+(25, '1024', 'Alya Safitri', 'P', '2009-01-25', TRUE),
+(26, '1025', 'Dinda Khairunnisa', 'P', '2009-02-26', TRUE),
+(27, '1026', 'Salsabila Saputra', 'P', '2009-03-27', TRUE),
+(28, '1027', 'Annisa Akbar', 'P', '2009-04-01', TRUE),
+(29, '1028', 'Tiara Wijaya', 'P', '2009-05-02', TRUE),
+(30, '1029', 'Nadia Aprilia', 'P', '2009-06-03', TRUE),
+(31, '1030', 'Ahmad Ramadhan', 'L', '2009-07-04', TRUE),
+(32, '1031', 'Rizal Kurniawan', 'L', '2009-08-05', TRUE),
+(33, '1032', 'Dimas Arya', 'L', '2009-09-06', TRUE),
+(34, '1033', 'Fajar Rahma', 'L', '2009-10-07', TRUE),
+(35, '1034', 'Arif Anggraini', 'L', '2009-11-08', TRUE),
+(36, '1035', 'Bagas Maulana', 'L', '2009-12-09', TRUE),
+(37, '1036', 'Ilham Permana', 'L', '2009-01-10', TRUE),
+(38, '1037', 'Reza Permatasari', 'L', '2009-02-11', TRUE),
+(39, '1038', 'Yoga Oktaviani', 'L', '2009-03-12', TRUE),
+(40, '1039', 'Naufal Hidayat', 'L', '2009-04-13', TRUE),
+(41, '1040', 'Farhan Setiawan', 'L', '2009-05-14', TRUE),
+(42, '1041', 'Aldi Safitri', 'L', '2009-06-15', TRUE),
+(43, '1042', 'Rafi Khairunnisa', 'L', '2009-07-16', TRUE),
+(44, '1043', 'Galih Saputra', 'L', '2009-08-17', TRUE),
+(45, '1044', 'Daffa Akbar', 'L', '2009-09-18', TRUE),
+(46, '1045', 'Bima Wijaya', 'L', '2009-10-19', TRUE),
+(47, '1046', 'Kevin Aprilia', 'L', '2009-11-20', TRUE),
+(48, '1047', 'Zidan Fauzi', 'L', '2009-12-21', TRUE),
+(49, '1048', 'Aisyah Firmansyah', 'P', '2009-01-22', TRUE),
+(50, '1049', 'Nabila Putra', 'P', '2009-02-23', TRUE),
+(51, '1050', 'Putri Lestari', 'P', '2009-03-24', TRUE),
+(52, '1051', 'Zahra Puspitasari', 'P', '2009-04-25', TRUE),
+(53, '1052', 'Intan Pratama', 'P', '2009-05-26', TRUE),
+(54, '1053', 'Citra Alamsyah', 'P', '2009-06-27', TRUE),
+(55, '1054', 'Alya Maharani', 'P', '2009-07-01', TRUE),
+(56, '1055', 'Dinda Anindya', 'P', '2009-08-02', TRUE),
+(57, '1056', 'Salsabila Nugraha', 'P', '2009-09-03', TRUE),
+(58, '1057', 'Annisa Hakim', 'P', '2009-10-04', TRUE),
+(59, '1058', 'Tiara Amelia', 'P', '2009-11-05', TRUE),
+(60, '1059', 'Nadia Nurfadila', 'P', '2009-12-06', TRUE),
+(61, '1060', 'Ahmad Saputra', 'L', '2009-01-07', TRUE),
+(62, '1061', 'Rizal Akbar', 'L', '2009-02-08', TRUE),
+(63, '1062', 'Dimas Wijaya', 'L', '2009-03-09', TRUE),
+(64, '1063', 'Fajar Aprilia', 'L', '2009-04-10', TRUE),
+(65, '1064', 'Arif Fauzi', 'L', '2009-05-11', TRUE),
+(66, '1065', 'Bagas Firmansyah', 'L', '2009-06-12', TRUE),
+(67, '1066', 'Ilham Putra', 'L', '2009-07-13', TRUE),
+(68, '1067', 'Reza Lestari', 'L', '2009-08-14', TRUE),
+(69, '1068', 'Yoga Puspitasari', 'L', '2009-09-15', TRUE),
+(70, '1069', 'Naufal Pratama', 'L', '2009-10-16', TRUE),
+(71, '1070', 'Farhan Alamsyah', 'L', '2009-11-17', TRUE),
+(72, '1071', 'Aldi Maharani', 'L', '2009-12-18', TRUE),
+(73, '1072', 'Rafi Anindya', 'L', '2009-01-19', TRUE),
+(74, '1073', 'Galih Nugraha', 'L', '2009-02-20', TRUE),
+(75, '1074', 'Daffa Hakim', 'L', '2009-03-21', TRUE),
+(76, '1075', 'Bima Amelia', 'L', '2009-04-22', TRUE),
+(77, '1076', 'Kevin Nurfadila', 'L', '2009-05-23', TRUE),
+(78, '1077', 'Zidan Ramadhan', 'L', '2009-06-24', TRUE),
+(79, '1078', 'Aisyah Kurniawan', 'P', '2009-07-25', TRUE),
+(80, '1079', 'Nabila Arya', 'P', '2009-08-26', TRUE),
+(81, '1080', 'Putri Rahma', 'P', '2009-09-27', TRUE),
+(82, '1081', 'Zahra Anggraini', 'P', '2009-10-01', TRUE),
+(83, '1082', 'Intan Maulana', 'P', '2009-11-02', TRUE),
+(84, '1083', 'Citra Permana', 'P', '2009-12-03', TRUE),
+(85, '1084', 'Alya Permatasari', 'P', '2009-01-04', TRUE),
+(86, '1085', 'Dinda Oktaviani', 'P', '2009-02-05', TRUE),
+(87, '1086', 'Salsabila Hidayat', 'P', '2009-03-06', TRUE),
+(88, '1087', 'Annisa Setiawan', 'P', '2009-04-07', TRUE),
+(89, '1088', 'Tiara Safitri', 'P', '2009-05-08', TRUE),
+(90, '1089', 'Nadia Khairunnisa', 'P', '2009-06-09', TRUE),
+(91, '1090', 'Deru', 'L', '2009-04-09', TRUE),
+(92, '1091', 'Kadek', 'L', '2009-07-20', TRUE),
+(93, '1092', 'Kanaya', 'L', '2009-08-09', TRUE),
+(94, '1093', 'Intan', 'P', '2010-06-09', TRUE),
+(95, '1094', 'Fany', 'P', '2009-06-09', TRUE);
 
 INSERT INTO mata_pelajaran (id, kode, nama, is_active) VALUES
-(1, 'MAT', 'Matematika', TRUE),
-(2, 'BIN', 'Bahasa Indonesia', TRUE),
-(3, 'FIS', 'Fisika', TRUE),
-(4, 'BIO', 'Biologi', TRUE),
-(5, 'BIG', 'Bahasa Inggris', TRUE),
-(6, 'INF', 'Informatika', TRUE),
-(7, 'KIM', 'Kimia', TRUE);
+(1, 'MAT11', 'Matematika - 11', TRUE),
+(2, 'BIN11', 'Bahasa Indonesia - 11', TRUE),
+(3, 'FIS11', 'Fisika - 11', TRUE),
+(4, 'BIO11', 'Biologi - 11', TRUE),
+(5, 'BIG11', 'Bahasa Inggris - 11', TRUE),
+(6, 'INF11', 'Informatika - 11', TRUE),
+(7, 'KIM11', 'Kimia - 11', TRUE);
 
 INSERT INTO semester (id, kode, nama, tanggal_mulai, tanggal_selesai, status) VALUES
-(1, '2025-GENAP', 'Tahun Ajaran 2025/2026 — Genap', '2026-01-05', '2026-06-30', 'selesai'),
-(2, '2026-GANJIL', 'Tahun Ajaran 2026/2027 — Ganjil', '2026-07-13', '2026-12-19', 'aktif');
+(1, '2026-GENAP', '2026 - Genap', '2026-01-05', '2026-06-30', 'selesai'),
+(2, '2026-GANJIL', '2026 - Ganjil', '2026-07-13', '2026-12-19', 'aktif');
 
 INSERT INTO kelas (id, semester_id, kode, nama, tingkat, is_active) VALUES
-(1, 1, 'X-IPA-1', 'X IPA 1', 10, TRUE),
-(2, 2, 'XI-IPA-1', 'XI IPA 1', 11, TRUE),
-(3, 2, 'XI-IPS-1', 'XI IPS 1', 11, TRUE);
+(1, 1, 'X-1', 'X-1', 10, TRUE),
+(2, 1, 'X-2', 'X-2', 10, TRUE),
+(3, 1, 'X-3', 'X-3', 10, TRUE),
+(4, 2, 'XI-1', 'XI-1', 11, TRUE),
+(5, 2, 'XI-2', 'XI-2', 11, TRUE),
+(6, 2, 'XI-3', 'XI-3', 11, TRUE);
 
--- Siswa angkatan kelas XI memiliki riwayat kelas X pada semester sebelumnya.
-INSERT INTO anggota_kelas (siswa_id, kelas_id, semester_id)
-SELECT id, 1, 1 FROM siswa WHERE id BETWEEN 1 AND 36;
+-- The same 90 students progress from three grade-X classes to three grade-XI classes.
+INSERT INTO anggota_kelas (siswa_id, kelas_id, semester_id) VALUES
+(1, 1, 1),
+(2, 1, 1),
+(3, 1, 1),
+(4, 1, 1),
+(5, 1, 1),
+(6, 1, 1),
+(7, 1, 1),
+(8, 1, 1),
+(9, 1, 1),
+(10, 1, 1),
+(11, 1, 1),
+(12, 1, 1),
+(13, 1, 1),
+(14, 1, 1),
+(15, 1, 1),
+(16, 1, 1),
+(17, 1, 1),
+(18, 1, 1),
+(19, 1, 1),
+(20, 1, 1),
+(21, 1, 1),
+(22, 1, 1),
+(23, 1, 1),
+(24, 1, 1),
+(25, 1, 1),
+(26, 1, 1),
+(27, 1, 1),
+(28, 1, 1),
+(29, 1, 1),
+(30, 1, 1),
+(31, 2, 1),
+(32, 2, 1),
+(33, 2, 1),
+(34, 2, 1),
+(35, 2, 1),
+(36, 2, 1),
+(37, 2, 1),
+(38, 2, 1),
+(39, 2, 1),
+(40, 2, 1),
+(41, 2, 1),
+(42, 2, 1),
+(43, 2, 1),
+(44, 2, 1),
+(45, 2, 1),
+(46, 2, 1),
+(47, 2, 1),
+(48, 2, 1),
+(49, 2, 1),
+(50, 2, 1),
+(51, 2, 1),
+(52, 2, 1),
+(53, 2, 1),
+(54, 2, 1),
+(55, 2, 1),
+(56, 2, 1),
+(57, 2, 1),
+(58, 2, 1),
+(59, 2, 1),
+(60, 2, 1),
+(61, 3, 1),
+(62, 3, 1),
+(63, 3, 1),
+(64, 3, 1),
+(65, 3, 1),
+(66, 3, 1),
+(67, 3, 1),
+(68, 3, 1),
+(69, 3, 1),
+(70, 3, 1),
+(71, 3, 1),
+(72, 3, 1),
+(73, 3, 1),
+(74, 3, 1),
+(75, 3, 1),
+(76, 3, 1),
+(77, 3, 1),
+(78, 3, 1),
+(79, 3, 1),
+(80, 3, 1),
+(81, 3, 1),
+(82, 3, 1),
+(83, 3, 1),
+(84, 3, 1),
+(85, 3, 1),
+(86, 3, 1),
+(87, 3, 1),
+(88, 3, 1),
+(89, 3, 1),
+(90, 3, 1),
+(1, 4, 2),
+(2, 4, 2),
+(3, 4, 2),
+(4, 4, 2),
+(5, 4, 2),
+(6, 4, 2),
+(7, 4, 2),
+(8, 4, 2),
+(9, 4, 2),
+(10, 4, 2),
+(11, 4, 2),
+(12, 4, 2),
+(13, 4, 2),
+(14, 4, 2),
+(15, 4, 2),
+(16, 4, 2),
+(17, 4, 2),
+(18, 4, 2),
+(19, 4, 2),
+(20, 4, 2),
+(21, 4, 2),
+(22, 4, 2),
+(23, 4, 2),
+(24, 4, 2),
+(25, 4, 2),
+(26, 4, 2),
+(27, 4, 2),
+(28, 4, 2),
+(29, 4, 2),
+(30, 4, 2),
+(31, 5, 2),
+(32, 5, 2),
+(33, 5, 2),
+(34, 5, 2),
+(35, 5, 2),
+(36, 5, 2),
+(37, 5, 2),
+(38, 5, 2),
+(39, 5, 2),
+(40, 5, 2),
+(41, 5, 2),
+(42, 5, 2),
+(43, 5, 2),
+(44, 5, 2),
+(45, 5, 2),
+(46, 5, 2),
+(47, 5, 2),
+(48, 5, 2),
+(49, 5, 2),
+(50, 5, 2),
+(51, 5, 2),
+(52, 5, 2),
+(53, 5, 2),
+(54, 5, 2),
+(55, 5, 2),
+(56, 5, 2),
+(57, 5, 2),
+(58, 5, 2),
+(59, 5, 2),
+(60, 5, 2),
+(61, 6, 2),
+(62, 6, 2),
+(63, 6, 2),
+(64, 6, 2),
+(65, 6, 2),
+(66, 6, 2),
+(67, 6, 2),
+(68, 6, 2),
+(69, 6, 2),
+(70, 6, 2),
+(71, 6, 2),
+(72, 6, 2),
+(73, 6, 2),
+(74, 6, 2),
+(75, 6, 2),
+(76, 6, 2),
+(77, 6, 2),
+(78, 6, 2),
+(79, 6, 2),
+(80, 6, 2),
+(81, 6, 2),
+(82, 6, 2),
+(83, 6, 2),
+(84, 6, 2),
+(85, 6, 2),
+(86, 6, 2),
+(87, 6, 2),
+(88, 6, 2),
+(89, 6, 2),
+(90, 6, 2);
 
-INSERT INTO anggota_kelas (siswa_id, kelas_id, semester_id)
-SELECT id, 2, 2 FROM siswa WHERE id BETWEEN 1 AND 36;
-
-INSERT INTO anggota_kelas (siswa_id, kelas_id, semester_id)
-SELECT id, 3, 2 FROM siswa WHERE id BETWEEN 37 AND 48;
-
--- Guru dapat memiliki banyak penugasan; setiap baris adalah satu guru/mapel/kelas.
+-- Assign each of the seven grade-XI subjects to each current class.
+-- Teachers and usernames retain the existing demo identities.
 INSERT INTO penugasan_guru (id, guru_id, mata_pelajaran_id, kelas_id) VALUES
-(1, 1, 1, 2),  -- Andi: Matematika, XI IPA 1
-(2, 1, 1, 3),  -- Andi: Matematika, XI IPS 1
-(3, 2, 2, 2),  -- Siti: Bahasa Indonesia, XI IPA 1
-(4, 2, 2, 3),  -- Siti: Bahasa Indonesia, XI IPS 1
-(5, 3, 3, 2),  -- Budi: Fisika, XI IPA 1
-(6, 3, 1, 3),  -- Budi: Matematika, XI IPS 1
-(7, 4, 4, 2),  -- Dewi: Biologi, XI IPA 1
-(8, 4, 7, 2),  -- Dewi: Kimia, XI IPA 1
-(9, 4, 4, 3),  -- Dewi: Biologi, XI IPS 1
-(10, 5, 5, 2), -- Rizky: Bahasa Inggris, XI IPA 1
-(11, 5, 5, 3), -- Rizky: Bahasa Inggris, XI IPS 1
-(12, 5, 6, 2), -- Rizky: Informatika, XI IPA 1
-(13, 1, 1, 1); -- Riwayat Andi: Matematika, X IPA 1
+(1, 1, 1, 4),
+(2, 2, 2, 4),
+(3, 3, 3, 4),
+(4, 4, 4, 4),
+(5, 5, 5, 4),
+(6, 1, 6, 4),
+(7, 2, 7, 4),
+(8, 1, 1, 5),
+(9, 2, 2, 5),
+(10, 3, 3, 5),
+(11, 4, 4, 5),
+(12, 5, 5, 5),
+(13, 1, 6, 5),
+(14, 2, 7, 5),
+(15, 1, 1, 6),
+(16, 2, 2, 6),
+(17, 3, 3, 6),
+(18, 4, 4, 6),
+(19, 5, 5, 6),
+(20, 1, 6, 6),
+(21, 2, 7, 6);
 
+-- One weekly schedule per assignment; sessions, attendance, groups and points start empty.
 INSERT INTO jadwal_mengajar
   (id, penugasan_guru_id, hari, jam_mulai, jam_selesai, berlaku_mulai, berlaku_sampai)
 VALUES
-(1, 1, WEEKDAY(CURRENT_DATE()) + 1, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
-(2, 2, 3, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
-(3, 3, 2, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
-(4, 4, 4, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
-(5, 5, 1, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
-(6, 6, 5, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
-(7, 7, 2, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
-(8, 8, 4, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
-(9, 9, 5, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
-(10, 10, 3, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
-(11, 11, 1, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
-(12, 12, 4, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
-(13, 13, 1, '07:00:00', '08:30:00', '2026-01-05', '2026-06-30');
-
--- Sesi aktif demo untuk kelas berisi 36 siswa: 34 tap dan dua status non-hadir.
-INSERT INTO sesi_pembelajaran
-  (id, jadwal_mengajar_id, mulai_at, selesai_at, status, jumlah_tap, tap_terakhir_at)
-VALUES
-(1, 1, CURRENT_TIMESTAMP(), NULL, 'berlangsung', 34, CURRENT_TIMESTAMP()),
-(2, 13, '2026-04-13 07:05:00', '2026-04-13 08:25:00', 'selesai', 33, NULL);
-
-INSERT INTO absensi
-  (sesi_pembelajaran_id, siswa_id, status, dicatat_oleh_user_id, waktu_dicatat, catatan)
-SELECT 1, ak.siswa_id,
-       CASE ak.siswa_id
-         WHEN 35 THEN 'izin'
-         WHEN 36 THEN 'alpha'
-         ELSE 'hadir'
-       END,
-       2, CURRENT_TIMESTAMP(),
-       CASE ak.siswa_id
-         WHEN 35 THEN 'Izin keluarga'
-         WHEN 36 THEN 'Belum ada keterangan'
-         ELSE NULL
-       END
-FROM anggota_kelas ak
-WHERE ak.kelas_id = 2 AND ak.semester_id = 2;
-
-INSERT INTO absensi
-  (sesi_pembelajaran_id, siswa_id, status, dicatat_oleh_user_id, waktu_dicatat, catatan)
-SELECT 2, ak.siswa_id,
-       CASE ak.siswa_id
-         WHEN 5 THEN 'sakit'
-         WHEN 17 THEN 'izin'
-         WHEN 28 THEN 'alpha'
-         ELSE 'hadir'
-       END,
-       2, '2026-04-13 07:10:00',
-       CASE ak.siswa_id
-         WHEN 5 THEN 'Surat keterangan diserahkan ke sekolah'
-         WHEN 17 THEN 'Izin kegiatan keluarga'
-         WHEN 28 THEN 'Tidak hadir'
-         ELSE NULL
-       END
-FROM anggota_kelas ak
-WHERE ak.kelas_id = 1 AND ak.semester_id = 1;
-
-INSERT INTO kelompok (id, penugasan_guru_id, nama) VALUES
-(1, 1, 'Kelompok Aljabar'),
-(2, 1, 'Kelompok Geometri'),
-(3, 1, 'Kelompok Statistika'),
-(4, 1, 'Kelompok Eksplorasi');
-
--- Four balanced groups: each receives four or five students of each gender.
-INSERT INTO anggota_kelompok (kelompok_id, siswa_id)
-SELECT CASE
-         WHEN siswa_id BETWEEN 1 AND 5 OR siswa_id BETWEEN 19 AND 22 THEN 1
-         WHEN siswa_id BETWEEN 6 AND 10 OR siswa_id BETWEEN 23 AND 26 THEN 2
-         WHEN siswa_id BETWEEN 11 AND 14 OR siswa_id BETWEEN 27 AND 31 THEN 3
-         WHEN siswa_id BETWEEN 15 AND 18 OR siswa_id BETWEEN 32 AND 36 THEN 4
-       END,
-       siswa_id
-FROM anggota_kelas
-WHERE kelas_id = 2 AND semester_id = 2;
-
-INSERT INTO poin_keaktifan
-  (sesi_pembelajaran_id, siswa_id, poin, dicatat_oleh_user_id, waktu_dicatat, catatan)
-VALUES
-(1, 1, 5.00, 2, CURRENT_TIMESTAMP(), 'Menjelaskan langkah penyelesaian di papan tulis'),
-(1, 19, 3.00, 2, CURRENT_TIMESTAMP(), 'Membantu kelompok memeriksa jawaban'),
-(2, 8, 2.00, 2, '2026-04-13 08:00:00', 'Aktif menjawab pertanyaan');
+(1, 1, 1, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(2, 2, 2, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(3, 3, 3, '11:00:00', '12:30:00', '2026-07-13', '2026-12-19'),
+(4, 4, 4, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(5, 5, 5, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(6, 6, 1, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(7, 7, 2, '11:00:00', '12:30:00', '2026-07-13', '2026-12-19'),
+(8, 8, 3, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(9, 9, 4, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(10, 10, 5, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(11, 11, 1, '11:00:00', '12:30:00', '2026-07-13', '2026-12-19'),
+(12, 12, 2, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(13, 13, 3, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(14, 14, 4, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(15, 15, 5, '11:00:00', '12:30:00', '2026-07-13', '2026-12-19'),
+(16, 16, 1, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(17, 17, 2, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(18, 18, 3, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(19, 19, 4, '11:00:00', '12:30:00', '2026-07-13', '2026-12-19'),
+(20, 20, 5, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(21, 21, 1, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19');
 
 COMMIT;

@@ -5,23 +5,46 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/../config/database.php';
 
+// Cadangan jika ekstensi mbstring tidak aktif di PHP.
+if (!function_exists('mb_substr')) {
+    function mb_substr($teks, $mulai, $panjang = null) {
+        return $panjang === null ? substr($teks, $mulai) : substr($teks, $mulai, $panjang);
+    }
+}
+if (!function_exists('mb_strtolower')) {
+    function mb_strtolower($teks) {
+        return strtolower($teks);
+    }
+}
+
 // ===============================
 // PENGATURAN
 // ===============================
-$PPN_PERSEN     = 0;     // contoh: 11 untuk PPN 11%
-$SERVICE_PERSEN = 0;     // contoh: 5 untuk service charge 5%
-$WAJIB_LOGIN    = false; // ubah ke true jika sistem login sudah siap
+$PPN_PERSEN     = 0;   // contoh: 11 untuk PPN 11%
+$SERVICE_PERSEN = 0;   // contoh: 5 untuk service charge 5%
 
-// Hak akses. Role diambil dari session, jika belum ada dianggap admin.
-$role      = $_SESSION['role'] ?? 'admin';
+// Login & role sudah dijaga oleh index.php
+$role       = $_SESSION['role'] ?? '';
 $boleh_void = in_array($role, ['admin', 'owner'], true);
+$user_id    = (int) ($_SESSION['user_id'] ?? 0);
 
-if ($WAJIB_LOGIN && empty($_SESSION['user_id'])) {
-    echo '<div class="p-6 text-red-600">Silakan login terlebih dahulu.</div>';
-    exit;
+// Token CSRF untuk semua form di halaman kasir
+if (empty($_SESSION['csrf_kasir'])) {
+    $_SESSION['csrf_kasir'] = bin2hex(random_bytes(32));
 }
+$csrf = $_SESSION['csrf_kasir'];
 
-$user_id = (int) ($_SESSION['user_id'] ?? 1);
+$error = '';
+
+$post_ok = false;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token   = (string) ($_POST['csrf_token'] ?? '');
+    $post_ok = hash_equals($csrf, $token);
+
+    if (!$post_ok) {
+        $error = 'Permintaan tidak valid. Muat ulang halaman lalu coba lagi.';
+    }
+}
 
 // Redirect menggunakan JavaScript karena layout sudah mengeluarkan HTML.
 function redirectKasir($url) {
@@ -29,27 +52,10 @@ function redirectKasir($url) {
     exit;
 }
 
-// Keranjang belanja.
-if (!isset($_SESSION['keranjang_kasir'])) {
-    $_SESSION['keranjang_kasir'] = [];
-}
-
-$error = '';
-
 // ===============================
 // FUNGSI BANTU
 // ===============================
 
-// Menghitung total keranjang (sebelum diskon/pajak).
-function totalKeranjang($keranjang) {
-    $total = 0;
-    foreach ($keranjang as $item) {
-        $total += $item['harga'] * $item['qty'];
-    }
-    return $total;
-}
-
-// Menghitung diskon, service charge, pajak, dan total akhir.
 function hitungTotal($subtotal, $diskon, $svc_persen, $ppn_persen) {
     $diskon  = min(max(0, $diskon), $subtotal);
     $dasar   = $subtotal - $diskon;
@@ -65,14 +71,10 @@ function hitungTotal($subtotal, $diskon, $svc_persen, $ppn_persen) {
     ];
 }
 
-// Membuat nomor invoice unik.
 function buatInvoice($conn) {
     do {
         $invoice = 'INV-' . date('YmdHis') . '-' . random_int(100, 999);
-
-        $stmt = mysqli_prepare($conn,
-            "SELECT id FROM orders WHERE no_invoice = ? LIMIT 1"
-        );
+        $stmt = mysqli_prepare($conn, "SELECT id FROM orders WHERE no_invoice = ? LIMIT 1");
         mysqli_stmt_bind_param($stmt, "s", $invoice);
         mysqli_stmt_execute($stmt);
         $ada = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
@@ -81,8 +83,6 @@ function buatInvoice($conn) {
     return $invoice;
 }
 
-// Mengambil total tagihan, total dibayar, dan sisa dari tabel payments.
-// Harus dipanggil di dalam transaksi (FOR UPDATE).
 function hitungPembayaran($conn, $order_id) {
     $stmt = mysqli_prepare($conn,
         "SELECT o.total_tagihan, o.status_order,
@@ -99,7 +99,6 @@ function hitungPembayaran($conn, $order_id) {
     if (!$row) {
         throw new Exception('Transaksi tidak ditemukan.');
     }
-
     if ($row['status_order'] === 'batal') {
         throw new Exception('Transaksi ini sudah dibatalkan.');
     }
@@ -114,7 +113,6 @@ function hitungPembayaran($conn, $order_id) {
     ];
 }
 
-// Simpan pembayaran + update status order.
 function simpanPembayaran($conn, $order_id, $metode, $nominal, $uang, $kembalian) {
     $cek = mysqli_query($conn,
         "SELECT COALESCE(MAX(urutan_split), 0) + 1 AS urutan
@@ -134,17 +132,12 @@ function simpanPembayaran($conn, $order_id, $metode, $nominal, $uang, $kembalian
     $p = hitungPembayaran($conn, $order_id);
     $status = ($p['sisa'] <= 0) ? 'lunas' : 'sebagian';
 
-    $upd = mysqli_prepare($conn,
-        "UPDATE orders SET status_order = ?, tipe_pembayaran = 'split' WHERE id = ?"
-    );
+    $upd = mysqli_prepare($conn, "UPDATE orders SET status_order = ?, tipe_pembayaran = 'split' WHERE id = ?");
     mysqli_stmt_bind_param($upd, "si", $status, $order_id);
     mysqli_stmt_execute($upd);
 
-    // Kalau sudah lunas, tandai semua item lunas.
     if ($status === 'lunas') {
-        $updItem = mysqli_prepare($conn,
-            "UPDATE order_items SET status_bayar_item = 'lunas' WHERE order_id = ?"
-        );
+        $updItem = mysqli_prepare($conn, "UPDATE order_items SET status_bayar_item = 'lunas' WHERE order_id = ?");
         mysqli_stmt_bind_param($updItem, "i", $order_id);
         mysqli_stmt_execute($updItem);
     }
@@ -152,214 +145,156 @@ function simpanPembayaran($conn, $order_id, $metode, $nominal, $uang, $kembalian
     return $status;
 }
 
-// ===============================
-// TAMBAH PRODUK KE KERANJANG
-// ===============================
-if (isset($_POST['tambah'])) {
-    $id  = (int) $_POST['product_id'];
-    $qty = max(1, (int) ($_POST['qty'] ?? 1));
-
-    $stmt = mysqli_prepare($conn,
-        "SELECT id, nama_produk, harga, stok FROM products WHERE id = ?"
-    );
-    mysqli_stmt_bind_param($stmt, "i", $id);
-    mysqli_stmt_execute($stmt);
-
-    $produk = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-
-    if ($produk && $produk['stok'] > 0) {
-        $jumlah = ($_SESSION['keranjang_kasir'][$id]['qty'] ?? 0) + $qty;
-
-        if ($jumlah <= $produk['stok']) {
-            $_SESSION['keranjang_kasir'][$id] = [
-                'id'    => $id,
-                'nama'  => $produk['nama_produk'],
-                'harga' => (float) $produk['harga'],
-                'qty'   => $jumlah
-            ];
-        } else {
-            $error = 'Jumlah produk melebihi stok tersedia.';
-        }
-    } else {
-        $error = 'Produk tidak tersedia atau stok habis.';
-    }
+function urlGambar($nama_file) {
+    if (!$nama_file) return '';
+    $nama_file = basename($nama_file);
+    if (!is_file(__DIR__ . '/../uploads/produk/' . $nama_file)) return '';
+    return 'uploads/produk/' . rawurlencode($nama_file);
 }
 
-// ===============================
-// UBAH JUMLAH PRODUK
-// ===============================
-if (isset($_POST['update_qty'])) {
-    $id  = (int) $_POST['product_id'];
-    $qty = max(1, (int) $_POST['qty']);
-
-    if (isset($_SESSION['keranjang_kasir'][$id])) {
-        $stmt = mysqli_prepare($conn, "SELECT stok FROM products WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "i", $id);
-        mysqli_stmt_execute($stmt);
-
-        $produk = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-
-        if ($produk && $qty <= $produk['stok']) {
-            $_SESSION['keranjang_kasir'][$id]['qty'] = $qty;
-        } else {
-            $error = 'Jumlah melebihi stok tersedia.';
-        }
-    }
+function warnaProduk($nama) {
+    return 'hsl(' . (abs(crc32($nama)) % 360) . ' 55% 52%)';
 }
 
-// ===============================
-// HAPUS PRODUK
-// ===============================
-if (isset($_POST['hapus'])) {
-    $id = (int) $_POST['product_id'];
-    unset($_SESSION['keranjang_kasir'][$id]);
+function inisialProduk($nama) {
+    return strtoupper(mb_substr(trim($nama), 0, 1)) ?: '?';
 }
 
-// ===============================
-// KOSONGKAN KERANJANG
-// ===============================
-if (isset($_POST['kosongkan'])) {
-    $_SESSION['keranjang_kasir'] = [];
+function ikonKategori($nama) {
+    $n = strtolower($nama);
+    if (strpos($n, 'non') !== false || strpos($n, 'teh') !== false) return 'cup-soda';
+    if (strpos($n, 'kopi') !== false)                               return 'coffee';
+    if (strpos($n, 'makan') !== false)                              return 'utensils';
+    if (strpos($n, 'snack') !== false || strpos($n, 'pastry') !== false) return 'croissant';
+    return 'tag';
 }
+
+$res = mysqli_query($conn, "SHOW COLUMNS FROM products LIKE 'gambar'");
+$ada_gambar = $res && mysqli_num_rows($res) > 0;
+$res = mysqli_query($conn, "SHOW COLUMNS FROM products LIKE 'deskripsi'");
+$ada_deskripsi = $res && mysqli_num_rows($res) > 0;
 
 // ===============================
 // CHECKOUT TRANSAKSI
 // ===============================
-if (isset($_POST['checkout'])) {
-    $keranjang = $_SESSION['keranjang_kasir'];
-
-    if (empty($keranjang)) {
-        $error = 'Keranjang masih kosong.';
-    } else {
-        mysqli_begin_transaction($conn);
-
-        try {
-            $subtotal   = totalKeranjang($keranjang);
-            $diskon_in  = (float) ($_POST['diskon'] ?? 0);
-            $hitung     = hitungTotal($subtotal, $diskon_in, $SERVICE_PERSEN, $PPN_PERSEN);
-
-            $invoice = buatInvoice($conn);
-
-            $pelanggan = trim($_POST['nama_pelanggan'] ?? 'Umum');
-            $pelanggan = $pelanggan ?: 'Umum';
-
-            $meja = trim($_POST['nomor_meja'] ?? '-');
-            $meja = $meja ?: '-';
-
-            $stmt = mysqli_prepare($conn,
-                "INSERT INTO orders
-                (no_invoice, user_id, nama_pelanggan, nomor_meja,
-                 subtotal, diskon, service_charge, pajak,
-                 total_tagihan, tipe_pembayaran, status_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'full', 'pending')"
-            );
-
-            mysqli_stmt_bind_param(
-                $stmt, "sissddddd",
-                $invoice, $user_id, $pelanggan, $meja,
-                $hitung['subtotal'], $hitung['diskon'],
-                $hitung['service'], $hitung['pajak'], $hitung['total']
-            );
-
-            mysqli_stmt_execute($stmt);
-
-            $new_order_id = mysqli_insert_id($conn);
-
-            foreach ($keranjang as $item) {
-                $product_id = (int) $item['id'];
-                $qty        = (int) $item['qty'];
-                $harga      = (float) $item['harga'];
-                $sub_item   = $harga * $qty;
-
-                // Periksa stok terbaru.
-                $cek = mysqli_prepare($conn,
-                    "SELECT stok FROM products WHERE id = ? FOR UPDATE"
-                );
-                mysqli_stmt_bind_param($cek, "i", $product_id);
-                mysqli_stmt_execute($cek);
-
-                $stok = mysqli_fetch_assoc(mysqli_stmt_get_result($cek));
-
-                if (!$stok || $stok['stok'] < $qty) {
-                    throw new Exception(
-                        'Stok produk ' . $item['nama'] . ' tidak mencukupi.'
-                    );
-                }
-
-                // Simpan detail transaksi.
-                $detail = mysqli_prepare($conn,
-                    "INSERT INTO order_items
-                    (order_id, product_id, qty, harga_satuan, subtotal)
-                    VALUES (?, ?, ?, ?, ?)"
-                );
-                mysqli_stmt_bind_param(
-                    $detail, "iiidd",
-                    $new_order_id, $product_id, $qty, $harga, $sub_item
-                );
-                mysqli_stmt_execute($detail);
-
-                // Kurangi stok produk.
-                $update = mysqli_prepare($conn,
-                    "UPDATE products SET stok = stok - ? WHERE id = ?"
-                );
-                mysqli_stmt_bind_param($update, "ii", $qty, $product_id);
-                mysqli_stmt_execute($update);
-            }
-
-            mysqli_commit($conn);
-
-            $_SESSION['keranjang_kasir'] = [];
-
-            redirectKasir('index.php?page=kasir&order=' . $new_order_id);
-
-        } catch (Throwable $e) {
-            mysqli_rollback($conn);
-            $error = 'Checkout gagal: ' . $e->getMessage();
+if ($post_ok && isset($_POST['checkout'])) {
+    mysqli_begin_transaction($conn);
+    try {
+        $input = json_decode($_POST['keranjang_json'] ?? '[]', true);
+        if (!is_array($input) || empty($input) || count($input) > 100) {
+            throw new Exception('Keranjang masih kosong.');
         }
+
+        $qty_map = [];
+        foreach ($input as $row) {
+            $pid = (int) ($row['id'] ?? 0);
+            $q   = (int) ($row['qty'] ?? 0);
+            if ($pid > 0 && $q > 0) {
+                $qty_map[$pid] = ($qty_map[$pid] ?? 0) + $q;
+            }
+        }
+
+        if (empty($qty_map)) throw new Exception('Keranjang masih kosong.');
+
+        $keranjang = [];
+        $subtotal  = 0;
+
+        foreach ($qty_map as $pid => $q) {
+            $stmt = mysqli_prepare($conn, "SELECT id, nama_produk, harga, stok FROM products WHERE id = ? FOR UPDATE");
+            mysqli_stmt_bind_param($stmt, "i", $pid);
+            mysqli_stmt_execute($stmt);
+            $pr = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+            if (!$pr) throw new Exception('Ada produk yang sudah tidak tersedia.');
+            if ((int) $pr['stok'] < $q) throw new Exception('Stok produk ' . $pr['nama_produk'] . ' tidak mencukupi.');
+
+            $harga = (float) $pr['harga'];
+            $keranjang[] = [
+                'id'    => (int) $pr['id'],
+                'qty'   => $q,
+                'harga' => $harga,
+            ];
+            $subtotal += $harga * $q;
+        }
+
+        $diskon_in = (float) ($_POST['diskon'] ?? 0);
+        $hitung    = hitungTotal($subtotal, $diskon_in, $SERVICE_PERSEN, $PPN_PERSEN);
+        $invoice = buatInvoice($conn);
+
+        $pelanggan = trim($_POST['nama_pelanggan'] ?? '');
+        $pelanggan = $pelanggan !== '' ? mb_substr($pelanggan, 0, 100) : 'Umum';
+        $meja = trim($_POST['nomor_meja'] ?? '');
+        $meja = $meja !== '' ? mb_substr($meja, 0, 10) : '-';
+
+        $stmt = mysqli_prepare($conn,
+            "INSERT INTO orders
+            (no_invoice, user_id, nama_pelanggan, nomor_meja,
+             subtotal, diskon, service_charge, pajak,
+             total_tagihan, tipe_pembayaran, status_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'full', 'pending')"
+        );
+
+        mysqli_stmt_bind_param(
+            $stmt, "sissddddd",
+            $invoice, $user_id, $pelanggan, $meja,
+            $hitung['subtotal'], $hitung['diskon'],
+            $hitung['service'], $hitung['pajak'], $hitung['total']
+        );
+        mysqli_stmt_execute($stmt);
+
+        $new_order_id = mysqli_insert_id($conn);
+
+        foreach ($keranjang as $item) {
+            $sub_item = $item['harga'] * $item['qty'];
+            $detail = mysqli_prepare($conn,
+                "INSERT INTO order_items (order_id, product_id, qty, harga_satuan, subtotal) VALUES (?, ?, ?, ?, ?)"
+            );
+            mysqli_stmt_bind_param($detail, "iiidd", $new_order_id, $item['id'], $item['qty'], $item['harga'], $sub_item);
+            mysqli_stmt_execute($detail);
+
+            $update = mysqli_prepare($conn,
+                "UPDATE products
+                 SET status = IF(stok - ? <= 0, 'habis', status), stok = stok - ?
+                 WHERE id = ?"
+            );
+            mysqli_stmt_bind_param($update, "iii", $item['qty'], $item['qty'], $item['id']);
+            mysqli_stmt_execute($update);
+        }
+
+        mysqli_commit($conn);
+        redirectKasir('index.php?page=kasir&order=' . $new_order_id . '&baru=1');
+
+    } catch (Throwable $e) {
+        mysqli_rollback($conn);
+        $error = 'Checkout gagal: ' . $e->getMessage();
     }
 }
 
 // ===============================
 // PEMBAYARAN NOMINAL (CICILAN)
 // ===============================
-if (isset($_POST['bayar_nominal'])) {
+if ($post_ok && isset($_POST['bayar_nominal'])) {
     $order_id_post = (int) $_POST['order_id'];
     $uang   = (float) ($_POST['uang_diterima'] ?? 0);
     $metode = $_POST['metode_bayar'] ?? 'tunai';
 
-    if (!in_array($metode, ['tunai', 'qris', 'debit'], true)) {
-        $metode = 'tunai';
-    }
+    if (!in_array($metode, ['tunai', 'qris', 'debit'], true)) $metode = 'tunai';
 
     mysqli_begin_transaction($conn);
-
     try {
-        if ($uang <= 0) {
-            throw new Exception('Nominal pembayaran harus lebih dari 0.');
-        }
-
+        if ($uang <= 0) throw new Exception('Nominal pembayaran harus lebih dari 0.');
         $p = hitungPembayaran($conn, $order_id_post);
-
-        if ($p['sisa'] <= 0) {
-            throw new Exception('Transaksi ini sudah lunas.');
-        }
-
-        // Non-tunai tidak boleh melebihi sisa tagihan (tidak ada kembalian).
+        if ($p['sisa'] <= 0) throw new Exception('Transaksi ini sudah lunas.');
         if ($metode !== 'tunai' && $uang > $p['sisa']) {
-            throw new Exception(
-                'Pembayaran QRIS/debit tidak boleh melebihi sisa tagihan.'
-            );
+            throw new Exception('Pembayaran QRIS/debit tidak boleh melebihi sisa tagihan.');
         }
 
         $nominal   = min($uang, $p['sisa']);
         $kembalian = $uang - $nominal;
 
         simpanPembayaran($conn, $order_id_post, $metode, $nominal, $uang, $kembalian);
-
         mysqli_commit($conn);
-
         redirectKasir('index.php?page=kasir&order=' . $order_id_post . '&sukses=bayar');
-
     } catch (Throwable $e) {
         mysqli_rollback($conn);
         $error = $e->getMessage();
@@ -367,51 +302,34 @@ if (isset($_POST['bayar_nominal'])) {
 }
 
 // ===============================
-// PEMBAYARAN SPLIT BILL (PILIH ITEM)
+// PEMBAYARAN SPLIT BILL
 // ===============================
-if (isset($_POST['bayar_split'])) {
+if ($post_ok && isset($_POST['bayar_split'])) {
     $order_id_post = (int) $_POST['order_id'];
     $item_ids = array_map('intval', $_POST['item_ids'] ?? []);
-
     $metode = $_POST['metode_bayar'] ?? 'tunai';
     $uang   = (float) ($_POST['uang_diterima'] ?? 0);
 
-    if (!in_array($metode, ['tunai', 'qris', 'debit'], true)) {
-        $metode = 'tunai';
-    }
+    if (!in_array($metode, ['tunai', 'qris', 'debit'], true)) $metode = 'tunai';
 
     if (empty($item_ids)) {
         $error = 'Pilih minimal satu item yang ingin dibayar.';
     } else {
         mysqli_begin_transaction($conn);
-
         try {
             $p = hitungPembayaran($conn, $order_id_post);
+            if ($p['sisa'] <= 0) throw new Exception('Transaksi ini sudah lunas.');
 
-            if ($p['sisa'] <= 0) {
-                throw new Exception('Transaksi ini sudah lunas.');
-            }
-
-            // Ambil semua item order untuk menghitung faktor pajak/diskon.
-            $stmt = mysqli_prepare($conn,
-                "SELECT id, subtotal, status_bayar_item
-                 FROM order_items WHERE order_id = ? FOR UPDATE"
-            );
+            $stmt = mysqli_prepare($conn, "SELECT id, subtotal, status_bayar_item FROM order_items WHERE order_id = ? FOR UPDATE");
             mysqli_stmt_bind_param($stmt, "i", $order_id_post);
             mysqli_stmt_execute($stmt);
             $res = mysqli_stmt_get_result($stmt);
 
-            $semua_subtotal = 0;
-            $belum_ids      = [];
-            $pilih_subtotal = 0;
-            $valid_ids      = [];
-
+            $semua_subtotal = 0; $belum_ids = []; $pilih_subtotal = 0; $valid_ids = [];
             while ($it = mysqli_fetch_assoc($res)) {
                 $semua_subtotal += (float) $it['subtotal'];
-
                 if ($it['status_bayar_item'] === 'belum') {
                     $belum_ids[] = (int) $it['id'];
-
                     if (in_array((int) $it['id'], $item_ids, true)) {
                         $pilih_subtotal += (float) $it['subtotal'];
                         $valid_ids[]     = (int) $it['id'];
@@ -419,49 +337,28 @@ if (isset($_POST['bayar_split'])) {
                 }
             }
 
-            if (empty($valid_ids)) {
-                throw new Exception('Item tidak tersedia atau sudah lunas.');
-            }
+            if (empty($valid_ids)) throw new Exception('Item tidak tersedia atau sudah lunas.');
 
-            // Nominal item sudah termasuk porsi diskon, service, dan pajak.
-            $faktor = $semua_subtotal > 0 ? $p['total'] / $semua_subtotal : 1;
+            $faktor  = $semua_subtotal > 0 ? $p['total'] / $semua_subtotal : 1;
             $nominal = round($pilih_subtotal * $faktor);
-
-            // Jika semua item tersisa dipilih, nominal = sisa tagihan (hindari selisih pembulatan).
-            if (count($valid_ids) === count($belum_ids)) {
-                $nominal = $p['sisa'];
-            }
-
+            if (count($valid_ids) === count($belum_ids)) $nominal = $p['sisa'];
             $nominal = min($nominal, $p['sisa']);
 
             if ($metode !== 'tunai' && abs($uang - $nominal) > 0.001) {
-                throw new Exception(
-                    'Pembayaran QRIS/debit harus pas: ' . number_format($nominal, 0, ',', '.') . '.'
-                );
+                throw new Exception('Pembayaran QRIS/debit harus pas: ' . number_format($nominal, 0, ',', '.') . '.');
             }
-
-            if ($uang < $nominal) {
-                throw new Exception('Uang yang diterima kurang dari total pembayaran.');
-            }
+            if ($uang < $nominal) throw new Exception('Uang yang diterima kurang dari total pembayaran.');
 
             $kembalian = $uang - $nominal;
-
             simpanPembayaran($conn, $order_id_post, $metode, $nominal, $uang, $kembalian);
 
-            // Tandai item yang dipilih sebagai lunas.
             foreach ($valid_ids as $item_id) {
-                $update = mysqli_prepare($conn,
-                    "UPDATE order_items SET status_bayar_item = 'lunas'
-                     WHERE id = ? AND order_id = ?"
-                );
+                $update = mysqli_prepare($conn, "UPDATE order_items SET status_bayar_item = 'lunas' WHERE id = ? AND order_id = ?");
                 mysqli_stmt_bind_param($update, "ii", $item_id, $order_id_post);
                 mysqli_stmt_execute($update);
             }
-
             mysqli_commit($conn);
-
             redirectKasir('index.php?page=kasir&order=' . $order_id_post . '&sukses=bayar');
-
         } catch (Throwable $e) {
             mysqli_rollback($conn);
             $error = $e->getMessage();
@@ -472,73 +369,46 @@ if (isset($_POST['bayar_split'])) {
 // ===============================
 // BATALKAN ORDER (VOID)
 // ===============================
-if (isset($_POST['void_order'])) {
+if ($post_ok && isset($_POST['void_order'])) {
     $order_id_post = (int) $_POST['order_id'];
-
     mysqli_begin_transaction($conn);
-
     try {
-        if (!$boleh_void) {
-            throw new Exception('Anda tidak memiliki izin untuk membatalkan order.');
-        }
+        if (!$boleh_void) throw new Exception('Anda tidak memiliki izin untuk membatalkan order.');
 
-        $stmt = mysqli_prepare($conn,
-            "SELECT id, status_order FROM orders WHERE id = ? FOR UPDATE"
-        );
+        $stmt = mysqli_prepare($conn, "SELECT id, status_order FROM orders WHERE id = ? FOR UPDATE");
         mysqli_stmt_bind_param($stmt, "i", $order_id_post);
         mysqli_stmt_execute($stmt);
         $ord = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
-        if (!$ord) {
-            throw new Exception('Transaksi tidak ditemukan.');
-        }
+        if (!$ord) throw new Exception('Transaksi tidak ditemukan.');
+        if ($ord['status_order'] === 'batal') throw new Exception('Transaksi sudah dibatalkan sebelumnya.');
 
-        if ($ord['status_order'] === 'batal') {
-            throw new Exception('Transaksi sudah dibatalkan sebelumnya.');
-        }
-
-        // Order yang sudah ada pembayaran tidak boleh dibatalkan langsung.
-        $stmt = mysqli_prepare($conn,
-            "SELECT COUNT(*) AS jml FROM payments WHERE order_id = ?"
-        );
+        $stmt = mysqli_prepare($conn, "SELECT COUNT(*) AS jml FROM payments WHERE order_id = ?");
         mysqli_stmt_bind_param($stmt, "i", $order_id_post);
         mysqli_stmt_execute($stmt);
-        $jml = (int) mysqli_fetch_assoc(mysqli_stmt_get_result($stmt))['jml'];
-
-        if ($jml > 0) {
-            throw new Exception(
-                'Order sudah ada pembayaran, tidak bisa dibatalkan. Lakukan refund secara manual.'
-            );
+        if ((int) mysqli_fetch_assoc(mysqli_stmt_get_result($stmt))['jml'] > 0) {
+            throw new Exception('Order sudah ada pembayaran, tidak bisa dibatalkan. Lakukan refund secara manual.');
         }
 
-        // Kembalikan stok.
-        $stmt = mysqli_prepare($conn,
-            "SELECT product_id, qty FROM order_items WHERE order_id = ?"
-        );
+        $stmt = mysqli_prepare($conn, "SELECT product_id, qty FROM order_items WHERE order_id = ?");
         mysqli_stmt_bind_param($stmt, "i", $order_id_post);
         mysqli_stmt_execute($stmt);
         $res = mysqli_stmt_get_result($stmt);
 
         while ($it = mysqli_fetch_assoc($res)) {
-            $upd = mysqli_prepare($conn,
-                "UPDATE products SET stok = stok + ? WHERE id = ?"
-            );
-            $q = (int) $it['qty'];
+            $upd = mysqli_prepare($conn, "UPDATE products SET stok = stok + ?, status = 'tersedia' WHERE id = ?");
+            $q   = (int) $it['qty'];
             $pid = (int) $it['product_id'];
             mysqli_stmt_bind_param($upd, "ii", $q, $pid);
             mysqli_stmt_execute($upd);
         }
 
-        $upd = mysqli_prepare($conn,
-            "UPDATE orders SET status_order = 'batal' WHERE id = ?"
-        );
+        $upd = mysqli_prepare($conn, "UPDATE orders SET status_order = 'batal' WHERE id = ?");
         mysqli_stmt_bind_param($upd, "i", $order_id_post);
         mysqli_stmt_execute($upd);
 
         mysqli_commit($conn);
-
         redirectKasir('index.php?page=kasir&order=' . $order_id_post . '&sukses=void');
-
     } catch (Throwable $e) {
         mysqli_rollback($conn);
         $error = $e->getMessage();
@@ -546,17 +416,51 @@ if (isset($_POST['void_order'])) {
 }
 
 // ===============================
-// AMBIL DATA PRODUK
+// DATA KATEGORI & PRODUK
 // ===============================
-$produk_result = mysqli_query($conn,
-    "SELECT * FROM products WHERE stok > 0 ORDER BY nama_produk ASC"
+$kategori_list = [];
+$res = mysqli_query($conn,
+    "SELECT c.id, c.nama_kategori, COUNT(p.id) AS jml
+     FROM categories c
+     LEFT JOIN products p ON p.category_id = c.id AND p.stok > 0
+     GROUP BY c.id, c.nama_kategori
+     ORDER BY c.nama_kategori ASC"
 );
+while ($r = mysqli_fetch_assoc($res)) {
+    $kategori_list[] = $r;
+}
+
+$produk_list = [];
+$produk_js   = [];
+$res = mysqli_query($conn,
+    "SELECT p.*, c.nama_kategori
+     FROM products p
+     JOIN categories c ON c.id = p.category_id
+     WHERE p.stok > 0
+     ORDER BY p.nama_produk ASC"
+);
+while ($r = mysqli_fetch_assoc($res)) {
+    $r['img']    = urlGambar($r['gambar'] ?? '');
+    $r['warna']  = warnaProduk($r['nama_produk']);
+    $r['inisial'] = inisialProduk($r['nama_produk']);
+
+    $produk_list[] = $r;
+
+    $produk_js[(int) $r['id']] = [
+        'id'      => (int) $r['id'],
+        'nama'    => $r['nama_produk'],
+        'harga'   => (float) $r['harga'],
+        'stok'    => (int) $r['stok'],
+        'img'     => $r['img'],
+        'warna'   => $r['warna'],
+        'inisial' => $r['inisial'],
+    ];
+}
 
 // ===============================
 // DAFTAR ORDER BELUM LUNAS
 // ===============================
 $order_belum_lunas = [];
-
 $res = mysqli_query($conn,
     "SELECT o.id, o.no_invoice, o.nama_pelanggan, o.nomor_meja,
             o.total_tagihan, o.status_order,
@@ -567,7 +471,6 @@ $res = mysqli_query($conn,
      ORDER BY o.id DESC
      LIMIT 20"
 );
-
 while ($r = mysqli_fetch_assoc($res)) {
     $order_belum_lunas[] = $r;
 }
@@ -577,34 +480,25 @@ while ($r = mysqli_fetch_assoc($res)) {
 // ===============================
 $laporan = [];
 $laporan_total = 0;
-
 $res = mysqli_query($conn,
-    "SELECT metode_bayar,
-            COUNT(*) AS jumlah,
-            COALESCE(SUM(nominal_bayar), 0) AS total
+    "SELECT metode_bayar, COUNT(*) AS jumlah, COALESCE(SUM(nominal_bayar), 0) AS total
      FROM payments
      WHERE DATE(created_at) = CURDATE()
      GROUP BY metode_bayar"
 );
-
 if ($res) {
     while ($r = mysqli_fetch_assoc($res)) {
         $laporan[] = $r;
         $laporan_total += (float) $r['total'];
     }
 }
-
-$res = mysqli_query($conn,
-    "SELECT COUNT(*) AS jml FROM orders
-     WHERE DATE(created_at) = CURDATE() AND status_order <> 'batal'"
-);
+$res = mysqli_query($conn, "SELECT COUNT(*) AS jml FROM orders WHERE DATE(created_at) = CURDATE() AND status_order <> 'batal'");
 $order_hari_ini = $res ? (int) mysqli_fetch_assoc($res)['jml'] : 0;
 
 // ===============================
-// AMBIL DETAIL TRANSAKSI
+// DETAIL ORDER YANG SEDANG DIBUKA
 // ===============================
 $order_id = (int) ($_GET['order'] ?? $_POST['order_id'] ?? 0);
-
 $order = null;
 $items = [];
 $riwayat = [];
@@ -616,12 +510,12 @@ if ($order_id > 0) {
     $stmt = mysqli_prepare($conn, "SELECT * FROM orders WHERE id = ?");
     mysqli_stmt_bind_param($stmt, "i", $order_id);
     mysqli_stmt_execute($stmt);
-
     $order = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
     if ($order) {
+        $sel_gambar = $ada_gambar ? ', p.gambar' : ', NULL AS gambar';
         $stmt = mysqli_prepare($conn,
-            "SELECT oi.*, p.nama_produk
+            "SELECT oi.*, p.nama_produk $sel_gambar
              FROM order_items oi
              JOIN products p ON p.id = oi.product_id
              WHERE oi.order_id = ?
@@ -629,41 +523,28 @@ if ($order_id > 0) {
         );
         mysqli_stmt_bind_param($stmt, "i", $order_id);
         mysqli_stmt_execute($stmt);
-
         $result = mysqli_stmt_get_result($stmt);
         $semua_subtotal = 0;
 
         while ($item = mysqli_fetch_assoc($result)) {
+            $item['img']     = urlGambar($item['gambar'] ?? '');
+            $item['warna']   = warnaProduk($item['nama_produk']);
+            $item['inisial'] = inisialProduk($item['nama_produk']);
             $items[] = $item;
             $semua_subtotal += (float) $item['subtotal'];
         }
 
-        // Faktor untuk menghitung porsi item (termasuk diskon/pajak/service).
-        $faktor_split = $semua_subtotal > 0
-            ? (float) $order['total_tagihan'] / $semua_subtotal
-            : 1;
+        $faktor_split = $semua_subtotal > 0 ? (float) $order['total_tagihan'] / $semua_subtotal : 1;
 
-        // Total sudah dibayar dihitung dari tabel payments.
-        $stmt = mysqli_prepare($conn,
-            "SELECT COALESCE(SUM(nominal_bayar), 0) AS dibayar
-             FROM payments WHERE order_id = ?"
-        );
+        $stmt = mysqli_prepare($conn, "SELECT COALESCE(SUM(nominal_bayar), 0) AS dibayar FROM payments WHERE order_id = ?");
         mysqli_stmt_bind_param($stmt, "i", $order_id);
         mysqli_stmt_execute($stmt);
-
-        $total_lunas = (float) mysqli_fetch_assoc(
-            mysqli_stmt_get_result($stmt)
-        )['dibayar'];
-
+        $total_lunas = (float) mysqli_fetch_assoc(mysqli_stmt_get_result($stmt))['dibayar'];
         $total_belum = max(0, round((float) $order['total_tagihan'] - $total_lunas, 2));
 
-        // Riwayat pembayaran.
-        $stmt = mysqli_prepare($conn,
-            "SELECT * FROM payments WHERE order_id = ? ORDER BY urutan_split ASC"
-        );
+        $stmt = mysqli_prepare($conn, "SELECT * FROM payments WHERE order_id = ? ORDER BY urutan_split ASC");
         mysqli_stmt_bind_param($stmt, "i", $order_id);
         mysqli_stmt_execute($stmt);
-
         $res = mysqli_stmt_get_result($stmt);
         while ($r = mysqli_fetch_assoc($res)) {
             $riwayat[] = $r;
@@ -672,13 +553,26 @@ if ($order_id > 0) {
 }
 
 $order_batal = $order && $order['status_order'] === 'batal';
-$subtotal_cart = totalKeranjang($_SESSION['keranjang_kasir']);
+$kembalian_terakhir = 0;
+if ($order && !empty($riwayat)) {
+    $kembalian_terakhir = (float) end($riwayat)['kembalian'];
+}
+
+$badge_status = [
+    'pending'  => 'bg-amber-50 text-amber-700',
+    'sebagian' => 'bg-blue-50 text-blue-600',
+    'lunas'    => 'bg-emerald-50 text-emerald-700',
+    'batal'    => 'bg-red-50 text-red-700',
+];
+
+$js_flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE;
 ?>
 
 <style>
     #struk { display: none; }
 
     @media print {
+        html, body, .h-screen { height: auto !important; overflow: visible !important; }
         body * { visibility: hidden; }
         #struk, #struk * { visibility: visible; }
         #struk {
@@ -695,399 +589,323 @@ $subtotal_cart = totalKeranjang($_SESSION['keranjang_kasir']);
         #struk .garis { border-top: 1px dashed #000; margin: 4px 0; }
         #struk .baris { display: flex; justify-content: space-between; }
     }
+
+    .produk-card.dalam-keranjang { box-shadow: 0 0 0 2px #3b6ef5; }
 </style>
 
-<div class="p-6 space-y-6">
+<div class="h-full flex flex-col xl:flex-row overflow-y-auto xl:overflow-hidden">
 
-    <div>
-        <h2 class="text-xl font-bold text-slate-800">Terminal Kasir</h2>
-        <p class="text-sm text-slate-500">
-            Kelola transaksi penjualan, cicilan, dan pembayaran split bill.
-        </p>
-    </div>
+    <!-- ========================================================= -->
+    <!-- KOLOM KIRI : PENCARIAN, KATEGORI, MENU                    -->
+    <!-- ========================================================= -->
+    <div class="flex-1 min-w-0 xl:overflow-y-auto scroll-slim p-6 space-y-6 no-print">
 
-    <?php if ($error): ?>
-        <div class="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
-            <?= htmlspecialchars($error) ?>
+        <!-- Pencarian -->
+        <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="cariProduk" autocomplete="off"
+                   placeholder="Cari menu atau kode produk..."
+                   class="w-full bg-white rounded-2xl pl-11 pr-4 py-3.5 text-sm shadow-sm border border-transparent focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10">
         </div>
-    <?php endif; ?>
 
-    <?php if (isset($_GET['sukses']) && $_GET['sukses'] === 'void'): ?>
-        <div class="p-3 rounded-lg bg-yellow-50 text-yellow-800 text-sm">
-            Order berhasil dibatalkan dan stok produk dikembalikan.
-        </div>
-    <?php elseif (isset($_GET['sukses'])): ?>
-        <?php
-        $kembalian_terakhir = 0;
-        if ($order_id > 0) {
-            $stmt = mysqli_prepare($conn,
-                "SELECT kembalian FROM payments
-                 WHERE order_id = ? ORDER BY urutan_split DESC LIMIT 1"
-            );
-            mysqli_stmt_bind_param($stmt, "i", $order_id);
-            mysqli_stmt_execute($stmt);
-            $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-            $kembalian_terakhir = (float) ($row['kembalian'] ?? 0);
-        }
-        ?>
-        <div class="p-3 rounded-lg bg-green-50 text-green-700 text-sm">
-            Pembayaran berhasil dicatat.
-            <?php if ($kembalian_terakhir > 0): ?>
-                <strong class="block text-lg mt-1">
-                    Kembalian: <?= formatRupiah($kembalian_terakhir) ?>
-                </strong>
-            <?php endif; ?>
-        </div>
-    <?php endif; ?>
-
-    <!-- DAFTAR ORDER BELUM LUNAS -->
-    <section class="bg-white border rounded-xl p-5">
-        <h3 class="font-semibold mb-3">
-            Order Belum Lunas
-            <span class="text-xs text-slate-400">(<?= count($order_belum_lunas) ?>)</span>
-        </h3>
-
-        <?php if (empty($order_belum_lunas)): ?>
-            <p class="text-sm text-slate-400">Tidak ada order yang belum lunas.</p>
-        <?php else: ?>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th class="p-2 text-left">Invoice</th>
-                            <th class="p-2 text-left">Pelanggan</th>
-                            <th class="p-2 text-left">Meja</th>
-                            <th class="p-2 text-right">Tagihan</th>
-                            <th class="p-2 text-right">Sisa</th>
-                            <th class="p-2 text-center">Status</th>
-                            <th class="p-2"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($order_belum_lunas as $o): ?>
-                            <tr class="border-b">
-                                <td class="p-2"><?= htmlspecialchars($o['no_invoice']) ?></td>
-                                <td class="p-2"><?= htmlspecialchars($o['nama_pelanggan']) ?></td>
-                                <td class="p-2"><?= htmlspecialchars($o['nomor_meja']) ?></td>
-                                <td class="p-2 text-right"><?= formatRupiah($o['total_tagihan']) ?></td>
-                                <td class="p-2 text-right text-orange-700">
-                                    <?= formatRupiah(max(0, $o['total_tagihan'] - $o['dibayar'])) ?>
-                                </td>
-                                <td class="p-2 text-center text-xs">
-                                    <?= strtoupper(htmlspecialchars($o['status_order'])) ?>
-                                </td>
-                                <td class="p-2 text-right">
-                                    <a href="index.php?page=kasir&order=<?= (int) $o['id'] ?>"
-                                       class="text-blue-600 text-xs font-semibold">
-                                        Buka
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <!-- Notifikasi -->
+        <?php if ($error): ?>
+            <div class="flex items-start gap-2 p-3.5 rounded-xl bg-red-50 text-red-700 text-sm">
+                <i data-lucide="alert-circle" class="w-4 h-4 mt-0.5 shrink-0"></i>
+                <span><?= htmlspecialchars($error) ?></span>
             </div>
         <?php endif; ?>
-    </section>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- DAFTAR PRODUK -->
-        <section class="lg:col-span-2 bg-white border rounded-xl p-5">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                <h3 class="font-semibold">Daftar Produk</h3>
-
-                <input type="text" id="cariProduk"
-                       placeholder="Cari nama atau kode produk..."
-                       class="border rounded-lg px-3 py-2 text-sm w-full sm:w-64">
+        <?php if (($_GET['sukses'] ?? '') === 'void'): ?>
+            <div class="p-3.5 rounded-xl bg-amber-50 text-amber-800 text-sm">
+                Order berhasil dibatalkan dan stok produk dikembalikan.
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4" id="listProduk">
-
-                <?php while ($produk = mysqli_fetch_assoc($produk_result)): ?>
-
-                    <div class="border rounded-lg p-4 produk-card"
-                         data-cari="<?= htmlspecialchars(strtolower($produk['nama_produk'] . ' ' . $produk['kode_produk'])) ?>">
-
-                        <h4 class="font-semibold">
-                            <?= htmlspecialchars($produk['nama_produk']) ?>
-                        </h4>
-
-                        <p class="text-sm text-slate-500">
-                            <?= htmlspecialchars($produk['kode_produk']) ?>
-                        </p>
-
-                        <p class="font-bold text-blue-600 mt-2">
-                            <?= formatRupiah($produk['harga']) ?>
-                        </p>
-
-                        <p class="text-xs text-slate-400 mb-3">
-                            Stok: <?= (int) $produk['stok'] ?>
-                        </p>
-
-                        <form method="POST" class="flex gap-2">
-                            <input type="hidden" name="product_id"
-                                   value="<?= (int) $produk['id'] ?>">
-
-                            <input type="number" name="qty" value="1" min="1"
-                                   max="<?= (int) $produk['stok'] ?>"
-                                   class="w-16 border rounded-lg px-2 py-1">
-
-                            <button type="submit" name="tambah"
-                                    class="flex-1 bg-slate-900 text-white rounded-lg px-3 py-2 text-sm">
-                                + Keranjang
-                            </button>
-                        </form>
-                    </div>
-
-                <?php endwhile; ?>
-
+        <?php elseif (($_GET['sukses'] ?? '') === 'bayar'): ?>
+            <div class="p-3.5 rounded-xl bg-emerald-50 text-emerald-700 text-sm">
+                Pembayaran berhasil dicatat.
+                <?php if ($kembalian_terakhir > 0): ?>
+                    <strong class="block text-xl mt-1">Kembalian: <?= formatRupiah($kembalian_terakhir) ?></strong>
+                <?php endif; ?>
             </div>
+        <?php endif; ?>
 
-            <p id="produkKosong" class="text-sm text-slate-400 hidden">
-                Produk tidak ditemukan.
-            </p>
-        </section>
+        <!-- Kategori -->
+        <div class="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-5 gap-3" id="listKategori">
+            <button type="button" data-kat="all"
+                    class="tile-kat flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition bg-white shadow-sm">
+                <span class="tile-ikon w-9 h-9 rounded-xl flex items-center justify-center bg-slate-100 text-slate-600 shrink-0">
+                    <i data-lucide="layout-grid" class="w-[18px] h-[18px]"></i>
+                </span>
+                <span class="min-w-0">
+                    <span class="block text-sm font-bold truncate">Semua Menu</span>
+                    <span class="tile-sub block text-[11px] text-slate-400"><?= count($produk_list) ?> menu tersedia</span>
+                </span>
+            </button>
 
-        <!-- KERANJANG -->
-        <section class="bg-white border rounded-xl p-5">
-            <h3 class="font-semibold mb-4">Keranjang Belanja</h3>
+            <?php foreach ($kategori_list as $k): ?>
+                <button type="button" data-kat="<?= (int) $k['id'] ?>"
+                        data-nama="<?= htmlspecialchars($k['nama_kategori']) ?>"
+                        class="tile-kat flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition bg-white shadow-sm">
+                    <span class="tile-ikon w-9 h-9 rounded-xl flex items-center justify-center bg-slate-100 text-slate-600 shrink-0">
+                        <i data-lucide="<?= ikonKategori($k['nama_kategori']) ?>" class="w-[18px] h-[18px]"></i>
+                    </span>
+                    <span class="min-w-0">
+                        <span class="block text-sm font-bold truncate"><?= htmlspecialchars($k['nama_kategori']) ?></span>
+                        <span class="tile-sub block text-[11px] text-slate-400"><?= (int) $k['jml'] ?> menu tersedia</span>
+                    </span>
+                </button>
+            <?php endforeach; ?>
+        </div>
 
-            <?php if (empty($_SESSION['keranjang_kasir'])): ?>
+        <!-- Daftar menu -->
+        <section>
+            <h3 class="text-lg font-extrabold mb-4" id="judulMenu">Semua Menu</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4" id="listProduk">
+                <?php foreach ($produk_list as $pr): ?>
+                    <?php
+                    $deskripsi = trim((string) ($pr['deskripsi'] ?? ''));
+                    if ($deskripsi === '') $deskripsi = $pr['nama_kategori'] . ' · ' . $pr['kode_produk'];
+                    ?>
+                    <div class="produk-card bg-white rounded-2xl p-3 flex gap-3 shadow-sm transition"
+                         data-id="<?= (int) $pr['id'] ?>" data-kat="<?= (int) $pr['category_id'] ?>"
+                         data-cari="<?= htmlspecialchars(mb_strtolower($pr['nama_produk'] . ' ' . $pr['kode_produk'] . ' ' . $pr['nama_kategori'])) ?>">
 
-                <p class="text-sm text-slate-400">
-                    Belum ada produk di keranjang.
-                </p>
+                        <!-- Gambar -->
+                        <div class="w-[88px] h-[88px] rounded-xl overflow-hidden shrink-0">
+                            <?php if ($pr['img']): ?>
+                                <img src="<?= htmlspecialchars($pr['img']) ?>" alt="<?= htmlspecialchars($pr['nama_produk']) ?>" loading="lazy" class="w-full h-full object-cover">
+                            <?php else: ?>
+                                <div class="w-full h-full flex items-center justify-center text-3xl font-extrabold text-white" style="background: <?= $pr['warna'] ?>"><?= htmlspecialchars($pr['inisial']) ?></div>
+                            <?php endif; ?>
+                        </div>
 
-            <?php else: ?>
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0 flex flex-col">
+                            <h4 class="font-bold text-sm leading-snug truncate"><?= htmlspecialchars($pr['nama_produk']) ?></h4>
+                            <p class="text-[11px] text-slate-400 line-clamp-2 mt-0.5"><?= htmlspecialchars($deskripsi) ?></p>
 
-                <div class="space-y-4">
-
-                    <?php foreach ($_SESSION['keranjang_kasir'] as $item): ?>
-
-                        <div class="border-b pb-3">
-
-                            <div class="font-medium text-sm">
-                                <?= htmlspecialchars($item['nama']) ?>
-                            </div>
-
-                            <div class="text-xs text-slate-500">
-                                <?= formatRupiah($item['harga']) ?>
-                                × <?= (int) $item['qty'] ?>
-                            </div>
-
-                            <div class="flex justify-between items-center mt-2">
-
-                                <strong class="text-sm">
-                                    <?= formatRupiah($item['harga'] * $item['qty']) ?>
-                                </strong>
-
-                                <div class="flex gap-2">
-
-                                    <form method="POST" class="flex gap-1">
-                                        <input type="hidden" name="product_id"
-                                               value="<?= (int) $item['id'] ?>">
-
-                                        <input type="number" name="qty"
-                                               value="<?= (int) $item['qty'] ?>"
-                                               min="1"
-                                               class="w-14 border rounded px-1 text-sm">
-
-                                        <button name="update_qty"
-                                                class="text-blue-600 text-xs">
-                                            Ubah
-                                        </button>
-                                    </form>
-
-                                    <form method="POST">
-                                        <input type="hidden" name="product_id"
-                                               value="<?= (int) $item['id'] ?>">
-
-                                        <button name="hapus"
-                                                class="text-red-500 text-xs">
-                                            Hapus
-                                        </button>
-                                    </form>
-
+                            <div class="mt-auto pt-2 flex items-center justify-between gap-2">
+                                <div>
+                                    <p class="font-extrabold text-[15px] leading-none"><?= formatRupiah($pr['harga']) ?></p>
+                                    <p class="text-[10px] text-slate-400 mt-1">Stok <?= (int) $pr['stok'] ?></p>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" data-act="dec" data-id="<?= (int) $pr['id'] ?>" class="btn-dec w-7 h-7 rounded-full border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
+                                    <span class="qty-val w-5 text-center text-sm font-bold">0</span>
+                                    <button type="button" data-act="inc" data-id="<?= (int) $pr['id'] ?>" class="btn-inc w-7 h-7 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
                                 </div>
                             </div>
                         </div>
-
-                    <?php endforeach; ?>
-
-                </div>
-
-                <div class="border-t mt-4 pt-4">
-
-                    <form method="POST" class="space-y-3" id="formCheckout"
-                          data-subtotal="<?= (float) $subtotal_cart ?>"
-                          data-svc="<?= (float) $SERVICE_PERSEN ?>"
-                          data-ppn="<?= (float) $PPN_PERSEN ?>">
-
-                        <div class="flex justify-between text-sm">
-                            <span>Subtotal</span>
-                            <span><?= formatRupiah($subtotal_cart) ?></span>
-                        </div>
-
-                        <div class="flex justify-between items-center text-sm gap-2">
-                            <span>Diskon (Rp)</span>
-                            <input type="number" name="diskon" id="inpDiskon"
-                                   min="0" step="1" value="0"
-                                   class="w-32 border rounded-lg p-1 text-right">
-                        </div>
-
-                        <?php if ($SERVICE_PERSEN > 0): ?>
-                            <div class="flex justify-between text-sm">
-                                <span>Service (<?= $SERVICE_PERSEN ?>%)</span>
-                                <span id="outService">-</span>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if ($PPN_PERSEN > 0): ?>
-                            <div class="flex justify-between text-sm">
-                                <span>PPN (<?= $PPN_PERSEN ?>%)</span>
-                                <span id="outPajak">-</span>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="flex justify-between font-bold text-lg border-t pt-2">
-                            <span>Total</span>
-                            <span id="outTotal"><?= formatRupiah($subtotal_cart) ?></span>
-                        </div>
-
-                        <input name="nama_pelanggan"
-                               placeholder="Nama pelanggan (opsional)"
-                               class="w-full border rounded-lg p-2 text-sm">
-
-                        <input name="nomor_meja"
-                               placeholder="Nomor meja (opsional)"
-                               class="w-full border rounded-lg p-2 text-sm">
-
-                        <button name="checkout"
-                                class="w-full bg-blue-600 text-white rounded-lg p-3 font-semibold">
-                            Checkout Transaksi
-                        </button>
-
-                    </form>
-
-                    <form method="POST" class="mt-2">
-                        <button name="kosongkan"
-                                class="w-full border rounded-lg p-2 text-sm text-red-600">
-                            Kosongkan Keranjang
-                        </button>
-                    </form>
-
-                </div>
-
-            <?php endif; ?>
-
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <p id="produkKosong" class="<?= empty($produk_list) ? '' : 'hidden' ?> text-sm text-slate-400 py-10 text-center">Menu tidak ditemukan.</p>
         </section>
+
+        <!-- Laporan harian -->
+        <details class="bg-white rounded-2xl shadow-sm p-5">
+            <summary class="font-bold cursor-pointer text-sm">Ringkasan Hari Ini (<?= date('d/m/Y') ?>)</summary>
+            <div class="mt-4 space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Jumlah order</span><strong><?= $order_hari_ini ?></strong>
+                </div>
+                <?php if (empty($laporan)): ?>
+                    <p class="text-slate-400">Belum ada pembayaran hari ini.</p>
+                <?php else: ?>
+                    <?php foreach ($laporan as $l): ?>
+                        <div class="flex justify-between border-b border-slate-100 py-1.5">
+                            <span><?= strtoupper(htmlspecialchars($l['metode_bayar'])) ?> <span class="text-xs text-slate-400">(<?= (int) $l['jumlah'] ?> transaksi)</span></span>
+                            <span><?= formatRupiah($l['total']) ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="flex justify-between font-extrabold text-base pt-2">
+                        <span>Total Pemasukan</span><span><?= formatRupiah($laporan_total) ?></span>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </details>
     </div>
 
-    <!-- DETAIL TRANSAKSI DAN PEMBAYARAN -->
-    <?php if ($order): ?>
+    <!-- ========================================================= -->
+    <!-- KOLOM KANAN : INVOICE                                     -->
+    <!-- ========================================================= -->
+    <aside class="xl:w-[410px] shrink-0 xl:overflow-y-auto scroll-slim p-6 xl:pl-0 no-print">
+        <div class="bg-white rounded-3xl shadow-sm p-5">
 
-        <section class="bg-white border rounded-xl p-5">
-
-            <div class="flex flex-wrap justify-between gap-3 border-b pb-4 mb-4">
-
-                <div>
-                    <h3 class="font-bold text-lg">Detail Transaksi</h3>
-
-                    <p class="text-sm text-slate-500">
-                        <?= htmlspecialchars($order['no_invoice']) ?>
-                        | Meja <?= htmlspecialchars($order['nomor_meja']) ?>
-                    </p>
-
-                    <p class="text-sm text-slate-500">
-                        Pelanggan: <?= htmlspecialchars($order['nama_pelanggan']) ?>
-                        | Kasir ID: <?= (int) $order['user_id'] ?>
-                    </p>
-                </div>
-
-                <div class="flex items-start gap-2">
-                    <span class="text-sm font-semibold px-3 py-1 rounded-full
-                                 <?= $order_batal ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700' ?>">
-                        <?= strtoupper(htmlspecialchars($order['status_order'])) ?>
-                    </span>
-
-                    <?php if (!$order_batal): ?>
-                        <button type="button" onclick="window.print()"
-                                class="text-sm border rounded-lg px-3 py-1">
-                            Cetak Struk
-                        </button>
-                    <?php endif; ?>
-                </div>
-
+        <?php if (!$order): ?>
+            <!-- ================== MODE: PESANAN BARU ================== -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-extrabold">Invoice</h3>
+                <span class="text-xs text-slate-400"><?= date('d M Y') ?></span>
             </div>
 
-            <!-- RINCIAN TAGIHAN -->
-            <?php if ((float) $order['diskon'] > 0 || (float) $order['service_charge'] > 0 || (float) $order['pajak'] > 0): ?>
-                <div class="text-sm text-slate-600 mb-4 space-y-1">
-                    <div class="flex justify-between">
-                        <span>Subtotal</span>
-                        <span><?= formatRupiah($order['subtotal']) ?></span>
+            <div class="grid grid-cols-2 gap-1 bg-slate-100 rounded-xl p-1 mb-5 text-xs font-bold">
+                <button type="button" data-ptab="keranjang" class="ptab rounded-lg py-2 transition">
+                    Keranjang <span id="badgeCart" class="ml-1 px-1.5 rounded-full bg-blue-500 text-white">0</span>
+                </button>
+                <button type="button" data-ptab="belum" class="ptab rounded-lg py-2 transition">
+                    Belum Lunas <span class="ml-1 px-1.5 rounded-full bg-slate-300 text-slate-700"><?= count($order_belum_lunas) ?></span>
+                </button>
+            </div>
+
+            <!-- Tab: keranjang -->
+            <div data-ppane="keranjang">
+                <div id="cartList" class="space-y-4 mb-5"></div>
+                <p id="cartKosong" class="text-center text-sm text-slate-400 py-8">
+                    <i data-lucide="shopping-bag" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                    Pilih menu di sebelah kiri untuk memulai pesanan.
+                </p>
+
+                <form method="POST" id="formCheckout" class="space-y-3">
+                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                    <input type="hidden" name="keranjang_json" id="keranjangJson" value="[]">
+
+                    <div class="bg-slate-50 rounded-2xl p-4 space-y-2 text-sm">
+                        <p class="font-bold mb-1">Ringkasan Pembayaran</p>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Sub Total</span><span id="outSubtotal">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-500 gap-2">
+                            <span>Diskon (Rp)</span>
+                            <input type="number" name="diskon" id="inpDiskon" min="0" step="1" value="0" class="w-28 bg-white border border-slate-200 rounded-lg px-2 py-1 text-right text-slate-800 text-sm">
+                        </div>
+                        <?php if ($SERVICE_PERSEN > 0): ?>
+                            <div class="flex justify-between text-slate-500">
+                                <span>Service (<?= $SERVICE_PERSEN ?>%)</span><span id="outService">Rp 0</span>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($PPN_PERSEN > 0): ?>
+                            <div class="flex justify-between text-slate-500">
+                                <span>PPN (<?= $PPN_PERSEN ?>%)</span><span id="outPajak">Rp 0</span>
+                            </div>
+                        <?php endif; ?>
+                        <div class="border-t border-dashed border-slate-300 pt-3 mt-1 flex justify-between items-center">
+                            <span class="font-bold">Total Tagihan</span>
+                            <span class="text-lg font-extrabold" id="outTotal">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <input name="nama_pelanggan" maxlength="100" placeholder="Nama pelanggan" class="bg-slate-50 rounded-xl px-3 py-2.5 text-sm border border-transparent focus:outline-none focus:border-blue-500">
+                        <input name="nomor_meja" maxlength="10" placeholder="No. meja" class="bg-slate-50 rounded-xl px-3 py-2.5 text-sm border border-transparent focus:outline-none focus:border-blue-500">
+                    </div>
+
+                    <button name="checkout" id="btnCheckout" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl py-3.5 font-bold transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        Buat Pesanan
+                    </button>
+                    <button type="button" id="btnKosongkan" class="w-full text-xs text-red-500 hover:text-red-700 py-1">
+                        Kosongkan keranjang
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tab: order belum lunas -->
+            <div data-ppane="belum" class="hidden space-y-3">
+                <?php if (empty($order_belum_lunas)): ?>
+                    <p class="text-center text-sm text-slate-400 py-8">Tidak ada order yang belum lunas.</p>
+                <?php endif; ?>
+                <?php foreach ($order_belum_lunas as $o): ?>
+                    <?php $sisa_o = max(0, $o['total_tagihan'] - $o['dibayar']); ?>
+                    <a href="index.php?page=kasir&order=<?= (int) $o['id'] ?>" class="block rounded-2xl border border-slate-200 hover:border-blue-500 p-4 transition">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="min-w-0">
+                                <p class="font-bold text-sm truncate"><?= htmlspecialchars($o['no_invoice']) ?></p>
+                                <p class="text-xs text-slate-400 truncate"><?= htmlspecialchars($o['nama_pelanggan']) ?> · Meja <?= htmlspecialchars($o['nomor_meja']) ?></p>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-full <?= $badge_status[$o['status_order']] ?? '' ?>">
+                                <?= strtoupper(htmlspecialchars($o['status_order'])) ?>
+                            </span>
+                        </div>
+                        <div class="flex justify-between mt-3 text-sm">
+                            <span class="text-slate-400">Sisa tagihan</span>
+                            <strong class="text-amber-600"><?= formatRupiah($sisa_o) ?></strong>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+
+        <?php else: ?>
+            <!-- ================== MODE: DETAIL ORDER ================== -->
+            <a href="index.php?page=kasir" class="inline-flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-700 mb-3">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Pesanan baru
+            </a>
+
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <div class="min-w-0">
+                    <h3 class="text-lg font-extrabold truncate"><?= htmlspecialchars($order['no_invoice']) ?></h3>
+                    <p class="text-xs text-slate-400"><?= htmlspecialchars($order['nama_pelanggan']) ?> · Meja <?= htmlspecialchars($order['nomor_meja']) ?></p>
+                </div>
+                <span class="text-[11px] font-bold px-3 py-1 rounded-full <?= $badge_status[$order['status_order']] ?? 'bg-slate-100 text-slate-600' ?>">
+                    <?= strtoupper(htmlspecialchars($order['status_order'])) ?>
+                </span>
+            </div>
+
+            <!-- Item pesanan -->
+            <div class="space-y-3 mb-5">
+                <?php foreach ($items as $it): ?>
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+                            <?php if ($it['img']): ?>
+                                <img src="<?= htmlspecialchars($it['img']) ?>" alt="" class="w-full h-full object-cover">
+                            <?php else: ?>
+                                <div class="w-full h-full flex items-center justify-center font-extrabold text-white" style="background: <?= $it['warna'] ?>"><?= htmlspecialchars($it['inisial']) ?></div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold truncate"><?= htmlspecialchars($it['nama_produk']) ?></p>
+                            <p class="text-xs text-slate-400"><?= (int) $it['qty'] ?> × <?= formatRupiah($it['harga_satuan']) ?></p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold"><?= formatRupiah($it['subtotal']) ?></p>
+                            <?php if ($it['status_bayar_item'] === 'lunas'): ?>
+                                <span class="text-[10px] font-bold text-emerald-600">LUNAS</span>
+                            <?php else: ?>
+                                <span class="text-[10px] font-bold text-amber-600">BELUM</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- Ringkasan -->
+            <div class="bg-slate-50 rounded-2xl p-4 space-y-2 text-sm mb-4">
+                <?php if ((float) $order['diskon'] > 0 || (float) $order['service_charge'] > 0 || (float) $order['pajak'] > 0): ?>
+                    <div class="flex justify-between text-slate-500">
+                        <span>Sub Total</span><span><?= formatRupiah($order['subtotal']) ?></span>
                     </div>
                     <?php if ((float) $order['diskon'] > 0): ?>
-                        <div class="flex justify-between">
-                            <span>Diskon</span>
-                            <span>- <?= formatRupiah($order['diskon']) ?></span>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Diskon</span><span>- <?= formatRupiah($order['diskon']) ?></span>
                         </div>
                     <?php endif; ?>
                     <?php if ((float) $order['service_charge'] > 0): ?>
-                        <div class="flex justify-between">
-                            <span>Service</span>
-                            <span><?= formatRupiah($order['service_charge']) ?></span>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Service</span><span><?= formatRupiah($order['service_charge']) ?></span>
                         </div>
                     <?php endif; ?>
                     <?php if ((float) $order['pajak'] > 0): ?>
-                        <div class="flex justify-between">
-                            <span>PPN</span>
-                            <span><?= formatRupiah($order['pajak']) ?></span>
+                        <div class="flex justify-between text-slate-500">
+                            <span>PPN</span><span><?= formatRupiah($order['pajak']) ?></span>
                         </div>
                     <?php endif; ?>
-                </div>
-            <?php endif; ?>
-
-            <!-- RINGKASAN PEMBAYARAN -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-
-                <div class="bg-slate-50 rounded-lg p-4">
-                    <p class="text-sm text-slate-500">Total Tagihan</p>
-                    <strong><?= formatRupiah($order['total_tagihan']) ?></strong>
-                </div>
-
-                <div class="bg-green-50 rounded-lg p-4">
-                    <p class="text-sm text-slate-500">Sudah Dibayar</p>
-                    <strong class="text-green-700"><?= formatRupiah($total_lunas) ?></strong>
-                </div>
-
-                <div class="bg-orange-50 rounded-lg p-4">
-                    <p class="text-sm text-slate-500">Sisa Tagihan</p>
-                    <strong class="text-orange-700">
-                        <?= formatRupiah($order_batal ? 0 : $total_belum) ?>
-                    </strong>
-                </div>
-
+                    <div class="border-t border-dashed border-slate-300 my-1"></div>
+                <?php endif; ?>
+                <div class="flex justify-between"><span class="font-bold">Total Tagihan</span><strong><?= formatRupiah($order['total_tagihan']) ?></strong></div>
+                <div class="flex justify-between text-emerald-700"><span>Sudah Dibayar</span><strong><?= formatRupiah($total_lunas) ?></strong></div>
+                <div class="flex justify-between text-amber-700"><span>Sisa Tagihan</span><strong class="text-base"><?= formatRupiah($order_batal ? 0 : $total_belum) ?></strong></div>
             </div>
 
-            <!-- RIWAYAT PEMBAYARAN -->
+            <!-- Riwayat pembayaran -->
             <?php if ($riwayat): ?>
-                <div class="mb-5">
-                    <h4 class="font-semibold mb-2">Riwayat Pembayaran</h4>
-                    <ul class="text-sm space-y-1">
+                <div class="mb-4">
+                    <p class="text-sm font-bold mb-2">Riwayat Pembayaran</p>
+                    <ul class="text-xs space-y-1.5">
                         <?php foreach ($riwayat as $r): ?>
-                            <li class="flex justify-between border-b py-1">
-                                <span>
-                                    #<?= (int) $r['urutan_split'] ?>
-                                    · <?= strtoupper(htmlspecialchars($r['metode_bayar'])) ?>
-                                </span>
-                                <span>
+                            <li class="flex justify-between border-b border-slate-100 pb-1.5">
+                                <span class="font-semibold">#<?= (int) $r['urutan_split'] ?> · <?= strtoupper(htmlspecialchars($r['metode_bayar'])) ?></span>
+                                <span class="text-right">
                                     <?= formatRupiah($r['nominal_bayar']) ?>
-                                    <span class="text-xs text-slate-400">
-                                        (Diterima <?= formatRupiah($r['uang_diterima']) ?>,
-                                        Kembali <?= formatRupiah($r['kembalian']) ?>)
-                                    </span>
+                                    <span class="block text-[10px] text-slate-400">Diterima <?= formatRupiah($r['uang_diterima']) ?> · Kembali <?= formatRupiah($r['kembalian']) ?></span>
                                 </span>
                             </li>
                         <?php endforeach; ?>
@@ -1095,321 +913,309 @@ $subtotal_cart = totalKeranjang($_SESSION['keranjang_kasir']);
                 </div>
             <?php endif; ?>
 
+            <!-- Area pembayaran -->
             <?php if ($order_batal): ?>
-
-                <div class="bg-red-50 text-red-700 p-4 rounded-lg">
-                    Transaksi ini sudah dibatalkan.
+                <div class="bg-red-50 text-red-700 text-sm p-4 rounded-xl">Transaksi ini sudah dibatalkan.</div>
+            <?php elseif ($total_belum > 0): ?>
+                <div class="grid grid-cols-2 gap-1 bg-slate-100 rounded-xl p-1 mb-4 text-xs font-bold">
+                    <button type="button" data-paytab="nominal" class="paytab rounded-lg py-2 transition">Bayar Nominal</button>
+                    <button type="button" data-paytab="split" class="paytab rounded-lg py-2 transition">Bayar Per Item</button>
                 </div>
 
-            <?php elseif ($total_belum > 0): ?>
-
-                <!-- BAYAR SESUAI NOMINAL (CICILAN) -->
-                <form method="POST"
-                      class="space-y-3 border rounded-lg p-4 bg-slate-50 mb-6 form-bayar"
-                      data-mode="nominal"
-                      data-sisa="<?= (float) $total_belum ?>">
-
+                <!-- Bayar nominal / cicilan -->
+                <form method="POST" data-paypane="nominal" class="form-bayar space-y-3" data-mode="nominal" data-sisa="<?= (float) $total_belum ?>">
+                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
                     <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
-
-                    <h4 class="font-semibold">Bayar Sesuai Nominal (Cicilan)</h4>
-                    <p class="text-xs text-slate-500">
-                        Masukkan nominal berapa pun. Jika kurang dari sisa tagihan,
-                        status menjadi SEBAGIAN. QRIS/debit tidak boleh melebihi sisa tagihan.
-                    </p>
-
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" class="quick-pas border rounded-lg px-3 py-1 text-xs bg-white">
-                            Uang Pas
-                        </button>
-                        <button type="button" class="quick-uang border rounded-lg px-3 py-1 text-xs bg-white" data-nilai="20000">20.000</button>
-                        <button type="button" class="quick-uang border rounded-lg px-3 py-1 text-xs bg-white" data-nilai="50000">50.000</button>
-                        <button type="button" class="quick-uang border rounded-lg px-3 py-1 text-xs bg-white" data-nilai="100000">100.000</button>
+                    <p class="text-xs text-slate-400">Masukkan nominal berapa pun. Kurang dari sisa = status SEBAGIAN. QRIS/debit tidak boleh melebihi sisa tagihan.</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" class="quick-pas border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Uang Pas</button>
+                        <button type="button" class="quick-uang border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-slate-50" data-nilai="20000">20.000</button>
+                        <button type="button" class="quick-uang border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-slate-50" data-nilai="50000">50.000</button>
+                        <button type="button" class="quick-uang border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-slate-50" data-nilai="100000">100.000</button>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <select name="metode_bayar" class="border rounded-lg p-2 inp-metode">
-                            <option value="tunai">Tunai</option>
-                            <option value="qris">QRIS</option>
-                            <option value="debit">Debit</option>
-                        </select>
-
-                        <input type="number" name="uang_diterima" min="1" step="1"
-                               placeholder="Nominal dibayar (Sisa: <?= (int) $total_belum ?>)"
-                               required
-                               class="border rounded-lg p-2 inp-uang">
-
-                        <button name="bayar_nominal"
-                                class="bg-blue-600 text-white rounded-lg p-2 font-semibold">
-                            Bayar Nominal
-                        </button>
-                    </div>
-
-                    <p class="text-sm font-semibold text-green-700 out-kembalian"></p>
+                    <select name="metode_bayar" class="inp-metode w-full bg-slate-50 rounded-xl px-3 py-2.5 text-sm">
+                        <option value="tunai">Tunai</option><option value="qris">QRIS</option><option value="debit">Debit</option>
+                    </select>
+                    <input type="number" name="uang_diterima" min="1" step="1" required placeholder="Nominal dibayar (sisa <?= (int) $total_belum ?>)" class="inp-uang w-full bg-slate-50 rounded-xl px-3 py-2.5 text-sm">
+                    <p class="out-kembalian text-sm font-bold"></p>
+                    <button name="bayar_nominal" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-xl py-3 font-bold">Bayar Nominal</button>
                 </form>
 
-                <!-- BAYAR PER ITEM (SPLIT BILL) -->
-                <form method="POST" class="space-y-4 form-bayar"
-                      data-mode="split"
-                      data-sisa="<?= (float) $total_belum ?>"
-                      data-faktor="<?= (float) $faktor_split ?>">
-
+                <!-- Bayar per item / split bill -->
+                <form method="POST" data-paypane="split" class="form-bayar space-y-3 hidden" data-mode="split" data-sisa="<?= (float) $total_belum ?>" data-faktor="<?= (float) $faktor_split ?>">
+                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
                     <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
-
-                    <h4 class="font-semibold">Atau Pilih Item yang Ingin Dibayar</h4>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="p-3 text-left">Pilih</th>
-                                    <th class="p-3 text-left">Produk</th>
-                                    <th class="p-3 text-center">Qty</th>
-                                    <th class="p-3 text-right">Subtotal</th>
-                                    <th class="p-3 text-center">Status</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <?php foreach ($items as $item): ?>
-                                    <tr class="border-b">
-                                        <td class="p-3">
-                                            <?php if ($item['status_bayar_item'] === 'belum'): ?>
-                                                <input type="checkbox" name="item_ids[]"
-                                                       class="chk-item"
-                                                       data-subtotal="<?= (float) $item['subtotal'] ?>"
-                                                       value="<?= (int) $item['id'] ?>">
-                                            <?php else: ?>
-                                                <span class="text-green-600">Lunas</span>
-                                            <?php endif; ?>
-                                        </td>
-
-                                        <td class="p-3"><?= htmlspecialchars($item['nama_produk']) ?></td>
-                                        <td class="p-3 text-center"><?= (int) $item['qty'] ?></td>
-                                        <td class="p-3 text-right"><?= formatRupiah($item['subtotal']) ?></td>
-
-                                        <td class="p-3 text-center">
-                                            <?php if ($item['status_bayar_item'] === 'lunas'): ?>
-                                                <span class="text-green-600">Lunas</span>
-                                            <?php else: ?>
-                                                <span class="text-orange-600">Belum dibayar</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                    <p class="text-xs text-slate-400">Centang item yang dibayar sekarang. Sisanya tetap menjadi tagihan.</p>
+                    <div class="space-y-1.5">
+                        <?php foreach ($items as $it): ?>
+                            <?php if ($it['status_bayar_item'] !== 'belum') continue; ?>
+                            <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2.5 cursor-pointer hover:border-blue-500">
+                                <input type="checkbox" name="item_ids[]" class="chk-item accent-[#3b6ef5] w-4 h-4" data-subtotal="<?= (float) $it['subtotal'] ?>" value="<?= (int) $it['id'] ?>">
+                                <span class="flex-1 min-w-0 text-sm font-semibold truncate"><?= htmlspecialchars($it['nama_produk']) ?> <span class="text-xs text-slate-400 font-normal">× <?= (int) $it['qty'] ?></span></span>
+                                <span class="text-sm font-bold"><?= formatRupiah($it['subtotal']) ?></span>
+                            </label>
+                        <?php endforeach; ?>
                     </div>
-
-                    <p class="text-sm">
-                        Total item dipilih:
-                        <strong class="out-nominal-split">Rp 0</strong>
-                    </p>
-
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" class="quick-pas border rounded-lg px-3 py-1 text-xs bg-white">
-                            Uang Pas
-                        </button>
-                        <button type="button" class="quick-uang border rounded-lg px-3 py-1 text-xs bg-white" data-nilai="50000">50.000</button>
-                        <button type="button" class="quick-uang border rounded-lg px-3 py-1 text-xs bg-white" data-nilai="100000">100.000</button>
+                    <p class="text-sm">Total item dipilih: <strong class="out-nominal-split">Rp 0</strong></p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" class="quick-pas border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-slate-50">Uang Pas</button>
+                        <button type="button" class="quick-uang border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-slate-50" data-nilai="50000">50.000</button>
+                        <button type="button" class="quick-uang border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-semibold hover:bg-slate-50" data-nilai="100000">100.000</button>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <select name="metode_bayar" class="border rounded-lg p-2 inp-metode">
-                            <option value="tunai">Tunai</option>
-                            <option value="qris">QRIS</option>
-                            <option value="debit">Debit</option>
-                        </select>
-
-                        <input type="number" name="uang_diterima" min="0" step="1"
-                               placeholder="Uang diterima" required
-                               class="border rounded-lg p-2 inp-uang">
-
-                        <button name="bayar_split"
-                                class="bg-green-600 text-white rounded-lg p-2 font-semibold">
-                            Proses Pembayaran
-                        </button>
-                    </div>
-
-                    <p class="text-sm font-semibold text-green-700 out-kembalian"></p>
-
-                    <p class="text-xs text-slate-500">
-                        Item yang tidak dipilih tetap menjadi sisa tagihan.
-                        QRIS/debit harus sama persis dengan total item dipilih.
-                    </p>
+                    <select name="metode_bayar" class="inp-metode w-full bg-slate-50 rounded-xl px-3 py-2.5 text-sm">
+                        <option value="tunai">Tunai</option><option value="qris">QRIS</option><option value="debit">Debit</option>
+                    </select>
+                    <input type="number" name="uang_diterima" min="0" step="1" required placeholder="Uang diterima" class="inp-uang w-full bg-slate-50 rounded-xl px-3 py-2.5 text-sm">
+                    <p class="out-kembalian text-sm font-bold"></p>
+                    <button name="bayar_split" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3 font-bold">Proses Pembayaran</button>
                 </form>
 
             <?php else: ?>
-
-                <div class="bg-green-50 text-green-700 p-4 rounded-lg">
-                    Transaksi sudah lunas. Terima kasih!
-                </div>
-
+                <div class="bg-emerald-50 text-emerald-700 text-sm p-4 rounded-xl text-center font-semibold">Transaksi sudah lunas. Terima kasih!</div>
             <?php endif; ?>
 
-            <!-- BATALKAN ORDER -->
-            <?php if (!$order_batal && $boleh_void && empty($riwayat)): ?>
-                <form method="POST" class="mt-6 border-t pt-4"
-                      onsubmit="return confirm('Batalkan order ini? Stok produk akan dikembalikan.');">
-                    <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
-                    <button name="void_order"
-                            class="border border-red-300 text-red-600 rounded-lg px-4 py-2 text-sm">
-                        Batalkan Order
+            <!-- Aksi tambahan -->
+            <div class="flex gap-2 mt-5 pt-4 border-t border-slate-100">
+                <?php if (!$order_batal): ?>
+                    <button type="button" onclick="window.print()" class="flex-1 inline-flex items-center justify-center gap-2 border border-slate-200 rounded-xl py-2.5 text-sm font-semibold hover:bg-slate-50">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Cetak Struk
                     </button>
-                </form>
-            <?php endif; ?>
-
-        </section>
-
-        <!-- STRUK (hanya tampil saat dicetak) -->
-        <?php if (!$order_batal): ?>
-            <div id="struk">
-                <div style="text-align:center">
-                    <strong>STRUK PEMBAYARAN</strong><br>
-                    <?= htmlspecialchars($order['no_invoice']) ?><br>
-                    <?= htmlspecialchars($order['created_at'] ?? date('Y-m-d H:i:s')) ?><br>
-                    Meja <?= htmlspecialchars($order['nomor_meja']) ?>
-                    | <?= htmlspecialchars($order['nama_pelanggan']) ?>
-                </div>
-
-                <div class="garis"></div>
-
-                <?php foreach ($items as $item): ?>
-                    <div><?= htmlspecialchars($item['nama_produk']) ?></div>
-                    <div class="baris">
-                        <span><?= (int) $item['qty'] ?> x <?= formatRupiah($item['harga_satuan']) ?></span>
-                        <span><?= formatRupiah($item['subtotal']) ?></span>
-                    </div>
-                <?php endforeach; ?>
-
-                <div class="garis"></div>
-
-                <?php if ((float) $order['diskon'] > 0 || (float) $order['service_charge'] > 0 || (float) $order['pajak'] > 0): ?>
-                    <div class="baris"><span>Subtotal</span><span><?= formatRupiah($order['subtotal']) ?></span></div>
-                    <?php if ((float) $order['diskon'] > 0): ?>
-                        <div class="baris"><span>Diskon</span><span>-<?= formatRupiah($order['diskon']) ?></span></div>
-                    <?php endif; ?>
-                    <?php if ((float) $order['service_charge'] > 0): ?>
-                        <div class="baris"><span>Service</span><span><?= formatRupiah($order['service_charge']) ?></span></div>
-                    <?php endif; ?>
-                    <?php if ((float) $order['pajak'] > 0): ?>
-                        <div class="baris"><span>PPN</span><span><?= formatRupiah($order['pajak']) ?></span></div>
-                    <?php endif; ?>
                 <?php endif; ?>
-
-                <div class="baris"><strong>TOTAL</strong><strong><?= formatRupiah($order['total_tagihan']) ?></strong></div>
-
-                <div class="garis"></div>
-
-                <?php foreach ($riwayat as $r): ?>
-                    <div class="baris">
-                        <span>Bayar <?= strtoupper(htmlspecialchars($r['metode_bayar'])) ?></span>
-                        <span><?= formatRupiah($r['uang_diterima']) ?></span>
-                    </div>
-                    <?php if ((float) $r['kembalian'] > 0): ?>
-                        <div class="baris">
-                            <span>Kembalian</span>
-                            <span><?= formatRupiah($r['kembalian']) ?></span>
-                        </div>
-                    <?php endif; ?>
-                <?php endforeach; ?>
-
-                <div class="baris"><span>Sudah Dibayar</span><span><?= formatRupiah($total_lunas) ?></span></div>
-                <div class="baris"><span>Sisa</span><span><?= formatRupiah($total_belum) ?></span></div>
-
-                <div class="garis"></div>
-                <div style="text-align:center">Terima kasih!</div>
+                <?php if (!$order_batal && $boleh_void && empty($riwayat)): ?>
+                    <form method="POST" class="flex-1" onsubmit="return confirm('Batalkan order ini? Stok produk akan dikembalikan.');">
+                        <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                        <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">
+                        <button name="void_order" class="w-full border border-red-200 text-red-600 hover:bg-red-50 rounded-xl py-2.5 text-sm font-semibold">Batalkan Order</button>
+                    </form>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
-
-    <?php endif; ?>
-
-    <!-- LAPORAN HARIAN -->
-    <details class="bg-white border rounded-xl p-5">
-        <summary class="font-semibold cursor-pointer">
-            Laporan Hari Ini (<?= date('d/m/Y') ?>)
-        </summary>
-
-        <div class="mt-4 space-y-3 text-sm">
-            <div class="flex justify-between">
-                <span>Jumlah order</span>
-                <strong><?= $order_hari_ini ?></strong>
-            </div>
-
-            <?php if (empty($laporan)): ?>
-                <p class="text-slate-400">Belum ada pembayaran hari ini.</p>
-            <?php else: ?>
-                <?php foreach ($laporan as $l): ?>
-                    <div class="flex justify-between border-b py-1">
-                        <span>
-                            <?= strtoupper(htmlspecialchars($l['metode_bayar'])) ?>
-                            <span class="text-xs text-slate-400">(<?= (int) $l['jumlah'] ?> transaksi)</span>
-                        </span>
-                        <span><?= formatRupiah($l['total']) ?></span>
-                    </div>
-                <?php endforeach; ?>
-
-                <div class="flex justify-between font-bold text-base pt-2">
-                    <span>Total Pemasukan</span>
-                    <span><?= formatRupiah($laporan_total) ?></span>
-                </div>
-            <?php endif; ?>
         </div>
-    </details>
+    </aside>
 
+    <!-- STRUK (hanya tampil saat dicetak) -->
+    <?php if ($order && !$order_batal): ?>
+        <div id="struk">
+            <div style="text-align:center">
+                <strong>STRUK PEMBAYARAN</strong><br>
+                <?= htmlspecialchars($order['no_invoice']) ?><br>
+                <?= htmlspecialchars($order['created_at'] ?? date('Y-m-d H:i:s')) ?><br>
+                Meja <?= htmlspecialchars($order['nomor_meja']) ?> | <?= htmlspecialchars($order['nama_pelanggan']) ?>
+            </div>
+            <div class="garis"></div>
+            <?php foreach ($items as $it): ?>
+                <div><?= htmlspecialchars($it['nama_produk']) ?></div>
+                <div class="baris">
+                    <span><?= (int) $it['qty'] ?> x <?= formatRupiah($it['harga_satuan']) ?></span>
+                    <span><?= formatRupiah($it['subtotal']) ?></span>
+                </div>
+            <?php endforeach; ?>
+            <div class="garis"></div>
+            <?php if ((float) $order['diskon'] > 0 || (float) $order['service_charge'] > 0 || (float) $order['pajak'] > 0): ?>
+                <div class="baris"><span>Subtotal</span><span><?= formatRupiah($order['subtotal']) ?></span></div>
+                <?php if ((float) $order['diskon'] > 0): ?><div class="baris"><span>Diskon</span><span>-<?= formatRupiah($order['diskon']) ?></span></div><?php endif; ?>
+                <?php if ((float) $order['service_charge'] > 0): ?><div class="baris"><span>Service</span><span><?= formatRupiah($order['service_charge']) ?></span></div><?php endif; ?>
+                <?php if ((float) $order['pajak'] > 0): ?><div class="baris"><span>PPN</span><span><?= formatRupiah($order['pajak']) ?></span></div><?php endif; ?>
+            <?php endif; ?>
+            <div class="baris"><strong>TOTAL</strong><strong><?= formatRupiah($order['total_tagihan']) ?></strong></div>
+            <div class="garis"></div>
+            <?php foreach ($riwayat as $r): ?>
+                <div class="baris">
+                    <span>Bayar <?= strtoupper(htmlspecialchars($r['metode_bayar'])) ?></span>
+                    <span><?= formatRupiah($r['uang_diterima']) ?></span>
+                </div>
+                <?php if ((float) $r['kembalian'] > 0): ?>
+                    <div class="baris"><span>Kembalian</span><span><?= formatRupiah($r['kembalian']) ?></span></div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+            <div class="baris"><span>Sudah Dibayar</span><span><?= formatRupiah($total_lunas) ?></span></div>
+            <div class="baris"><span>Sisa</span><span><?= formatRupiah($total_belum) ?></span></div>
+            <div class="garis"></div>
+            <div style="text-align:center">Terima kasih!</div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <script>
 (function () {
+    'use strict';
+
     const rupiah = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+    const ikon = () => { if (window.lucide) lucide.createIcons(); };
 
-    // ---------- Cari produk ----------
-    const cari = document.getElementById('cariProduk');
-    if (cari) {
-        cari.addEventListener('input', function () {
-            const q = this.value.trim().toLowerCase();
-            let tampil = 0;
+    const PRODUK = <?= json_encode($produk_js, $js_flags) ?>;
+    const SVC = <?= (float) $SERVICE_PERSEN ?>;
+    const PPN = <?= (float) $PPN_PERSEN ?>;
+    const KEY = 'flashpos_cart_v1';
+    const ADA_ORDER = <?= $order ? 'true' : 'false' ?>;
+    const BARU = <?= isset($_GET['baru']) ? 'true' : 'false' ?>;
 
-            document.querySelectorAll('.produk-card').forEach(function (el) {
-                const cocok = el.dataset.cari.includes(q);
-                el.style.display = cocok ? '' : 'none';
-                if (cocok) tampil++;
-            });
-
-            document.getElementById('produkKosong')
-                .classList.toggle('hidden', tampil > 0);
+    /* TAB PANEL */
+    function pilihTab(nama) {
+        document.querySelectorAll('[data-ppane]').forEach(el => el.classList.toggle('hidden', el.dataset.ppane !== nama));
+        document.querySelectorAll('.ptab').forEach(el => {
+            const aktif = el.dataset.ptab === nama;
+            el.classList.toggle('bg-white', aktif); el.classList.toggle('shadow-sm', aktif);
+            el.classList.toggle('text-slate-900', aktif); el.classList.toggle('text-slate-500', !aktif);
         });
     }
+    document.querySelectorAll('.ptab').forEach(el => el.addEventListener('click', () => pilihTab(el.dataset.ptab)));
+    if (document.querySelector('.ptab')) pilihTab('keranjang');
 
-    // ---------- Preview total checkout ----------
-    const fc = document.getElementById('formCheckout');
-    if (fc) {
-        const subtotal = parseFloat(fc.dataset.subtotal);
-        const svc = parseFloat(fc.dataset.svc);
-        const ppn = parseFloat(fc.dataset.ppn);
-        const inp = document.getElementById('inpDiskon');
+    /* TAB PEMBAYARAN */
+    function pilihPayTab(nama) {
+        document.querySelectorAll('[data-paypane]').forEach(el => el.classList.toggle('hidden', el.dataset.paypane !== nama));
+        document.querySelectorAll('.paytab').forEach(el => {
+            const aktif = el.dataset.paytab === nama;
+            el.classList.toggle('bg-white', aktif); el.classList.toggle('shadow-sm', aktif);
+            el.classList.toggle('text-slate-900', aktif); el.classList.toggle('text-slate-500', !aktif);
+        });
+    }
+    document.querySelectorAll('.paytab').forEach(el => el.addEventListener('click', () => pilihPayTab(el.dataset.paytab)));
+    if (document.querySelector('.paytab')) pilihPayTab('nominal');
 
-        function hitung() {
-            let diskon = parseFloat(inp.value) || 0;
-            diskon = Math.min(Math.max(0, diskon), subtotal);
+    /* FILTER KATEGORI + PENCARIAN */
+    let katAktif = 'all';
+    function terapkanFilter() {
+        const q = (document.getElementById('cariProduk').value || '').trim().toLowerCase();
+        let tampil = 0;
+        document.querySelectorAll('.produk-card').forEach(el => {
+            const cocokKat = katAktif === 'all' || el.dataset.kat === katAktif;
+            const cocokCari = el.dataset.cari.includes(q);
+            const ok = cocokKat && cocokCari;
+            el.style.display = ok ? '' : 'none';
+            if (ok) tampil++;
+        });
+        document.getElementById('produkKosong').classList.toggle('hidden', tampil > 0);
+    }
+    function pilihKategori(id, nama) {
+        katAktif = id;
+        document.getElementById('judulMenu').textContent = id === 'all' ? 'Semua Menu' : nama;
+        document.querySelectorAll('.tile-kat').forEach(el => {
+            const aktif = el.dataset.kat === id;
+            el.classList.toggle('bg-blue-500', aktif); el.classList.toggle('text-white', aktif);
+            el.classList.toggle('bg-white', !aktif);
+            const ik = el.querySelector('.tile-ikon');
+            ik.classList.toggle('bg-white/20', aktif); ik.classList.toggle('text-white', aktif);
+            ik.classList.toggle('bg-slate-100', !aktif); ik.classList.toggle('text-slate-600', !aktif);
+            const sub = el.querySelector('.tile-sub');
+            sub.classList.toggle('text-white/80', aktif); sub.classList.toggle('text-slate-400', !aktif);
+        });
+        terapkanFilter();
+    }
+    document.querySelectorAll('.tile-kat').forEach(el => el.addEventListener('click', () => pilihKategori(el.dataset.kat, el.dataset.nama || '')));
+    if(document.getElementById('cariProduk')) document.getElementById('cariProduk').addEventListener('input', terapkanFilter);
+    pilihKategori('all', '');
 
-            const dasar = subtotal - diskon;
-            const service = Math.round(dasar * svc / 100);
-            const pajak = Math.round((dasar + service) * ppn / 100);
+    /* KERANJANG */
+    let cart = {};
+    function muatCart() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(KEY) || '{}');
+            Object.keys(raw).forEach(id => {
+                const p = PRODUK[id];
+                const q = parseInt(raw[id], 10);
+                if (p && q > 0) cart[id] = Math.min(q, p.stok);
+            });
+        } catch (e) { cart = {}; }
+    }
+    function simpanCart() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
+    function setQty(id, q) {
+        const p = PRODUK[id];
+        if (!p) return;
+        q = Math.max(0, Math.min(q, p.stok));
+        if (q === 0) delete cart[id]; else cart[id] = q;
+        simpanCart(); render();
+    }
+    function thumb(p, ukuran) {
+        if (p.img) return '<img src="' + esc(p.img) + '" alt="" class="w-full h-full object-cover">';
+        return '<div class="w-full h-full flex items-center justify-center font-extrabold text-white" style="background:' + esc(p.warna) + ';font-size:' + ukuran + 'px">' + esc(p.inisial) + '</div>';
+    }
+    function hitungTotal(subtotal, diskon) {
+        diskon = Math.min(Math.max(0, diskon || 0), subtotal);
+        const dasar = subtotal - diskon;
+        const service = Math.round(dasar * SVC / 100);
+        const pajak = Math.round((dasar + service) * PPN / 100);
+        return { subtotal, diskon, service, pajak, total: dasar + service + pajak };
+    }
+    function render() {
+        document.querySelectorAll('.produk-card').forEach(card => {
+            const id = card.dataset.id; const p = PRODUK[id]; const q = cart[id] || 0;
+            card.querySelector('.qty-val').textContent = q;
+            card.querySelector('.btn-dec').disabled = q <= 0;
+            card.querySelector('.btn-inc').disabled = q >= p.stok;
+            card.classList.toggle('dalam-keranjang', q > 0);
+        });
 
-            const s = document.getElementById('outService');
-            const p = document.getElementById('outPajak');
-            if (s) s.textContent = rupiah(service);
-            if (p) p.textContent = rupiah(pajak);
+        const list = document.getElementById('cartList');
+        if (!list) return;
 
-            document.getElementById('outTotal').textContent =
-                rupiah(dasar + service + pajak);
-        }
+        const ids = Object.keys(cart);
+        let subtotal = 0; let jumlahItem = 0;
 
-        inp.addEventListener('input', hitung);
-        hitung();
+        list.innerHTML = ids.map(id => {
+            const p = PRODUK[id]; const q = cart[id]; subtotal += p.harga * q; jumlahItem += q;
+            return '<div class="flex items-center gap-3">' +
+              '<div class="w-14 h-14 rounded-xl overflow-hidden shrink-0">' + thumb(p, 20) + '</div>' +
+              '<div class="flex-1 min-w-0">' +
+                '<p class="text-sm font-bold truncate">' + esc(p.nama) + '</p>' +
+                '<p class="text-xs text-slate-400">' + q + '× · ' + rupiah(p.harga) + '</p>' +
+                '<div class="flex items-center gap-1.5 mt-1.5">' +
+                  '<button type="button" data-act="dec" data-id="' + p.id + '" class="w-6 h-6 rounded-full border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-slate-100"><i data-lucide="minus" class="w-3 h-3"></i></button>' +
+                  '<span class="w-5 text-center text-xs font-bold">' + q + '</span>' +
+                  '<button type="button" data-act="inc" data-id="' + p.id + '" ' + (q >= p.stok ? 'disabled' : '') + ' class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center hover:bg-blue-600 disabled:opacity-40"><i data-lucide="plus" class="w-3 h-3"></i></button>' +
+                  '<button type="button" data-act="del" data-id="' + p.id + '" class="ml-1 text-slate-300 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+                '</div>' +
+              '</div>' +
+              '<p class="text-sm font-extrabold">' + rupiah(p.harga * q) + '</p>' +
+            '</div>';
+        }).join('');
+
+        document.getElementById('cartKosong').classList.toggle('hidden', ids.length > 0);
+        document.getElementById('badgeCart').textContent = jumlahItem;
+        document.getElementById('btnCheckout').disabled = ids.length === 0;
+        document.getElementById('btnKosongkan').classList.toggle('hidden', ids.length === 0);
+
+        const diskon = parseFloat(document.getElementById('inpDiskon').value) || 0;
+        const h = hitungTotal(subtotal, diskon);
+
+        document.getElementById('outSubtotal').textContent = rupiah(h.subtotal);
+        document.getElementById('outTotal').textContent = rupiah(h.total);
+        if(document.getElementById('outService')) document.getElementById('outService').textContent = rupiah(h.service);
+        if(document.getElementById('outPajak')) document.getElementById('outPajak').textContent = rupiah(h.pajak);
+
+        document.getElementById('keranjangJson').value = JSON.stringify(ids.map(id => ({ id: parseInt(id, 10), qty: cart[id] })));
+        ikon();
     }
 
-    // ---------- Form pembayaran: kembalian live + tombol cepat ----------
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        const id = btn.dataset.id; const q = cart[id] || 0;
+        if (btn.dataset.act === 'inc') setQty(id, q + 1);
+        if (btn.dataset.act === 'dec') setQty(id, q - 1);
+        if (btn.dataset.act === 'del') setQty(id, 0);
+    });
+
+    const inpDiskon = document.getElementById('inpDiskon');
+    if (inpDiskon) inpDiskon.addEventListener('input', render);
+
+    const btnKosong = document.getElementById('btnKosongkan');
+    if (btnKosong) btnKosong.addEventListener('click', function () {
+        if (confirm('Kosongkan seluruh keranjang?')) { cart = {}; simpanCart(); render(); }
+    });
+
+    const formCheckout = document.getElementById('formCheckout');
+    if (formCheckout) formCheckout.addEventListener('submit', function (e) {
+        if (Object.keys(cart).length === 0) e.preventDefault();
+    });
+
+    if (BARU) { try { localStorage.removeItem(KEY); } catch (e) {} }
+
+    muatCart(); render();
+
+    /* FORM PEMBAYARAN */
     document.querySelectorAll('.form-bayar').forEach(function (form) {
         const mode = form.dataset.mode;
         const sisa = parseFloat(form.dataset.sisa);
@@ -1420,84 +1226,41 @@ $subtotal_cart = totalKeranjang($_SESSION['keranjang_kasir']);
         const outSplit = form.querySelector('.out-nominal-split');
         const checks = form.querySelectorAll('.chk-item');
 
-        // Nominal yang harus dibayar saat ini.
         function nominalSekarang() {
-            if (mode === 'nominal') {
-                return Math.min(parseFloat(uang.value) || 0, sisa);
-            }
-
+            if (mode === 'nominal') return Math.min(parseFloat(uang.value) || 0, sisa);
             let sub = 0, dipilih = 0;
-            checks.forEach(function (c) {
-                if (c.checked) {
-                    sub += parseFloat(c.dataset.subtotal);
-                    dipilih++;
-                }
-            });
-
-            // Semua item tersisa dipilih: nominal = sisa tagihan.
+            checks.forEach(function (c) { if (c.checked) { sub += parseFloat(c.dataset.subtotal); dipilih++; } });
             if (dipilih > 0 && dipilih === checks.length) return sisa;
-
             return Math.min(Math.round(sub * faktor), sisa);
+        }
+
+        function tampil(teks, merah) {
+            out.className = 'out-kembalian text-sm font-bold ' + (merah ? 'text-red-600' : 'text-emerald-700');
+            out.textContent = teks;
         }
 
         function update() {
             const nominal = nominalSekarang();
             const diterima = parseFloat(uang.value) || 0;
-
             if (outSplit) outSplit.textContent = rupiah(nominal);
-
-            if (diterima <= 0) { out.textContent = ''; return; }
-
-            if (mode === 'split' && nominal === 0) {
-                out.textContent = '';
+            if (diterima <= 0 || (mode === 'split' && nominal === 0)) { out.textContent = ''; return; }
+            if (metode.value !== 'tunai') {
+                if (mode === 'nominal' && diterima > sisa) tampil('QRIS/debit tidak boleh melebihi sisa tagihan.', true);
+                else if (mode === 'split' && diterima !== nominal) tampil('QRIS/debit harus pas: ' + rupiah(nominal), true);
+                else tampil('Pembayaran pas, tanpa kembalian.', false);
                 return;
             }
-
-            const nonTunai = metode.value !== 'tunai';
-
-            if (nonTunai) {
-                const target = mode === 'nominal' ? diterima : nominal;
-                if (mode === 'nominal' && diterima > sisa) {
-                    out.className = 'text-sm font-semibold text-red-600 out-kembalian';
-                    out.textContent = 'QRIS/debit tidak boleh melebihi sisa tagihan.';
-                } else if (mode === 'split' && diterima !== target) {
-                    out.className = 'text-sm font-semibold text-red-600 out-kembalian';
-                    out.textContent = 'QRIS/debit harus pas: ' + rupiah(target);
-                } else {
-                    out.className = 'text-sm font-semibold text-green-700 out-kembalian';
-                    out.textContent = 'Pembayaran pas, tanpa kembalian.';
-                }
-                return;
-            }
-
-            if (diterima < nominal) {
-                out.className = 'text-sm font-semibold text-red-600 out-kembalian';
-                out.textContent = 'Uang kurang ' + rupiah(nominal - diterima);
-            } else {
-                out.className = 'text-sm font-semibold text-green-700 out-kembalian';
-                out.textContent = 'Kembalian: ' + rupiah(diterima - nominal);
-            }
+            if (diterima < nominal) tampil('Uang kurang ' + rupiah(nominal - diterima), true);
+            else tampil('Kembalian: ' + rupiah(diterima - nominal), false);
         }
 
-        // Tombol "Uang Pas".
-        form.querySelectorAll('.quick-pas').forEach(function (b) {
-            b.addEventListener('click', function () {
-                uang.value = mode === 'nominal' ? sisa : nominalSekarang();
-                update();
-            });
-        });
-
-        // Tombol nominal cepat.
-        form.querySelectorAll('.quick-uang').forEach(function (b) {
-            b.addEventListener('click', function () {
-                uang.value = b.dataset.nilai;
-                update();
-            });
-        });
-
+        form.querySelectorAll('.quick-pas').forEach(b => b.addEventListener('click', function () { uang.value = mode === 'nominal' ? sisa : nominalSekarang(); update(); }));
+        form.querySelectorAll('.quick-uang').forEach(b => b.addEventListener('click', function () { uang.value = b.dataset.nilai; update(); }));
         uang.addEventListener('input', update);
         metode.addEventListener('change', update);
         checks.forEach(c => c.addEventListener('change', update));
     });
+
+    ikon();
 })();
 </script>

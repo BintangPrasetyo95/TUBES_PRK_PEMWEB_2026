@@ -1,4 +1,3 @@
-
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -43,11 +42,17 @@ if (
 // 2. Tentukan judul halaman dinamis untuk Topbar
 $titles = [
     'dashboard' => 'Dashboard Analitik',
-    'kasir'     => 'Terminal Kasir (POS) & Split Bill',
+    'kasir'     => 'Terminal Kasir',
     'produk'    => 'Data Master Produk',
     'laporan'   => 'Laporan & Bukti Transaksi'
 ];
 $page_heading = $titles[$page] ?? 'FlashPOS System';
+
+// Halaman kasir memakai layout penuh (tanpa padding) seperti aplikasi POS
+$active_page = $page;
+$main_class  = ($page === 'kasir')
+    ? 'flex-1 overflow-hidden'
+    : 'flex-1 overflow-y-auto p-8';
 $page_title   = $page_heading . ' — FlashPOS';
 
 // 3. Panggil Layout Atas (Header & Sidebar)

@@ -3,17 +3,19 @@
 require_once '../config/database.php';
 require_once '../includes/functions.php';
 
-
 wajibAdmin();
-
 
 $admin_id = $_SESSION['user_id'] ?? $_SESSION['id'] ?? null;
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    if (function_exists('verifikasiCsrf')) {
+        verifikasiCsrf();
+    }
+
     $aksi = $_POST['aksi'] ?? '';
 
-        if ($aksi === 'update_status') {
+    if ($aksi === 'update_status') {
         $laporan_id    = (int)($_POST['laporan_id'] ?? 0);
         $status_baru   = trim($_POST['status'] ?? '');
         $isi_tanggapan = trim($_POST['isi_tanggapan'] ?? '');
@@ -51,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-
     if ($aksi === 'hapus_laporan') {
         $laporan_id = (int)($_POST['laporan_id'] ?? 0);
 
@@ -80,10 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
 $filter_status = $_GET['status'] ?? 'semua';
 $filter_jenis  = $_GET['jenis'] ?? 'semua';
-
 
 $sql = "SELECT laporan.*, users.nama AS nama_pelapor, kategori.nama_kategori 
         FROM laporan 
@@ -109,14 +108,12 @@ $stmt_laporan = $pdo->prepare($sql);
 $stmt_laporan->execute($params);
 $daftar_laporan = $stmt_laporan->fetchAll(PDO::FETCH_ASSOC);
 
-
 $title = "Kelola Laporan - Aspiraku";
 include '../includes/header.php';
 ?>
 
 <main class="container" style="padding: 30px 20px;">
 
-  
     <?php if (function_exists('getFlash')): ?>
         <?= getFlash() ?>
     <?php endif; ?>
@@ -130,7 +127,6 @@ include '../includes/header.php';
             &larr; Kembali ke Dashboard
         </a>
     </div>
-
 
     <div class="card" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
         <form method="GET" action="kelola.php" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
@@ -163,7 +159,6 @@ include '../includes/header.php';
             </div>
         </form>
     </div>
-
 
     <div class="table-responsive" style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 8px; padding: 15px; overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
@@ -220,13 +215,14 @@ include '../includes/header.php';
                             <td style="padding: 12px 8px; vertical-align: top; text-align: center;">
                                 <div style="display: flex; gap: 6px; justify-content: center; flex-direction: column;">
                                     
-                        
                                     <button type="button" onclick="document.getElementById('form-kelola-<?= $row['id'] ?>').style.display = document.getElementById('form-kelola-<?= $row['id'] ?>').style.display === 'none' ? 'table-row' : 'none'" 
                                             class="btn" style="background: #1E3B2F; color: #F5F0E6; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">
                                         Tindak Lanjuti
                                     </button>
 
+                                    <!-- 2. FORM HAPUS (Sudah disisipkan CSRF) -->
                                     <form method="POST" action="kelola.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini? Tindakan ini tidak dapat dibatalkan.');" style="display: inline;">
+                                        <?php if (function_exists('csrfField')) echo csrfField(); ?>
                                         <input type="hidden" name="aksi" value="hapus_laporan">
                                         <input type="hidden" name="laporan_id" value="<?= (int)$row['id'] ?>">
                                         <button type="submit" style="background: transparent; color: #8B2E2E; border: 1px solid #F7E0DC; padding: 5px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; width: 100%;">
@@ -238,6 +234,7 @@ include '../includes/header.php';
                             </td>
                         </tr>
 
+                        <!-- 3. FORM TINDAK LANJUTI (Sudah disisipkan CSRF) -->
                         <tr id="form-kelola-<?= $row['id'] ?>" style="display: none; background: #FAF7F0;">
                             <td colspan="7" style="padding: 20px; border-bottom: 2px solid #DDD5C0;">
                                 <div style="background: #FFFFFF; border: 1px solid #DDD5C0; border-radius: 6px; padding: 16px;">
@@ -246,6 +243,7 @@ include '../includes/header.php';
                                     </h4>
 
                                     <form method="POST" action="kelola.php">
+                                        <?php if (function_exists('csrfField')) echo csrfField(); ?>
                                         <input type="hidden" name="aksi" value="update_status">
                                         <input type="hidden" name="laporan_id" value="<?= (int)$row['id'] ?>">
 

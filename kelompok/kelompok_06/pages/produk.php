@@ -1,23 +1,11 @@
 <?php
-// =====================================================
-// FLASH POS - DATA MASTER PRODUK
-// CREATE, READ, UPDATE, DELETE + AUTO KODE PRODUK
-// =====================================================
 
 $pesan = '';
 $jenis_pesan = '';
 
-// =====================================================
-// CSRF TOKEN
-// =====================================================
-
 if (empty($_SESSION['csrf_produk'])) {
     $_SESSION['csrf_produk'] = bin2hex(random_bytes(32));
 }
-
-// =====================================================
-// FUNGSI MENENTUKAN PREFIX KODE BERDASARKAN KATEGORI
-// =====================================================
 
 function prefixProduk($nama_kategori) {
     $nama = strtolower($nama_kategori);
@@ -37,11 +25,6 @@ function prefixProduk($nama_kategori) {
 
     return 'KAT';
 }
-
-// =====================================================
-// FUNGSI GENERATE KODE PRODUK OTOMATIS
-// Menggunakan MySQL GET_LOCK agar tidak bentrok
-// =====================================================
 
 function generateKodeProduk($conn, $prefix) {
 
@@ -115,10 +98,6 @@ function generateKodeProduk($conn, $prefix) {
     }
 }
 
-// =====================================================
-// PROSES TAMBAH DAN EDIT PRODUK
-// =====================================================
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     isset($_POST['simpan_produk'])) {
 
@@ -156,7 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
             $stok = (int)$stok_input;
             $status = $stok > 0 ? 'tersedia' : 'habis';
 
-            // Pastikan kategori tersedia
             $cek_kategori = mysqli_prepare(
                 $conn,
                 "SELECT nama_kategori
@@ -186,11 +164,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
                 $jenis_pesan = 'error';
 
             } else {
-
-                // ==============================
-                // UPDATE PRODUK
-                // Kode lama tetap dipertahankan
-                // ==============================
 
                 if ($id > 0) {
 
@@ -263,11 +236,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
                 } else {
 
-                    // ==============================
-                    // CREATE PRODUK
-                    // KODE DIBUAT OTOMATIS
-                    // ==============================
-
                     try {
 
                         $prefix = prefixProduk($nama_kategori);
@@ -326,10 +294,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     }
 }
 
-// =====================================================
-// PROSES HAPUS PRODUK
-// =====================================================
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     isset($_POST['hapus_produk'])) {
 
@@ -348,7 +312,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
 
     } else {
 
-        // Cek apakah produk pernah digunakan dalam transaksi
         $cek = mysqli_prepare(
             $conn,
             "SELECT id
@@ -403,10 +366,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
     }
 }
 
-// =====================================================
-// NOTIFIKASI
-// =====================================================
-
 if (isset($_GET['status'])) {
 
     $notifikasi = [
@@ -420,10 +379,6 @@ if (isset($_GET['status'])) {
         $jenis_pesan = 'success';
     }
 }
-
-// =====================================================
-// STATISTIK
-// =====================================================
 
 $q_statistik = mysqli_query(
     $conn,
@@ -442,10 +397,6 @@ $q_kategori_total = mysqli_query(
 
 $total_kategori = mysqli_fetch_assoc($q_kategori_total)['total'];
 
-// =====================================================
-// DATA KATEGORI
-// =====================================================
-
 $q_kategori = mysqli_query(
     $conn,
     "SELECT * FROM categories ORDER BY nama_kategori ASC"
@@ -456,10 +407,6 @@ $kategori_list = [];
 while ($k = mysqli_fetch_assoc($q_kategori)) {
     $kategori_list[] = $k;
 }
-
-// =====================================================
-// DATA PRODUK
-// =====================================================
 
 $q_produk = mysqli_query(
     $conn,
@@ -476,13 +423,7 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 }
 ?>
 
-<!-- =====================================================
-     TAMPILAN HALAMAN PRODUK
-===================================================== -->
-
 <div class="space-y-6">
-
-    <!-- JUDUL DAN TOMBOL TAMBAH -->
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 
@@ -504,8 +445,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
     </div>
 
-    <!-- NOTIFIKASI -->
-
     <?php if ($pesan): ?>
 
         <div class="p-4 rounded-lg text-sm
@@ -518,8 +457,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
         </div>
 
     <?php endif; ?>
-
-    <!-- STATISTIK -->
 
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
@@ -549,8 +486,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
     </div>
 
-    <!-- TABEL PRODUK -->
-
     <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
 
         <div class="p-5 border-b border-slate-100">
@@ -564,8 +499,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
             </p>
 
         </div>
-
-        <!-- PENCARIAN -->
 
         <div class="p-4">
 
@@ -637,8 +570,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
                                 <div class="flex justify-center gap-2">
 
-                                    <!-- EDIT -->
-
                                     <button type="button"
                                         onclick="editProduk(this)"
 
@@ -654,8 +585,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                                         Edit
 
                                     </button>
-
-                                    <!-- HAPUS -->
 
                                     <form method="POST"
                                         onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
@@ -707,10 +636,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
 </div>
 
-<!-- =====================================================
-     MODAL TAMBAH DAN EDIT
-===================================================== -->
-
 <div id="modalProduk"
     class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center p-4 z-50">
 
@@ -741,8 +666,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                 id="id_produk"
                 value="">
 
-            <!-- KODE PRODUK OTOMATIS -->
-
             <div>
 
                 <label class="block text-sm font-medium mb-1">
@@ -761,8 +684,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
             </div>
 
-            <!-- NAMA PRODUK -->
-
             <div>
 
                 <label class="block text-sm font-medium mb-1">
@@ -777,8 +698,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                     class="w-full border border-slate-200 rounded-lg p-2.5 text-sm">
 
             </div>
-
-            <!-- KATEGORI -->
 
             <div>
 
@@ -806,8 +725,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
                 </select>
 
             </div>
-
-            <!-- HARGA DAN STOK -->
 
             <div class="grid grid-cols-2 gap-3">
 
@@ -845,8 +762,6 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
             </div>
 
-            <!-- TOMBOL -->
-
             <div class="flex justify-end gap-2 pt-3">
 
                 <button type="button"
@@ -873,13 +788,8 @@ while ($row = mysqli_fetch_assoc($q_produk)) {
 
 </div>
 
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
 <script>
 
-// MEMBUKA MODAL TAMBAH
 function bukaModal() {
 
     document.getElementById('judulModal').textContent = 'Tambah Produk';
@@ -894,7 +804,6 @@ function bukaModal() {
     tampilkanModal();
 }
 
-// MEMBUKA MODAL EDIT
 function editProduk(tombol) {
 
     document.getElementById('judulModal').textContent = 'Edit Produk';
@@ -909,7 +818,6 @@ function editProduk(tombol) {
     tampilkanModal();
 }
 
-// MENAMPILKAN MODAL
 function tampilkanModal() {
 
     const modal = document.getElementById('modalProduk');
@@ -918,7 +826,6 @@ function tampilkanModal() {
     modal.classList.add('flex');
 }
 
-// MENUTUP MODAL
 function tutupModal() {
 
     const modal = document.getElementById('modalProduk');
@@ -927,7 +834,6 @@ function tutupModal() {
     modal.classList.remove('flex');
 }
 
-// PENCARIAN PRODUK
 document.getElementById('cariProduk').addEventListener('input', function () {
 
     const kataKunci = this.value.toLowerCase();

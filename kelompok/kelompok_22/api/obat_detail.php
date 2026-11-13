@@ -7,8 +7,7 @@ $response = ["status" => "error", "message" => "Gagal mengambil detail obat", "d
 
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     try {
-        // Tambahkan `gambar` pada klausa SELECT
-        $query = "SELECT id_obat, nama_obat, id_kategori, gambar, stok, indikasi, aturan_pakai, peringatan FROM obat WHERE id_obat = ?";
+        $query = "SELECT id_obat, nama_obat, id_kategori, harga, gambar, stok, indikasi, aturan_pakai, peringatan FROM obat WHERE id_obat = ?";
         $stmt = $conn->prepare($query);
         
         $stmt->bind_param("i", $_GET['id']);
@@ -16,7 +15,6 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         $result = $stmt->get_result();
         
         if ($row = $result->fetch_assoc()) {
-            // Cek jika field gambar ada dan tidak kosong, gunakan nama filenya. Jika kosong, gunakan fallback default.jpg
             $row['gambar_url'] = !empty($row['gambar']) ? 'assets/images/obat/' . $row['gambar'] : 'assets/images/obat/default.jpg';
 
             $response["status"] = "success";

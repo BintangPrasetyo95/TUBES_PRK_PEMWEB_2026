@@ -1,18 +1,13 @@
-
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../auth/login.php");
-    exit;
-}
+require_once __DIR__ . '/../includes/role_guard.php';
+requireRole(['Admin', 'Kasir']);
 
 require_once __DIR__ . '/../config/database.php';
 
-// Mengambil kata kunci pencarian
 $keyword = trim($_GET['cari'] ?? '');
 
-// Query pencarian menggunakan prepared statement
 $sql = "
     SELECT products.*, categories.name AS nama_kategori
     FROM products
@@ -33,27 +28,20 @@ $stmt->execute();
 
 $query = $stmt->get_result();
 
-// Judul halaman
 $pageTitle = 'Data Produk';
 
-// Memanggil komponen utama
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/helper.php';
 ?>
 
-<!-- Navbar -->
 <?php include __DIR__ . '/../includes/navbar.php'; ?>
 
-<!-- Layout utama -->
 <div class="app-layout d-flex flex-grow-1">
 
-    <!-- Sidebar -->
     <?php include __DIR__ . '/../includes/sidebar.php'; ?>
 
-    <!-- Konten utama -->
     <main class="main-content flex-grow-1 p-4">
 
-        <!-- Judul halaman -->
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
             <div>
                 <h3 class="fw-bold mb-1">Data Produk</h3>
@@ -63,7 +51,6 @@ require_once __DIR__ . '/../includes/helper.php';
             </div>
         </div>
 
-        <!-- Notifikasi -->
         <?php if (isset($_GET['status'])): ?>
 
             <?php
@@ -88,12 +75,10 @@ require_once __DIR__ . '/../includes/helper.php';
 
         <?php endif; ?>
 
-        <!-- Card Data Produk -->
         <div class="card border-0 shadow-sm">
 
             <div class="card-body p-4">
 
-                <!-- Bagian atas tabel -->
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
 
                     <div>
@@ -110,15 +95,16 @@ require_once __DIR__ . '/../includes/helper.php';
                             Total: <?= $query->num_rows; ?> Produk
                         </span>
 
-                        <a href="tambah.php" class="btn btn-primary">
-                            <i class="bi bi-plus-lg me-1"></i>
-                            Tambah Produk
-                        </a>
+                        <?php if (strtolower($_SESSION['role']) === 'admin'): ?>
+                            <a href="tambah.php" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Tambah Produk
+                            </a>
+                        <?php endif; ?>
 
                     </div>
                 </div>
 
-                <!-- Form pencarian -->
                 <form method="GET" class="mb-4">
 
                     <div class="input-group" style="max-width: 420px;">
@@ -144,7 +130,6 @@ require_once __DIR__ . '/../includes/helper.php';
 
                 </form>
 
-                <!-- Tabel produk -->
                 <div class="table-responsive">
 
                     <table class="table table-hover table-bordered align-middle">
@@ -223,28 +208,38 @@ require_once __DIR__ . '/../includes/helper.php';
 
                                         <td class="text-center">
 
-                                            <div class="d-flex justify-content-center gap-1 flex-wrap">
+                                            <?php if (strtolower($_SESSION['role']) === 'admin'): ?>
 
-                                                <a
-                                                    href="edit.php?id=<?= (int) $data['id']; ?>"
-                                                    class="btn btn-warning btn-sm"
-                                                    title="Edit produk"
-                                                >
-                                                    <i class="bi bi-pencil-square"></i>
-                                                    Edit
-                                                </a>
+                                                <div class="d-flex justify-content-center gap-1 flex-wrap">
 
-                                                <a
-                                                    href="hapus.php?id=<?= (int) $data['id']; ?>"
-                                                    class="btn btn-danger btn-sm"
-                                                    data-confirm="Yakin ingin menghapus produk ini?"
-                                                    title="Hapus produk"
-                                                >
-                                                    <i class="bi bi-trash"></i>
-                                                    Hapus
-                                                </a>
+                                                    <a
+                                                        href="edit.php?id=<?= (int) $data['id']; ?>"
+                                                        class="btn btn-warning btn-sm"
+                                                        title="Edit produk"
+                                                    >
+                                                        <i class="bi bi-pencil-square"></i>
+                                                        Edit
+                                                    </a>
 
-                                            </div>
+                                                    <a
+                                                        href="hapus.php?id=<?= (int) $data['id']; ?>"
+                                                        class="btn btn-danger btn-sm"
+                                                        data-confirm="Yakin ingin menghapus produk ini?"
+                                                        title="Hapus produk"
+                                                    >
+                                                        <i class="bi bi-trash"></i>
+                                                        Hapus
+                                                    </a>
+
+                                                </div>
+
+                                            <?php else: ?>
+
+                                                <span class="text-muted small">
+                                                    Tidak ada aksi
+                                                </span>
+
+                                            <?php endif; ?>
 
                                         </td>
 
@@ -256,7 +251,6 @@ require_once __DIR__ . '/../includes/helper.php';
 
                                 <tr>
                                     <td colspan="8" class="text-center py-5">
-
                                         <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
 
                                         <span class="text-muted">
@@ -264,7 +258,6 @@ require_once __DIR__ . '/../includes/helper.php';
                                                 ? 'Produk yang kamu cari tidak ditemukan.'
                                                 : 'Belum ada data produk.'; ?>
                                         </span>
-
                                     </td>
                                 </tr>
 
@@ -287,7 +280,6 @@ require_once __DIR__ . '/../includes/helper.php';
 
 </div>
 
-<!-- Footer -->
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 
 <?php

@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=DM+Mono:wght@400;500&family=Figtree:wght@400..700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Figtree:wght@400..700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -97,10 +97,9 @@
             <nav class="nav" aria-label="Navigasi utama">
                 <a href="#katalog">Katalog</a>
                 <a href="#panduan">Panduan Stok</a>
-                <a class="btn-admin" href="../admin/login.php"><span class="ico-circle"><svg class="ic"
-                            aria-hidden="true">
-                            <use href="#i-lock" />
-                        </svg></span>Portal Admin</a>
+                <a class="btn-admin" href="../admin/login.php"><svg class="ic" aria-hidden="true">
+                        <use href="#i-lock" />
+                    </svg>Portal Admin</a>
             </nav>
         </div>
     </header>
@@ -125,34 +124,13 @@
                 <h1>Cek Ketersediaan Obat &amp; Panduan Dosis Secara Akurat</h1>
                 <p>Lihat stok obat terkini, cari berdasarkan nama atau keluhan, lalu baca aturan pakai dan peringatan
                     tiap obat sebelum digunakan.</p>
-                <a class="btn-white" href="#katalog">Jelajahi Katalog</a>
-            </div>
-            <div class="hero-art">
-                <svg viewBox="0 0 320 240" aria-hidden="true">
-                    <circle cx="170" cy="120" r="105" fill="#fff" fill-opacity=".1" />
-                    <circle cx="170" cy="120" r="70" fill="#fff" fill-opacity=".12" />
-                    <rect x="128" y="52" width="54" height="24" rx="8" fill="#BFDBFE" />
-                    <rect x="120" y="70" width="70" height="120" rx="16" fill="#fff" />
-                    <rect x="130" y="108" width="50" height="50" rx="10" fill="#EFF6FF" />
-                    <path d="M155 118v30M140 133h30" stroke="#2563EB" stroke-width="7" stroke-linecap="round" />
-                    <g transform="rotate(14 245 160)">
-                        <rect x="212" y="115" width="68" height="90" rx="12" fill="#fff" fill-opacity=".95" />
-                        <g fill="#BFDBFE">
-                            <circle cx="232" cy="140" r="9" />
-                            <circle cx="260" cy="140" r="9" />
-                            <circle cx="232" cy="172" r="9" />
-                            <circle cx="260" cy="172" r="9" />
-                        </g>
-                    </g>
-                    <circle cx="70" cy="70" r="26" fill="#fff" fill-opacity=".18" />
-                    <path d="M70 58v24M58 70h24" stroke="#fff" stroke-width="7" stroke-linecap="round" />
-                </svg>
             </div>
         </section>
 
 
         <section id="katalog">
-            <div id="status-data" class="data-notice" role="status" hidden>Server katalog belum terhubung. Data yang ditampilkan adalah salinan lokal dari database dan stoknya mungkin tidak terbaru.</div>
+            <div id="status-data" class="data-notice" role="status" hidden>Server katalog belum terhubung. Data yang
+                ditampilkan adalah salinan lokal dari database dan stoknya mungkin tidak terbaru.</div>
             <div class="sec-head">
                 <h2>Kategori Obat</h2><span id="info-jumlah-obat" aria-live="polite"></span>
             </div>
@@ -167,11 +145,11 @@
             <dl>
                 <div class="st-ok">
                     <dt>Tersedia</dt>
-                    <dd>lebih dari 5 unit</dd>
+                    <dd>lebih dari 10 unit</dd>
                 </div>
                 <div class="st-low">
                     <dt>Menipis</dt>
-                    <dd>sisa 1&ndash;5 unit</dd>
+                    <dd>sisa 1 - 10 unit</dd>
                 </div>
                 <div class="st-out">
                     <dt>Habis</dt>
@@ -192,9 +170,11 @@
     <div id="modal-detail" class="overlay" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-nama">
             <div class="m-top">
-                <div class="m-heading"><span class="m-btn shield"><svg class="ic" aria-hidden="true">
-                            <use href="#i-shield" />
-                        </svg></span><h3>Detail Edukasi Obat</h3></div>
+                <div class="m-heading"><svg class="ic m-shield" aria-hidden="true">
+                        <use href="#i-shield" />
+                    </svg>
+                    <h3>Detail Edukasi Obat</h3>
+                </div>
                 <button id="modal-tutup" class="m-btn close" type="button" aria-label="Tutup detail"><svg class="ic"
                         aria-hidden="true">
                         <use href="#i-close" />
@@ -206,6 +186,7 @@
                 <h2 id="modal-nama"></h2>
                 <div id="modal-stok" class="stok"></div>
             </div>
+            <div id="modal-harga"></div>
             <section class="info info-desc">
                 <h4><svg class="ic" aria-hidden="true">
                         <use href="#i-steth" />
@@ -224,11 +205,12 @@
                     </svg>Peringatan &amp; Kontraindikasi</h4>
                 <p id="modal-peringatan"></p>
             </section>
+            <p class="disclaimer m-disclaimer">Informasi bersifat edukatif dan tidak menggantikan saran tenaga
+                kesehatan.</p>
         </div>
     </div>
 
     <script src="assets/js/katalog.js" defer></script>
-    <script src="assets/js/modal.js" defer></script>
 </body>
 
 </html>

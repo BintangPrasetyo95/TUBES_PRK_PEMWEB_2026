@@ -1,75 +1,181 @@
 <?php
-require_once 'config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/csrf.php';
+
 
 $id_aspirasi = $_GET['id'] ?? null;
+$isAdmin = strtolower($_SESSION['role'] ?? '') === 'admin';
 
-if (!$id_aspirasi) {
-    header("Location: index.php");
+if (!$id_aspirasi || !is_numeric($id_aspirasi)) {
+    header('Location: index.php', true, 303);
     exit();
 }
+
+// PROSES SIMPAN TANGGAPAN / KOMENTAR
+$komentarError = null;
 
 try {
+    // Ambil Detail Aspirasi
     $stmt = $pdo->prepare("SELECT aspirasi.*, kategori.nama_kategori, users.nama_lengkap 
                            FROM aspirasi 
-                           JOIN kategori ON aspirasi.id_kategori = kategori.id_kategori 
-                           JOIN users ON aspirasi.id_user = users.id_user 
+                           LEFT JOIN kategori ON aspirasi.id_kategori = kategori.id_kategori
+                           LEFT JOIN users ON aspirasi.id_user = users.id_user
                            WHERE aspirasi.id_aspirasi = ?");
     $stmt->execute([$id_aspirasi]);
-    $aspirasi = $stmt->fetch();
+    $aspirasi = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$aspirasi) {
-        header("Location: index.php");
+    $isOwner = $aspirasi && isset($_SESSION['id_user'])
+        && (int) $_SESSION['id_user'] === (int) $aspirasi['id_user'];
+    if (!$aspirasi || ($aspirasi['status'] !== 'publikasi' && !$isAdmin && !$isOwner)) {
+        header('Location: index.php', true, 303);
         exit();
     }
+
+    // Ambil List Tanggapan
+    $stmtTanggapan = $pdo->prepare("SELECT k.*, u.nama_lengkap, u.role
+                                    FROM komentar k
+                                    LEFT JOIN users u ON k.id_user = u.id_user
+                                    WHERE k.id_aspirasi = ?
+                                    ORDER BY k.tanggal_komentar ASC");
+    $stmtTanggapan->execute([$id_aspirasi]);
+    $tanggapanList = $stmtTanggapan->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
-    header("Location: index.php");
+    error_log('Gagal mengambil aspirasi: ' . $e->getMessage());
+    header('Location: index.php', true, 303);
     exit();
 }
 
-include 'includes/header.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_tanggapan'])) {
+    csrf_verify();
+    $idUser = $_SESSION['id_user'] ?? null;
+    $isi    = trim($_POST['isi_tanggapan'] ?? '');
+    $anonim = isset($_POST['is_anonim']) ? 1 : 0;
+
+    if ($idUser && $isi !== '') {
+        try {
+            $stmt = $pdo->prepare("INSERT INTO komentar (id_aspirasi, id_user, isi_komentar, is_anonim) VALUES (?, ?, ?, ?)");
+            $stmt->execute([(int)$id_aspirasi, $idUser, $isi, $anonim]);
+            header('Location: aspirasi_detail.php?id=' . (int)$id_aspirasi . '#diskusi', true, 303);
+            exit();
+        } catch (PDOException $e) {
+            error_log('Gagal menyimpan tanggapan aspirasi: ' . $e->getMessage());
+            $komentarError = 'Tanggapan gagal disimpan. Silakan coba lagi.';
+        }
+    }
+}
+
+$pageStylesheet = 'css/aspirasi_detail.css';
+include_once __DIR__ . '/components/header.php';
 ?>
 
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-    <a href="index.php" class="text-blue-600 hover:underline text-sm font-medium">&larr; Kembali ke Beranda</a>
+<div class="aspiration-detail-page">
+    <a href="<?= $isAdmin ? 'admin/aspirasi/aspirasi.php' : 'index.php' ?>" class="aspiration-back-link">
+        &larr; <?= $isAdmin ? 'Kembali ke Kelola Aspirasi' : 'Kembali ke Beranda' ?>
+    </a>
 
-    <article class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sm:p-8 mt-4">
-        <div class="flex justify-between items-center">
-            <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded">
-                <?= htmlspecialchars($aspirasi['nama_kategori']); ?>
+    <!-- CARD DETAIL ASPIRASI -->
+    <article class="aspiration-article">
+        <div class="aspiration-badges">
+            <span class="aspiration-category">
+                <?= htmlspecialchars($aspirasi['nama_kategori'] ?? 'Umum'); ?>
             </span>
             
             <?php
-            $statusClass = match(strtolower($aspirasi['status'])) {
-                'ditinjau' => 'bg-blue-100 text-blue-800',
-                'selesai' => 'bg-green-100 text-green-800',
-                default => 'bg-amber-50 text-amber-700',
+            $statusClass = match(strtolower($aspirasi['status'] ?? '')) {
+                'menunggu' => 'aspiration-status-pending',
+                'publikasi' => 'aspiration-status-published',
+                default => 'aspiration-status-default',
             };
             ?>
-            <span class="text-xs font-semibold px-3 py-1 rounded-full capitalize <?= $statusClass; ?>">
-                Status: <?= htmlspecialchars($aspirasi['status']); ?>
+            <span class="aspiration-status <?= $statusClass; ?>">
+                Status: <?= htmlspecialchars($aspirasi['status'] ?? 'Menunggu'); ?>
             </span>
         </div>
 
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-4">
+        <h1 class="aspiration-title">
             <?= htmlspecialchars($aspirasi['judul_aspirasi']); ?>
         </h1>
 
-        <div class="flex items-center text-xs text-gray-500 space-x-4 mt-3 pb-6 border-b border-gray-100">
-            <span>Oleh: <strong class="text-gray-700"><?= ($aspirasi['is_anonim'] == 1) ? 'Anonim' : htmlspecialchars($aspirasi['nama_lengkap']); ?></strong></span>
-            <span>&bull;</span>
-            <span><?= date('d M Y, H:i', strtotime($aspirasi['tanggal_kirim'])); ?> WIB</span>
+        <div class="aspiration-meta">
+            <span>Oleh: <strong><?= ($aspirasi['is_anonim'] == 1) ? 'Anonim' : htmlspecialchars($aspirasi['nama_lengkap'] ?? 'Mahasiswa'); ?></strong></span>
+            <span class="aspiration-meta-separator" aria-hidden="true">&bull;</span>
+            <time><?= date('d M Y, H:i', strtotime($aspirasi['tanggal_kirim'])); ?> WIB</time>
         </div>
 
-        <div class="text-gray-800 leading-relaxed mt-6">
+        <div class="aspiration-content">
             <?= nl2br(htmlspecialchars($aspirasi['isi_aspirasi'])); ?>
         </div>
     </article>
 
-    <!-- Section Modul Komentar (Integrasi Anggota 5) -->
-    <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Diskusi / Tanggapan</h3>
-        <!-- Anggota 5 akan menyusun form dan daftar komentar di sini -->
-    </div>
+    <!-- SECTION DISKUSI & TANGGAPAN -->
+    <section id="diskusi" class="aspiration-discussion">
+        <?php if ($komentarError): ?>
+            <p class="aspiration-error" role="alert">
+                <?= htmlspecialchars($komentarError); ?>
+            </p>
+        <?php endif; ?>
+        <div class="aspiration-discussion-heading">
+            <h2>Diskusi / Tanggapan</h2>
+            <span class="aspiration-comment-count">
+                <?= count($tanggapanList) ?> Tanggapan
+            </span>
+        </div>
+
+        <!-- DAFTAR KOMENTAR/TANGGAPAN -->
+        <div class="aspiration-comment-list">
+            <?php if (!empty($tanggapanList)): ?>
+                <?php foreach ($tanggapanList as $t): ?>
+                    <article class="aspiration-comment">
+                        <div class="aspiration-comment-meta">
+                            <span class="aspiration-comment-author">
+                                <?= (isset($t['role']) && strtolower($t['role']) === 'admin')
+                                    ? '<span class="aspiration-admin-badge">Admin FISIP</span>'
+                                    : (($t['is_anonim'] ?? 0) ? 'Anonim' : htmlspecialchars($t['nama_lengkap'] ?? 'Mahasiswa')) ?>
+                            </span>
+                            <time>
+                                <?= date('d M Y, H:i', strtotime($t['tanggal_komentar'])) ?> WIB
+                            </time>
+                        </div>
+                        <p class="aspiration-comment-content">
+                            <?= nl2br(htmlspecialchars($t['isi_komentar'])); ?>
+                        </p>
+                    </article>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="aspiration-empty">
+                    Belum ada diskusi atau tanggapan. Jadilah yang pertama memberikan masukan!
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- FORM INPUT TANGGAPAN -->
+        <?php if (isset($_SESSION['id_user'])): ?>
+            <form action="aspirasi_detail.php?id=<?= (int)$id_aspirasi ?>" method="POST" class="aspiration-comment-form">
+                <div>
+                    <?= csrf_field() ?>
+                    <label class="aspiration-form-label" for="isi-tanggapan">Berikan Tanggapan Anda:</label>
+                    <textarea name="isi_tanggapan" rows="3" required
+                        id="isi-tanggapan"
+                        placeholder="Tuliskan pendapat atau masukan tambahan mengenai aspirasi ini..."></textarea>
+                    <label class="aspiration-anonymous-option">
+                        <input type="checkbox" name="is_anonim" value="1"> Tanggapan sebagai Anonim
+                    </label>
+                </div>
+
+                <button type="submit" name="submit_tanggapan">
+                    Kirim Tanggapan
+                </button>
+            </form>
+        <?php else: ?>
+            <div class="aspiration-login-notice">
+                <span>Silakan login terlebih dahulu untuk memberikan tanggapan.</span>
+                <a href="auth/login.php">
+                    Login Sekarang
+                </a>
+            </div>
+        <?php endif; ?>
+    </section>
 </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/components/footer.php'; ?>

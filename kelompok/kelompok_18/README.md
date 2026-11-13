@@ -1,189 +1,106 @@
 # ATTENDARA
 
-ATTENDARA adalah rancangan aplikasi administrasi pembelajaran untuk SMA. Aplikasi membantu Admin menyiapkan semester, kelas, guru, mata pelajaran, penugasan, dan jadwal; lalu membantu Guru menjalankan sesi kelas, mencatat status kehadiran, memberi poin keaktifan, dan mengatur kelompok.
+ATTENDARA adalah aplikasi administrasi pembelajaran SMA berbasis PHP Native, PDO, dan MySQL/MariaDB. Admin mengelola data sekolah, semester, kelas, penempatan siswa, penugasan guru, dan jadwal mengajar. Guru menggunakan jadwal untuk menjalankan sesi, mencatat kehadiran melalui hitungan tap anonim, memberi poin keaktifan, serta mengatur kelompok belajar.
 
-Siswa tidak memiliki akun. Jenis kelamin siswa wajib diisi karena digunakan sebagai kriteria saat Guru mengacak kelompok yang seimbang.
+Siswa tidak memiliki akun. Akun hanya tersedia untuk Admin dan Guru.
 
-## Latar belakang
+## Fitur dan alur penggunaan
 
-Guru SMA dapat mengajar beberapa mata pelajaran dan beberapa kelas. Karena itu, hubungan guru, mata pelajaran, dan kelas disimpan sebagai penugasan tersendiri. Jadwal mengacu pada penugasan tersebut agar sistem dapat menunjukkan kapan Guru mengajar dan dari jadwal mana sesi dimulai.
+### Admin
 
-Setiap semester memiliki rombongan kelasnya sendiri. Kode kelas yang sama dapat digunakan kembali pada semester berbeda, tetapi datanya tetap terpisah. Dengan begitu, kelas dan penugasan semester berjalan dapat dipilih tanpa mencampur data semester lama, sementara riwayat lama tetap tersimpan.
+1. Masuk dengan akun Admin.
+2. Buat semester melalui **Semester**, lalu tetapkan semester berjalan sebagai **aktif**.
+3. Kelola **Kelas**, **Siswa**, **Guru**, dan **Mata Pelajaran**. Saat menambah kelas, pilih semester yang menaunginya.
+4. Buka **Penempatan Kelas**, pilih semester dan kelas, lalu tempatkan siswa. Seorang siswa hanya dapat ditempatkan pada satu kelas di semester yang sama; riwayat semester sebelumnya tetap tersimpan.
+5. Buka **Penugasan Guru** untuk menghubungkan satu guru, satu mata pelajaran, dan satu kelas. Setiap kombinasi guru/mata pelajaran/kelas hanya dapat dibuat sekali. Kolom Jadwal menunjukkan jumlah jadwal yang terhubung.
+6. Buka **Jadwal Mengajar** untuk membuat satu atau beberapa jadwal untuk penugasan. Pilih nama hari, jam mulai dan selesai, serta masa berlaku opsional. Hari disimpan sebagai angka internal 1–7, tetapi antarmuka menampilkan nama harinya.
+7. Dashboard menampilkan ringkasan dan grafik data siswa menurut kelas aktif dan semester.
 
-## Alur aplikasi yang direncanakan
+### Guru
 
-1. **Admin menyiapkan semester berjalan.** Admin membuat atau memilih semester yang sedang berlaku, kemudian membuat rombongan kelas untuk semester tersebut.
-2. **Admin mengisi data sekolah.** Admin mengelola profil Guru, data Siswa termasuk jenis kelamin, dan daftar mata pelajaran. Siswa ditempatkan ke kelas pada semester berjalan.
-3. **Admin membuat penugasan dan jadwal.** Satu penugasan menghubungkan satu Guru, satu mata pelajaran, dan satu kelas. Seorang Guru dapat memiliki banyak penugasan. Jadwal berisi hari dan jam untuk penugasan; satu penugasan dapat memiliki lebih dari satu jadwal.
-4. **Guru melihat jadwalnya dan memulai sesi.** Sesi dimulai dari jadwal, lalu menyimpan waktu mulai dan waktu selesai aktualnya.
-5. **Guru menghitung tap secara anonim.** Tap hanya menambah hitungan pada sesi; sistem tidak mencatat siswa yang menekan tombol. Server menerapkan jeda dua detik antar-tap dalam sesi yang sama dan membatasi hitungan agar tidak melebihi jumlah siswa dalam kelas. Guru dapat membetulkan hitungan secara manual.
-6. **Guru menetapkan siswa yang tidak hadir.** Saat sesi dimulai, setiap siswa dalam kelas memiliki status awal `hadir`. Karena tap bersifat anonim, Guru mencocokkan selisih hitungan dengan siswa yang tidak hadir setelah bertanya langsung, lalu mengubah status siswa tersebut menjadi `izin`, `sakit`, atau `alpha`. Sesi hanya dapat diselesaikan jika jumlah tap ditambah jumlah status non-hadir sama dengan jumlah siswa dalam daftar sesi.
-7. **Guru mengelola kelompok dan poin.** Kelompok terikat pada penugasan Guru dan dapat dikelola di luar sesi. Pengacakan kelompok dapat mempertimbangkan komposisi jenis kelamin. Poin keaktifan dicatat per siswa pada sesi tertentu; satu siswa dapat menerima beberapa penambahan poin pada sesi yang sama.
+1. Masuk dengan akun Guru yang telah dibuat Admin dan buka dashboard untuk melihat penugasan serta jadwal pada semester aktif.
+2. Dari kelas/penugasan, mulai sesi pembelajaran. Saat sesi dibuat, daftar siswa kelas menjadi roster sesi dengan status awal hadir.
+3. Catat tap kehadiran secara anonim. Sistem menyimpan jumlah tap, bukan identitas siswa yang mengetuk. Jika ada siswa tidak hadir, ubah statusnya menjadi izin, sakit, atau alpha.
+4. Tambahkan poin keaktifan pada sesi yang sedang berlangsung dan kelola kelompok untuk penugasan.
+5. Selesaikan sesi setelah jumlah tap ditambah jumlah siswa berstatus non-hadir sama dengan jumlah siswa dalam roster. Sesi yang telah selesai dapat dilihat di arsip pembelajaran.
 
-## Rancangan database
+## Instalasi lokal
 
-Rancangan entitas dan relasi terbaru ada di [docs/ERD.md](docs/ERD.md). Entitas utamanya adalah:
+### Persyaratan
 
-- `users`, `guru`, dan `siswa` untuk akun dan profil; hanya Admin dan Guru yang masuk ke aplikasi.
-- `mata_pelajaran` untuk data mata pelajaran.
-- `semester`, `kelas`, dan `anggota_kelas` untuk rombongan kelas dan daftar siswa per semester.
-- `penugasan_guru` dan `jadwal_mengajar` untuk menghubungkan Guru, mata pelajaran, kelas, serta waktu rencana mengajar.
-- `sesi_pembelajaran` dan `absensi` untuk sesi aktual, hitungan tap anonim, dan status akhir siswa.
-- `kelompok`, `anggota_kelompok`, dan `poin_keaktifan` untuk pengelolaan pembelajaran.
+- PHP 8 atau versi yang kompatibel dengan sintaks proyek, dengan ekstensi `pdo_mysql` aktif.
+- MySQL 8+ atau MariaDB 10.5+.
+- Laragon, atau web server PHP lain yang mendukung aplikasi PHP.
 
-### ERD (notasi Barker / Crow's Foot)
+### Langkah instalasi dengan Laragon
 
-Diagram berikut menggunakan kardinalitas Barker: `||` berarti tepat satu, `o|` berarti nol atau satu, `|{` berarti satu atau lebih, dan `o{` berarti nol atau lebih. Tanda di ujung garis menunjukkan jumlah entitas pada sisi tersebut untuk satu entitas di sisi seberang. Contohnya, satu `penugasan_guru` memiliki nol atau banyak jadwal, sedangkan setiap jadwal harus mengacu pada tepat satu penugasan.
+1. Letakkan folder proyek di direktori web Laragon, misalnya `www/attendara`.
+2. Jalankan Apache/Nginx dan MySQL dari Laragon.
+3. Buat database kosong bernama `attendara`, atau gunakan nama database lain dan sesuaikan konfigurasinya.
+4. Impor `database/attendara.sql` ke database kosong untuk membuat tabel.
+5. (Opsional) Impor `database/attendara_dummy.sql` setelah skema dibuat untuk mengisi contoh data. Seed ini hanya untuk database kosong dan hanya boleh diimpor sekali.
+6. Buka `http://localhost/attendara/login.php` (sesuaikan URL dengan nama folder proyek).
+
+Koneksi memakai variabel environment PHP berikut. Untuk Laragon lokal, jika tidak diatur, host default `127.0.0.1`, database `attendara`, username `root`, dan password kosong.
+
+| Variabel | Default | Keterangan |
+| --- | --- | --- |
+| `ATTENDARA_DB_HOST` | `127.0.0.1` | Host MySQL/MariaDB |
+| `ATTENDARA_DB_NAME` | `attendara` | Nama database |
+| `ATTENDARA_DB_USER` | `root` untuk host lokal | Username database; wajib diisi untuk host nonlokal |
+| `ATTENDARA_DB_PASSWORD` | kosong | Password database |
+
+Konfigurasi koneksi ada di [config/database.php](config/database.php). File skema menggunakan `CREATE TABLE IF NOT EXISTS`, sehingga tidak mengubah tabel lama. Untuk instalasi ulang, buat database baru/kosong; jangan impor seed ke database yang sudah berisi data.
+
+### Akun contoh
+
+Seed menyediakan akun berikut:
+
+| Peran | Username | Password |
+| --- | --- | --- |
+| Admin | `admin` | `admin` |
+| Guru | `guru1` sampai `guru5` | sama dengan username masing-masing |
+
+Akun dan kata sandi tersebut hanya untuk pengembangan lokal. Ganti atau hapus sebelum aplikasi digunakan di lingkungan publik.
+
+Seed contoh berisi 90 siswa (nomor induk 1000–1089), 6 kelas yang membagi siswa ke tiga kelas di masing-masing semester 2026 Genap dan Ganjil, 5 guru, 7 mata pelajaran tingkat 11, serta penugasan dan jadwal untuk semester aktif. Data sesi, absensi, kelompok, anggota kelompok, dan poin keaktifan sengaja kosong.
+
+## Struktur database dan ERD
+
+Skema aktual dibuat oleh [database/attendara.sql](database/attendara.sql), sedangkan contoh data berada di [database/attendara_dummy.sql](database/attendara_dummy.sql). Penjelasan atribut, aturan integritas, dan pertimbangan desain tersedia di [docs/ERD.md](docs/ERD.md).
 
 ```mermaid
 erDiagram
-    USERS {
-        BIGINT id PK
-        VARCHAR username UK
-        VARCHAR password_hash
-        ENUM role
-        BOOLEAN is_active
-    }
-    GURU {
-        BIGINT id PK
-        BIGINT user_id FK
-        VARCHAR nomor_induk UK
-        VARCHAR nama
-        BOOLEAN is_active
-    }
-    SISWA {
-        BIGINT id PK
-        VARCHAR nomor_induk UK
-        VARCHAR nama
-        ENUM jenis_kelamin
-        BOOLEAN is_active
-    }
-    MATA_PELAJARAN {
-        BIGINT id PK
-        VARCHAR kode UK
-        VARCHAR nama UK
-        BOOLEAN is_active
-    }
-    SEMESTER {
-        BIGINT id PK
-        VARCHAR kode UK
-        DATE tanggal_mulai
-        DATE tanggal_selesai
-        ENUM status
-        TINYINT semester_aktif_key UK
-    }
-    KELAS {
-        BIGINT id PK
-        BIGINT semester_id FK
-        VARCHAR kode
-        VARCHAR nama
-        TINYINT tingkat
-        BOOLEAN is_active
-    }
-    ANGGOTA_KELAS {
-        BIGINT id PK
-        BIGINT siswa_id FK
-        BIGINT kelas_id FK
-        BIGINT semester_id FK
-    }
-    PENUGASAN_GURU {
-        BIGINT id PK
-        BIGINT guru_id FK
-        BIGINT mata_pelajaran_id FK
-        BIGINT kelas_id FK
-    }
-    JADWAL_MENGAJAR {
-        BIGINT id PK
-        BIGINT penugasan_guru_id FK
-        TINYINT hari
-        TIME jam_mulai
-        TIME jam_selesai
-        DATE berlaku_mulai
-        DATE berlaku_sampai
-    }
-    SESI_PEMBELAJARAN {
-        BIGINT id PK
-        BIGINT jadwal_mengajar_id FK
-        DATETIME mulai_at
-        DATETIME selesai_at
-        ENUM status
-        SMALLINT jumlah_tap
-        DATETIME tap_terakhir_at
-    }
-    ABSENSI {
-        BIGINT id PK
-        BIGINT sesi_pembelajaran_id FK
-        BIGINT siswa_id FK
-        ENUM status
-        BIGINT dicatat_oleh_user_id FK
-    }
-    KELOMPOK {
-        BIGINT id PK
-        BIGINT penugasan_guru_id FK
-        VARCHAR nama
-    }
-    ANGGOTA_KELOMPOK {
-        BIGINT kelompok_id PK
-        BIGINT siswa_id PK
-    }
-    POIN_KEAKTIFAN {
-        BIGINT id PK
-        BIGINT sesi_pembelajaran_id FK
-        BIGINT siswa_id FK
-        DECIMAL poin
-        BIGINT dicatat_oleh_user_id FK
-    }
-
-    USERS ||--o| GURU : memiliki_profil
+    USERS ||--o| GURU : profil
     SEMESTER ||--o{ KELAS : memiliki
     SISWA ||--o{ ANGGOTA_KELAS : ditempatkan
     KELAS ||--o{ ANGGOTA_KELAS : berisi
     GURU ||--o{ PENUGASAN_GURU : menerima
     MATA_PELAJARAN ||--o{ PENUGASAN_GURU : diajarkan
-    KELAS ||--o{ PENUGASAN_GURU : mendapat_penugasan
+    KELAS ||--o{ PENUGASAN_GURU : mendapat
     PENUGASAN_GURU ||--o{ JADWAL_MENGAJAR : dijadwalkan
     JADWAL_MENGAJAR ||--o{ SESI_PEMBELAJARAN : menjadi_sesi
-    SESI_PEMBELAJARAN ||--o{ ABSENSI : memiliki_status
-    SISWA ||--o{ ABSENSI : memiliki_absensi
+    SESI_PEMBELAJARAN ||--o{ ABSENSI : memiliki
+    SISWA ||--o{ ABSENSI : tercatat
     USERS ||--o{ ABSENSI : mencatat
-    PENUGASAN_GURU ||--o{ KELOMPOK : memiliki_kelompok
-    KELOMPOK ||--o{ ANGGOTA_KELOMPOK : memiliki_anggota
+    PENUGASAN_GURU ||--o{ KELOMPOK : memiliki
+    KELOMPOK ||--o{ ANGGOTA_KELOMPOK : berisi
     SISWA ||--o{ ANGGOTA_KELOMPOK : menjadi_anggota
-    SESI_PEMBELAJARAN ||--o{ POIN_KEAKTIFAN : mencatat_poin
-    SISWA ||--o{ POIN_KEAKTIFAN : menerima_poin
+    SESI_PEMBELAJARAN ||--o{ POIN_KEAKTIFAN : mencatat
+    SISWA ||--o{ POIN_KEAKTIFAN : menerima
     USERS ||--o{ POIN_KEAKTIFAN : mencatat
 ```
 
-Constraint unik gabungan pada SQL juga berlaku walaupun tidak ditampilkan sebagai atribut tunggal pada diagram: `(semester_id, kode)` pada `kelas`, `(siswa_id, semester_id)` pada `anggota_kelas`, `(guru_id, mata_pelajaran_id, kelas_id)` pada `penugasan_guru`, serta pasangan sesi/siswa pada `absensi` dan kelompok/siswa pada `anggota_kelompok`. `semester_aktif_key` adalah kolom terhitung untuk memastikan hanya satu semester berstatus aktif.
+Ringkasan relasi:
 
-**Status implementasi:** `database/attendara.sql` dan `database/attendara_dummy.sql` sekarang mengikuti ERD revisi. Kode PHP Admin/Guru masih memakai model lama: antara lain belum memakai penugasan mata pelajaran, kelas per semester, hitungan tap anonim di database, dan tabel poin baru. Karena itu, halaman aplikasi belum kompatibel dengan skema target sampai kode PHP dimigrasikan.
+- Satu semester memiliki banyak kelas; kelas yang sama secara konseptual pada semester berbeda adalah baris kelas yang berbeda.
+- Siswa terhubung ke kelas melalui `anggota_kelas`. Satu siswa hanya memiliki satu kelas per semester.
+- `penugasan_guru` menghubungkan satu guru, satu mata pelajaran, dan satu kelas. Satu penugasan dapat memiliki banyak jadwal.
+- Satu jadwal dapat memiliki banyak sesi. Absensi dan poin terkait pada sesi, sedangkan kelompok terkait pada penugasan.
+- Hanya ada satu semester berstatus aktif pada satu waktu. Foreign key dan constraint skema menjaga relasi serta keunikan data.
 
-## Teknologi dan menyiapkan database target
+## Autentikasi dan keamanan
 
-Proyek memakai PHP Native, PDO, dan MySQL/MariaDB. Untuk pengembangan lokal dapat menggunakan Laragon atau server PHP lokal.
+Halaman Admin dan Guru memeriksa peran akun. Password disimpan sebagai hash dan diverifikasi dengan `password_verify`. Formulir yang mengubah data memakai token CSRF. Sesi login memiliki batas waktu tidak aktif dan batas usia maksimum; proses logout dilakukan melalui endpoint POST.
 
-1. Siapkan PHP dengan ekstensi `pdo_mysql` dan server MySQL/MariaDB.
-2. Atur konfigurasi koneksi database lewat environment proses PHP/web server:
-   - `ATTENDARA_DB_HOST` (opsional, default `127.0.0.1`)
-   - `ATTENDARA_DB_NAME` (opsional, default `attendara`)
-   - `ATTENDARA_DB_USER` (default `root` hanya untuk host lokal; wajib untuk host lain)
-   - `ATTENDARA_DB_PASSWORD` (opsional; isi kosong jika database lokal tidak memakai password)
-3. Impor `database/attendara.sql` ke database `attendara` yang **baru/kosong** untuk membuat skema target. File koneksi [config/database.php](config/database.php) hanya membuka koneksi; file itu tidak membuat atau memigrasikan tabel.
-4. Untuk data demo yang bermakna, impor `database/attendara_dummy.sql` sekali saja setelah skema dibuat dan masih kosong. Akun demo tetap `admin` dengan password `admin`, serta `guru1` sampai `guru5` dengan password yang sama seperti username. Data profil guru, siswa, kelas, dan mata pelajaran memakai nama contoh.
-5. Impor file SQL saja belum membuat halaman PHP kompatibel. Migrasikan kode Admin/Guru sebelum menjalankan alur aplikasi lengkap. Setelah migrasi, buka `login.php` melalui web server PHP, misalnya Laragon.
-
-Kedua file SQL memakai `CREATE TABLE IF NOT EXISTS`; mengimpornya ke database lama **tidak mengubah tabel lama**. Buat database baru/kosong untuk skema revisi, atau siapkan dan jalankan migrasi terencana setelah mencadangkan database lama.
-
-> **Catatan keamanan:** jangan menyimpan kredensial database produksi di repository. Gunakan environment web server dan ganti/hapus akun demo sebelum aplikasi dipublikasikan.
-
-## Login dan autentikasi versi saat ini
-
-Login saat ini membaca `users.username`, `users.password_hash`, `users.is_active`, dan `users.role`. Pengguna aktif diarahkan ke dashboard sesuai role. Halaman Admin dan Guru mewajibkan autentikasi role; formulir perubahan data memakai token CSRF. Session berakhir setelah 30 menit tidak aktif atau 8 jam sejak autentikasi.
-
-Helper autentikasi berada di `config/auth.php`. Halaman di dalam `admin/` atau `guru/` memuat helper tersebut dan memanggil `startAppSession()` sebelum membaca session. Fungsi yang tersedia meliputi `currentUser()`, `isLoggedIn()`, `requireLogin()`, `requireRole()`, `redirectToDashboard()`, `appUrl()`, `csrfToken()`, `verifyCsrfToken()`, dan `h()`.
-
-Logout dilakukan melalui POST ke `logout.php` dengan field `_csrf_token`; endpoint memverifikasi token, mengakhiri session, lalu mengarahkan pengguna ke halaman login.
-
-## Batas dan pekerjaan berikutnya
-
-Skema SQL dan data demo sudah memakai model semester, penugasan mata pelajaran, jadwal, tap anonim, kelompok, dan poin pada ERD. Pekerjaan berikutnya adalah menyesuaikan kode PHP agar membaca dan menulis struktur baru tersebut.
+Jangan menaruh kredensial database produksi di repository. Atur melalui environment server dan gunakan akun database dengan hak minimum yang dibutuhkan.

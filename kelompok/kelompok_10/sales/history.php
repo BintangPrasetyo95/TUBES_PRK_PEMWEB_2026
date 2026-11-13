@@ -1,201 +1,173 @@
 <?php
-
+declare(strict_types=1);
 require_once __DIR__ . '/../config/auth.php';
-require_role(['admin', 'cashier']);
-require_once __DIR__ . '/helpers.php';
+require_login();
 
-const SALES_HISTORY_PER_PAGE = 20;
+$search = trim($_GET['q'] ?? '');
+$startDate = trim($_GET['start_date'] ?? date('Y-m-01'));
+$endDate = trim($_GET['end_date'] ?? date('Y-m-d'));
 
-$pdo     = db();
-$isAdmin = sales_is_admin();
-$meId    = sales_current_user_id();
+$params = [];
+$whereClauses = ['s.status = "completed"'];
 
-$from      = trim((string) ($_GET['from'] ?? ''));
-$to        = trim((string) ($_GET['to'] ?? ''));
-$invoice   = trim((string) ($_GET['invoice'] ?? ''));
-$status    = trim((string) ($_GET['status'] ?? ''));
-$cashierId = $isAdmin ? (int) ($_GET['cashier_id'] ?? 0) : $meId;
-$page      = max(1, (int) ($_GET['page'] ?? 1));
-
-$errors = [];
-
-$validDate = static function (string $d): bool {
-    $dt = DateTime::createFromFormat('Y-m-d', $d);
-    return $dt !== false && $dt->format('Y-m-d') === $d;
-};
-if ($from !== '' && !$validDate($from)) {
-    $errors[] = 'Format tanggal awal tidak valid.';
-}
-if ($to !== '' && !$validDate($to)) {
-    $errors[] = 'Format tanggal akhir tidak valid.';
-}
-if (!$errors && $from !== '' && $to !== '' && $from > $to) {
-    $errors[] = 'Tanggal awal tidak boleh setelah tanggal akhir.';
-}
-if ($status !== '' && !isset(SALES_STATUS_LABELS[$status])) {
-    $status = '';
+if ($search !== '') {
+    $whereClauses[] = '(s.invoice_no LIKE :search OR u.full_name LIKE :search)';
+    $params['search'] = '%' . $search . '%';
 }
 
-$rows  = [];
-$total = 0;
+if ($startDate !== '') {
+    $whereClauses[] = 'DATE(s.sold_at) >= :start_date';
+    $params['start_date'] = $startDate;
+}
 
-if (!$errors) {
-    $where  = [];
-    $params = [];
+if ($endDate !== '') {
+    $whereClauses[] = 'DATE(s.sold_at) <= :end_date';
+    $params['end_date'] = $endDate;
+}
 
-    if ($from !== '') {
-        $where[]  = 's.sold_at >= ?';
-        $params[] = $from . ' 00:00:00';
+$whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
+
+$sales = [];
+$totalOmzet = 0.0;
+$totalTransactions = 0;
+
+try {
+    $query = "
+        SELECT 
+            s.*,
+            u.full_name AS cashier_name,
+            COUNT(si.id) AS item_lines,
+            COALESCE(SUM(si.qty), 0) AS total_units_sold
+        FROM sales s
+        LEFT JOIN users u ON s.cashier_id = u.id
+        LEFT JOIN sale_items si ON s.id = si.sale_id
+        {$whereSql}
+        GROUP BY s.id
+        ORDER BY s.sold_at DESC
+        LIMIT 200
+    ";
+    $stmt = db()->prepare($query);
+    $stmt->execute($params);
+    $sales = $stmt->fetchAll();
+
+    foreach ($sales as $s) {
+        $totalOmzet += (float) $s['grand_total'];
+        $totalTransactions++;
     }
-    if ($to !== '') {
-        $where[]  = 's.sold_at < DATE_ADD(?, INTERVAL 1 DAY)';
-        $params[] = $to;
-    }
-    if ($invoice !== '') {
-        $where[]  = 's.invoice_no LIKE ?';
-        $params[] = '%' . addcslashes($invoice, '%_\\') . '%';
-    }
-    if ($status !== '') {
-        $where[]  = 's.status = ?';
-        $params[] = $status;
-    }
-    if ($cashierId > 0) {
-        $where[]  = 's.cashier_id = ?';
-        $params[] = $cashierId;
-    }
-    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-
-    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM sales s $whereSql");
-    $countStmt->execute($params);
-    $total = (int) $countStmt->fetchColumn();
-
-    $pages  = max(1, (int) ceil($total / SALES_HISTORY_PER_PAGE));
-    $page   = min($page, $pages);
-    $limit  = (int) SALES_HISTORY_PER_PAGE;
-    $offset = (int) (($page - 1) * SALES_HISTORY_PER_PAGE);
-
-    $listStmt = $pdo->prepare(
-        "SELECT s.id, s.invoice_no, s.sold_at, s.payment_method, s.grand_total, s.status,
-                u.full_name AS cashier_name
-           FROM sales s
-           LEFT JOIN users u ON u.id = s.cashier_id
-           $whereSql
-          ORDER BY s.sold_at DESC, s.id DESC
-          LIMIT $limit OFFSET $offset"
-    );
-    $listStmt->execute($params);
-    $rows = $listStmt->fetchAll(PDO::FETCH_ASSOC);
-}
-$pages = max(1, (int) ceil($total / SALES_HISTORY_PER_PAGE));
-
-$cashiers = [];
-if ($isAdmin) {
-    $cashiers = $pdo->query("SELECT id, full_name AS name FROM users WHERE is_active = 1 AND role IN ('admin','cashier') ORDER BY full_name")
-                    ->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log('Error loading sales history: ' . $e->getMessage());
+    flash('error', 'Gagal memuat riwayat transaksi penjualan.');
 }
 
-$pageUrl = static function (int $p) use ($from, $to, $invoice, $status, $cashierId, $isAdmin): string {
-    $qs = array_filter([
-        'from'       => $from,
-        'to'         => $to,
-        'invoice'    => $invoice,
-        'status'     => $status,
-        'cashier_id' => $isAdmin && $cashierId > 0 ? $cashierId : '',
-        'page'       => $p,
-    ], static fn($v) => $v !== '' && $v !== null);
-    return 'history.php?' . http_build_query($qs);
-};
-
-foreach ($errors as $msg) {
-    flash('error', $msg);
-}
-
-$pageTitle  = 'Riwayat Transaksi';
-$activePage = 'history';
-$navItems   = sales_nav_items();
-
+$pageTitle = 'Riwayat Transaksi Penjualan';
+$activePage = 'sales_history';
 require __DIR__ . '/../includes/header.php';
-echo sales_css_tag();
 ?>
-<div class="pos-panel">
-    <h2>Riwayat Transaksi</h2>
 
-    <form method="get" action="history.php" class="pos-filter">
-        <label>Dari
-            <input type="date" name="from" value="<?= e($from) ?>">
-        </label>
-        <label>Sampai
-            <input type="date" name="to" value="<?= e($to) ?>">
-        </label>
-        <label>Invoice
-            <input type="text" name="invoice" value="<?= e($invoice) ?>" placeholder="INV-..." autocomplete="off">
-        </label>
-        <label>Status
-            <select name="status">
-                <option value="">Semua</option>
-                <?php foreach (SALES_STATUS_LABELS as $value => $label): ?>
-                    <option value="<?= e($value) ?>"<?= $status === $value ? ' selected' : '' ?>><?= e($label) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </label>
-        <?php if ($isAdmin): ?>
-            <label>Kasir
-                <select name="cashier_id">
-                    <option value="0">Semua</option>
-                    <?php foreach ($cashiers as $c): ?>
-                        <option value="<?= (int) $c['id'] ?>"<?= $cashierId === (int) $c['id'] ? ' selected' : '' ?>><?= e((string) $c['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
-        <?php endif; ?>
-        <button type="submit" class="btn btn-primary">Terapkan</button>
-        <a class="btn" href="history.php">Reset</a>
+<!-- KPI Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-label">Total Omzet (Periode Terpilih)</span>
+        <span class="stat-value" style="color: var(--primary);">Rp <?= number_format($totalOmzet, 0, ',', '.') ?></span>
+        <span class="stat-sub"><?= date('d M Y', strtotime($startDate)) ?> &ndash; <?= date('d M Y', strtotime($endDate)) ?></span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Jumlah Transaksi Selesai</span>
+        <span class="stat-value"><?= $totalTransactions ?> Transaksi</span>
+        <span class="stat-sub">Invoice status: completed</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Rata-rata Nilai Belanja (AOV)</span>
+        <span class="stat-value">
+            Rp <?= $totalTransactions > 0 ? number_format($totalOmzet / $totalTransactions, 0, ',', '.') : 0 ?>
+        </span>
+        <span class="stat-sub">Per struk penjualan</span>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-header">
+        <div>
+            <h2>Daftar Struk & Riwayat Penjualan</h2>
+            <p class="muted" style="margin: 0; font-size: 13px;">Semua transaksi penjualan tunai yang tercatat di kasir POS.</p>
+        </div>
+        <a href="<?= e(app_url('sales/pos.php')) ?>" class="button button-primary button-sm">+ Buka Kasir POS</a>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" class="filter-bar">
+        <div class="filter-group">
+            <input type="text" name="q" value="<?= e($search) ?>" placeholder="Cari no. invoice / kasir..." class="search-input">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label style="font-size: 12px; color: var(--ink-muted);">Dari:</label>
+                <input type="date" name="start_date" value="<?= e($startDate) ?>" style="min-height: 34px;">
+                <label style="font-size: 12px; color: var(--ink-muted);">Sampai:</label>
+                <input type="date" name="end_date" value="<?= e($endDate) ?>" style="min-height: 34px;">
+            </div>
+            <button type="submit" class="button button-secondary button-sm">Filter</button>
+            <?php if ($search !== '' || $startDate !== date('Y-m-01') || $endDate !== date('Y-m-d')): ?>
+                <a href="<?= e(app_url('sales/history.php')) ?>" class="button button-secondary button-sm">Reset</a>
+            <?php endif; ?>
+        </div>
     </form>
 
-    <table class="pos-table">
-        <thead>
-            <tr>
-                <th>Invoice</th>
-                <th>Waktu</th>
-                <th>Kasir</th>
-                <th>Metode</th>
-                <th class="num">Total</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php if (!$rows): ?>
-            <tr><td colspan="7" class="pos-empty">Tidak ada transaksi.</td></tr>
-        <?php endif; ?>
-        <?php foreach ($rows as $r): ?>
-            <tr>
-                <td><?= e((string) $r['invoice_no']) ?></td>
-                <td><?= e((string) $r['sold_at']) ?></td>
-                <td><?= e((string) ($r['cashier_name'] ?? '-')) ?></td>
-                <td><?= e(sales_payment_label((string) $r['payment_method'])) ?></td>
-                <td class="num"><?= e(sales_rupiah((string) $r['grand_total'])) ?></td>
-                <td><span class="badge badge-<?= e((string) $r['status']) ?>"><?= e(sales_status_label((string) $r['status'])) ?></span></td>
-                <td><a class="btn btn-small" href="receipt.php?id=<?= (int) $r['id'] ?>">Detail</a></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-
-    <?php if ($pages > 1): ?>
-        <nav class="pos-pagination" aria-label="Halaman">
-            <?php if ($page > 1): ?>
-                <a class="btn btn-small" href="<?= e($pageUrl($page - 1)) ?>">&laquo; Sebelumnya</a>
-            <?php endif; ?>
-            <span>Halaman <?= (int) $page ?> dari <?= (int) $pages ?> (<?= (int) $total ?> transaksi)</span>
-            <?php if ($page < $pages): ?>
-                <a class="btn btn-small" href="<?= e($pageUrl($page + 1)) ?>">Berikutnya &raquo;</a>
-            <?php endif; ?>
-        </nav>
-    <?php else: ?>
-        <p class="pos-muted"><?= (int) $total ?> transaksi</p>
-    <?php endif; ?>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>No. Invoice</th>
+                    <th>Waktu Transaksi</th>
+                    <th>Kasir</th>
+                    <th class="col-num">Total Qty</th>
+                    <th class="col-num">Subtotal</th>
+                    <th class="col-num">Diskon</th>
+                    <th class="col-num">Grand Total</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($sales)): ?>
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 36px; color: var(--ink-muted);">
+                            Belum ada riwayat transaksi penjualan pada periode ini.
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($sales as $s): ?>
+                        <tr>
+                            <td class="col-code">
+                                <a href="<?= e(app_url('sales/receipt.php?id=' . $s['id'])) ?>" style="font-weight: 700;">
+                                    <?= e($s['invoice_no']) ?>
+                                </a>
+                            </td>
+                            <td style="white-space: nowrap; font-size: 12px; color: #475569;">
+                                <?= date('d/m/Y H:i', strtotime($s['sold_at'])) ?>
+                            </td>
+                            <td><?= e($s['cashier_name'] ?? 'Kasir') ?></td>
+                            <td class="col-num"><?= (int) $s['total_units_sold'] ?> item</td>
+                            <td class="col-num">Rp <?= number_format((float) $s['subtotal'], 0, ',', '.') ?></td>
+                            <td class="col-num">
+                                <?= (float) $s['discount_total'] > 0 ? '-Rp ' . number_format((float) $s['discount_total'], 0, ',', '.') : '-' ?>
+                            </td>
+                            <td class="col-num">
+                                <strong>Rp <?= number_format((float) $s['grand_total'], 0, ',', '.') ?></strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-success"><span class="badge-dot"></span>Selesai</span>
+                                <span class="badge badge-neutral" style="font-size: 10px; text-transform: uppercase; margin-left: 4px;">
+                                    <?= e($s['payment_method'] ?? 'cash') ?>
+                                </span>
+                            </td>
+                            <td style="text-align: right;">
+                                <a href="<?= e(app_url('sales/receipt.php?id=' . $s['id'])) ?>" class="button button-secondary button-sm">Struk</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
-<?php
-echo sales_js_tag();
-require __DIR__ . '/../includes/footer.php';
+
+<?php require __DIR__ . '/../includes/footer.php'; ?>

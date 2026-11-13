@@ -25,7 +25,7 @@ function start_app_session(): void
         header('X-Content-Type-Options: nosniff');
         header('X-Frame-Options: DENY');
         header('Referrer-Policy: strict-origin-when-cross-origin');
-        header("Content-Security-Policy: default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
+        header("Content-Security-Policy: default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob: *; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; font-src 'self' https: data:; frame-ancestors 'none';");
     }
 }
 
@@ -122,9 +122,19 @@ function take_flash(): ?array
 function current_user(): ?array
 {
     $user = $_SESSION['user'] ?? null;
-    return is_array($user) && user_has_role($user, ['admin', 'cashier'])
+    return is_array($user) && user_has_role($user, ['admin', 'cashier', 'customer'])
         ? $user
         : null;
+}
+
+function user_role_label(?array $user): string
+{
+    return match($user['role'] ?? null) {
+        'admin' => 'Administrator',
+        'cashier' => 'Kasir',
+        'customer' => 'Pembeli',
+        default => 'Pengguna',
+    };
 }
 
 function user_has_role(?array $user, string|array $roles): bool

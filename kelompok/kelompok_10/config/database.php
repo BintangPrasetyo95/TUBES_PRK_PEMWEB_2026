@@ -12,7 +12,7 @@ function db(): PDO
     $port = getenv('DB_PORT') ?: '3306';
     $database = getenv('DB_NAME') ?: 'sisasense_db';
     $username = getenv('DB_USER') ?: 'root';
-    $password = getenv('DB_PASSWORD') ?: '';
+    $password = getenv('DB_PASSWORD') ?: 'fadhlan100';
     $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
 
     $connection = new PDO($dsn, $username, $password, [

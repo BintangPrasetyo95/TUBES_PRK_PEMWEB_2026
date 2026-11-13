@@ -178,10 +178,11 @@ $nama_petani = $_SESSION['nama'] ?? 'Petani';
                     </a>
                 </li>
 
+                <li class="nav-item"><a class="nav-link text-white" href="../edukasi/index.php">Edukasi</a></li>
                 <li class="nav-item">
                     <a class="nav-link text-white"
                        href="../petani/profil.php">
-                        profil
+                        Profil
                     </a>
                 </li>
 

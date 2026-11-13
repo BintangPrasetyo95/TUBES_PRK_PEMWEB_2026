@@ -52,9 +52,18 @@ $sudah_login = isset($_SESSION['user_id']);
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="<?= $prefix ?>index.php#hero">Beranda</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= $prefix ?>index.php#katalog">Katalog</a></li>
-        <li class="nav-item"><a class="nav-link active" href="<?= $prefix ?>edukasi/index.php">Edukasi</a></li>
+        <?php
+        $tujuan_beranda = $sudah_login ? $prefix . 'petani/dashboard.php' : $prefix . 'index.php';
+        ?>
+<li class="nav-item"><a class="nav-link" href="<?= $tujuan_beranda ?>#hero">Beranda</a></li>
+<li class="nav-item"><a class="nav-link" href="<?= $tujuan_beranda ?>#katalog">Katalog</a></li>
+<?php if ($sudah_login): ?>
+  <li class="nav-item"><a class="nav-link" href="<?= $prefix ?>produk/index.php">Produk</a></li>
+<?php endif; ?>
+<li class="nav-item"><a class="nav-link active" href="<?= $prefix ?>edukasi/index.php">Edukasi</a></li>
+<?php if ($sudah_login): ?>
+  <li class="nav-item"><a class="nav-link" href="<?= $prefix ?>petani/profil.php">Profil</a></li>
+<?php endif; ?>
         <?php if ($sudah_login): ?>
           <li class="nav-item">
             <a class="nav-link btn-login-petani ms-lg-3 px-3 mt-2 mt-lg-0" href="<?= $prefix ?>auth/logout.php">Logout</a>

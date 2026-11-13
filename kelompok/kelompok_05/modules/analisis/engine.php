@@ -6,7 +6,7 @@ function analisis_pemeriksaan(int $case_id): array
     if ($case_id < 1) throw new InvalidArgumentException('ID pemeriksaan tidak valid.');
     $pdo = db();
     $pdo->beginTransaction();
-    $st = $pdo->prepare('SELECT document_type_id FROM cases WHERE id = ? FOR UPDATE');
+    $st = $pdo->prepare('SELECT document_type_id, status FROM cases WHERE id = ? FOR UPDATE');
     $st->execute([$case_id]);
     $case = $st->fetch();
     if (!$case) {
@@ -52,7 +52,9 @@ function analisis_pemeriksaan(int $case_id): array
     $json = json_encode($hasil, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     $st = $pdo->prepare('INSERT INTO analysis_results (case_id, persentase, jumlah_terpenuhi, jumlah_berlaku, hasil_json) VALUES (?, ?, ?, ?, ?)');
     $st->execute([$case_id, $persentase, $jumlahTerpenuhi, $jumlahBerlaku, $json]);
-    $pdo->prepare('UPDATE cases SET status = ? WHERE id = ?')->execute([$statusDisarankan, $case_id]);
+    if ($case['status'] !== 'selesai') {
+        $pdo->prepare('UPDATE cases SET status = ? WHERE id = ?')->execute([$statusDisarankan, $case_id]);
+    }
     $pdo->commit();
     return ['persentase' => $persentase, 'hasil' => $hasil, 'status_disarankan' => $statusDisarankan,
         'jumlah_terpenuhi' => $jumlahTerpenuhi, 'jumlah_berlaku' => $jumlahBerlaku];
@@ -74,8 +76,8 @@ if (basename((string) ($_SERVER['SCRIPT_NAME'] ?? '')) === 'engine.php') {
         http_response_code(404);
         exit('Pemeriksaan tidak ditemukan.');
     }
-    if (in_array($case['status'], ['sedang_ditinjau', 'selesai'], true)) {
-        flash('error', 'Pemeriksaan yang sedang atau sudah ditinjau tidak dapat dianalisis ulang.');
+    if ($case['status'] === 'sedang_ditinjau') {
+        flash('error', 'Pemeriksaan yang sedang ditinjau tidak dapat dianalisis ulang.');
         redirect('modules/hasil/index.php?case=' . $caseId);
     }
     analisis_pemeriksaan((int) $caseId);

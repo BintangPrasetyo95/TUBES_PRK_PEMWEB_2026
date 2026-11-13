@@ -1,4 +1,4 @@
-// Klien API CEKHAK (Fetch API murni, tanpa library). Hanya PIC yang boleh mengubah file ini.
+// Klien API CEKHAK (Fetch API murni, tanpa library).
 // Dipakai fitur lewat objek global CEKHAK:
 //
 //   try {

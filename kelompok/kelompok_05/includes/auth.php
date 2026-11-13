@@ -1,6 +1,4 @@
 <?php
-// Sesi login dan pembatasan akses. Hanya PIC yang boleh mengubah file ini.
-// Modul auth (Anggota D) memakai fungsi di sini; jangan menulis ulang logikanya.
 
 /** Data pengguna yang sedang login (id, nama, email, role) atau null bila belum login. */
 function current_user(): ?array

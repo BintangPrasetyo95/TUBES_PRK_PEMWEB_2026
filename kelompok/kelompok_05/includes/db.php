@@ -1,5 +1,5 @@
 <?php
-// Konfigurasi dan koneksi database. Hanya PIC yang boleh mengubah file ini.
+// Konfigurasi dan koneksi database.
 
 /**
  * Membaca pengaturan dari config/config.local.php.

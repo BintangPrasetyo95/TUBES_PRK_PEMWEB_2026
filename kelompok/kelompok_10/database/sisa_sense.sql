@@ -186,10 +186,10 @@ CREATE TABLE inventory_movements (
 -- 3. pembeli  / 123
 
 INSERT INTO users (id, full_name, username, email, password_hash, role, is_active) VALUES
-(1, 'Administrator Toko', 'admin', 'admin@sisasense.id', '$2y$10$fz0HULk8UgF7eKmTd3FIk.lFd7VQ7/fkPu.8B/dJtmnNOh6R7NrHm', 'admin', 1),
-(2, 'Budi Kasir', 'kasir', 'kasir@sisasense.id', '$2y$10$fz0HULk8UgF7eKmTd3FIk.lFd7VQ7/fkPu.8B/dJtmnNOh6R7NrHm', 'cashier', 1),
-(3, 'Siti Pembeli', 'pembeli', 'pembeli@sisasense.id', '$2y$10$fz0HULk8UgF7eKmTd3FIk.lFd7VQ7/fkPu.8B/dJtmnNOh6R7NrHm', 'customer', 1)
-ON DUPLICATE KEY UPDATE id=id;
+(1, 'Administrator Toko', 'admin', 'admin@sisasense.id', '$2y$10$OHOqPC9FCREIhssp621XS./RC9JF/zEAXtF0rTqRqNG2J9wQCm3Di', 'admin', 1),
+(2, 'Budi Kasir', 'kasir', 'kasir@sisasense.id', '$2y$10$OHOqPC9FCREIhssp621XS./RC9JF/zEAXtF0rTqRqNG2J9wQCm3Di', 'cashier', 1),
+(3, 'Siti Pembeli', 'pembeli', 'pembeli@sisasense.id', '$2y$10$OHOqPC9FCREIhssp621XS./RC9JF/zEAXtF0rTqRqNG2J9wQCm3Di', 'customer', 1)
+ON DUPLICATE KEY UPDATE password_hash=VALUES(password_hash), full_name=VALUES(full_name), role=VALUES(role), is_active=VALUES(is_active);
 
 -- Kategori Demo
 INSERT INTO categories (id, name, description, is_active) VALUES

@@ -170,7 +170,7 @@ Agar batas lampiran aplikasi 10 MB dapat dipenuhi, konfigurasi PHP/web server ha
    ```powershell
    powershell -ExecutionPolicy Bypass -File .\scripts\setup-local-db.ps1
    ```
-   Skrip membuat role/database hanya bila keduanya belum ada, membuat kata sandi lokal dan rahasia sesi, lalu menyimpannya pada `.env`. Skrip tidak menimpa role/database yang sudah ada.
+  Skrip membuat role/database hanya bila keduanya belum ada, membuat kata sandi lokal dan rahasia sesi, lalu menyimpannya pada `.env`. Skrip tidak menimpa role/database yang sudah ada. Skrip juga mengganti `SESSION_SECRET=replace-me` dengan nilai acak.
 3. Sesuaikan kredensial PostgreSQL Anda pada berkas `.env`:
    ```env
    PGHOST=127.0.0.1
@@ -178,12 +178,14 @@ Agar batas lampiran aplikasi 10 MB dapat dipenuhi, konfigurasi PHP/web server ha
    PGDATABASE=advokita
    PGUSER=postgres
    PGPASSWORD=password_lokal_anda
-   SESSION_SECRET=kunci_acak_minimal_32_karakter_untuk_keamanan_sesi
+  SESSION_SECRET=replace-me
    ```
+  Jika tidak memakai skrip setup Windows, ganti placeholder tersebut dengan secret acak unik minimal 32 karakter sebelum menjalankan aplikasi. Jangan gunakan nilai placeholder di lingkungan aktif.
 4. Eksekusi skema tabel database:
    ```bash
    php bin/setup-database.php
    ```
+  Skrip ini menerapkan `database/schema.sql` dan migration di `database/migrations/` secara berurutan. Migration metadata pengumuman menambah kategori, pin, dan tanggal berakhir. Tinjau migration sebelum menjalankannya pada database produksi.
 5. Buat akun Admin pertama:
    ```bash
    php bin/create-admin.php
@@ -198,7 +200,15 @@ Buka browser dan akses: `http://127.0.0.1:8000`
 
 Untuk penggunaan selain pengembangan, gunakan HTTPS dan web server PHP yang dikonfigurasi agar hanya `public/` dapat diakses.
 
-### 4. Menjalankan Pengujian Validasi
+### 4. Deployment Railway dengan Docker
+
+- Pilih builder Docker agar konfigurasi batas upload pada `Dockerfile` digunakan. Batasnya adalah `upload_max_filesize=10M` dan `post_max_size=12M`.
+- Tambahkan Railway Volume pada service dan mount, misalnya, ke `/data`.
+- Atur `UPLOAD_DIRECTORY=/data/advokita-uploads` pada Variables service. Aplikasi akan membuat subdirektori tersebut bila belum ada.
+- Atur kredensial PostgreSQL dan `SESSION_SECRET` melalui Variables Railway, bukan dengan menyalin `.env` ke image. Untuk database remote, gunakan `PGSSLMODE=require` atau mode verifikasi sertifikat yang sesuai.
+- Tanpa volume persisten, lampiran di filesystem container dapat hilang saat restart atau redeploy. Volume persisten tetap perlu dicadangkan sesuai kebijakan operasional.
+
+### 5. Menjalankan Pengujian Validasi
 Pastikan aturan validasi sistem lulus tanpa kendala:
 ```bash
 php tests/validation.php

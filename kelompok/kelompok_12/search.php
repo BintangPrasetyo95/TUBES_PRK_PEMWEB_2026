@@ -19,6 +19,7 @@ function escape($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+$pageTitle = 'Pencarian - Sehatin';
 include 'includes/header.php';
 include 'includes/navbar.php';
 ?>
@@ -41,7 +42,7 @@ include 'includes/navbar.php';
                             <span class="badge bg-success mb-2 align-self-start"><?= escape($article['category_name'] ?? 'Umum') ?></span>
                             <h5 class="card-title fw-bold"><?= escape($article['title']) ?></h5>
                             <p class="card-text text-muted small flex-grow-1"><?= escape(substr(strip_tags($article['content']), 0, 90)) ?>...</p>
-                            <a href="article-detail.php?id=<?= (int)$article['id'] ?>" class="btn btn-outline-success btn-sm mt-auto">Baca Selengkapnya</a>
+                            <a href="article_detail.php?id=<?= (int)$article['id'] ?>" class="btn btn-outline-success btn-sm mt-auto">Baca Selengkapnya</a>
                         </div>
                     </div>
                 </div>

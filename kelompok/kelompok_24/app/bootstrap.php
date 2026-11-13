@@ -13,8 +13,15 @@ const REPORT_CATEGORIES = [
     'Pidana / UU ITE',
     'Lainnya',
 ];
+const ANNOUNCEMENT_CATEGORIES = [
+    'Akademik',
+    'Kemahasiswaan',
+    'Beasiswa',
+    'Kegiatan Kampus',
+    'Informasi Umum',
+];
 
-foreach ([APP_ROOT . '/.env', APP_ROOT . '/.env.example'] as $environmentFile) {
+foreach ([APP_ROOT . '/.env'] as $environmentFile) {
     if (!is_file($environmentFile)) {
         continue;
     }
@@ -39,8 +46,7 @@ foreach ([APP_ROOT . '/.env', APP_ROOT . '/.env.example'] as $environmentFile) {
     }
 }
 
-$isSecure = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== '' && $_SERVER['HTTPS'] !== 'off')
-    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+$isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== '' && $_SERVER['HTTPS'] !== 'off';
 session_name('advokita_sid');
 session_set_cookie_params([
     'lifetime' => 8 * 60 * 60,
@@ -50,6 +56,8 @@ session_set_cookie_params([
     'samesite' => 'Lax',
 ]);
 ini_set('session.use_strict_mode', '1');
+ini_set('session.use_only_cookies', '1');
+ini_set('session.use_trans_sid', '0');
 ini_set('session.gc_maxlifetime', (string) (8 * 60 * 60));
 session_start();
 
@@ -89,17 +97,11 @@ function database(): PDO
     $user = getenv('PGUSER') ?: 'advokita_app';
     $password = getenv('PGPASSWORD');
     if ($password === false || $password === '') {
-        throw new RuntimeException('PGPASSWORD belum diatur pada konfigurasi database.');
-    }
-
-    $sslmode = getenv('PGSSLMODE') ?: ($host !== '127.0.0.1' && $host !== 'localhost' ? 'require' : '');
-    $dsn = "pgsql:host={$host};port={$port};dbname={$name}";
-    if ($sslmode !== '') {
-        $dsn .= ";sslmode={$sslmode}";
+        throw new RuntimeException('PGPASSWORD belum diatur pada konfigurasi lokal.');
     }
 
     $connection = new PDO(
-        $dsn,
+        "pgsql:host={$host};port={$port};dbname={$name}",
         $user,
         $password,
         [
@@ -260,7 +262,98 @@ function validate_announcement(array $input): array
 {
     $title = required_text($input['title'] ?? null, 'Judul pengumuman', 120);
     $body = required_text($input['body'] ?? null, 'Isi pengumuman', 3000);
-    return ['title' => $title, 'body' => $body, 'isPublished' => isset($input['isPublished'])];
+    $category = required_text($input['category'] ?? null, 'Kategori pengumuman', 32);
+    if (!in_array($category, ANNOUNCEMENT_CATEGORIES, true)) {
+        throw new InputError('Kategori pengumuman tidak valid.');
+    }
+
+    foreach (['isPublished', 'isPinned'] as $checkboxName) {
+        if (array_key_exists($checkboxName, $input) && $input[$checkboxName] !== 'on') {
+            throw new InputError('Status pengumuman tidak valid.');
+        }
+    }
+
+    $expiresAt = $input['expiresAt'] ?? '';
+    if (!is_string($expiresAt)) {
+        throw new InputError('Tanggal berakhir tidak valid.');
+    }
+    $expiresAt = trim($expiresAt);
+    if ($expiresAt !== '') {
+        $expiryDate = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i', $expiresAt);
+        $dateErrors = DateTimeImmutable::getLastErrors();
+        if (
+            $expiryDate === false
+            || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
+            || $expiryDate->format('Y-m-d\TH:i') !== $expiresAt
+        ) {
+            throw new InputError('Tanggal berakhir tidak valid.');
+        }
+        $expiresAt = $expiryDate->format('Y-m-d H:i:sP');
+    } else {
+        $expiresAt = null;
+    }
+
+    return [
+        'title' => $title,
+        'body' => $body,
+        'category' => $category,
+        'isPublished' => isset($input['isPublished']),
+        'isPinned' => isset($input['isPinned']),
+        'expiresAt' => $expiresAt,
+    ];
+}
+
+function validate_report_filters(array $input): array
+{
+    $search = $input['search'] ?? '';
+    $status = $input['status'] ?? '';
+    $category = $input['category'] ?? '';
+
+    if (!is_string($search) || text_length(trim($search)) > 160) {
+        throw new InputError('Pencarian maksimal 160 karakter.');
+    }
+    if (!is_string($status) || !in_array($status, ['', 'pending', 'approved', 'rejected'], true)) {
+        throw new InputError('Filter status tidak valid.');
+    }
+    if (!is_string($category) || ($category !== '' && !in_array($category, REPORT_CATEGORIES, true))) {
+        throw new InputError('Filter kategori tidak valid.');
+    }
+
+    $dates = [];
+    foreach (['dateFrom' => 'Tanggal mulai', 'dateTo' => 'Tanggal akhir'] as $name => $label) {
+        $dateValue = $input[$name] ?? '';
+        if (!is_string($dateValue)) {
+            throw new InputError("{$label} tidak valid.");
+        }
+        $dateValue = trim($dateValue);
+        if ($dateValue === '') {
+            $dates[$name] = null;
+            continue;
+        }
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $dateValue);
+        $dateErrors = DateTimeImmutable::getLastErrors();
+        if (
+            $date === false
+            || ($dateErrors !== false && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))
+            || $date->format('Y-m-d') !== $dateValue
+        ) {
+            throw new InputError("{$label} tidak valid.");
+        }
+        $dates[$name] = $dateValue;
+    }
+    $dateFrom = $dates['dateFrom'];
+    $dateTo = $dates['dateTo'];
+    if ($dateFrom !== null && $dateTo !== null && $dateFrom > $dateTo) {
+        throw new InputError('Rentang tanggal tidak valid.');
+    }
+
+    return [
+        'search' => trim($search),
+        'status' => $status,
+        'category' => $category,
+        'dateFrom' => $dateFrom,
+        'dateTo' => $dateTo,
+    ];
 }
 
 function validate_decision(array $input): array
@@ -269,10 +362,7 @@ function validate_decision(array $input): array
     if (!in_array($decision, ['approved', 'rejected'], true)) {
         throw new InputError('Pilih setujui atau tolak.');
     }
-    $note = $input['note'] ?? '';
-    if (!is_string($note) || text_length(trim($note)) > 2000) {
-        throw new InputError('Catatan keputusan maksimal 2000 karakter.');
-    }
+    $note = required_text($input['note'] ?? null, 'Catatan pertimbangan hukum', 2000);
     return ['decision' => $decision, 'note' => trim($note)];
 }
 
@@ -317,32 +407,115 @@ function auth_rate_limit(): void
     }
 }
 
-function report_rows(PDO $db, string $userId, bool $admin = false): array
+function report_rows(PDO $db, string $userId, bool $admin = false, array $filters = []): array
 {
     $sql = "SELECT r.*, CASE WHEN r.is_anonymous THEN NULL ELSE u.full_name END AS submitter_name,
-            CASE WHEN r.is_anonymous THEN NULL ELSE u.nim END AS submitter_nim
-            FROM reports r JOIN users u ON u.id = r.user_id";
+            CASE WHEN r.is_anonymous THEN NULL ELSE u.nim END AS submitter_nim,
+            reviewer.full_name AS decided_by_name
+            FROM reports r
+            JOIN users u ON u.id = r.user_id
+            LEFT JOIN users reviewer ON reviewer.id = r.decided_by";
+    $conditions = [];
+    $parameters = [];
     if (!$admin) {
-        $sql .= ' WHERE r.user_id = :user_id';
+        $conditions[] = 'r.user_id = :user_id';
+        $parameters['user_id'] = $userId;
     } else {
-        $sql .= " ORDER BY CASE r.status WHEN 'pending' THEN 0 ELSE 1 END, r.created_at ASC";
+        if (($filters['search'] ?? '') !== '') {
+            $conditions[] = '(r.title ILIKE :title_search OR r.chronology ILIKE :chronology_search)';
+            $searchPattern = '%' . $filters['search'] . '%';
+            $parameters['title_search'] = $searchPattern;
+            $parameters['chronology_search'] = $searchPattern;
+        }
+        if (($filters['status'] ?? '') !== '') {
+            $conditions[] = 'r.status = :status';
+            $parameters['status'] = $filters['status'];
+        }
+        if (($filters['category'] ?? '') !== '') {
+            $conditions[] = 'r.category = :category';
+            $parameters['category'] = $filters['category'];
+        }
+        if (($filters['dateFrom'] ?? null) !== null) {
+            $conditions[] = 'r.created_at >= CAST(:date_from AS DATE)';
+            $parameters['date_from'] = $filters['dateFrom'];
+        }
+        if (($filters['dateTo'] ?? null) !== null) {
+            $conditions[] = 'r.created_at < CAST(:date_to AS DATE) + INTERVAL \'1 day\'';
+            $parameters['date_to'] = $filters['dateTo'];
+        }
     }
-    if (!$admin) {
-        $sql .= ' ORDER BY r.created_at DESC';
+    if ($conditions !== []) {
+        $sql .= ' WHERE ' . implode(' AND ', $conditions);
     }
+    $sql .= $admin
+        ? " ORDER BY CASE r.status WHEN 'pending' THEN 0 ELSE 1 END, r.created_at ASC"
+        : ' ORDER BY r.created_at DESC';
 
     $statement = $db->prepare($sql);
-    if (!$admin) {
-        $statement->execute(['user_id' => $userId]);
-    } else {
-        $statement->execute();
-    }
+    $statement->execute($parameters);
     $reports = $statement->fetchAll();
+
+    $attachmentsByReport = [];
+    if ($admin && $reports !== []) {
+        $reportIds = array_values(array_column($reports, 'id'));
+        $placeholders = [];
+        $parameters = [];
+        foreach ($reportIds as $index => $reportId) {
+            $parameter = 'report_id_' . $index;
+            $placeholders[] = ':' . $parameter;
+            $parameters[$parameter] = (string) $reportId;
+        }
+
+        $attachmentStatement = $db->prepare(
+            'SELECT report_id, id, original_name AS name
+             FROM report_attachments
+             WHERE report_id IN (' . implode(', ', $placeholders) . ')
+             ORDER BY report_id, id',
+        );
+        $attachmentStatement->execute($parameters);
+    } elseif (!$admin || $reports !== []) {
+        $attachmentSql = 'SELECT a.report_id, a.id, a.original_name AS name
+                          FROM report_attachments a
+                          JOIN reports r ON r.id = a.report_id';
+        if (!$admin) {
+            $attachmentSql .= ' WHERE r.user_id = :user_id';
+        }
+        $attachmentSql .= ' ORDER BY a.report_id, a.id';
+        $attachmentStatement = $db->prepare($attachmentSql);
+        if ($admin) {
+            $attachmentStatement->execute();
+        } else {
+            $attachmentStatement->execute(['user_id' => $userId]);
+        }
+    }
+
+    if (isset($attachmentStatement)) {
+        foreach ($attachmentStatement->fetchAll() as $attachment) {
+            $attachmentsByReport[(string) $attachment['report_id']][] = [
+                'id' => $attachment['id'],
+                'name' => $attachment['name'],
+            ];
+        }
+    }
+
     foreach ($reports as &$report) {
-        $report['attachments'] = attachment_rows($db, (string) $report['id']);
+        $report['attachments'] = $attachmentsByReport[(string) $report['id']] ?? [];
     }
     unset($report);
     return $reports;
+}
+
+function report_statistics(PDO $db): array
+{
+    $statement = $db->query(
+        "SELECT COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE status = 'pending') AS pending,
+                COUNT(*) FILTER (WHERE status = 'approved') AS approved,
+                COUNT(*) FILTER (WHERE status = 'rejected') AS rejected
+         FROM reports",
+    );
+    $statistics = $statement->fetch();
+    return array_map('intval', $statistics);
 }
 
 function attachment_rows(PDO $db, string $reportId): array
@@ -355,8 +528,11 @@ function attachment_rows(PDO $db, string $reportId): array
 function find_report(PDO $db, string $caseNumber, array $user): ?array
 {
     $sql = "SELECT r.*, CASE WHEN r.is_anonymous THEN NULL ELSE u.full_name END AS submitter_name,
-            CASE WHEN r.is_anonymous THEN NULL ELSE u.nim END AS submitter_nim
-            FROM reports r JOIN users u ON u.id = r.user_id
+            CASE WHEN r.is_anonymous THEN NULL ELSE u.nim END AS submitter_nim,
+            reviewer.full_name AS decided_by_name
+            FROM reports r
+            JOIN users u ON u.id = r.user_id
+            LEFT JOIN users reviewer ON reviewer.id = r.decided_by
             WHERE r.case_number = :case_number";
     $parameters = ['case_number' => $caseNumber];
     if ($user['role'] !== 'admin') {
@@ -388,6 +564,18 @@ function format_date(?string $value): string
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
     ];
     return $date->format('j') . ' ' . $months[(int) $date->format('n')] . ' ' . $date->format('Y');
+}
+
+function format_datetime(?string $value): string
+{
+    if ($value === null || $value === '') {
+        return 'Waktu tidak tersedia';
+    }
+    try {
+        return (new DateTimeImmutable($value))->format('j M Y, H:i');
+    } catch (Throwable) {
+        return 'Waktu tidak tersedia';
+    }
 }
 
 function status_label(string $status): string

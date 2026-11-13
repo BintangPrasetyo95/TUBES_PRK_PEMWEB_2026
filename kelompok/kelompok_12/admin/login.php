@@ -39,39 +39,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Login Admin - SehatIn</title>
-    <style>
-        body { font-family: sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 320px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #218838; }
-        .error { color: red; margin-bottom: 15px; }
-    </style>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../assets/css/login.css?v=1">
 </head>
-<body>
-    <div class="card">
-        <h2>Login Admin</h2>
+
+<body class="login-page">
+
+    <div class="login-card">
+
+        <h2>🌿 SehatIn</h2>
+
+        <p>Masuk ke halaman administrator</p>
+
         <?php if (!empty($error)): ?>
-            <p class="error"><?= htmlspecialchars($error) ?></p>
+            <div class="error">
+                <?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
+
         <form method="POST" action="">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="username" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" required>
-            </div>
-            <button type="submit">Login</button>
+
+            <label>Username</label>
+            <input
+                type="text"
+                name="username"
+                placeholder="Masukkan username"
+                required
+            >
+
+            <label>Password</label>
+            <input
+                type="password"
+                name="password"
+                placeholder="Masukkan password"
+                required
+            >
+
+            <button type="submit">
+                Login
+            </button>
+
         </form>
+
+        <p style="text-align:center; margin-top:20px;">
+            <a href="../index.php"
+               style="color:#198754; text-decoration:none; font-size:13px;">
+                Kembali ke Beranda
+            </a>
+        </p>
+
     </div>
+
 </body>
 </html>

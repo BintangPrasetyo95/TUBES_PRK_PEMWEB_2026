@@ -131,15 +131,15 @@ include '../includes/header.php';
             </p>
         </div>
         <a href="dashboard.php" class="btn btn-secondary" style="font-size: 0.9rem;">
-            &larr; Dashboard
+            ← Dashboard
         </a>
     </div>
 
-    <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
         <form method="GET" action="kelola.php">
 
             <div style="margin-bottom: 1.25rem;">
-                <label for="search" class="form-label">Cari Laporan:</label>
+                <label for="search" class="form-label">Cari Laporan</label>
                 <input type="text" id="search" name="search" value="<?= sanitize($search) ?>" 
                        placeholder="Ketik kata kunci judul, rincian, lokasi kejadian, atau nama pelapor..." 
                        class="form-control">
@@ -147,7 +147,7 @@ include '../includes/header.php';
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; align-items: end;">
                 <div>
-                    <label for="filter-status" class="form-label">Status:</label>
+                    <label for="filter-status" class="form-label">Status</label>
                     <select id="filter-status" name="status" class="form-control">
                         <option value="semua" <?= $filter_status === 'semua' ? 'selected' : '' ?>>Semua Status</option>
                         <option value="menunggu" <?= $filter_status === 'menunggu' ? 'selected' : '' ?>>Menunggu</option>
@@ -157,7 +157,7 @@ include '../includes/header.php';
                 </div>
 
                 <div>
-                    <label for="filter-jenis" class="form-label">Jenis:</label>
+                    <label for="filter-jenis" class="form-label">Jenis</label>
                     <select id="filter-jenis" name="jenis" class="form-control">
                         <option value="semua" <?= $filter_jenis === 'semua' ? 'selected' : '' ?>>Semua Jenis</option>
                         <option value="pengaduan" <?= $filter_jenis === 'pengaduan' ? 'selected' : '' ?>>Pengaduan</option>
@@ -166,16 +166,16 @@ include '../includes/header.php';
                 </div>
 
                 <div>
-                    <label for="filter-privasi" class="form-label">Visibilitas:</label>
+                    <label for="filter-privasi" class="form-label">Visibilitas</label>
                     <select id="filter-privasi" name="privasi" class="form-control">
                         <option value="semua" <?= $filter_privasi === 'semua' ? 'selected' : '' ?>>Semua Visibilitas</option>
                         <option value="publik" <?= $filter_privasi === 'publik' ? 'selected' : '' ?>>Laporan Publik</option>
-                        <option value="privat" <?= $filter_privasi === 'privat' ? 'selected' : '' ?>>Laporan Privat 🔒</option>
+                        <option value="privat" <?= $filter_privasi === 'privat' ? 'selected' : '' ?>>Laporan Privat</option>
                     </select>
                 </div>
 
                 <div style="display: flex; gap: 0.5rem;">
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Filter Data</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Terapkan Filter</button>
                     <a href="kelola.php" class="btn btn-secondary">Reset</a>
                 </div>
             </div>
@@ -188,22 +188,18 @@ include '../includes/header.php';
 
     <?php if (empty($daftar_laporan)): ?>
         <div class="card" style="text-align: center; padding: 3rem 1rem; color: var(--color-text-muted);">
-            <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">Tidak ada laporan yang sesuai dengan pencarian atau filter.</p>
-            <a href="kelola.php" style="color: var(--color-primary); font-weight: 600;">Reset Filter</a>
+            <p style="font-size: 1.1rem; margin-bottom: 0.75rem;">Tidak ada laporan yang sesuai dengan pencarian atau filter.</p>
+            <a href="kelola.php" class="btn btn-secondary">Reset Filter</a>
         </div>
     <?php else: ?>
         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
             <?php foreach ($daftar_laporan as $row): ?>
                 <div class="card" style="padding: 1.5rem; margin-bottom: 0;">
-<<<<<<< HEAD
                     
-=======
-
->>>>>>> upstream/main
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
                         <div>
                             <span style="font-size: 0.8rem; font-weight: 700; color: var(--color-secondary); text-transform: uppercase;">
-                                <?= sanitize($row['jenis']) ?> &bull; <?= sanitize($row['nama_kategori'] ?? 'Umum') ?>
+                                <?= sanitize($row['jenis']) ?> • <?= sanitize($row['nama_kategori'] ?? 'Umum') ?>
                             </span>
                             <h2 style="font-size: 1.35rem; color: var(--color-primary); margin: 0.25rem 0;">
                                 <a href="../detail.php?id=<?= (int)$row['id'] ?>" style="color: inherit; text-decoration: none;">
@@ -215,7 +211,7 @@ include '../includes/header.php';
                             <?php if ((int)$row['is_public'] === 1): ?>
                                 <span class="badge" style="background: #E8ECE2; color: #34402A; border: 1px solid #C4CEB5;">Publik</span>
                             <?php else: ?>
-                                <span class="badge" style="background: #F0E6CB; color: #6B5420; border: 1px solid #DDD5C0;">Privat 🔒</span>
+                                <span class="badge" style="background: #1E3A5F; color: #FFFFFF; border: 1px solid #162C49; font-weight: 600;">Privat</span>
                             <?php endif; ?>
 
                             <?= badgeStatus($row['status']) ?>
@@ -226,37 +222,42 @@ include '../includes/header.php';
                         <?= nl2br(sanitize($row['isi'])) ?>
                     </p>
 
-                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid var(--color-border); font-size: 0.88rem; color: var(--color-text-muted);">
-                        <div>
-                            Pelapor: <strong style="color: var(--color-text);"><?= sanitize($row['nama_pelapor']) ?></strong>
-                            &bull; Lokasi: <strong style="color: var(--color-text);"><?= sanitize($row['lokasi'] ?? '-') ?></strong>
-                            &bull; Tanggal: <?= date('d M Y, H:i', strtotime($row['created_at'])) ?>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1;">
+                            <span style="display: inline-flex; align-items: center; padding: 4px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; border-radius: 9999px; font-size: 0.8rem; font-weight: 500;">
+                                <?= sanitize($row['nama_pelapor']) ?>
+                            </span>
+                            <span style="display: inline-flex; align-items: center; padding: 4px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; border-radius: 9999px; font-size: 0.8rem; font-weight: 500;">
+                                <?= sanitize($row['lokasi'] ?? '-') ?>
+                            </span>
+                            <span style="display: inline-flex; align-items: center; padding: 4px 12px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; border-radius: 9999px; font-size: 0.8rem; font-weight: 500;">
+                                <?= date('d M Y, H:i', strtotime($row['created_at'])) ?>
+                            </span>
                             <?php if (!empty($row['foto'])): ?>
-                                &bull; <span style="color: var(--color-secondary); font-weight: 600;">📷 Ada Foto</span>
+                                <span style="display: inline-flex; align-items: center; padding: 4px 12px; background: #E8ECE2; border: 1px solid #C4CEB5; color: #34402A; border-radius: 9999px; font-size: 0.8rem; font-weight: 600;">
+                                    Ada Foto
+                                </span>
                             <?php endif; ?>
                         </div>
                         
-                        <div style="display: flex; gap: 0.5rem;">
-
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
                             <button type="button" 
                                     onclick="document.getElementById('form-tindak-<?= $row['id'] ?>').style.display = document.getElementById('form-tindak-<?= $row['id'] ?>').style.display === 'none' ? 'block' : 'none'" 
-                                    class="btn btn-primary btn-sm">
-                                Tindak Lanjuti / Balas &darr;
+                                    class="btn btn-primary btn-sm"
+                                    style="display: inline-flex; align-items: center; height: 34px;">
+                                Tindak Lanjuti / Balas ↓
                             </button>
 
-                            <a href="../detail.php?id=<?= (int)$row['id'] ?>" class="btn btn-secondary btn-sm">
-                                Detail Lengkap &rarr;
+                            <a href="../detail.php?id=<?= (int)$row['id'] ?>" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; height: 34px;">
+                                Detail Lengkap →
                             </a>
 
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/main
-                            <form method="POST" action="kelola.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?');" style="display: inline;">
+                            <form method="POST" action="kelola.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus laporan ini?');" style="display: inline-flex; margin: 0;">
                                 <?= csrfField() ?>
                                 <input type="hidden" name="aksi" value="hapus_laporan">
                                 <input type="hidden" name="laporan_id" value="<?= (int)$row['id'] ?>">
-                                <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                <button type="submit" class="btn btn-danger btn-sm" style="display: inline-flex; align-items: center; height: 34px;">Hapus</button>
                             </form>
                         </div>
                     </div>
@@ -271,7 +272,7 @@ include '../includes/header.php';
                             <input type="hidden" name="laporan_id" value="<?= (int)$row['id'] ?>">
 
                             <div class="form-group">
-                                <label class="form-label">Ubah Status Laporan:</label>
+                                <label class="form-label">Ubah Status Laporan</label>
                                 <select name="status" class="form-control" style="max-width: 250px;">
                                     <option value="menunggu" <?= $row['status'] === 'menunggu' ? 'selected' : '' ?>>Menunggu</option>
                                     <option value="diproses" <?= $row['status'] === 'diproses' ? 'selected' : '' ?>>Diproses</option>
@@ -280,7 +281,7 @@ include '../includes/header.php';
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Tulis Tanggapan Resmi Kampus (Opsional):</label>
+                                <label class="form-label">Tulis Tanggapan Resmi Kampus (Opsional)</label>
                                 <textarea name="isi_tanggapan" rows="3" class="form-control" placeholder="Tuliskan respon atau penjelasan resmi dari fakultas..."></textarea>
                             </div>
 

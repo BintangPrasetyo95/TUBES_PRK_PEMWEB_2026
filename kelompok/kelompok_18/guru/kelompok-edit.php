@@ -30,6 +30,20 @@ try {
             http_response_code(403);
             exit('Permintaan tidak valid.');
         }
+        if (($_POST['action'] ?? null) === 'delete_group') {
+            $postedGroupId = filter_input(INPUT_POST, 'group_id', FILTER_VALIDATE_INT);
+            if ($postedGroupId !== $groupId) {
+                http_response_code(422);
+                $pageError = 'Data kelompok tidak valid.';
+            } else {
+                $assignmentId = guruDeleteGroup($groupId);
+                header('Location: kelompok.php?assignment_id=' . $assignmentId);
+                exit;
+            }
+        }
+        if ($pageError !== '') {
+            // Keep the edit form available to display the validation error.
+        } else {
         $postedGroupId = filter_input(INPUT_POST, 'group_id', FILTER_VALIDATE_INT);
         $postedName = $_POST['group_name'] ?? null;
         $postedMembers = $_POST['member_ids'] ?? [];
@@ -55,6 +69,7 @@ try {
                 exit;
             }
         }
+        }
     }
 } catch (DomainException $exception) {
     $pageError = $exception->getMessage();
@@ -78,6 +93,12 @@ guru_page_start('Edit Kelompok', 'kelas.php');
             <?php endforeach; ?>
         </div></fieldset>
         <div class="flex flex-wrap gap-2"><button id="save-group-edit" type="submit" class="min-h-10 rounded-lg bg-[#4e7a5d] px-4 text-sm font-semibold text-white">Simpan Perubahan</button><a href="kelompok.php?assignment_id=<?= (int) $group['assignment_id'] ?>" class="inline-flex min-h-10 items-center rounded-lg border border-[#dfe6de] px-4 text-sm font-semibold text-[#41684f]">Batal</a></div>
+    </form>
+    <form method="post" action="kelompok-edit.php?id=<?= (int) $groupId ?>" onsubmit="return window.confirm('Hapus kelompok ini? Data absensi, poin, dan riwayat sesi tetap tersimpan.')" class="border-t border-[#e6ebe5] pt-4">
+        <input type="hidden" name="_csrf_token" value="<?= attendara_ui_escape(csrfToken()) ?>">
+        <input type="hidden" name="group_id" value="<?= (int) $groupId ?>">
+        <input type="hidden" name="action" value="delete_group">
+        <button type="submit" class="min-h-10 rounded-lg border border-red-200 px-4 text-sm font-semibold text-red-700 hover:bg-red-50">Hapus Kelompok</button>
     </form>
 </section>
 <?php guru_page_end(); ?>

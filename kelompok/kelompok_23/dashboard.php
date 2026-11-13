@@ -1,5 +1,9 @@
 <?php
-session_start();
+date_default_timezone_set('Asia/Jakarta');
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth/login.php");
@@ -8,388 +12,451 @@ if (!isset($_SESSION['user_id'])) {
 
 $pageTitle = 'Dashboard';
 
-require_once __DIR__ . '/config/database.php';
+require_once 'config/database.php';
+require_once 'includes/helper.php';
+require_once 'includes/header.php';
+require_once 'includes/navbar.php';
 
-$totalProduk = null;
-$errorTotalProduk = '';
+$conn->query("SET time_zone = '+07:00'");
 
-try {
-    $hasilProduk = $conn->query(
-        "SELECT COUNT(*) AS total_produk FROM products"
-    );
+$today = date('Y-m-d');
+$tomorrow = date('Y-m-d', strtotime('+1 day'));
+$startDate = date('Y-m-d', strtotime('-6 days'));
 
-    if ($hasilProduk === false) {
-        throw new RuntimeException($conn->error);
-    }
+$totalProduk = 0;
+$transaksiHariIni = 0;
+$omzetHariIni = 0;
 
-    $dataProduk = $hasilProduk->fetch_assoc();
-    $totalProduk = (int) $dataProduk['total_produk'];
+$result = $conn->query("
+    SELECT COUNT(*) AS total_produk
+    FROM products
+");
 
-    $hasilProduk->free();
-} catch (Exception $e) {
-    error_log('Query total produk gagal: ' . $e->getMessage());
-    $errorTotalProduk = 'Jumlah produk belum dapat dimuat.';
+if ($result) {
+    $totalProduk = (int) $result->fetch_assoc()['total_produk'];
 }
 
-$totalTransaksiHariIni = null;
-$errorTransaksiHariIni = '';
+$result = $conn->query("
+    SELECT
+        COUNT(*) AS total_transaksi,
+        COALESCE(SUM(total), 0) AS omzet
+    FROM transactions
+    WHERE transaction_date >= '{$today} 00:00:00'
+      AND transaction_date < '{$tomorrow} 00:00:00'
+");
 
-try {
-    $hasilTransaksi = $conn->query(
-        "SELECT COUNT(*) AS total_transaksi
-         FROM transactions
-         WHERE transaction_date >= CURDATE()
-           AND transaction_date < CURDATE() + INTERVAL 1 DAY"
-    );
+if ($result) {
+    $statistikHariIni = $result->fetch_assoc();
 
-    if ($hasilTransaksi === false) {
-        throw new RuntimeException($conn->error);
-    }
-
-    $dataTransaksi = $hasilTransaksi->fetch_assoc();
-    $totalTransaksiHariIni = (int) $dataTransaksi['total_transaksi'];
-
-    $hasilTransaksi->free();
-} catch (Exception $e) {
-    error_log('Query transaksi hari ini gagal: ' . $e->getMessage());
-    $errorTransaksiHariIni = 'Jumlah transaksi belum dapat dimuat.';
+    $transaksiHariIni = (int) $statistikHariIni['total_transaksi'];
+    $omzetHariIni = (float) $statistikHariIni['omzet'];
 }
 
-$omzetHariIni = null;
-$errorOmzetHariIni = '';
+$labelOmzet = [];
+$dataOmzet = [];
 
-try {
-    $hasilOmzet = $conn->query(
-        "SELECT COALESCE(SUM(total), 0) AS total_omzet
-         FROM transactions
-         WHERE transaction_date >= CURDATE()
-           AND transaction_date < CURDATE() + INTERVAL 1 DAY"
-    );
+for ($i = 6; $i >= 0; $i--) {
+    $tanggal = date('Y-m-d', strtotime("-{$i} days"));
 
-    if ($hasilOmzet === false) {
-        throw new RuntimeException($conn->error);
-    }
-
-    $dataOmzet = $hasilOmzet->fetch_assoc();
-    $omzetHariIni = $dataOmzet['total_omzet'];
-
-    $hasilOmzet->free();
-} catch (Exception $e) {
-    error_log('Query omzet hari ini gagal: ' . $e->getMessage());
-    $errorOmzetHariIni = 'Omzet hari ini belum dapat dimuat.';
+    $labelOmzet[] = date('d M', strtotime($tanggal));
+    $dataOmzet[$tanggal] = 0;
 }
 
-$produkStokMenipis = [];
-$errorStokMenipis = '';
+$result = $conn->query("
+    SELECT
+        DATE(transaction_date) AS tanggal,
+        COALESCE(SUM(total), 0) AS omzet
+    FROM transactions
+    WHERE transaction_date >= '{$startDate} 00:00:00'
+      AND transaction_date < '{$tomorrow} 00:00:00'
+    GROUP BY DATE(transaction_date)
+    ORDER BY tanggal ASC
+");
 
-try {
-    $hasilStok = $conn->query(
-        "SELECT id, sku, name, stock, min_stock
-         FROM products
-         WHERE stock <= min_stock
-         ORDER BY stock ASC, name ASC, id ASC"
-    );
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $tanggal = $row['tanggal'];
 
-    if ($hasilStok === false) {
-        throw new RuntimeException($conn->error);
+        if (isset($dataOmzet[$tanggal])) {
+            $dataOmzet[$tanggal] = (float) $row['omzet'];
+        }
     }
-
-    $produkStokMenipis = $hasilStok->fetch_all(MYSQLI_ASSOC);
-
-    $hasilStok->free();
-} catch (Exception $e) {
-    error_log('Query stok menipis gagal: ' . $e->getMessage());
-    $errorStokMenipis = 'Data stok produk belum dapat dimuat.';
 }
 
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/helper.php';
+$dataOmzet = array_values($dataOmzet);
+$maxOmzet = max($dataOmzet ?: [0]);
+
+$stokNormal = 0;
+$stokMenipis = 0;
+$stokHabis = 0;
+
+$result = $conn->query("
+    SELECT
+        SUM(CASE
+            WHEN stock > min_stock THEN 1
+            ELSE 0
+        END) AS normal,
+
+        SUM(CASE
+            WHEN stock > 0 AND stock <= min_stock THEN 1
+            ELSE 0
+        END) AS menipis,
+
+        SUM(CASE
+            WHEN stock = 0 THEN 1
+            ELSE 0
+        END) AS habis
+
+    FROM products
+");
+
+if ($result) {
+    $stok = $result->fetch_assoc();
+
+    $stokNormal = (int) $stok['normal'];
+    $stokMenipis = (int) $stok['menipis'];
+    $stokHabis = (int) $stok['habis'];
+}
+
+$stokRendah = [];
+
+$result = $conn->query("
+    SELECT id, sku, name, stock, min_stock
+    FROM products
+    WHERE stock <= min_stock
+    ORDER BY stock ASC, name ASC, id ASC
+");
+
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $stokRendah[] = $row;
+    }
+}
+
 ?>
 
-<?php include __DIR__ . '/includes/navbar.php'; ?>
+<div class="app-layout">
 
-<div class="app-layout d-flex flex-grow-1">
+    <?php require_once 'includes/sidebar.php'; ?>
 
-    <?php include __DIR__ . '/includes/sidebar.php'; ?>
+    <main class="main-content dashboard-main">
 
-    <main class="main-content flex-grow-1 p-4">
+        <div class="dashboard-page">
+            <div class="container-fluid">
 
-        <div class="mb-4">
-            <h3 class="fw-bold">Dashboard</h3>
-            <p class="text-muted">
-                Selamat datang di sistem manajemen FEBMart.
-            </p>
-        </div>
+                <div class="dashboard-heading">
 
-        <?php showFlash(); ?>
+                    <div>
+                        <h2>Dashboard</h2>
 
-        <!-- POIN 11: ALERT NOTIFIKASI STOK MENIPIS -->
-        <?php if ($errorStokMenipis === '' && !empty($produkStokMenipis)): ?>
-
-            <?php
-                $jumlahStokHabis = 0;
-
-                foreach ($produkStokMenipis as $produkStok) {
-                    if ((int) $produkStok['stock'] === 0) {
-                        $jumlahStokHabis++;
-                    }
-                }
-
-                $jumlahStokMenipis = count($produkStokMenipis) - $jumlahStokHabis;
-            ?>
-
-            <div class="alert alert-warning mb-4" role="alert">
-
-                <strong>Perhatian stok barang.</strong>
-
-                Terdapat <?= $jumlahStokMenipis; ?> jenis produk
-                dengan stok menipis dan
-                <?= $jumlahStokHabis; ?> jenis produk yang habis.
-
-                <a href="#judul-stok" class="alert-link">
-                    Lihat daftar produk.
-                </a>
-
-            </div>
-
-        <?php endif; ?>
-        <!-- AKHIR POIN 11 -->
-
-        <section class="mb-4" aria-labelledby="judul-ringkasan">
-            <h4 id="judul-ringkasan" class="fw-bold mb-3">
-                Ringkasan Toko
-            </h4>
-
-            <div class="row g-3">
-
-                <div class="col-12 col-md-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h5 class="text-muted fs-6">Total Produk</h5>
-
-                            <p class="fs-3 fw-bold mb-1">
-                                <?= $totalProduk !== null
-                                    ? number_format($totalProduk, 0, ',', '.')
-                                    : '&mdash;'; ?>
-                            </p>
-
-                            <small class="text-muted">Jumlah jenis produk</small>
-
-                            <?php if ($errorTotalProduk !== ''): ?>
-                                <p class="text-danger small mt-2 mb-0" role="alert">
-                                    <?= htmlspecialchars(
-                                        $errorTotalProduk,
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ); ?>
-                                </p>
-                            <?php endif; ?>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h5 class="text-muted fs-6">Transaksi Hari Ini</h5>
-
-                            <p class="fs-3 fw-bold mb-1">
-                                <?= $totalTransaksiHariIni !== null
-                                    ? number_format($totalTransaksiHariIni, 0, ',', '.')
-                                    : '&mdash;'; ?>
-                            </p>
-
-                            <small class="text-muted">Jumlah transaksi penjualan</small>
-
-                            <?php if ($errorTransaksiHariIni !== ''): ?>
-                                <p class="text-danger small mt-2 mb-0" role="alert">
-                                    <?= htmlspecialchars(
-                                        $errorTransaksiHariIni,
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ); ?>
-                                </p>
-                            <?php endif; ?>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <h5 class="text-muted fs-6">Omzet Hari Ini</h5>
-
-                            <p class="fs-3 fw-bold mb-1">
-                                <?= $omzetHariIni !== null
-                                    ? formatRupiah($omzetHariIni)
-                                    : '&mdash;'; ?>
-                            </p>
-
-                            <small class="text-muted">Total nilai penjualan</small>
-
-                            <?php if ($errorOmzetHariIni !== ''): ?>
-                                <p class="text-danger small mt-2 mb-0" role="alert">
-                                    <?= htmlspecialchars(
-                                        $errorOmzetHariIni,
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    ); ?>
-                                </p>
-                            <?php endif; ?>
-
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <section class="mb-4" aria-labelledby="judul-stok">
-
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-
-                    <h4 id="judul-stok" class="fw-bold mb-2">
-                        Monitoring Stok
-                    </h4>
-
-                    <p class="text-muted">
-                        Produk dengan stok mencapai atau di bawah batas minimum.
-                    </p>
-
-                    <?php if ($errorStokMenipis !== ''): ?>
-
-                        <p class="text-danger mb-0" role="alert">
-                            <?= htmlspecialchars(
-                                $errorStokMenipis,
-                                ENT_QUOTES,
-                                'UTF-8'
-                            ); ?>
+                        <p>
+                            Selamat datang,
+                            <strong>
+                                <?= htmlspecialchars(
+                                    $_SESSION['name'] ??
+                                    $_SESSION['username'] ??
+                                    'Admin'
+                                ) ?>
+                            </strong>
+                            👋
                         </p>
+                    </div>
 
-                    <?php elseif (empty($produkStokMenipis)): ?>
+                    <div class="dashboard-date">
+                        <i class="bi bi-calendar3"></i>
+                        <span id="dashboardDate">
+                            <?= date('d F Y') ?>
+                        </span>
+                    </div>
 
-                        <p class="text-muted mb-0">
-                            Tidak ada produk dengan stok mencapai
-                            atau di bawah batas minimum.
-                        </p>
+                </div>
 
-                    <?php else: ?>
+                <?php showFlash(); ?>
 
-                        <div class="table-responsive">
+                <?php if ($stokHabis > 0 || $stokMenipis > 0): ?>
 
-                            <table class="table table-hover align-middle mb-0">
+                    <div class="alert alert-warning dashboard-alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
 
-                                <thead>
-                                    <tr>
-                                        <th scope="col">No.</th>
-                                        <th scope="col">SKU</th>
-                                        <th scope="col">Nama Produk</th>
-                                        <th scope="col" class="text-end">Stok</th>
-                                        <th scope="col" class="text-end">
-                                            Batas Minimum
-                                        </th>
-                                        <th scope="col">Status</th>
-                                    </tr>
-                                </thead>
+                        <strong>Perhatian stok:</strong>
 
-                                <tbody>
+                        <?php if ($stokHabis > 0): ?>
+                            <?= $stokHabis ?> produk habis
+                        <?php endif; ?>
 
-                                    <?php foreach ($produkStokMenipis as $index => $produk): ?>
+                        <?php if ($stokHabis > 0 && $stokMenipis > 0): ?>
+                            dan
+                        <?php endif; ?>
 
+                        <?php if ($stokMenipis > 0): ?>
+                            <?= $stokMenipis ?> produk memiliki stok menipis
+                        <?php endif; ?>
+                    </div>
+
+                <?php endif; ?>
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-md-4">
+                        <div class="card dashboard-stat-card h-100">
+                            <div class="card-body d-flex align-items-center">
+
+                                <div class="dashboard-stat-icon purple">
+                                    <i class="bi bi-box-seam"></i>
+                                </div>
+
+                                <div>
+                                    <div class="dashboard-stat-label">
+                                        Total Produk
+                                    </div>
+
+                                    <div class="dashboard-stat-value">
+                                        <?= number_format($totalProduk, 0, ',', '.') ?>
+                                    </div>
+
+                                    <small class="text-muted">
+                                        Produk terdaftar di sistem
+                                    </small>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card dashboard-stat-card h-100">
+                            <div class="card-body d-flex align-items-center">
+
+                                <div class="dashboard-stat-icon orange">
+                                    <i class="bi bi-receipt"></i>
+                                </div>
+
+                                <div>
+                                    <div class="dashboard-stat-label">
+                                        Transaksi Hari Ini
+                                    </div>
+
+                                    <div class="dashboard-stat-value">
+                                        <?= number_format($transaksiHariIni, 0, ',', '.') ?>
+                                    </div>
+
+                                    <small class="text-muted">
+                                        Transaksi yang tercatat hari ini
+                                    </small>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card dashboard-stat-card h-100">
+                            <div class="card-body d-flex align-items-center">
+
+                                <div class="dashboard-stat-icon green">
+                                    <i class="bi bi-cash-stack"></i>
+                                </div>
+
+                                <div>
+                                    <div class="dashboard-stat-label">
+                                        Omzet Hari Ini
+                                    </div>
+
+                                    <div class="dashboard-stat-value dashboard-omzet-value">
+                                        <?= formatRupiah($omzetHariIni) ?>
+                                    </div>
+
+                                    <small class="text-muted">
+                                        Total pendapatan hari ini
+                                    </small>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row g-3 mb-4">
+
+                    <div class="col-lg-8">
+                        <div class="card dashboard-panel h-100">
+
+                            <div class="card-body p-3 p-md-4">
+
+                                <div class="dashboard-panel-heading">
+                                    <div>
+                                        <h5>
+                                            <i class="bi bi-graph-up-arrow me-2"></i>
+                                            Perkembangan Omzet
+                                        </h5>
+
+                                        <small>
+                                            Omzet penjualan selama 7 hari terakhir
+                                        </small>
+                                    </div>
+
+                                    <span class="dashboard-period">
+                                        7 Hari
+                                    </span>
+                                </div>
+
+                                <div class="dashboard-chart">
+                                    <canvas id="omzetChart"></canvas>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card dashboard-panel h-100">
+
+                            <div class="card-body p-3 p-md-4">
+
+                                <div class="dashboard-panel-heading">
+                                    <div>
+                                        <h5>
+                                            <i class="bi bi-pie-chart me-2"></i>
+                                            Kondisi Stok
+                                        </h5>
+
+                                        <small>
+                                            Ringkasan ketersediaan produk
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="dashboard-stock-chart">
+                                    <canvas id="stockChart"></canvas>
+                                </div>
+
+                                <div class="dashboard-stock-legend">
+
+                                    <div>
+                                        <span class="stock-dot normal"></span>
+                                        Stok Normal
+                                        <strong><?= $stokNormal ?></strong>
+                                    </div>
+
+                                    <div>
+                                        <span class="stock-dot menipis"></span>
+                                        Stok Menipis
+                                        <strong><?= $stokMenipis ?></strong>
+                                    </div>
+
+                                    <div>
+                                        <span class="stock-dot habis"></span>
+                                        Stok Habis
+                                        <strong><?= $stokHabis ?></strong>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card dashboard-panel mb-4">
+
+                    <div class="card-body p-3 p-md-4">
+
+                        <div class="dashboard-panel-heading">
+                            <div>
+                                <h5>
+                                    <i class="bi bi-boxes me-2"></i>
+                                    Monitoring Stok
+                                </h5>
+
+                                <small>
+                                    Daftar produk dengan stok menipis atau habis
+                                </small>
+                            </div>
+
+                            <span class="dashboard-period">
+                                <?= count($stokRendah) ?> Produk
+                            </span>
+                        </div>
+
+                        <?php if (!empty($stokRendah)): ?>
+
+                            <div class="table-responsive">
+
+                                <table class="table table-hover align-middle dashboard-stock-table">
+
+                                    <thead>
                                         <tr>
-                                            <td><?= $index + 1; ?></td>
-
-                                            <td>
-                                                <?= htmlspecialchars(
-                                                    $produk['sku'],
-                                                    ENT_QUOTES,
-                                                    'UTF-8'
-                                                ); ?>
-                                            </td>
-
-                                            <td>
-                                                <?= htmlspecialchars(
-                                                    $produk['name'],
-                                                    ENT_QUOTES,
-                                                    'UTF-8'
-                                                ); ?>
-                                            </td>
-
-                                            <td class="text-end">
-                                                <?= (int) $produk['stock']; ?>
-                                            </td>
-
-                                            <td class="text-end">
-                                                <?= (int) $produk['min_stock']; ?>
-                                            </td>
-
-                                            <td>
-
-                                                <?php if ((int) $produk['stock'] === 0): ?>
-
-                                                    <span class="badge bg-danger">
-                                                        Habis
-                                                    </span>
-
-                                                <?php else: ?>
-
-                                                    <span class="badge bg-warning text-dark">
-                                                        Menipis
-                                                    </span>
-
-                                                <?php endif; ?>
-
-                                            </td>
+                                            <th>SKU</th>
+                                            <th>Nama Produk</th>
+                                            <th class="text-center">Stok</th>
+                                            <th class="text-center">Minimal Stok</th>
+                                            <th class="text-center">Status</th>
                                         </tr>
+                                    </thead>
 
-                                    <?php endforeach; ?>
+                                    <tbody>
 
-                                </tbody>
+                                        <?php foreach ($stokRendah as $produk): ?>
 
-                            </table>
+                                            <?php
+                                            $stock = (int) $produk['stock'];
+                                            $minStock = (int) $produk['min_stock'];
 
-                        </div>
+                                            $status = $stock === 0 ? 'Habis' : 'Menipis';
+                                            $statusClass = $stock === 0 ? 'danger' : 'warning';
+                                            ?>
 
-                    <?php endif; ?>
+                                            <tr>
+                                                <td>
+                                                    <span class="dashboard-sku">
+                                                        <?= htmlspecialchars($produk['sku']) ?>
+                                                    </span>
+                                                </td>
 
-                </div>
-            </div>
+                                                <td>
+                                                    <strong>
+                                                        <?= htmlspecialchars($produk['name']) ?>
+                                                    </strong>
+                                                </td>
 
-        </section>
+                                                <td class="text-center">
+                                                    <?= $stock ?>
+                                                </td>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
+                                                <td class="text-center">
+                                                    <?= $minStock ?>
+                                                </td>
 
-                <h4 class="fw-bold mb-3">
-                    Selamat Datang,
-                    <?= htmlspecialchars($_SESSION['name'] ?? 'Admin'); ?>!
-                </h4>
+                                                <td class="text-center">
+                                                    <span class="dashboard-status <?= $statusClass ?>">
+                                                        <?= $status ?>
+                                                    </span>
+                                                </td>
+                                            </tr>
 
-                <p class="text-muted">
-                    Anda berhasil login ke sistem manajemen FEBMart.
-                </p>
+                                        <?php endforeach; ?>
 
-                <hr>
+                                    </tbody>
 
-                <div class="row">
+                                </table>
 
-                    <div class="col-md-6 mb-3">
-                        <small class="text-muted">Username</small>
-                        <p class="fw-semibold">
-                            <?= htmlspecialchars($_SESSION['username'] ?? '-'); ?>
-                        </p>
+                            </div>
+
+                        <?php else: ?>
+
+                            <div class="dashboard-empty">
+                                <i class="bi bi-check-circle"></i>
+
+                                <p>
+                                    Semua stok produk dalam kondisi aman.
+                                </p>
+                            </div>
+
+                        <?php endif; ?>
+
                     </div>
-
-                    <div class="col-md-6 mb-3">
-                        <small class="text-muted">Role</small>
-                        <p class="fw-semibold">
-                            <?= htmlspecialchars($_SESSION['role'] ?? '-'); ?>
-                        </p>
-                    </div>
-
                 </div>
 
             </div>
@@ -399,4 +466,144 @@ require_once __DIR__ . '/includes/helper.php';
 
 </div>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+function updateDashboardDate() {
+    const dateElement = document.getElementById('dashboardDate');
+
+    if (!dateElement) return;
+
+    dateElement.textContent = new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'Asia/Jakarta'
+    }).format(new Date());
+}
+
+updateDashboardDate();
+setInterval(updateDashboardDate, 60000);
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const labelOmzet = <?= json_encode($labelOmzet) ?>;
+    const dataOmzet = <?= json_encode($dataOmzet) ?>;
+    const maxOmzet = <?= json_encode($maxOmzet) ?>;
+
+    const omzetCanvas = document.getElementById('omzetChart');
+
+    if (omzetCanvas) {
+        new Chart(omzetCanvas, {
+            type: 'line',
+            data: {
+                labels: labelOmzet,
+                datasets: [{
+                    label: 'Omzet',
+                    data: dataOmzet,
+                    borderColor: '#5142a5',
+                    backgroundColor: 'rgba(81, 66, 165, 0.10)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#5142a5',
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return 'Omzet: Rp ' +
+                                    new Intl.NumberFormat('id-ID')
+                                    .format(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: maxOmzet === 0 ? 1 : undefined,
+                        ticks: {
+                            count: maxOmzet === 0 ? 1 : 5,
+                            callback: function (value) {
+                                if (maxOmzet === 0) {
+                                    return value === 0 ? 'Rp 0' : '';
+                                }
+
+                                return 'Rp ' +
+                                    new Intl.NumberFormat('id-ID', {
+                                        notation: 'compact',
+                                        maximumFractionDigits: 1
+                                    }).format(value);
+                            }
+                        },
+                        grid: {
+                            color: '#eeeeee'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    const stockCanvas = document.getElementById('stockChart');
+
+    if (stockCanvas) {
+        new Chart(stockCanvas, {
+            type: 'doughnut',
+            data: {
+                labels: ['Normal', 'Menipis', 'Habis'],
+                datasets: [{
+                    data: [
+                        <?= $stokNormal ?>,
+                        <?= $stokMenipis ?>,
+                        <?= $stokHabis ?>
+                    ],
+                    backgroundColor: [
+                        '#5142a5',
+                        '#ffad42',
+                        '#dc3545'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '68%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ': ' +
+                                    context.raw + ' produk';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+});
+</script>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>

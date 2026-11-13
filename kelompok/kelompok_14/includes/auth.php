@@ -135,7 +135,17 @@ function wajibPeran($daftar_peran) {
 }
 
 // 7. Kalau user sudah login tapi membuka halaman login/register/landing, arahkan ke dashboard
-function alihkanJikaSudahMasuk() {
+// Parameter $izinkanGuest = true memungkinkan pengunjung mode tamu membuka login.php dan register.php
+function alihkanJikaSudahMasuk($izinkanGuest = false) {
+    $peran = peranSaatIni();
+    if ($peran === null) {
+        return;
+    }
+
+    if ($izinkanGuest && $peran === 'guest') {
+        return;
+    }
+
     if (sudahMasuk()) {
         header("Location: " . urlDashboardPeran());
         exit;

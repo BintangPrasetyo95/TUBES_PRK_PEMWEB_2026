@@ -214,6 +214,15 @@
   box-shadow: var(--clay-tekan), 0 0 0 2px var(--primary);
 }
 
+.form-control[readonly],
+.form-select[readonly],
+.form-input[readonly],
+.form-textarea[readonly] {
+  opacity: 0.8;
+  cursor: not-allowed;
+  background-color: var(--latar);
+}
+
 .form-error {
   margin-top: 6px;
   font-size: 0.85rem;

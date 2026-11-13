@@ -1,84 +1,90 @@
 <?php
-session_start();
-require_once '../config/koneksi.php';
-require_once '../config/app.php';
 
-$id_alat = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/koneksi.php';
+require_once __DIR__ . '/../includes/komponen.php';
+
+$id_alat = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if ($id_alat === 0) {
-    header("Location: index.php");
+    header('Location: ' . url('peminjaman/index.php'));
     exit;
 }
 
-$pdo = db();
-
-// Ambil detail alat berdasarkan ID
-$query = "SELECT * FROM alat WHERE id = :id AND stok > 0";
-$stmt = $pdo->prepare($query);
+$stmt = db()->prepare(
+    'SELECT a.*, k.nama AS kategori
+     FROM alat a
+     JOIN kategori k ON k.id = a.kategori_id
+     WHERE a.id = :id AND a.stok > 0'
+);
 $stmt->execute(['id' => $id_alat]);
 $alat = $stmt->fetch();
 
-// Jika alat tidak ditemukan atau stok habis
 if (!$alat) {
-    echo "<script>alert('Alat tidak ditemukan atau stok habis!'); window.location.href='index.php';</script>";
+    set_flash('warning', 'Alat tidak ditemukan atau stok habis.');
+    header('Location: ' . url('peminjaman/index.php'));
     exit;
 }
 
-include '../includes/header.php';
+$hariIni = date('Y-m-d');
+$judul = 'Ajukan ' . $alat['nama'];
+require __DIR__ . '/../includes/header.php';
 ?>
-<!-- Script Tailwind untuk berjaga-jaga jika file CSS utama belum terload sempurna -->
-<script src="https://cdn.tailwindcss.com"></script>
+<?php page_head('Formulir pengajuan', 'Ajukan', 'peminjaman', 'Lengkapi jadwal, jumlah, dan keperluan. Pengajuan akan diproses admin dan dapat dipantau di halaman Riwayat.'); ?>
 
-<div class="container mx-auto mt-8 px-4 max-w-3xl">
-    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 p-6">
-        <div class="flex items-center mb-6 pb-4 border-b border-gray-200">
-            <?php $foto_url = !empty($alat['foto']) ? "../uploads/alat/" . $alat['foto'] : "../assets/img/default-alat.png"; ?>
-            <img src="<?= e($foto_url) ?>" alt="<?= e($alat['nama']) ?>" class="w-24 h-24 object-cover rounded-md mr-6">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800"><?= e($alat['nama']) ?></h2>
-                <p class="text-sm text-gray-500">Kode: <?= e($alat['kode']) ?> | Lokasi: <?= e($alat['lokasi']) ?></p>
-                <p class="text-sm font-semibold text-blue-600 mt-1">Sisa Stok: <?= e($alat['stok']) ?></p>
-            </div>
+<div class="ajukan-layout">
+    <aside class="ajukan-alat on-dark" aria-label="Detail alat yang diajukan">
+        <?php foto_alat($alat); ?>
+        <div class="ajukan-alat__isi">
+            <span class="tag tag--neon"><?= e(JENIS_ALAT[$alat['jenis']] ?? $alat['jenis']) ?></span>
+            <h2><?= e($alat['nama']) ?></h2>
+            <p><?= e($alat['deskripsi'] ?: 'Belum ada deskripsi.') ?></p>
+            <dl class="info-list">
+                <div><dt>Kode</dt><dd><?= e($alat['kode']) ?></dd></div>
+                <div><dt>Kategori</dt><dd><?= e($alat['kategori']) ?></dd></div>
+                <div><dt>Lokasi</dt><dd><?= e($alat['lokasi'] ?: '—') ?></dd></div>
+                <div><dt>Sisa stok</dt><dd class="sorot-neon"><?= (int) $alat['stok'] ?> unit</dd></div>
+            </dl>
         </div>
+    </aside>
 
-        <!-- Form Pengajuan diproses ke proses_ajukan.php -->
-        <form action="proses_ajukan.php" method="POST">
-            <input type="hidden" name="id_alat" value="<?= $alat['id'] ?>">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="tgl_pinjam" class="block text-gray-700 text-sm font-bold mb-2">Tanggal Pinjam</label>
-                    <input type="date" id="tgl_pinjam" name="tgl_pinjam" min="<?= date('Y-m-d') ?>" required
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+    <div class="card">
+        <div class="card-header">
+            <h2>Data Peminjaman</h2>
+        </div>
+        <div class="card-body">
+            <form action="<?= e(url('peminjaman/proses_ajukan.php')) ?>" method="POST">
+                <input type="hidden" name="id_alat" value="<?= (int) $alat['id'] ?>">
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="tgl_pinjam" class="form-label">Tanggal Pinjam</label>
+                        <input type="date" id="tgl_pinjam" name="tgl_pinjam" class="form-control" min="<?= e($hariIni) ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tgl_kembali" class="form-label">Tanggal Kembali</label>
+                        <input type="date" id="tgl_kembali" name="tgl_kembali" class="form-control" min="<?= e($hariIni) ?>" required>
+                    </div>
                 </div>
-                <div>
-                    <label for="tgl_kembali" class="block text-gray-700 text-sm font-bold mb-2">Tanggal Kembali</label>
-                    <input type="date" id="tgl_kembali" name="tgl_kembali" min="<?= date('Y-m-d') ?>" required
-                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+
+                <div class="form-group">
+                    <label for="jumlah" class="form-label">Jumlah Pinjam</label>
+                    <input type="number" id="jumlah" name="jumlah" class="form-control" min="1" max="<?= (int) $alat['stok'] ?>" value="1" required aria-describedby="jumlah-hint">
+                    <p id="jumlah-hint" class="form-hint">Maksimal <?= (int) $alat['stok'] ?> unit, tidak boleh melebihi stok tersedia.</p>
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label for="jumlah" class="block text-gray-700 text-sm font-bold mb-2">Jumlah Pinjam</label>
-                <input type="number" id="jumlah" name="jumlah" min="1" max="<?= e($alat['stok']) ?>" value="1" required
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <p class="text-xs text-gray-500 mt-1">Maksimal peminjaman tidak boleh melebihi stok tersedia.</p>
-            </div>
+                <div class="form-group">
+                    <label for="keperluan" class="form-label">Keperluan / Keterangan</label>
+                    <textarea id="keperluan" name="keperluan" class="form-control" rows="3" required placeholder="Contoh: Praktikum Jaringan Komputer, Tugas Akhir, dll."></textarea>
+                </div>
 
-            <div class="mb-6">
-                <label for="keperluan" class="block text-gray-700 text-sm font-bold mb-2">Keperluan / Keterangan</label>
-                <textarea id="keperluan" name="keperluan" rows="3" required placeholder="Contoh: Praktikum Jaringan Komputer, Tugas Akhir, dll."
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
-            </div>
-
-            <div class="flex items-center justify-end">
-                <a href="index.php" class="text-gray-500 hover:text-gray-700 mr-4 font-semibold">Batal</a>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-200">
-                    Ajukan Peminjaman
-                </button>
-            </div>
-        </form>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-neon btn-lg">Ajukan Peminjaman<?= ikon('panah', 'ikon ikon--sm') ?></button>
+                    <a href="<?= e(url('peminjaman/index.php')) ?>" class="btn btn-outline btn-lg">Batal</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

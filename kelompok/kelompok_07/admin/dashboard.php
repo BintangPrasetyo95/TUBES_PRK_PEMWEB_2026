@@ -1,6 +1,7 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../includes/admin_check.php';
 require_once __DIR__ . '/../config/koneksi.php';
+require_once __DIR__ . '/../includes/laporan.php';
 
 $pdo = db();
 $adminId = (int) current_user()['id'];
@@ -141,93 +142,13 @@ $pengajuan = $pdo->query(
      ORDER BY p.created_at DESC"
 )->fetchAll();
 
-$awal = $_GET['awal'] ?? date('Y-m-01');
-$akhir = $_GET['akhir'] ?? date('Y-m-d');
-
-if (
-    !preg_match('/^\d{4}-\d{2}-\d{2}$/', $awal) ||
-    !preg_match('/^\d{4}-\d{2}-\d{2}$/', $akhir) ||
-    !checkdate((int) substr($awal, 5, 2), (int) substr($awal, 8, 2), (int) substr($awal, 0, 4)) ||
-    !checkdate((int) substr($akhir, 5, 2), (int) substr($akhir, 8, 2), (int) substr($akhir, 0, 4)) ||
-    $awal > $akhir
-) {
-    $awal = date('Y-m-01');
-    $akhir = date('Y-m-d');
-}
-
-$stmt = $pdo->prepare(
-    "SELECT p.kode, u.nama AS peminjam, p.tanggal_pinjam, p.status
-     FROM peminjaman p
-     JOIN users u ON u.id=p.user_id
-     WHERE p.tanggal_pinjam >= ? AND p.tanggal_pinjam < DATE_ADD(?, INTERVAL 1 DAY)
-     ORDER BY p.tanggal_pinjam DESC"
-);
-$stmt->execute([$awal, $akhir]);
-$laporan = $stmt->fetchAll();
-
-function tanggal($value)
-{
-    return date('d/m/Y', strtotime($value));
-}
+$periode = laporan_periode($_GET);
+$laporan = laporan_data($periode['awal'], $periode['akhir']);
 
 $judul = 'Dashboard Admin';
+$bodyClass = 'page-laporan';
 require_once __DIR__ . '/../includes/header.php';
 ?>
-
-<style>
-@media print {
-    body {
-        background: #fff;
-        color: #000;
-        font-size: 12px;
-    }
-
-    .navbar,
-    .footer,
-    #ringkasan,
-    #pengajuan,
-    #aktif,
-    #kategori,
-    #filter-laporan,
-    .no-print {
-        display: none !important;
-    }
-
-    .main {
-        padding: 0;
-    }
-
-    .container {
-        max-width: none;
-        padding: 0;
-    }
-
-    #laporan {
-        display: block !important;
-        border: 0;
-        box-shadow: none;
-    }
-
-    #laporan .card-header,
-    #laporan .card-body {
-        padding: 0;
-    }
-
-    #laporan .card-header {
-        border: 0;
-    }
-
-    #laporan .table {
-        font-size: 11px;
-    }
-
-    #laporan .table th,
-    #laporan .table td {
-        padding: 6px;
-        border: 1px solid #999;
-    }
-}
-</style>
 
 <div class="section-title">
     <div>
@@ -243,17 +164,20 @@ require_once __DIR__ . '/../includes/header.php';
 <?php endif; ?>
 
 <div id="ringkasan" class="grid grid-3 mt-6">
-    <div class="card stat-card">
+    <div class="card stat-card stat-card--neon">
+        <span class="stat-card__ikon"><?= ikon('alat') ?></span>
         <div class="stat-value"><?= (int) $totalStok ?></div>
         <div class="stat-label">Total stok alat</div>
     </div>
 
-    <div class="card stat-card">
+    <div class="card stat-card stat-card--dark">
+        <span class="stat-card__ikon"><?= ikon('jam') ?></span>
         <div class="stat-value"><?= (int) $menunggu ?></div>
         <div class="stat-label">Pengajuan menunggu</div>
     </div>
 
-    <div class="card stat-card">
+    <div class="card stat-card stat-card--blue">
+        <span class="stat-card__ikon"><?= ikon('kembali') ?></span>
         <div class="stat-value"><?= count($aktif) ?></div>
         <div class="stat-label">Peminjaman aktif</div>
     </div>
@@ -286,7 +210,7 @@ require_once __DIR__ . '/../includes/header.php';
                             <tr>
                                 <td><?= e($item['kode']) ?></td>
                                 <td><?= e($item['peminjam']) ?></td>
-                                <td><?= tanggal($item['tanggal_pinjam']) ?></td>
+                                <td><?= e(format_tanggal($item['tanggal_pinjam'])) ?></td>
                                 <td>
                                     <div class="form-actions mt-0">
                                         <?php foreach (['setujui' => 'Setujui', 'tolak' => 'Tolak'] as $action => $label): ?>
@@ -340,7 +264,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 <td><?= e($item['kode']) ?></td>
                                 <td><?= e($item['peminjam']) ?></td>
                                 <td><?= e($item['daftar_barang'] ?: 'Rincian barang tidak tersedia') ?></td>
-                                <td><?= tanggal($item['tanggal_kembali_rencana']) ?></td>
+                                <td><?= e(format_tanggal($item['tanggal_kembali_rencana'])) ?></td>
                                 <td>
                                     <form method="post">
                                         <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token']) ?>">
@@ -390,71 +314,6 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<div id="laporan" class="card mt-6">
-    <div class="card-header">
-        <h2>Laporan Peminjaman</h2>
-    </div>
-
-    <div class="card-body">
-        <div id="filter-laporan" class="no-print">
-            <form method="get" class="grid grid-2">
-                <div class="form-group">
-                    <label for="awal" class="form-label">Dari Tanggal</label>
-                    <input type="date" id="awal" name="awal" class="form-control" value="<?= e($awal) ?>">
-                </div>
-
-                <div class="form-group">
-                    <label for="akhir" class="form-label">Sampai Tanggal</label>
-                    <input type="date" id="akhir" name="akhir" class="form-control" value="<?= e($akhir) ?>">
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Filter Laporan</button>
-                    <button type="button" class="btn btn-outline no-print" onclick="window.print()">
-                        Cetak Laporan
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <p id="periode-cetak" class="text-muted">
-            Periode laporan: <?= tanggal($awal) ?> sampai <?= tanggal($akhir) ?>
-            &middot; <?= count($laporan) ?> transaksi
-        </p>
-
-        <?php if (!$laporan): ?>
-            <div class="empty-state">
-                <p>Tidak ada data pada periode ini.</p>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Kode</th>
-                            <th>Peminjam</th>
-                            <th>Tanggal</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($laporan as $item): ?>
-                            <tr>
-                                <td><?= e($item['kode']) ?></td>
-                                <td><?= e($item['peminjam']) ?></td>
-                                <td><?= tanggal($item['tanggal_pinjam']) ?></td>
-                                <td>
-                                    <span class="badge badge-<?= e($item['status']) ?>">
-                                        <?= e($item['status']) ?>
-                                    </span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </div>
-</div>
+<?php render_laporan($laporan, $periode, url('admin/dashboard.php') . '#laporan'); ?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

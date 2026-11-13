@@ -132,11 +132,6 @@ $daftarPeminjaman = $pdo->query(
               p.tanggal_kembali_rencana"
 )->fetchAll();
 
-function tanggalPeminjaman(string $value): string
-{
-    return date('d/m/Y', strtotime($value));
-}
-
 $judul = 'Daftar Peminjaman';
 require_once __DIR__ . '/../../includes/header.php';
 ?>
@@ -157,14 +152,16 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php endif; ?>
 
 <div class="grid grid-2">
-    <div class="card stat-card">
+    <div class="card stat-card stat-card--neon">
+        <span class="stat-card__ikon"><?= ikon('jam') ?></span>
         <div class="stat-value">
             <?= count(array_filter($daftarPeminjaman, static fn($item) => $item['status'] === 'menunggu')) ?>
         </div>
         <div class="stat-label">Pengajuan Menunggu</div>
     </div>
 
-    <div class="card stat-card">
+    <div class="card stat-card stat-card--dark">
+        <span class="stat-card__ikon"><?= ikon('kembali') ?></span>
         <div class="stat-value">
             <?= count(array_filter($daftarPeminjaman, static fn($item) => $item['status'] === 'disetujui')) ?>
         </div>
@@ -203,14 +200,10 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <td><?= e($item['kode']) ?></td>
                                 <td><?= e($item['peminjam']) ?></td>
                                 <td><?= e($item['daftar_barang'] ?: 'Rincian barang tidak tersedia') ?></td>
-                                <td><?= tanggalPeminjaman($item['tanggal_pinjam']) ?></td>
-                                <td><?= tanggalPeminjaman($item['tanggal_kembali_rencana']) ?></td>
+                                <td><?= e(format_tanggal($item['tanggal_pinjam'])) ?></td>
+                                <td><?= e(format_tanggal($item['tanggal_kembali_rencana'])) ?></td>
                                 <td>
-                                    <?php if ($item['status'] === 'menunggu'): ?>
-                                        <span class="badge badge-menunggu">Menunggu</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-disetujui">Disetujui</span>
-                                    <?php endif; ?>
+                                    <?= status_badge($item['status']) ?>
                                 </td>
                                 <td>
                                     <div class="form-actions mt-0">

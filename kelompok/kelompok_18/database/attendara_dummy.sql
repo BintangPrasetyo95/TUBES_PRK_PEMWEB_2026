@@ -1,9 +1,8 @@
--- ATTENDARA dummy data
--- Import database/attendara.sql first, then run this file ONCE on an empty schema.
--- No DROP/DELETE statements are used. Explicit IDs make related sample rows predictable.
--- Demo credentials (password equals username): admin/admin, guru1/guru1 ... guru5/guru5.
--- Password hashes below were generated with PHP password_hash(..., PASSWORD_DEFAULT).
--- These credentials are for local development/demo only; change them before any deployment.
+-- ATTENDARA sample data for the target schema in attendara.sql.
+-- Import this file ONCE after creating an empty schema.
+-- Demo logins: admin/admin and guru1/guru1 through guru5/guru5.
+-- Password hashes were generated with PHP password_hash(..., PASSWORD_DEFAULT).
+-- Demo passwords are intentionally simple; never use these accounts in production.
 
 USE attendara;
 
@@ -13,167 +12,194 @@ INSERT INTO users (id, username, password_hash, role, is_active) VALUES
 (1, 'admin', '$2y$12$saPT7R7q.RvS6gDUSxtU1eObtTUD6gb6facFGFwMPw.g59IN.Sncy', 'admin', TRUE),
 (2, 'guru1', '$2y$12$cfOyUrX44u6iht21Zus17O8IocYRLzeohCchK9kpvYYZebnNHKK4C', 'guru', TRUE),
 (3, 'guru2', '$2y$12$m4xfuInal2IWFTI8ECW3XOrm.bmjOjDhPe0oFna/8rBudtEKj9II2', 'guru', TRUE),
-(4, 'guru3', '$2y$12$o9ZVkkUkf8RrzUiUcYaoyObvkE70dP2QAAtsIZVQ2CwDIgm8G7tgC', 'guru', TRUE),
+(4, 'guru3', '$2y$12$o9ZVkkUkf8RrzUiUcYaoyObvkE70dP2QAAtsIZVQ2CwDIgm8G7tg', 'guru', TRUE),
 (5, 'guru4', '$2y$12$FCua6ne.ZSL3Oq58cM2aK.Iet9Wtng4N4Z5HucPy9oLKvuT5uzFby', 'guru', TRUE),
 (6, 'guru5', '$2y$12$UHcfzx8Xj7VA4vw4I0W059eTmUpRZd08QWWSDK0z25zefx6q.sjzEO', 'guru', TRUE);
 
 INSERT INTO guru (id, user_id, nomor_induk, nama, email, no_telepon, is_active) VALUES
-(1, 2, 'G-2026-001', 'Budi Santoso', 'budi.santoso@example.test', '081200000001', TRUE),
-(2, 3, 'G-2026-002', 'Siti Rahmawati', 'siti.rahmawati@example.test', '081200000002', TRUE),
-(3, 4, 'G-2026-003', 'Agus Setiawan', 'agus.setiawan@example.test', '081200000003', TRUE),
-(4, 5, 'G-2026-004', 'Dewi Anggraini', 'dewi.anggraini@example.test', '081200000004', TRUE),
-(5, 6, 'G-2026-005', 'Rizky Pratama', 'rizky.pratama@example.test', '081200000005', TRUE);
-
-INSERT INTO kelas (id, kode, nama, tingkat, is_active) VALUES
-(1, 'X-A', 'Kelas X-A', 10, TRUE),
-(2, 'X-B', 'Kelas X-B', 10, TRUE),
-(3, 'X-C', 'Kelas X-C', 10, TRUE);
-
-INSERT INTO semester (id, kode, nama, tanggal_mulai, tanggal_selesai, status) VALUES
-(1, '2025-GENAP', '2025/2026 Genap', '2026-01-05', '2026-06-30', 'selesai'),
-(2, '2026-GANJIL', '2026/2027 Ganjil', '2026-07-13', '2026-12-19', 'aktif');
+(1, 2, 'G-2026-001', 'Andi Pratama, S.Pd.', 'andi.pratama@example.test', '081200000101', TRUE),
+(2, 3, 'G-2026-002', 'Siti Rahmawati, S.Pd.', 'siti.rahmawati@example.test', '081200000102', TRUE),
+(3, 4, 'G-2026-003', 'Budi Santoso, S.Pd.', 'budi.santoso@example.test', '081200000103', TRUE),
+(4, 5, 'G-2026-004', 'Dewi Anggraini, S.Pd.', 'dewi.anggraini@example.test', '081200000104', TRUE),
+(5, 6, 'G-2026-005', 'Rizky Hidayat, S.Kom.', 'rizky.hidayat@example.test', '081200000105', TRUE);
 
 INSERT INTO siswa (id, nomor_induk, nama, jenis_kelamin, tanggal_lahir, is_active) VALUES
-(1, 'ATT-2026-001', 'Siswa 01', NULL, NULL, TRUE),
-(2, 'ATT-2026-002', 'Siswa 02', NULL, NULL, TRUE),
-(3, 'ATT-2026-003', 'Siswa 03', NULL, NULL, TRUE),
-(4, 'ATT-2026-004', 'Siswa 04', NULL, NULL, TRUE),
-(5, 'ATT-2026-005', 'Siswa 05', NULL, NULL, TRUE),
-(6, 'ATT-2026-006', 'Siswa 06', NULL, NULL, TRUE),
-(7, 'ATT-2026-007', 'Siswa 07', NULL, NULL, TRUE),
-(8, 'ATT-2026-008', 'Siswa 08', NULL, NULL, TRUE),
-(9, 'ATT-2026-009', 'Siswa 09', NULL, NULL, TRUE),
-(10, 'ATT-2026-010', 'Siswa 10', NULL, NULL, TRUE),
-(11, 'ATT-2026-011', 'Siswa 11', NULL, NULL, TRUE),
-(12, 'ATT-2026-012', 'Siswa 12', NULL, NULL, TRUE),
-(13, 'ATT-2026-013', 'Siswa 13', NULL, NULL, TRUE),
-(14, 'ATT-2026-014', 'Siswa 14', NULL, NULL, TRUE),
-(15, 'ATT-2026-015', 'Siswa 15', NULL, NULL, TRUE),
-(16, 'ATT-2026-016', 'Siswa 16', NULL, NULL, TRUE),
-(17, 'ATT-2026-017', 'Siswa 17', NULL, NULL, TRUE),
-(18, 'ATT-2026-018', 'Siswa 18', NULL, NULL, TRUE),
-(19, 'ATT-2026-019', 'Siswa 19', NULL, NULL, TRUE),
-(20, 'ATT-2026-020', 'Siswa 20', NULL, NULL, TRUE),
-(21, 'ATT-2026-021', 'Siswa 21', NULL, NULL, TRUE),
-(22, 'ATT-2026-022', 'Siswa 22', NULL, NULL, TRUE),
-(23, 'ATT-2026-023', 'Siswa 23', NULL, NULL, TRUE),
-(24, 'ATT-2026-024', 'Siswa 24', NULL, NULL, TRUE),
-(25, 'ATT-2026-025', 'Siswa 25', NULL, NULL, TRUE),
-(26, 'ATT-2026-026', 'Siswa 26', NULL, NULL, TRUE),
-(27, 'ATT-2026-027', 'Siswa 27', NULL, NULL, TRUE),
-(28, 'ATT-2026-028', 'Siswa 28', NULL, NULL, TRUE),
-(29, 'ATT-2026-029', 'Siswa 29', NULL, NULL, TRUE),
-(30, 'ATT-2026-030', 'Siswa 30', NULL, NULL, TRUE),
-(31, 'ATT-2026-031', 'Siswa 31', NULL, NULL, TRUE),
-(32, 'ATT-2026-032', 'Siswa 32', NULL, NULL, TRUE),
-(33, 'ATT-2026-033', 'Siswa 33', NULL, NULL, TRUE),
-(34, 'ATT-2026-034', 'Siswa 34', NULL, NULL, TRUE),
-(35, 'ATT-2026-035', 'Siswa 35', NULL, NULL, TRUE),
-(36, 'ATT-2026-036', 'Siswa 36', NULL, NULL, TRUE),
-(37, 'ATT-2026-037', 'Siswa 37', NULL, NULL, TRUE),
-(38, 'ATT-2026-038', 'Siswa 38', NULL, NULL, TRUE),
-(39, 'ATT-2026-039', 'Siswa 39', NULL, NULL, TRUE),
-(40, 'ATT-2026-040', 'Siswa 40', NULL, NULL, TRUE),
-(41, 'ATT-2026-041', 'Siswa 41', NULL, NULL, TRUE),
-(42, 'ATT-2026-042', 'Siswa 42', NULL, NULL, TRUE),
-(43, 'ATT-2026-043', 'Siswa 43', NULL, NULL, TRUE),
-(44, 'ATT-2026-044', 'Siswa 44', NULL, NULL, TRUE),
-(45, 'ATT-2026-045', 'Siswa 45', NULL, NULL, TRUE),
-(46, 'ATT-2026-046', 'Siswa 46', NULL, NULL, TRUE),
-(47, 'ATT-2026-047', 'Siswa 47', NULL, NULL, TRUE),
-(48, 'ATT-2026-048', 'Siswa 48', NULL, NULL, TRUE),
-(49, 'ATT-2026-049', 'Siswa 49', NULL, NULL, TRUE),
-(50, 'ATT-2026-050', 'Siswa 50', NULL, NULL, TRUE),
-(51, 'ATT-2026-051', 'Siswa 51', NULL, NULL, TRUE),
-(52, 'ATT-2026-052', 'Siswa 52', NULL, NULL, TRUE),
-(53, 'ATT-2026-053', 'Siswa 53', NULL, NULL, TRUE),
-(54, 'ATT-2026-054', 'Siswa 54', NULL, NULL, TRUE),
-(55, 'ATT-2026-055', 'Siswa 55', NULL, NULL, TRUE),
-(56, 'ATT-2026-056', 'Siswa 56', NULL, NULL, TRUE),
-(57, 'ATT-2026-057', 'Siswa 57', NULL, NULL, TRUE),
-(58, 'ATT-2026-058', 'Siswa 58', NULL, NULL, TRUE),
-(59, 'ATT-2026-059', 'Siswa 59', NULL, NULL, TRUE),
-(60, 'ATT-2026-060', 'Siswa 60', NULL, NULL, TRUE);
+(1, 'SMA-2026-001', 'Ahmad Fauzi', 'L', '2010-01-14', TRUE),
+(2, 'SMA-2026-002', 'Rizal Ramadhan', 'L', '2010-02-21', TRUE),
+(3, 'SMA-2026-003', 'Dimas Saputra', 'L', '2010-03-08', TRUE),
+(4, 'SMA-2026-004', 'Fajar Nugraha', 'L', '2010-04-17', TRUE),
+(5, 'SMA-2026-005', 'Arif Hidayat', 'L', '2010-05-03', TRUE),
+(6, 'SMA-2026-006', 'Bagas Pratama', 'L', '2010-06-12', TRUE),
+(7, 'SMA-2026-007', 'Ilham Maulana', 'L', '2010-07-26', TRUE),
+(8, 'SMA-2026-008', 'Reza Firmansyah', 'L', '2010-08-19', TRUE),
+(9, 'SMA-2026-009', 'Yoga Kurniawan', 'L', '2010-09-11', TRUE),
+(10, 'SMA-2026-010', 'Naufal Akbar', 'L', '2010-10-05', TRUE),
+(11, 'SMA-2026-011', 'Farhan Hakim', 'L', '2010-11-22', TRUE),
+(12, 'SMA-2026-012', 'Aldi Setiawan', 'L', '2010-12-09', TRUE),
+(13, 'SMA-2026-013', 'Rafi Alamsyah', 'L', '2010-01-29', TRUE),
+(14, 'SMA-2026-014', 'Galih Permana', 'L', '2010-02-13', TRUE),
+(15, 'SMA-2026-015', 'Daffa Putra', 'L', '2010-03-24', TRUE),
+(16, 'SMA-2026-016', 'Bima Arya', 'L', '2010-04-06', TRUE),
+(17, 'SMA-2026-017', 'Kevin Wijaya', 'L', '2010-05-28', TRUE),
+(18, 'SMA-2026-018', 'Zidan Maulana', 'L', '2010-06-15', TRUE),
+(19, 'SMA-2026-019', 'Aisyah Putri', 'P', '2010-01-18', TRUE),
+(20, 'SMA-2026-020', 'Nabila Safitri', 'P', '2010-02-27', TRUE),
+(21, 'SMA-2026-021', 'Putri Maharani', 'P', '2010-03-12', TRUE),
+(22, 'SMA-2026-022', 'Zahra Amelia', 'P', '2010-04-23', TRUE),
+(23, 'SMA-2026-023', 'Intan Permatasari', 'P', '2010-05-16', TRUE),
+(24, 'SMA-2026-024', 'Citra Lestari', 'P', '2010-06-07', TRUE),
+(25, 'SMA-2026-025', 'Alya Rahma', 'P', '2010-07-20', TRUE),
+(26, 'SMA-2026-026', 'Dinda Aprilia', 'P', '2010-08-03', TRUE),
+(27, 'SMA-2026-027', 'Salsabila Nurfadila', 'P', '2010-09-14', TRUE),
+(28, 'SMA-2026-028', 'Annisa Khairunnisa', 'P', '2010-10-25', TRUE),
+(29, 'SMA-2026-029', 'Tiara Anindya', 'P', '2010-11-08', TRUE),
+(30, 'SMA-2026-030', 'Nadia Oktaviani', 'P', '2010-12-19', TRUE),
+(31, 'SMA-2026-031', 'Rara Puspitasari', 'P', '2010-01-07', TRUE),
+(32, 'SMA-2026-032', 'Farah Zahra', 'P', '2010-02-16', TRUE),
+(33, 'SMA-2026-033', 'Mutiara Sari', 'P', '2010-03-29', TRUE),
+(34, 'SMA-2026-034', 'Sheila Anjani', 'P', '2010-04-11', TRUE),
+(35, 'SMA-2026-035', 'Fitria Kusuma', 'P', '2010-05-22', TRUE),
+(36, 'SMA-2026-036', 'Vina Anggraini', 'P', '2010-06-30', TRUE),
+(37, 'SMA-2026-037', 'Arkan Prakoso', 'L', '2010-07-13', TRUE),
+(38, 'SMA-2026-038', 'Rangga Firmanda', 'L', '2010-08-24', TRUE),
+(39, 'SMA-2026-039', 'Fikri Ramadhan', 'L', '2010-09-06', TRUE),
+(40, 'SMA-2026-040', 'Hafiz Maulana', 'L', '2010-10-17', TRUE),
+(41, 'SMA-2026-041', 'Raka Wibowo', 'L', '2010-11-29', TRUE),
+(42, 'SMA-2026-042', 'Dhani Saputra', 'L', '2010-12-12', TRUE),
+(43, 'SMA-2026-043', 'Laras Wulandari', 'P', '2010-07-04', TRUE),
+(44, 'SMA-2026-044', 'Mega Pertiwi', 'P', '2010-08-15', TRUE),
+(45, 'SMA-2026-045', 'Salma Nurfauziah', 'P', '2010-09-27', TRUE),
+(46, 'SMA-2026-046', 'Niken Maharani', 'P', '2010-10-09', TRUE),
+(47, 'SMA-2026-047', 'Gita Apriliani', 'P', '2010-11-18', TRUE),
+(48, 'SMA-2026-048', 'Kirana Puspita', 'P', '2010-12-26', TRUE);
 
--- Same class per student in each semester is recorded as separate history rows.
-INSERT INTO anggota_kelas (id, siswa_id, kelas_id, semester_id)
-SELECT id, id, CASE WHEN id <= 20 THEN 1 WHEN id <= 40 THEN 2 ELSE 3 END, 1
-FROM siswa WHERE id BETWEEN 1 AND 60;
+INSERT INTO mata_pelajaran (id, kode, nama, is_active) VALUES
+(1, 'MAT', 'Matematika', TRUE),
+(2, 'BIN', 'Bahasa Indonesia', TRUE),
+(3, 'FIS', 'Fisika', TRUE),
+(4, 'BIO', 'Biologi', TRUE),
+(5, 'BIG', 'Bahasa Inggris', TRUE),
+(6, 'INF', 'Informatika', TRUE),
+(7, 'KIM', 'Kimia', TRUE);
 
-INSERT INTO anggota_kelas (id, siswa_id, kelas_id, semester_id)
-SELECT id + 60, id, CASE WHEN id <= 20 THEN 1 WHEN id <= 40 THEN 2 ELSE 3 END, 2
-FROM siswa WHERE id BETWEEN 1 AND 60;
+INSERT INTO semester (id, kode, nama, tanggal_mulai, tanggal_selesai, status) VALUES
+(1, '2025-GENAP', 'Tahun Ajaran 2025/2026 — Genap', '2026-01-05', '2026-06-30', 'selesai'),
+(2, '2026-GANJIL', 'Tahun Ajaran 2026/2027 — Ganjil', '2026-07-13', '2026-12-19', 'aktif');
 
--- Five teachers cover three classes; two classes have two assigned teachers.
-INSERT INTO penugasan_guru (id, guru_id, kelas_id, semester_id) VALUES
-(1, 1, 1, 1), (2, 2, 2, 1), (3, 3, 3, 1), (4, 4, 1, 1), (5, 5, 2, 1),
-(6, 1, 1, 2), (7, 2, 2, 2), (8, 3, 3, 2), (9, 4, 1, 2), (10, 5, 2, 2);
+INSERT INTO kelas (id, semester_id, kode, nama, tingkat, is_active) VALUES
+(1, 1, 'X-IPA-1', 'X IPA 1', 10, TRUE),
+(2, 2, 'XI-IPA-1', 'XI IPA 1', 11, TRUE),
+(3, 2, 'XI-IPS-1', 'XI IPS 1', 11, TRUE);
+
+-- Siswa angkatan kelas XI memiliki riwayat kelas X pada semester sebelumnya.
+INSERT INTO anggota_kelas (siswa_id, kelas_id, semester_id)
+SELECT id, 1, 1 FROM siswa WHERE id BETWEEN 1 AND 36;
+
+INSERT INTO anggota_kelas (siswa_id, kelas_id, semester_id)
+SELECT id, 2, 2 FROM siswa WHERE id BETWEEN 1 AND 36;
+
+INSERT INTO anggota_kelas (siswa_id, kelas_id, semester_id)
+SELECT id, 3, 2 FROM siswa WHERE id BETWEEN 37 AND 48;
+
+-- Guru dapat memiliki banyak penugasan; setiap baris adalah satu guru/mapel/kelas.
+INSERT INTO penugasan_guru (id, guru_id, mata_pelajaran_id, kelas_id) VALUES
+(1, 1, 1, 2),  -- Andi: Matematika, XI IPA 1
+(2, 1, 1, 3),  -- Andi: Matematika, XI IPS 1
+(3, 2, 2, 2),  -- Siti: Bahasa Indonesia, XI IPA 1
+(4, 2, 2, 3),  -- Siti: Bahasa Indonesia, XI IPS 1
+(5, 3, 3, 2),  -- Budi: Fisika, XI IPA 1
+(6, 3, 1, 3),  -- Budi: Matematika, XI IPS 1
+(7, 4, 4, 2),  -- Dewi: Biologi, XI IPA 1
+(8, 4, 7, 2),  -- Dewi: Kimia, XI IPA 1
+(9, 4, 4, 3),  -- Dewi: Biologi, XI IPS 1
+(10, 5, 5, 2), -- Rizky: Bahasa Inggris, XI IPA 1
+(11, 5, 5, 3), -- Rizky: Bahasa Inggris, XI IPS 1
+(12, 5, 6, 2), -- Rizky: Informatika, XI IPA 1
+(13, 1, 1, 1); -- Riwayat Andi: Matematika, X IPA 1
 
 INSERT INTO jadwal_mengajar
   (id, penugasan_guru_id, hari, jam_mulai, jam_selesai, berlaku_mulai, berlaku_sampai)
 VALUES
-(1, 1, 1, '07:00:00', '08:30:00', '2026-01-05', '2026-06-30'),
-(2, 2, 2, '08:00:00', '09:30:00', '2026-01-05', '2026-06-30'),
-(3, 3, 3, '09:00:00', '10:30:00', '2026-01-05', '2026-06-30'),
-(4, 4, 4, '10:00:00', '11:30:00', '2026-01-05', '2026-06-30'),
-(5, 5, 5, '11:00:00', '12:30:00', '2026-01-05', '2026-06-30'),
-(6, 6, 1, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
-(7, 7, 2, '08:00:00', '09:30:00', '2026-07-13', '2026-12-19'),
-(8, 8, 3, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
-(9, 9, 4, '10:00:00', '11:30:00', '2026-07-13', '2026-12-19'),
-(10, 10, 5, '11:00:00', '12:30:00', '2026-07-13', '2026-12-19');
+(1, 1, WEEKDAY(CURRENT_DATE()) + 1, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(2, 2, 3, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(3, 3, 2, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(4, 4, 4, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(5, 5, 1, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(6, 6, 5, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(7, 7, 2, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(8, 8, 4, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(9, 9, 5, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(10, 10, 3, '07:00:00', '08:30:00', '2026-07-13', '2026-12-19'),
+(11, 11, 1, '13:00:00', '14:30:00', '2026-07-13', '2026-12-19'),
+(12, 12, 4, '09:00:00', '10:30:00', '2026-07-13', '2026-12-19'),
+(13, 13, 1, '07:00:00', '08:30:00', '2026-01-05', '2026-06-30');
 
+-- Sesi aktif demo untuk kelas berisi 36 siswa: 34 tap dan dua status non-hadir.
 INSERT INTO sesi_pembelajaran
-  (id, penugasan_guru_id, jadwal_mengajar_id, tanggal, waktu_mulai, waktu_selesai, status)
+  (id, jadwal_mengajar_id, mulai_at, selesai_at, status, jumlah_tap, tap_terakhir_at)
 VALUES
-(1, 1, 1, '2026-04-06', '2026-04-06 07:00:00', '2026-04-06 08:30:00', 'selesai'),
-(2, 2, 2, '2026-04-07', '2026-04-07 08:00:00', '2026-04-07 09:30:00', 'selesai'),
-(3, 3, 3, '2026-04-08', '2026-04-08 09:00:00', '2026-04-08 10:30:00', 'selesai'),
-(4, 4, 4, '2026-04-09', '2026-04-09 10:00:00', '2026-04-09 11:30:00', 'selesai'),
-(5, 5, 5, '2026-04-10', '2026-04-10 11:00:00', '2026-04-10 12:30:00', 'selesai'),
-(6, 6, 6, '2026-11-02', '2026-11-02 07:00:00', '2026-11-02 08:30:00', 'selesai'),
-(7, 7, 7, '2026-11-03', '2026-11-03 08:00:00', '2026-11-03 09:30:00', 'selesai'),
-(8, 8, 8, '2026-11-04', '2026-11-04 09:00:00', '2026-11-04 10:30:00', 'selesai'),
-(9, 9, 9, '2026-11-05', '2026-11-05 10:00:00', '2026-11-05 11:30:00', 'selesai'),
-(10, 10, 10, '2026-11-06', '2026-11-06 11:00:00', '2026-11-06 12:30:00', 'selesai');
+(1, 1, CURRENT_TIMESTAMP(), NULL, 'berlangsung', 34, CURRENT_TIMESTAMP()),
+(2, 13, '2026-04-13 07:05:00', '2026-04-13 08:25:00', 'selesai', 33, NULL);
 
--- Sample attendance is manually seeded demo data; there is no automation rule.
 INSERT INTO absensi
   (sesi_pembelajaran_id, siswa_id, status, dicatat_oleh_user_id, waktu_dicatat, catatan)
-SELECT sp.id, ak.siswa_id, 'hadir', g.user_id, sp.waktu_mulai, NULL
-FROM sesi_pembelajaran AS sp
-JOIN penugasan_guru AS pg ON pg.id = sp.penugasan_guru_id
-JOIN guru AS g ON g.id = pg.guru_id
-JOIN anggota_kelas AS ak
-  ON ak.kelas_id = pg.kelas_id AND ak.semester_id = pg.semester_id;
+SELECT 1, ak.siswa_id,
+       CASE ak.siswa_id
+         WHEN 35 THEN 'izin'
+         WHEN 36 THEN 'alpha'
+         ELSE 'hadir'
+       END,
+       2, CURRENT_TIMESTAMP(),
+       CASE ak.siswa_id
+         WHEN 35 THEN 'Izin keluarga'
+         WHEN 36 THEN 'Belum ada keterangan'
+         ELSE NULL
+       END
+FROM anggota_kelas ak
+WHERE ak.kelas_id = 2 AND ak.semester_id = 2;
 
--- Sample participation points are seeded for a subset of students as independent entries.
-INSERT INTO nilai_keaktifan
-  (sesi_pembelajaran_id, siswa_id, poin, dicatat_oleh_user_id, waktu_dicatat, catatan)
-SELECT sp.id, ak.siswa_id,
-       CASE WHEN MOD(ak.siswa_id, 2) = 0 THEN 2.00 ELSE 1.00 END,
-       g.user_id, sp.waktu_mulai, 'Contoh poin keaktifan'
-FROM sesi_pembelajaran AS sp
-JOIN penugasan_guru AS pg ON pg.id = sp.penugasan_guru_id
-JOIN guru AS g ON g.id = pg.guru_id
-JOIN anggota_kelas AS ak
-  ON ak.kelas_id = pg.kelas_id AND ak.semester_id = pg.semester_id
-WHERE MOD(ak.siswa_id, 3) = 0;
+INSERT INTO absensi
+  (sesi_pembelajaran_id, siswa_id, status, dicatat_oleh_user_id, waktu_dicatat, catatan)
+SELECT 2, ak.siswa_id,
+       CASE ak.siswa_id
+         WHEN 5 THEN 'sakit'
+         WHEN 17 THEN 'izin'
+         WHEN 28 THEN 'alpha'
+         ELSE 'hadir'
+       END,
+       2, '2026-04-13 07:10:00',
+       CASE ak.siswa_id
+         WHEN 5 THEN 'Surat keterangan diserahkan ke sekolah'
+         WHEN 17 THEN 'Izin kegiatan keluarga'
+         WHEN 28 THEN 'Tidak hadir'
+         ELSE NULL
+       END
+FROM anggota_kelas ak
+WHERE ak.kelas_id = 1 AND ak.semester_id = 1;
 
--- Four illustrative groups per class in the active semester.
-INSERT INTO kelompok (id, kelas_id, semester_id, nama) VALUES
-(1, 1, 2, 'Kelompok 1'), (2, 1, 2, 'Kelompok 2'),
-(3, 1, 2, 'Kelompok 3'), (4, 1, 2, 'Kelompok 4'),
-(5, 2, 2, 'Kelompok 1'), (6, 2, 2, 'Kelompok 2'),
-(7, 2, 2, 'Kelompok 3'), (8, 2, 2, 'Kelompok 4'),
-(9, 3, 2, 'Kelompok 1'), (10, 3, 2, 'Kelompok 2'),
-(11, 3, 2, 'Kelompok 3'), (12, 3, 2, 'Kelompok 4');
+INSERT INTO kelompok (id, penugasan_guru_id, nama) VALUES
+(1, 1, 'Kelompok Aljabar'),
+(2, 1, 'Kelompok Geometri'),
+(3, 1, 'Kelompok Statistika'),
+(4, 1, 'Kelompok Eksplorasi');
 
--- Split each class's 20 current students into four groups of five.
+-- Four balanced groups: each receives four or five students of each gender.
 INSERT INTO anggota_kelompok (kelompok_id, siswa_id)
-SELECT ((ak.kelas_id - 1) * 4) + FLOOR(MOD(ak.siswa_id - 1, 20) / 5) + 1,
-       ak.siswa_id
-FROM anggota_kelas AS ak
-WHERE ak.semester_id = 2;
+SELECT CASE
+         WHEN siswa_id BETWEEN 1 AND 5 OR siswa_id BETWEEN 19 AND 22 THEN 1
+         WHEN siswa_id BETWEEN 6 AND 10 OR siswa_id BETWEEN 23 AND 26 THEN 2
+         WHEN siswa_id BETWEEN 11 AND 14 OR siswa_id BETWEEN 27 AND 31 THEN 3
+         WHEN siswa_id BETWEEN 15 AND 18 OR siswa_id BETWEEN 32 AND 36 THEN 4
+       END,
+       siswa_id
+FROM anggota_kelas
+WHERE kelas_id = 2 AND semester_id = 2;
+
+INSERT INTO poin_keaktifan
+  (sesi_pembelajaran_id, siswa_id, poin, dicatat_oleh_user_id, waktu_dicatat, catatan)
+VALUES
+(1, 1, 5.00, 2, CURRENT_TIMESTAMP(), 'Menjelaskan langkah penyelesaian di papan tulis'),
+(1, 19, 3.00, 2, CURRENT_TIMESTAMP(), 'Membantu kelompok memeriksa jawaban'),
+(2, 8, 2.00, 2, '2026-04-13 08:00:00', 'Aktif menjawab pertanyaan');
 
 COMMIT;

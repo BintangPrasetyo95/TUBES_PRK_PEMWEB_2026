@@ -48,7 +48,7 @@ $result = mysqli_stmt_get_result($stmt);
     <div class="container">
         <a class="navbar-brand fw-bold" href="../index.php">BuyPanen | Panel Petani</a>
         <div class="d-flex gap-2">
-            <a href="../index.php" class="btn btn-outline-light btn-sm">Katalog Utama</a>
+            <a href="../petani/dashboard.php" class="btn btn-outline-light btn-sm">Katalog Utama</a>
             <a href="../petani/profil.php" class="btn btn-outline-light btn-sm">Profil Kebun</a>
             <a href="../auth/logout.php" class="btn btn-danger btn-sm">Logout</a>
         </div>

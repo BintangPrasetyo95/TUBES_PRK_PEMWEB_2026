@@ -298,122 +298,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save'
 
 $isEditing = $formValues['id'] > 0;
 
-admin_page_start($isEditing ? 'Edit Guru' : 'Data Guru', 'guru.php');
-?>
-<section class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-            <h2 class="text-lg font-semibold text-[#20392a]">Daftar Guru</h2>
-            <p class="mt-1 text-sm text-slate-600">Profil guru dan akun login terkait.</p>
-        </div>
-        <?php attendara_ui_button('Tambah Guru', 'guru.php'); ?>
-    </div>
+$showForm = $isEditing
+    || isset($_GET['form'])
+    || ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save' && $errors !== []);
 
-    <?php if ($flash !== null): ?>
-        <?php $flashType = ($flash['type'] ?? 'success') === 'error' ? 'error' : 'success'; ?>
-        <p role="status" class="rounded-xl px-4 py-3 text-sm <?= $flashType === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' ?>">
-            <?= h((string) ($flash['message'] ?? '')) ?>
-        </p>
-    <?php endif; ?>
-
-    <div class="overflow-x-auto rounded-2xl border border-[#e2e9e2] bg-white">
-        <table data-admin-table class="min-w-full divide-y divide-[#edf1ec] text-left text-sm">
-            <thead class="bg-[#f3f6f1] text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nomor Induk</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Nama</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Username</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Email</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">No. Telepon</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Status</th>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3.5 font-semibold sm:px-5">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-[#edf1ec] text-slate-700">
-                <?php if ($guruList === []): ?>
-                    <tr>
-                        <td colspan="8" class="px-4 py-9 text-center text-slate-500">Belum ada data guru.</td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($guruList as $index => $guru): ?>
-                        <tr class="hover:bg-[#f8faf7]">
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($index + 1)) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $guru['nomor_induk']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) $guru['nama']) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($guru['username'] ?? '-')) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($guru['email'] ?? '-')) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5"><?= h((string) ($guru['no_telepon'] ?? '-')) ?></td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <?php if ((bool) $guru['is_active']): ?>
-                                    <span class="inline-flex rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">Aktif</span>
-                                <?php else: ?>
-                                    <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">Nonaktif</span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                                <div class="flex items-center gap-2">
-                                    <a href="guru.php?edit=<?= h((string) $guru['id']) ?>" class="rounded-md px-2 py-1 text-xs font-semibold text-[#28583b] hover:bg-[#edf4ec]">Edit</a>
-                                    <form method="post" action="guru.php" class="inline">
-                                        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-                                        <input type="hidden" name="action" value="toggle">
-                                        <input type="hidden" name="guru_id" value="<?= h((string) $guru['id']) ?>">
-                                        <button type="submit" class="rounded-md px-2 py-1 text-xs font-semibold <?= (bool) $guru['is_active'] ? 'text-red-700 hover:bg-red-50' : 'text-[#28583b] hover:bg-[#edf4ec]' ?>">
-                                            <?= (bool) $guru['is_active'] ? 'Nonaktifkan' : 'Aktifkan' ?>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-<section id="form-guru" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 sm:p-6">
-    <h2 class="text-base font-semibold text-[#20392a]"><?= $isEditing ? 'Edit Guru' : 'Tambah Guru' ?></h2>
-    <p class="mt-1 text-sm text-slate-600">
-        <?= $isEditing ? 'Perbarui profil guru. Kosongkan password jika tidak ingin mengubahnya.' : 'Membuat guru sekaligus akun login dengan role guru.' ?>
-    </p>
-
-    <?php if ($errors !== []): ?>
-        <ul class="mt-4 space-y-1 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-            <?php foreach ($errors as $error): ?>
-                <li>• <?= h($error) ?></li>
-            <?php endforeach; ?>
-        </ul>
-    <?php endif; ?>
-
-    <form method="post" action="guru.php" class="mt-4 grid gap-4 sm:grid-cols-2">
-        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-        <input type="hidden" name="action" value="save">
-        <input type="hidden" name="id" value="<?= h((string) $formValues['id']) ?>">
-
-        <?php
-        attendara_ui_input('Nomor induk', 'nomor_induk', $formValues['nomor_induk']);
-        attendara_ui_input('Nama', 'nama', $formValues['nama']);
-        attendara_ui_input('Email (opsional)', 'email', $formValues['email'], 'email');
-        attendara_ui_input('No. telepon (opsional)', 'no_telepon', $formValues['no_telepon']);
-        attendara_ui_input('Username', 'username', $formValues['username']);
-        attendara_ui_input(
-            $isEditing ? 'Password baru (opsional)' : 'Password',
-            'password',
-            '',
-            'password',
-            $isEditing ? 'Kosongkan jika tidak diubah' : 'Minimal 8 karakter'
-        );
-        ?>
-
-        <div class="flex items-center gap-3 sm:col-span-2">
-            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#1e5638] px-4 py-2 text-sm font-semibold text-white hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
-                <?= $isEditing ? 'Simpan Perubahan' : 'Simpan Guru' ?>
-            </button>
-            <?php if ($isEditing): ?>
-                <a href="guru.php" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Batal</a>
-            <?php endif; ?>
-        </div>
-    </form>
-</section>
-<?php admin_page_end(); ?>
+admin_page_start(
+    $showForm ? ($isEditing ? 'Edit Guru' : 'Tambah Guru') : 'Data Guru',
+    'guru.php',
+    $showForm ? null : ['label' => 'Tambah Guru', 'href' => 'guru.php?form=1'],
+    $showForm ? null : 'Data profil dan akun login guru.'
+);
+require __DIR__ . '/views/' . ($showForm ? 'guru-form.php' : 'guru-list.php');
+admin_page_end();

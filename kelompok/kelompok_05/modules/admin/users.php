@@ -48,7 +48,7 @@ require __DIR__ . '/../../includes/header.php';
                             <td><?= e($user['role']) ?></td>
                             <td><?= e($user['created_at']) ?></td>
                             <td>
-                                <a href="<?= e(base_url('modules/admin/user_edit.php?id=' . (int) $user['id'])) ?>">
+                                <a class="btn btn-sm" href="<?= e(base_url('modules/admin/user_edit.php?id=' . (int) $user['id'])) ?>">
                                     Ubah Role
                                 </a>
                             </td>

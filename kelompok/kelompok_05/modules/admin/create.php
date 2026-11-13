@@ -60,8 +60,10 @@ require __DIR__ . '/../../includes/header.php';
             ><?= e($_POST['deskripsi'] ?? '') ?></textarea>
         </div>
 
-        <button type="submit" class="btn">Simpan</button>
-        <a href="<?= e(base_url('modules/admin/index.php')) ?>">Batal</a>
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">Simpan</button>
+            <a class="btn" href="<?= e(base_url('modules/admin/index.php')) ?>">Batal</a>
+        </div>
     </form>
 </div>
 

@@ -94,8 +94,10 @@ require __DIR__ . '/../../includes/header.php';
             </label>
         </div>
 
-        <button type="submit" class="btn">Simpan Perubahan</button>
-        <a href="<?= e(base_url('modules/admin/index.php')) ?>">Batal</a>
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            <a class="btn" href="<?= e(base_url('modules/admin/index.php')) ?>">Batal</a>
+        </div>
     </form>
 </div>
 

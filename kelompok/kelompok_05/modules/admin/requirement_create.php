@@ -104,7 +104,7 @@ require __DIR__ . '/../../includes/header.php';
 
     <?php if (empty($jenis_dokumen)): ?>
         <p>Belum ada jenis dokumen. Tambahkan jenis dokumen terlebih dahulu.</p>
-        <a href="<?= e(base_url('modules/admin/index.php')) ?>">
+        <a class="btn" href="<?= e(base_url('modules/admin/index.php')) ?>">
             Kembali
         </a>
     <?php else: ?>
@@ -254,10 +254,10 @@ require __DIR__ . '/../../includes/header.php';
                 >
             </div>
 
-            <button type="submit" class="btn">Simpan Persyaratan</button>
-            <a href="<?= e(base_url('modules/admin/requirements.php')) ?>">
-                Batal
-            </a>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Simpan Persyaratan</button>
+                <a class="btn" href="<?= e(base_url('modules/admin/requirements.php')) ?>">Batal</a>
+            </div>
         </form>
     <?php endif; ?>
 </div>

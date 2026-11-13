@@ -30,31 +30,33 @@ require __DIR__ . '/../../includes/header.php';
 <h2>Daftar Jenis Dokumen</h2>
 
 <div class="card">
-    <div class="form-group">
-        <label for="search">Cari Jenis Dokumen</label>
-        <input
-            type="search"
-            id="search"
-            placeholder="Contoh: Surat Kuasa"
-            autocomplete="off"
-        >
-    </div>
+    <div class="toolbar search-toolbar">
+        <div class="form-group">
+            <label for="search">Cari Jenis Dokumen</label>
+            <input
+                type="search"
+                id="search"
+                placeholder="Contoh: Surat Kuasa"
+                autocomplete="off"
+            >
+        </div>
 
-    <div class="form-group">
-        <label for="type-filter">Filter Jenis Dokumen</label>
-        <select id="type-filter">
-            <option value="0">Semua Jenis Dokumen</option>
-            <?php foreach ($jenis_dokumen as $jenis): ?>
-                <option value="<?= (int) $jenis['id'] ?>">
-                    <?= e($jenis['nama']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
+        <div class="form-group">
+            <label for="type-filter">Filter Jenis Dokumen</label>
+            <select id="type-filter">
+                <option value="0">Semua Jenis Dokumen</option>
+                <?php foreach ($jenis_dokumen as $jenis): ?>
+                    <option value="<?= (int) $jenis['id'] ?>">
+                        <?= e($jenis['nama']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
-    <button type="button" class="btn" id="reset-filter">
-        Reset Filter
-    </button>
+        <button type="button" class="btn" id="reset-filter">
+            Reset Filter
+        </button>
+    </div>
 
     <p id="search-status" aria-live="polite"></p>
 </div>

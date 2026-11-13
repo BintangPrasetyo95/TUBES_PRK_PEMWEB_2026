@@ -20,13 +20,13 @@ require __DIR__ . '/../../includes/header.php';
                     <td><?= e($case['judul']) ?></td>
                     <td><?= status_badge($case['status']) ?></td>
                     <td><?= e($case['updated_at']) ?></td>
-                    <td>
-                        <a href="<?= e(base_url('modules/hasil/index.php?case=' . (int) $case['id'])) ?>">Hasil</a>
-                        · <a href="<?= e(base_url('modules/laporan/index.php?case=' . (int) $case['id'])) ?>">Laporan</a>
+                    <td><div class="table-actions">
+                        <a class="btn btn-sm" href="<?= e(base_url('modules/hasil/index.php?case=' . (int) $case['id'])) ?>">Hasil</a>
+                        <a class="btn btn-sm" href="<?= e(base_url('modules/laporan/index.php?case=' . (int) $case['id'])) ?>">Laporan</a>
                         <?php if (in_array($case['status'], ['draft', 'belum_lengkap'], true)): ?>
-                            · <a href="<?= e(base_url('modules/pemeriksaan/form.php?case=' . (int) $case['id'])) ?>">Lanjutkan</a>
+                            <a class="btn btn-sm" href="<?= e(base_url('modules/pemeriksaan/form.php?case=' . (int) $case['id'])) ?>">Lanjutkan</a>
                         <?php endif; ?>
-                    </td>
+                    </div></td>
                 </tr>
             <?php endforeach; ?></tbody>
         </table></div>

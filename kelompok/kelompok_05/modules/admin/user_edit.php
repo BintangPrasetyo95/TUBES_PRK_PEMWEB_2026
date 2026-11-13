@@ -64,6 +64,7 @@ require __DIR__ . '/../../includes/header.php';
 
     <?php if ($id === (int) $admin['id']): ?>
         <p>Role akun yang sedang kamu gunakan tidak dapat diubah.</p>
+        <a class="btn" href="<?= e(base_url('modules/admin/users.php')) ?>">Kembali ke Daftar Akun</a>
     <?php else: ?>
         <form method="post">
             <?= csrf_field() ?>
@@ -88,15 +89,16 @@ require __DIR__ . '/../../includes/header.php';
                 </select>
             </div>
 
-            <button type="submit" class="btn">
-                Simpan Perubahan
-            </button>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">
+                    Simpan Perubahan
+                </button>
+                <a class="btn" href="<?= e(base_url('modules/admin/users.php')) ?>">
+                    Kembali ke Daftar Akun
+                </a>
+            </div>
         </form>
     <?php endif; ?>
-
-    <a href="<?= e(base_url('modules/admin/users.php')) ?>">
-        Kembali ke Daftar Akun
-    </a>
 </div>
 
 <?php require __DIR__ . '/../../includes/footer.php'; ?>

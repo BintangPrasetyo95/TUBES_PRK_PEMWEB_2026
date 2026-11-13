@@ -53,8 +53,8 @@ require __DIR__ . '/../../includes/header.php';
                             <td>
                                 <?= $jenis['aktif'] ? 'Aktif' : 'Nonaktif' ?>
                             </td>
-                            <td>
-                                <a href="<?= e(base_url('modules/admin/edit.php?id=' . (int) $jenis['id'])) ?>">
+                            <td><div class="table-actions">
+                                <a class="btn btn-sm" href="<?= e(base_url('modules/admin/edit.php?id=' . (int) $jenis['id'])) ?>">
                                     Edit
                                 </a>
 
@@ -65,11 +65,11 @@ require __DIR__ . '/../../includes/header.php';
                                 >
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="id" value="<?= (int) $jenis['id'] ?>">
-                                    <button type="submit" class="btn">
+                                    <button type="submit" class="btn btn-sm btn-danger">
                                         Hapus
                                     </button>
                                 </form>
-                            </td>
+                            </div></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>

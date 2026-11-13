@@ -37,10 +37,12 @@ require __DIR__ . '/../../includes/header.php';
             (<?= e($analysis['jumlah_terpenuhi']) ?> dari <?= e($analysis['jumlah_berlaku']) ?> persyaratan berlaku)</p>
         <p>Analisis terakhir: <?= e($analysis['created_at']) ?></p>
     <?php endif; ?>
-    <a class="btn" href="<?= e(base_url('modules/laporan/index.php?case=' . (int) $caseId)) ?>">Lihat laporan</a>
-    <?php if ($bolehAnalisis): ?><form method="post" action="<?= e(base_url('modules/analisis/engine.php')) ?>" class="no-print">
-        <?= csrf_field() ?><input type="hidden" name="case_id" value="<?= e($caseId) ?>">
-        <button class="btn btn-primary" type="submit">Periksa Ulang</button>
-    </form><?php endif; ?>
+    <div class="btn-group">
+        <a class="btn" href="<?= e(base_url('modules/laporan/index.php?case=' . (int) $caseId)) ?>">Lihat laporan</a>
+        <?php if ($bolehAnalisis): ?><form method="post" action="<?= e(base_url('modules/analisis/engine.php')) ?>" class="no-print">
+            <?= csrf_field() ?><input type="hidden" name="case_id" value="<?= e($caseId) ?>">
+            <button class="btn btn-primary" type="submit">Periksa Ulang</button>
+        </form><?php endif; ?>
+    </div>
 </section>
 <?php require __DIR__ . '/../../includes/footer.php'; ?>

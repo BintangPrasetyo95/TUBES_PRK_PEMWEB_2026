@@ -1,7 +1,7 @@
 # ARUNIKA: Aplikasi Rekapitulasi Nilai \& Kedisiplinan Kelas
 
-> \\\*\\\*Tugas Besar Praktikum Pemrograman Web 2026\\\*\\\* — Kelompok \\\*\\\*21\\\*\\\*  
-> \\\*Platform Evaluasi Akademik, Disiplin Pengumpulan Tugas, dan Pemetaan 4 Kuadran Belajar Terpadu.\\\*
+Tugas Besar Praktikum Pemrograman Web 2026 — Kelompok 21
+Platform Evaluasi Akademik, Disiplin Pengumpulan Tugas, dan Pemetaan 4 Kuadran Belajar Terpadu.
 
 \---
 
@@ -70,8 +70,7 @@ TUBES\\\_PRK\\\_PEMWEB\\\_2026/
 └── kelompok/
     └── kelompok\\\_21/               <-- BATAS WILAYAH KERJA KELOMPOK 21
         ├── api/                   <-- \\\[REST API] Backend Endpoint JSON
-
-&#x20;       │   ├── akun.php	   <-- \\\[Nova] Data Akun Guru
+        │   ├── akun.php	   <-- \\\[Nova] Data Akun Guru
         │   ├── bootstrap.php      <-- Setup Header JSON, Error Handler, DB Connector
         │   ├── guru.php           <-- \\\[Endy] CRUD Data Guru \\\& Auth Sesi
         │   ├── data.php           <-- \\\[Endy] CRUD Kelas, Siswa, Mapel, \\\& Data Master
@@ -79,8 +78,7 @@ TUBES\\\_PRK\\\_PEMWEB\\\_2026/
         │   ├── monitoring.php     <-- \\\[Dwi Septy] Tenggat, Log Waktu, \\\& Indeks Disiplin
         │   ├── kalkulasi.php      <-- \\\[Jehan] Bobot Nilai \\\& Rumus Nilai Akhir
         │   ├── klasifikasi.php    <-- \\\[Natasya] Data Agregasi Klasfikasi
-
-&#x20;       │   └── profil.php         <-- \\\[Nova] Catatan Bimbingan \\\& Profil Siswa
+        │   └── profil.php         <-- \\\[Nova] Catatan Bimbingan \\\& Profil Siswa
         ├── config/                <-- \\\[KONFIGURASI]
         │   ├── database.php       <-- Koneksi PDO MySQL Prepared Statements
         │   └── modules.php        <-- Pendaftaran Navigasi \\\& Hak Akses Modul
@@ -94,8 +92,7 @@ TUBES\\\_PRK\\\_PEMWEB\\\_2026/
         │   └── auth.php           <-- Proteksi Sesi Login \\\& Session Validator
         ├── js/                    <-- \\\[JAVASCRIPT DOM \\\& ASYNC FETCH]
         │   ├── app.js             <-- Inisialisasi, Navigasi Tab, \\\& Helper Fetch
-
-&#x20;       │   ├── akun\_guru.js       <-- \\\[Nova] Interaksi Catatan Guru
+        │   ├── akun\_guru.js       <-- \\\[Nova] Interaksi Catatan Guru
         │   ├── akademik.js        <-- \\\[Endy] Interaksi Data Kelas, Siswa, \\\& Mapel
         │   ├── penilaian.js       <-- \\\[Rio] Validasi Form \\\& Tabel Nilai
         │   ├── monitoring.js      <-- \\\[Dwi Septy] Interaksi Status Kumpul \\\& Disiplin
@@ -110,8 +107,7 @@ TUBES\\\_PRK\\\_PEMWEB\\\_2026/
         │   ├── monitoring.php     <-- \\\[Dwi Septy] Modul Pantauan Pengumpulan
         │   ├── laporan.php        <-- \\\[Jehan] Modul Rekapitulasi \\\& Cetak Nilai
         │   ├── klasifikasi.php    <-- \\\[Natasya] Modul Klasifikasi 4 Kategori Siswa
-
-&#x20;       │   ├── akun\_guru.php      <-- \\\[Nova] Modul Akun Guru
+        │   ├── akun\_guru.php      <-- \\\[Nova] Modul Akun Guru
         │   └── kualitatif.php     <-- \\\[Nova] Modul Riwayat Bimbingan \\\& Tindak Lanjut
         ├── index.php              <-- Halaman Utama Aplikasi (Pemuat Modul)
         ├── login.php              <-- Antarmuka Login Guru \\\& Wali Kelas

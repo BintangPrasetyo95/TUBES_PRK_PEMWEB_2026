@@ -53,6 +53,7 @@
     async function apiRequest(url, method = 'GET', body = null) {
         const options = {
             method,
+            cache: 'no-store',
             headers: { 'X-CSRF-Token': csrfToken }
         };
 
@@ -61,7 +62,11 @@
             options.body = JSON.stringify(body);
         }
 
-        const response = await fetch(url, options);
+        const urlFinal = method === 'GET'
+            ? `${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`
+            : url;
+
+        const response = await fetch(urlFinal, options);
 
         if (response.status === 401) {
             window.location.href = 'login.php';
@@ -285,7 +290,7 @@
             return;
         }
 
-        badgeStatusRekap.textContent = `${penugasanAktif.nama_kelas} • ${penugasanAktif.kode_mapel}`;
+        perbaruiBadgeStatus(false);
         if (infoGuruPengampu) {
             infoGuruPengampu.textContent = `Pengampu: ${penugasanAktif.nama_guru}${penugasanAktif.bisa_ubah ? '' : ' (Mode baca)'}`;
         }
@@ -302,7 +307,7 @@
         if (simpanKeSesi) {
             apiRequest('api/kalkulasi.php?action=simpan_konteks', 'POST', {
                 id_penugasan: penugasanAktif.id_penugasan
-            }).catch(() => { /* abaikan error minor sinkron sesi */ });
+            }).catch(() => {});
         }
 
         await muatRekapLengkap(penugasanAktif.id_penugasan);
@@ -556,7 +561,18 @@
         });
     }
 
+    function perbaruiBadgeStatus(perluHitungUlang = false) {
+        if (!penugasanAktif) return;
+        const label = `${penugasanAktif.nama_kelas} • ${penugasanAktif.kode_mapel}`;
+        const belumSinkron = Boolean(perluHitungUlang) && Boolean(penugasanAktif.bisa_ubah);
+        badgeStatusRekap.textContent = belumSinkron
+            ? `${label} (Belum tersinkron ke DB)`
+            : label;
+    }
+
     function renderRingkasan(data) {
+        perbaruiBadgeStatus(Boolean(data?.perlu_hitung_ulang));
+
         if (!data || !data.ada_nilai) {
             statRataKelas.textContent     = '—';
             statNilaiMax.textContent      = '—';
@@ -582,10 +598,6 @@
 
         statPredikatKelas.textContent = `Predikat rata-rata: ${predikatRata}`;
         statSiswaLengkap.textContent  = `${data.jumlah_lengkap} dari ${data.jumlah_siswa} siswa lengkap`;
-
-        if (data.perlu_hitung_ulang && penugasanAktif?.bisa_ubah) {
-            badgeStatusRekap.textContent = `${penugasanAktif.nama_kelas} • ${penugasanAktif.kode_mapel} (Belum tersinkron ke DB)`;
-        }
     }
 
     function handlePencarianSiswa() {

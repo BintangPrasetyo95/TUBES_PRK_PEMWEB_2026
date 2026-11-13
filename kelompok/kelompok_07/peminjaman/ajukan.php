@@ -1,97 +1,90 @@
 <?php
-session_start();
-require_once '../config/koneksi.php';
-require_once '../config/app.php';
 
-$id_alat = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/koneksi.php';
+require_once __DIR__ . '/../includes/komponen.php';
+
+$id_alat = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if ($id_alat === 0) {
-    header("Location: index.php");
+    header('Location: ' . url('peminjaman/index.php'));
     exit;
 }
 
-$pdo = db();
-
-// Ambil detail alat berdasarkan ID
-$query = "SELECT * FROM alat WHERE id = :id AND stok > 0";
-$stmt = $pdo->prepare($query);
+$stmt = db()->prepare(
+    'SELECT a.*, k.nama AS kategori
+     FROM alat a
+     JOIN kategori k ON k.id = a.kategori_id
+     WHERE a.id = :id AND a.stok > 0'
+);
 $stmt->execute(['id' => $id_alat]);
 $alat = $stmt->fetch();
 
-// Jika alat tidak ditemukan atau stok habis
 if (!$alat) {
-    echo "<script>alert('Alat tidak ditemukan atau stok habis!'); window.location.href='index.php';</script>";
+    set_flash('warning', 'Alat tidak ditemukan atau stok habis.');
+    header('Location: ' . url('peminjaman/index.php'));
     exit;
 }
 
-$judul = 'Ajukan Peminjaman';
-include '../includes/header.php';
+$hariIni = date('Y-m-d');
+$judul = 'Ajukan ' . $alat['nama'];
+require __DIR__ . '/../includes/header.php';
 ?>
+<?php page_head('Formulir pengajuan', 'Ajukan', 'peminjaman', 'Lengkapi jadwal, jumlah, dan keperluan. Pengajuan akan diproses admin dan dapat dipantau di halaman Riwayat.'); ?>
 
-<!-- Bagian Biru di Judul (Hero) Full Width -->
-<section class="hero">
-    <h1>Formulir Pengajuan Peminjaman</h1>
-    <p>Silakan isi detail pengajuan untuk meminjam <?= e($alat['nama'] ?? 'alat') ?>.</p>
-</section>
-
-<!-- Kontainer Utama (Card) Full Width sejajar Hero -->
-<section class="card mt-6">
-    <div class="card-body">
-        
-        <!-- Detail Alat Singkat -->
-        <div style="display: flex; align-items: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0;">
-            <?php $foto_url = !empty($alat['foto']) ? "../uploads/alat/" . $alat['foto'] : "../assets/img/default-alat.png"; ?>
-            <img src="<?= e($foto_url) ?>" alt="<?= e($alat['nama']) ?>" style="width: 96px; height: 96px; object-fit: cover; border-radius: 8px; margin-right: 1.5rem; border: 1px solid #e2e8f0;">
-            <div>
-                <h2 style="margin-bottom: 0.25rem; font-size: 1.4rem;"><?= e($alat['nama']) ?></h2>
-                <p class="text-muted" style="margin-bottom: 0.5rem;">Kode: <?= e($alat['kode']) ?> | Lokasi: <?= e($alat['lokasi']) ?></p>
-                <span class="badge badge-info">Sisa Stok: <?= (int)$alat['stok'] ?> Unit</span>
-            </div>
+<div class="ajukan-layout">
+    <aside class="ajukan-alat on-dark" aria-label="Detail alat yang diajukan">
+        <?php foto_alat($alat); ?>
+        <div class="ajukan-alat__isi">
+            <span class="tag tag--neon"><?= e(JENIS_ALAT[$alat['jenis']] ?? $alat['jenis']) ?></span>
+            <h2><?= e($alat['nama']) ?></h2>
+            <p><?= e($alat['deskripsi'] ?: 'Belum ada deskripsi.') ?></p>
+            <dl class="info-list">
+                <div><dt>Kode</dt><dd><?= e($alat['kode']) ?></dd></div>
+                <div><dt>Kategori</dt><dd><?= e($alat['kategori']) ?></dd></div>
+                <div><dt>Lokasi</dt><dd><?= e($alat['lokasi'] ?: '—') ?></dd></div>
+                <div><dt>Sisa stok</dt><dd class="sorot-neon"><?= (int) $alat['stok'] ?> unit</dd></div>
+            </dl>
         </div>
+    </aside>
 
-        <!-- Form Pengajuan diproses ke proses_ajukan.php -->
-        <form action="proses_ajukan.php" method="POST">
-            <input type="hidden" name="id_alat" value="<?= (int)$alat['id'] ?>">
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-                <!-- Tanggal Pinjam -->
-                <div>
-                    <label for="tgl_pinjam" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Tanggal Pinjam</label>
-                    <input type="date" id="tgl_pinjam" name="tgl_pinjam" min="<?= date('Y-m-d') ?>" required
-                        style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem;">
+    <div class="card">
+        <div class="card-header">
+            <h2>Data Peminjaman</h2>
+        </div>
+        <div class="card-body">
+            <form action="<?= e(url('peminjaman/proses_ajukan.php')) ?>" method="POST">
+                <input type="hidden" name="id_alat" value="<?= (int) $alat['id'] ?>">
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label for="tgl_pinjam" class="form-label">Tanggal Pinjam</label>
+                        <input type="date" id="tgl_pinjam" name="tgl_pinjam" class="form-control" min="<?= e($hariIni) ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tgl_kembali" class="form-label">Tanggal Kembali</label>
+                        <input type="date" id="tgl_kembali" name="tgl_kembali" class="form-control" min="<?= e($hariIni) ?>" required>
+                    </div>
                 </div>
-                <!-- Tanggal Kembali -->
-                <div>
-                    <label for="tgl_kembali" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Tanggal Kembali</label>
-                    <input type="date" id="tgl_kembali" name="tgl_kembali" min="<?= date('Y-m-d') ?>" required
-                        style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem;">
+
+                <div class="form-group">
+                    <label for="jumlah" class="form-label">Jumlah Pinjam</label>
+                    <input type="number" id="jumlah" name="jumlah" class="form-control" min="1" max="<?= (int) $alat['stok'] ?>" value="1" required aria-describedby="jumlah-hint">
+                    <p id="jumlah-hint" class="form-hint">Maksimal <?= (int) $alat['stok'] ?> unit, tidak boleh melebihi stok tersedia.</p>
                 </div>
-            </div>
 
-            <!-- Jumlah Pinjam -->
-            <div style="margin-bottom: 1.5rem;">
-                <label for="jumlah" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Jumlah Pinjam</label>
-                <input type="number" id="jumlah" name="jumlah" min="1" max="<?= (int)$alat['stok'] ?>" value="1" required
-                    style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 0.95rem;">
-                <p class="text-muted" style="margin-top: 0.5rem; font-size: 0.85rem;">Maksimal peminjaman tidak boleh melebihi stok tersedia.</p>
-            </div>
+                <div class="form-group">
+                    <label for="keperluan" class="form-label">Keperluan / Keterangan</label>
+                    <textarea id="keperluan" name="keperluan" class="form-control" rows="3" required placeholder="Contoh: Praktikum Jaringan Komputer, Tugas Akhir, dll."></textarea>
+                </div>
 
-            <!-- Keperluan -->
-            <div style="margin-bottom: 2rem;">
-                <label for="keperluan" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Keperluan / Keterangan</label>
-                <textarea id="keperluan" name="keperluan" rows="3" required placeholder="Contoh: Praktikum Jaringan Komputer, Tugas Akhir, dll."
-                    style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; resize: vertical; font-family: inherit; font-size: 0.95rem;"></textarea>
-            </div>
-
-            <!-- Tombol Aksi -->
-            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
-                <a href="index.php" class="btn btn-outline">Batal</a>
-                <button type="submit" class="btn btn-primary" style="font-family: inherit;">
-                    Ajukan Peminjaman
-                </button>
-            </div>
-        </form>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-neon btn-lg">Ajukan Peminjaman<?= ikon('panah', 'ikon ikon--sm') ?></button>
+                    <a href="<?= e(url('peminjaman/index.php')) ?>" class="btn btn-outline btn-lg">Batal</a>
+                </div>
+            </form>
+        </div>
     </div>
-</section>
+</div>
 
-<?php include '../includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

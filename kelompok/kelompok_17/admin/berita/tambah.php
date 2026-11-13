@@ -55,22 +55,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     hapus_gambar($namaGambar);
 }
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Berita - KabarSih</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-50 text-slate-800">
-<?php include __DIR__ . '/../../includes/admin_nav.php'; ?>
-<main class="max-w-6xl mx-auto px-4 py-6">
-    <?php
-    $action = 'tambah.php';
-    $judulHalaman = 'Tambah Berita';
-    include __DIR__ . '/../../includes/form_berita.php';
-    ?>
-</main>
+<?php
+$judulTab   = 'Tambah Berita';
+$breadcrumb = [['Dashboard', '/admin/index.php'], ['Berita', '/admin/berita/index.php'], ['Tambah', null]];
+include __DIR__ . '/../../includes/admin_header.php';
+?>
+
+<?php
+$action = 'tambah.php';
+$judulHalaman = 'Tambah Berita';
+include __DIR__ . '/../../includes/form_berita.php';
+?>
+</main></div>
 </body>
 </html>

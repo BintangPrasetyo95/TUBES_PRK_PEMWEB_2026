@@ -71,78 +71,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Masuk | ATTENDARA</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex min-h-screen items-center justify-center bg-[#f6f8f5] p-4 text-slate-900 sm:p-6">
-    <main class="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-[#e2e9e2] bg-white shadow-[0_16px_50px_rgba(31,62,42,0.09)] md:min-h-[600px] md:grid-cols-[1.05fr_0.95fr]">
-        <section class="flex flex-col justify-between bg-[#edf2eb] p-6 sm:p-9 md:p-12" aria-label="Tentang ATTENDARA">
-            <a href="login.php" class="inline-flex w-fit items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
-                <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1e5638] text-white">
-                    <svg aria-hidden="true" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m3 10 9-5 9 5-9 5z"/><path d="M7 12v5c3 2 7 2 10 0v-5M21 10v6"/>
-                    </svg>
-                </span>
-                <span>
-                    <span class="block text-base font-bold tracking-tight text-[#173e2b]">ATTENDARA</span>
-                    <span class="mt-0.5 block text-xs text-[#617366]">Administrasi sekolah</span>
-                </span>
-            </a>
-
-            <div class="my-10 max-w-md md:my-0">
-                <span class="inline-flex items-center gap-2 rounded-full border border-[#d9e4d8] bg-white/70 px-3 py-1.5 text-xs font-medium text-[#47634d]">
-                    <span class="h-2 w-2 rounded-full bg-[#6d9273]"></span>
-                    Ruang kerja sekolah
-                </span>
-                <h1 class="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#173e2b] sm:text-4xl">Selamat datang kembali.</h1>
-                <p class="mt-3 max-w-sm text-sm leading-6 text-[#5d6d61] sm:text-base">Kelola aktivitas sekolah dengan lebih tertata melalui satu ruang kerja yang sederhana.</p>
-                <div class="mt-8 hidden items-center gap-3 rounded-2xl border border-[#dfe8dc] bg-white/70 p-4 sm:flex">
-                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e7efe5] text-[#31583c]">
-                        <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M4 19V5M4 19h17"/><path d="m7 15 4-4 3 2 5-6"/>
-                        </svg>
+<body class="flex min-h-screen items-center justify-center bg-[#f3f5f2] px-4 py-8 text-slate-900 sm:px-6">
+    <main class="w-full max-w-5xl">
+        <section class="overflow-hidden rounded-3xl border border-[#dfe6de] bg-white shadow-[0_18px_55px_rgba(40,56,43,0.10)] md:grid md:min-h-[570px] md:grid-cols-[0.92fr_1.08fr]" aria-labelledby="login-title">
+            <aside class="relative isolate overflow-hidden bg-[#4e7a5d] px-6 py-7 text-white sm:px-9 sm:py-9 md:flex md:flex-col md:justify-between md:px-10 md:py-10">
+                <div aria-hidden="true" class="absolute -right-20 -top-24 -z-10 h-72 w-72 rounded-full border-[38px] border-white/[0.07]"></div>
+                <div aria-hidden="true" class="absolute -bottom-24 -left-16 -z-10 h-56 w-56 rounded-full bg-[#315b3e]/35"></div>
+                <a href="login.php" class="inline-flex w-fit items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#4e7a5d]">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20">
+                        <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-5 9 5-9 5z"/><path d="M7 12v5c3 2 7 2 10 0v-5M21 10v6"/></svg>
                     </span>
-                    <p class="text-sm leading-5 text-[#526257]">Satu akses untuk mendukung kegiatan administrasi sekolah.</p>
+                    <span><span class="block text-sm font-bold tracking-[0.1em]">ATTENDARA</span><span class="mt-0.5 block text-xs text-white/75">Administrasi pembelajaran</span></span>
+                </a>
+
+                <div class="relative mt-10 max-w-md md:my-auto md:py-12">
+                    <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/90"><span class="h-1.5 w-1.5 rounded-full bg-[#d5e4d5]"></span>Ruang kerja sekolah</span>
+                    <h2 class="mt-5 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Semua kegiatan belajar, lebih tertata.</h2>
+                    <p class="mt-3 max-w-sm text-sm leading-6 text-white/80">Satu tempat untuk mengelola kelas dan mendukung aktivitas pembelajaran.</p>
+
+                    <div class="mt-8 grid gap-2.5 sm:grid-cols-2 md:grid-cols-1">
+                        <div class="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3.5 py-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10"><svg aria-hidden="true" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg></span><span class="text-sm font-medium">Jadwal dan kelas</span></div>
+                        <div class="flex items-center gap-3 rounded-xl border border-white/15 bg-white/[0.08] px-3.5 py-3"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10"><svg aria-hidden="true" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span class="text-sm font-medium">Data guru dan siswa</span></div>
+                    </div>
+                </div>
+                <p class="hidden text-xs text-white/60 md:block">Portal untuk Admin dan Guru</p>
+            </aside>
+
+            <div class="flex items-center justify-center px-6 py-8 sm:px-10 sm:py-10 md:px-12 md:py-12">
+                <div class="w-full max-w-sm">
+                    <div class="mb-8">
+                        <p class="text-xs font-semibold uppercase tracking-[0.13em] text-[#64806a]">Selamat datang</p>
+                        <h1 id="login-title" class="mt-2 text-2xl font-semibold tracking-tight text-[#303832]">Masuk ke akun</h1>
+                        <p class="mt-2 text-sm leading-5 text-slate-600">Gunakan username dan password akun Admin atau Guru.</p>
+                    </div>
+
+                    <?php if ($error !== ''): ?>
+                        <p class="mb-5 flex gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm leading-5 text-red-800" role="alert">
+                            <svg aria-hidden="true" class="mt-0.5 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+                            <span><?= h($error) ?></span>
+                        </p>
+                    <?php endif; ?>
+
+                    <form method="post" action="login.php" class="space-y-5" autocomplete="on">
+                        <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
+                        <div>
+                            <label for="username" class="mb-1.5 block text-sm font-medium text-[#414942]">Username</label>
+                            <input id="username" name="username" type="text" required maxlength="100" autocomplete="username" value="<?= h($username) ?>" class="min-h-12 w-full rounded-xl border border-[#dfe6de] bg-white px-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#4e7a5d] focus:ring-4 focus:ring-[#4e7a5d]/10">
+                        </div>
+                        <div>
+                            <label for="password" class="mb-1.5 block text-sm font-medium text-[#414942]">Password</label>
+                            <input id="password" name="password" type="password" required autocomplete="current-password" class="min-h-12 w-full rounded-xl border border-[#dfe6de] bg-white px-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-[#4e7a5d] focus:ring-4 focus:ring-[#4e7a5d]/10">
+                        </div>
+                        <button type="submit" class="mt-1 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#4e7a5d] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#41684f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#679173] focus-visible:ring-offset-2">
+                            Masuk <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                        </button>
+                    </form>
+                    <div class="mt-7 flex items-center gap-3 text-xs text-slate-500"><span class="h-px flex-1 bg-[#e8ece7]"></span><span>Akses khusus Admin dan Guru</span><span class="h-px flex-1 bg-[#e8ece7]"></span></div>
                 </div>
             </div>
-
-            <p class="hidden text-xs text-[#748176] md:block">ATTENDARA · Sistem informasi sekolah</p>
         </section>
-
-        <section class="flex items-center justify-center p-6 sm:p-10 md:p-12" aria-labelledby="login-title">
-            <div class="w-full max-w-sm">
-                <div class="mb-8">
-                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#64806a]">Akses akun</p>
-                    <h2 id="login-title" class="mt-2 text-2xl font-semibold tracking-tight text-[#20392a]">Masuk ke akun</h2>
-                    <p class="mt-2 text-sm leading-5 text-slate-600">Gunakan username dan password akun Admin atau Guru.</p>
-                </div>
-
-                <?php if ($error !== ''): ?>
-                    <p class="mb-5 flex gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3.5 text-sm leading-5 text-red-800" role="alert">
-                        <svg aria-hidden="true" class="mt-0.5 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
-                        </svg>
-                        <span><?= h($error) ?></span>
-                    </p>
-                <?php endif; ?>
-
-                <form method="post" action="login.php" class="space-y-5" autocomplete="on">
-                    <input type="hidden" name="_csrf_token" value="<?= h(csrfToken()) ?>">
-                    <div>
-                        <label for="username" class="mb-1.5 block text-sm font-medium text-slate-700">Username</label>
-                        <input id="username" name="username" type="text" required maxlength="100" autocomplete="username"
-                               value="<?= h($username) ?>"
-                               class="min-h-11 w-full rounded-xl border border-[#d8e2d8] bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#376c4d] focus:outline-none focus:ring-2 focus:ring-[#e6efe6]">
-                    </div>
-                    <div>
-                        <label for="password" class="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
-                        <input id="password" name="password" type="password" required autocomplete="current-password"
-                               class="min-h-11 w-full rounded-xl border border-[#d8e2d8] bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#376c4d] focus:outline-none focus:ring-2 focus:ring-[#e6efe6]">
-                    </div>
-                    <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1e5638] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#17452d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#376c4d] focus-visible:ring-offset-2">
-                        Masuk
-                    </button>
-                </form>
-                <p class="mt-6 text-center text-xs leading-5 text-slate-500">Halaman ini hanya untuk akun Admin dan Guru.</p>
-            </div>
-        </section>
+        <p class="mt-5 text-center text-xs text-slate-500">ATTENDARA <span class="mx-1 text-slate-300">·</span> Sistem administrasi sekolah</p>
     </main>
 </body>
 </html>

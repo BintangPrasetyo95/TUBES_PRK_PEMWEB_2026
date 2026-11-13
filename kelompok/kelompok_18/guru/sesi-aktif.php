@@ -2,44 +2,62 @@
 
 declare(strict_types=1);
 require_once __DIR__ . '/_init.php';
-$class = $guruUiData['classes'][0];
-$schedule = $guruUiData['schedules'][0];
+
+$sessionId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!is_int($sessionId) || $sessionId < 1) {
+    http_response_code(404);
+    exit('Sesi tidak ditemukan.');
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrfToken($_POST['_csrf_token'] ?? null)) {
+        http_response_code(403);
+        exit('Permintaan tidak valid.');
+    }
+
+    $postedSessionId = filter_input(INPUT_POST, 'session_id', FILTER_VALIDATE_INT);
+    $action = $_POST['action'] ?? null;
+    if ($postedSessionId !== $sessionId || !in_array($action, ['finish_session', 'cancel_session'], true)) {
+        http_response_code(422);
+        exit('Data sesi tidak valid.');
+    }
+
+    try {
+        guruEndSession($sessionId, $action === 'finish_session' ? 'selesai' : 'dibatalkan');
+        header('Location: sesi-aktif.php?id=' . $sessionId);
+        exit;
+    } catch (DomainException $exception) {
+        http_response_code(409);
+        header('Content-Type: text/plain; charset=utf-8');
+        exit($exception->getMessage());
+    } catch (Throwable $exception) {
+        guruReportBackendError($exception);
+    }
+}
+
+try {
+    $session = guruOwnedSession($sessionId);
+    if ($session === null) {
+        http_response_code(404);
+        exit('Sesi tidak ditemukan.');
+    }
+} catch (Throwable $exception) {
+    guruReportBackendError($exception);
+}
 
 guru_page_start('Sesi Pembelajaran', 'kelas.php');
 ?>
-<section class="flex flex-col gap-4 rounded-2xl border border-[#dfe7dd] bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-    <div><span id="session-status" class="inline-flex rounded-full bg-[#e8f1e7] px-3 py-1 text-xs font-semibold text-[#31583c]">Berlangsung</span><h2 class="mt-3 text-xl font-semibold text-[#20392a]"><?= attendara_ui_escape($class['name']) ?></h2><p class="mt-1 text-sm text-slate-600"><?= attendara_ui_escape($schedule['day_label'] . ' · ' . $schedule['start'] . '–' . $schedule['end'] . ' · ' . $class['semester']) ?></p></div>
-    <div id="session-actions" class="flex flex-wrap gap-2"><button id="open-finish" type="button" class="min-h-10 rounded-lg bg-[#1e5638] px-4 text-sm font-semibold text-white hover:bg-[#17452d]">Selesaikan Sesi</button><button id="open-cancel" type="button" class="min-h-10 rounded-lg border border-red-200 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50">Batalkan Sesi</button></div>
-</section>
+<?php guru_session_header($session, '', false); ?>
+<p class="text-sm text-slate-600">Mulai aktual: <?= attendara_ui_escape(date('d M Y H:i', strtotime($session['mulai_at']))) ?></p>
 
 <section class="space-y-4">
-    <div><h2 class="text-lg font-semibold text-[#20392a]">Menu Dalam Sesi</h2></div>
+    <div><h2 class="text-lg font-semibold text-[#303832]">Menu Dalam Sesi</h2></div>
     <div class="grid gap-4 md:grid-cols-3">
-        <a href="tap-sesi.php" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Tap Kehadiran</h3><p class="mt-2 text-sm text-slate-500">Tandai siswa yang sudah melakukan tap.</p></a>
-        <a href="absensi.php" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Data Siswa &amp; Poin</h3><p class="mt-2 text-sm text-slate-500">Atur status kehadiran dan poin siswa.</p></a>
-        <a href="kelompok.php" class="rounded-2xl border border-[#e2e9e2] bg-white p-5 hover:border-[#a9c3ad] hover:bg-[#fbfcfa]"><h3 class="font-semibold text-[#20392a]">Kelompok</h3><p class="mt-2 text-sm text-slate-500">Buat dan acak kelompok siswa.</p></a>
+        <a href="tap-sesi.php?session_id=<?= (int) $session['id'] ?>" class="group flex items-center justify-between gap-4 rounded-xl border border-[#dfe6de] bg-white p-5 transition hover:border-[#aebcaf] hover:bg-[#fafbf9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#679173] focus-visible:ring-offset-2"><span><span class="block font-semibold text-[#303832]">Tap Kehadiran</span><span class="mt-2 block text-sm text-slate-500">Tambah hitungan tap anonim pada sesi.</span></span><svg aria-hidden="true" class="h-5 w-5 shrink-0 text-[#6c776d] transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        <a href="absensi.php?session_id=<?= (int) $session['id'] ?>" class="group flex items-center justify-between gap-4 rounded-xl border border-[#dfe6de] bg-white p-5 transition hover:border-[#aebcaf] hover:bg-[#fafbf9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#679173] focus-visible:ring-offset-2"><span><span class="block font-semibold text-[#303832]">Data Siswa &amp; Poin</span><span class="mt-2 block text-sm text-slate-500">Atur status kehadiran dan poin siswa.</span></span><svg aria-hidden="true" class="h-5 w-5 shrink-0 text-[#6c776d] transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
+        <a href="kelompok.php?session_id=<?= (int) $session['id'] ?>" class="group flex items-center justify-between gap-4 rounded-xl border border-[#dfe6de] bg-white p-5 transition hover:border-[#aebcaf] hover:bg-[#fafbf9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#679173] focus-visible:ring-offset-2"><span><span class="block font-semibold text-[#303832]">Kelompok</span><span class="mt-2 block text-sm text-slate-500">Buat dan acak kelompok siswa.</span></span><svg aria-hidden="true" class="h-5 w-5 shrink-0 text-[#6c776d] transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
     </div>
 </section>
-<div id="session-result" class="hidden rounded-xl border border-[#dfe7dd] bg-[#f3f6f1] p-4 text-sm text-[#526257]" role="status"></div>
-<a href="kelas-detail.php?id=1" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#d8e2d8] bg-white px-4 py-2 text-sm font-semibold text-[#284b35] hover:bg-[#f2f6f2]">Kembali ke Kelas</a>
+<a href="kelas-detail.php?assignment_id=<?= (int) $session['assignment_id'] ?>" class="inline-flex min-h-10 items-center justify-center rounded-lg border border-[#dfe6de] bg-white px-4 py-2 text-sm font-semibold text-[#41684f] hover:bg-[#f2f6f2]">Kembali ke Kelas</a>
 
-<dialog id="finish-dialog" class="w-[min(28rem,calc(100%-2rem))] rounded-2xl border border-[#dfe7dd] p-0 shadow-xl backdrop:bg-slate-900/30"><div class="p-6"><h2 class="text-lg font-semibold text-[#20392a]">Selesaikan sesi?</h2><p class="mt-2 text-sm text-slate-600">Pastikan status kehadiran dan poin sudah diperiksa.</p><div class="mt-6 flex justify-end gap-2"><button data-close="finish-dialog" class="min-h-10 rounded-lg border border-[#d8e2d8] px-4 text-sm font-semibold">Kembali</button><button id="confirm-finish" class="min-h-10 rounded-lg bg-[#1e5638] px-4 text-sm font-semibold text-white">Selesaikan</button></div></div></dialog>
-<dialog id="cancel-dialog" class="w-[min(28rem,calc(100%-2rem))] rounded-2xl border border-[#dfe7dd] p-0 shadow-xl backdrop:bg-slate-900/30"><div class="p-6"><h2 class="text-lg font-semibold text-[#20392a]">Batalkan sesi?</h2><p class="mt-2 text-sm text-slate-600">Sesi ini akan ditandai batal pada tampilan.</p><div class="mt-6 flex justify-end gap-2"><button data-close="cancel-dialog" class="min-h-10 rounded-lg border border-[#d8e2d8] px-4 text-sm font-semibold">Kembali</button><button id="confirm-cancel" class="min-h-10 rounded-lg bg-red-600 px-4 text-sm font-semibold text-white">Batalkan Sesi</button></div></div></dialog>
-<script>
-const finishDialog = document.getElementById('finish-dialog');
-const cancelDialog = document.getElementById('cancel-dialog');
-document.getElementById('open-finish').addEventListener('click', () => finishDialog.showModal());
-document.getElementById('open-cancel').addEventListener('click', () => cancelDialog.showModal());
-document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => document.getElementById(button.dataset.close).close()));
-const closeSession = (label, message, tone) => {
-    document.getElementById('session-status').textContent = label;
-    document.getElementById('session-status').className = `inline-flex rounded-full px-3 py-1 text-xs font-semibold ${tone}`;
-    document.getElementById('session-actions').classList.add('hidden');
-    const result = document.getElementById('session-result');
-    result.textContent = message;
-    result.classList.remove('hidden');
-};
-document.getElementById('confirm-finish').addEventListener('click', () => { finishDialog.close(); closeSession('Selesai', 'Sesi ditandai selesai pada tampilan ini. Pencatatan ke arsip belum terhubung.', 'bg-[#e8f1e7] text-[#31583c]'); });
-document.getElementById('confirm-cancel').addEventListener('click', () => { cancelDialog.close(); closeSession('Dibatalkan', 'Sesi ditandai batal pada tampilan ini. Tidak ada perubahan yang disimpan.', 'bg-red-50 text-red-700'); });
-</script>
 <?php guru_page_end(); ?>

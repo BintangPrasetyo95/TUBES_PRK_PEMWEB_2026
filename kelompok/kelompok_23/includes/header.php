@@ -28,5 +28,9 @@ $baseUrl = $folderPosition !== false
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 
     <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/custom.css">
+
+    <?php if ($pageTitle === 'Dashboard'): ?>
+    <link rel="stylesheet" href="<?= $baseUrl ?>/assets/css/dashboard.css">
+    <?php endif; ?>
 </head>
 <body>

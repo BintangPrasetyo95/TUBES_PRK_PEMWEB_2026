@@ -4,10 +4,10 @@
  * Tubes Praktikum Pemrograman Web 2026 - LabKom TI Unila
  * 
  * Penggunaan:
- *   php scripts/audit_kelompok.php --kelompok=22
- *   php scripts/audit_kelompok.php --all
- *   php scripts/audit_kelompok.php --all --export=rekap_kontribusi.md
- *   php scripts/audit_kelompok.php --all --export=rekap_kontribusi.csv
+ *   php .github/scripts/audit_kelompok.php --kelompok=22
+ *   php .github/scripts/audit_kelompok.php --all
+ *   php .github/scripts/audit_kelompok.php --all --export=rekap_kontribusi.md
+ *   php .github/scripts/audit_kelompok.php --all --export=rekap_kontribusi.csv
  */
 
 // Pastikan dijalankan dari CLI
@@ -22,12 +22,14 @@ if (isset($options['help']) || (empty($options['kelompok']) && !isset($options['
     echo "📋 AUDIT KONTRIBUSI GIT PER KELOMPOK - PEMWEB 2026\n";
     echo "===============================================================\n";
     echo "Penggunaan:\n";
-    echo "  php scripts/audit_kelompok.php --kelompok=XX\n";
-    echo "      Contoh: php scripts/audit_kelompok.php --kelompok=22\n\n";
-    echo "  php scripts/audit_kelompok.php --all\n";
+    echo "  php .github/scripts/audit_kelompok.php --kelompok=XX\n";
+    echo "      Contoh: php .github/scripts/audit_kelompok.php --kelompok=22\n\n";
+    echo "  php .github/scripts/audit_kelompok.php --all\n";
     echo "      Audit semua kelompok yang ada di folder kelompok/\n\n";
-    echo "  php scripts/audit_kelompok.php --all --export=laporan.md\n";
-    echo "      Simpan hasil audit ke file Markdown atau CSV\n\n";
+    echo "  php .github/scripts/audit_kelompok.php --all --export=laporan.csv\n";
+    echo "      Simpan hasil audit (termasuk status PR terakhir) ke file CSV\n\n";
+    echo "  php .github/scripts/audit_kelompok.php --all --export=laporan.md\n";
+    echo "      Simpan hasil audit ke file laporan Markdown\n\n";
     echo "  --limit=N\n";
     echo "      Jumlah commit terakhir yang ditampilkan per kelompok (default: 10)\n";
     echo "===============================================================\n";
@@ -64,7 +66,47 @@ function getAvailableKelompok(): array {
     return $kelompokList;
 }
 
-function auditKelompok(string $folderPath, int $commitLimit): ?array {
+/**
+ * Mengambil peta Pull Request terakhir yang berhasil di-merge ke main untuk setiap kelompok
+ */
+function getLastMergedPrMap(): array {
+    $mappingFile = __DIR__ . '/../fork_mapping.json';
+    $forkMapping = file_exists($mappingFile) ? json_decode(file_get_contents($mappingFile), true) : [];
+    $forkToGroup = $forkMapping['fork_to_group'] ?? [];
+
+    $cmd = 'git log origin/main --merges --pretty="format:%H|%ad|%s" --date=format:"%Y-%m-%d %H:%M"';
+    exec($cmd, $mergeLines);
+
+    $lastPrMap = [];
+    foreach ($mergeLines as $line) {
+        if (preg_match('/^([^|]+)\|([^|]+)\|Merge pull request #(\d+) from ([^\/]+)\/(.+)$/i', $line, $m)) {
+            $hash = $m[1];
+            $date = $m[2];
+            $prNum = $m[3];
+            $owner = strtolower(trim($m[4]));
+            $branch = trim($m[5]);
+
+            // Deteksi kelompok dari owner mapping atau nama branch
+            $group = $forkToGroup[$owner] ?? null;
+            if (!$group && preg_match('/kelompok[-_]?(\d+)/i', $branch . ' ' . $line, $gm)) {
+                $group = 'kelompok_' . str_pad($gm[1], 2, '0', STR_PAD_LEFT);
+            }
+
+            if ($group && !isset($lastPrMap[$group])) {
+                $lastPrMap[$group] = [
+                    'pr_number' => '#' . $prNum,
+                    'date'      => $date,
+                    'owner'     => '@' . $m[4],
+                    'branch'    => $branch,
+                    'hash'      => substr($hash, 0, 7)
+                ];
+            }
+        }
+    }
+    return $lastPrMap;
+}
+
+function auditKelompok(string $folderPath, int $commitLimit, ?array $lastPr): ?array {
     if (!is_dir($folderPath)) {
         return null;
     }
@@ -80,7 +122,8 @@ function auditKelompok(string $folderPath, int $commitLimit): ?array {
             'folder' => basename($folder),
             'total_commits' => 0,
             'authors' => [],
-            'recent_commits' => []
+            'recent_commits' => [],
+            'last_pr' => $lastPr
         ];
     }
 
@@ -161,9 +204,13 @@ function auditKelompok(string $folderPath, int $commitLimit): ?array {
         'folder' => basename($folder),
         'total_commits' => $totalCommits,
         'authors' => array_values($authors),
-        'recent_commits' => $recentCommits
+        'recent_commits' => $recentCommits,
+        'last_pr' => $lastPr
     ];
 }
+
+// Ambil data PR terakhir untuk semua kelompok
+$lastPrMap = getLastMergedPrMap();
 
 // Tentukan kelompok yang akan diaudit
 $targets = [];
@@ -187,7 +234,9 @@ $results = [];
 echo "\n🔍 Menjalankan audit riwayat Git per folder kelompok...\n";
 
 foreach ($targets as $target) {
-    $audit = auditKelompok($target['path'], $commitLimit);
+    $folderKey = strtolower($target['folder']);
+    $prInfo = $lastPrMap[$folderKey] ?? null;
+    $audit = auditKelompok($target['path'], $commitLimit, $prInfo);
     if ($audit) {
         $results[] = $audit;
     }
@@ -195,20 +244,28 @@ foreach ($targets as $target) {
 
 // Render output ke CLI
 foreach ($results as $res) {
-    echo "\n" . str_repeat('=', 70) . "\n";
+    echo "\n" . str_repeat('=', 75) . "\n";
     echo "📁 KELOMPOK: " . strtoupper($res['folder']) . " (Total Non-Merge Commits: " . $res['total_commits'] . ")\n";
-    echo str_repeat('=', 70) . "\n";
+    
+    // Tampilkan informasi PR terakhir yang berhasil masuk ke main
+    if (!empty($res['last_pr'])) {
+        $pr = $res['last_pr'];
+        echo "🚀 PR Terakhir ke Main : PR " . $pr['pr_number'] . " dari " . $pr['owner'] . " (" . $pr['date'] . ") [Branch: " . $pr['branch'] . "]\n";
+    } else {
+        echo "🚀 PR Terakhir ke Main : (Belum ada riwayat Pull Request yang di-merge)\n";
+    }
+    echo str_repeat('=', 75) . "\n";
 
     if ($res['total_commits'] === 0) {
         echo "⚠️ Belum ada commit yang tercatat di folder ini.\n";
         continue;
     }
 
-    printf("%-25s | %-7s | %-6s | %-10s | %-10s\n", "Nama Kontributor", "Commits", "%", "Baris (+)", "Baris (-)");
-    echo str_repeat('-', 70) . "\n";
+    printf("%-25s | %-7s | %-6s | %-12s | %-12s\n", "Nama Kontributor", "Commits", "%", "Baris (+)", "Baris (-)");
+    echo str_repeat('-', 75) . "\n";
     foreach ($res['authors'] as $a) {
         $displayName = mb_strimwidth($a['name'], 0, 24, '..');
-        printf("%-25s | %-7d | %5.1f%% | %-10s | %-10s\n", 
+        printf("%-25s | %-7d | %5.1f%% | %-12s | %-12s\n", 
             $displayName, 
             $a['commits'], 
             $a['percentage'], 
@@ -216,11 +273,11 @@ foreach ($results as $res) {
             "-" . number_format($a['deleted'])
         );
     }
-    echo str_repeat('-', 70) . "\n";
+    echo str_repeat('-', 75) . "\n";
 
     echo "🕒 Commit Terakhir (" . count($res['recent_commits']) . " terbaru):\n";
     foreach ($res['recent_commits'] as $c) {
-        $shortMsg = mb_strimwidth($c['message'], 0, 45, '...');
+        $shortMsg = mb_strimwidth($c['message'], 0, 48, '...');
         echo "  • [" . $c['hash'] . "] " . $c['date'] . " - " . $c['author'] . ": " . $shortMsg . "\n";
     }
 }
@@ -230,18 +287,56 @@ if ($exportFile) {
     $ext = strtolower(pathinfo($exportFile, PATHINFO_EXTENSION));
     if ($ext === 'csv') {
         $fp = fopen($exportFile, 'w');
-        fputcsv($fp, ['Kelompok', 'Nama Kontributor', 'Email', 'Jumlah Commit', 'Persentase Commit', 'Baris Ditambah (+)', 'Baris Dihapus (-)']);
+        // Tambahkan kolom PR Terakhir, Tanggal PR Terakhir, dan Pengirim PR ke CSV
+        fputcsv($fp, [
+            'Kelompok',
+            'PR Terakhir (No)',
+            'Waktu PR Terakhir',
+            'Pengirim PR (Fork Owner)',
+            'Branch PR',
+            'Nama Kontributor',
+            'Email',
+            'Jumlah Commit',
+            'Persentase Commit',
+            'Baris Ditambah (+)',
+            'Baris Dihapus (-)'
+        ]);
         foreach ($results as $res) {
-            foreach ($res['authors'] as $a) {
+            $prNum = $res['last_pr']['pr_number'] ?? '-';
+            $prDate = $res['last_pr']['date'] ?? '-';
+            $prOwner = $res['last_pr']['owner'] ?? '-';
+            $prBranch = $res['last_pr']['branch'] ?? '-';
+
+            if (empty($res['authors'])) {
                 fputcsv($fp, [
                     $res['folder'],
-                    $a['name'],
-                    $a['email'],
-                    $a['commits'],
-                    $a['percentage'] . '%',
-                    $a['added'],
-                    $a['deleted']
+                    $prNum,
+                    $prDate,
+                    $prOwner,
+                    $prBranch,
+                    '-',
+                    '-',
+                    0,
+                    '0%',
+                    0,
+                    0
                 ]);
+            } else {
+                foreach ($res['authors'] as $a) {
+                    fputcsv($fp, [
+                        $res['folder'],
+                        $prNum,
+                        $prDate,
+                        $prOwner,
+                        $prBranch,
+                        $a['name'],
+                        $a['email'],
+                        $a['commits'],
+                        $a['percentage'] . '%',
+                        $a['added'],
+                        $a['deleted']
+                    ]);
+                }
             }
         }
         fclose($fp);
@@ -254,7 +349,14 @@ if ($exportFile) {
 
         foreach ($results as $res) {
             $md .= "## 📁 " . strtoupper($res['folder']) . "\n";
-            $md .= "- **Total Non-Merge Commits:** " . $res['total_commits'] . "\n\n";
+            $md .= "- **Total Non-Merge Commits:** " . $res['total_commits'] . "\n";
+            
+            if (!empty($res['last_pr'])) {
+                $pr = $res['last_pr'];
+                $md .= "- **Pull Request Terakhir ke Main:** `" . $pr['pr_number'] . "` dari **" . $pr['owner'] . "** pada `" . $pr['date'] . "` (Branch: `" . $pr['branch'] . "`, Commit: `" . $pr['hash'] . "`)\n\n";
+            } else {
+                $md .= "- **Pull Request Terakhir ke Main:** _Belum ada PR yang ter-merge_\n\n";
+            }
 
             if ($res['total_commits'] === 0) {
                 $md .= "_Belum ada commit yang tercatat di folder ini._\n\n";
@@ -287,4 +389,3 @@ if ($exportFile) {
 }
 
 echo "\n✨ Audit selesai.\n";
-

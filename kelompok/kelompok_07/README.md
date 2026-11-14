@@ -120,7 +120,7 @@ kelompok_07/
 
 ## Database & ERD
 
-![ERD LabLoan](docs/ERD_LabLoan.png)
+![ERD LabLoan](docs/ERD.jpeg)
 
 | Tabel | Fungsi |
 |-------|--------|

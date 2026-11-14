@@ -1,99 +1,107 @@
 <?php
-session_start();
-require_once '../config/app.php'; 
-require_once '../config/koneksi.php';
 
-// Cek session login sesuai struktur Padel
-if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
-    echo "<script>alert('Anda harus login untuk melihat riwayat!'); window.location.href='../auth/login.php';</script>";
+require_once __DIR__ . '/../config/app.php';
+require_once __DIR__ . '/../config/koneksi.php';
+require_once __DIR__ . '/../includes/komponen.php';
+
+if (!isset($_SESSION['user']['id'])) {
+    set_flash('warning', 'Anda harus login untuk melihat riwayat.');
+    header('Location: ' . url('auth/login.php'));
     exit;
 }
 
 $user_id = $_SESSION['user']['id'];
 $pdo = db();
 
-// Query JOIN 3 Tabel: peminjaman, detail_peminjaman, dan alat
-// Hanya ambil milik user yang sedang login
-$query = "
-    SELECT p.kode, p.tanggal_pinjam, p.tanggal_kembali_rencana, p.status, 
-           a.nama AS nama_alat, dp.jumlah 
-    FROM peminjaman p
-    JOIN detail_peminjaman dp ON p.id = dp.peminjaman_id
-    JOIN alat a ON dp.alat_id = a.id
-    WHERE p.user_id = ?
-    ORDER BY p.created_at DESC
-";
-$stmt = $pdo->prepare($query);
+$pdo->exec(
+    "UPDATE peminjaman
+     SET status = 'ditolak',
+         catatan_admin = 'Ditolak otomatis oleh sistem karena belum diproses admin lebih dari 3 hari.'
+     WHERE status = 'menunggu'
+       AND DATEDIFF(NOW(), created_at) > 3"
+);
+
+$stmt = $pdo->prepare(
+    'SELECT p.kode, p.tanggal_pinjam, p.tanggal_kembali_rencana, p.keperluan, p.status,
+            a.nama AS nama_alat, a.kode AS kode_alat, dp.jumlah
+     FROM peminjaman p
+     JOIN detail_peminjaman dp ON p.id = dp.peminjaman_id
+     JOIN alat a ON dp.alat_id = a.id
+     WHERE p.user_id = ?
+     ORDER BY p.created_at DESC, p.id DESC'
+);
 $stmt->execute([$user_id]);
 $riwayats = $stmt->fetchAll();
 
-$judul = "Riwayat Peminjaman";
-include '../includes/header.php';
-// Navbar di-comment jika memang header.php sudah membawanya
-// include '../includes/navbar.php'; 
+$judul = 'Riwayat Peminjaman';
+require __DIR__ . '/../includes/header.php';
 ?>
-<!-- Jaga-jaga jika CSS belum keload -->
-<script src="https://cdn.tailwindcss.com"></script>
+<?php page_head('Riwayat saya', 'Riwayat', 'peminjaman', 'Pantau status setiap pengajuan yang pernah kamu buat, dari menunggu sampai dikembalikan.'); ?>
 
-<div class="container mx-auto mt-8 px-4 max-w-5xl">
-    <h2 class="text-2xl font-bold mb-6 text-gray-800">Riwayat Peminjaman Saya</h2>
+<section class="card" aria-labelledby="keterangan-judul">
+    <div class="card-header">
+        <h2 id="keterangan-judul">Keterangan Status</h2>
+        <?= ikon('info') ?>
+    </div>
+    <div class="card-body">
+        <ul class="legend-status">
+<?php foreach (STATUS_PEMINJAMAN as $status => $info): ?>
+            <li>
+                <?= status_badge($status) ?>
+                <p><?= e($info['keterangan']) ?></p>
+            </li>
+<?php endforeach; ?>
+        </ul>
+    </div>
+</section>
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-        <div class="overflow-x-auto">
-            <table class="min-w-full leading-normal">
+<section class="card mt-6" aria-labelledby="riwayat-judul">
+    <div class="card-header">
+        <h2 id="riwayat-judul">Daftar Pengajuan</h2>
+        <span class="badge badge-info"><?= count($riwayats) ?> pengajuan</span>
+    </div>
+    <div class="card-body">
+<?php if ($riwayats === []): ?>
+        <div class="empty-state">
+            <?= ikon('ajukan') ?>
+            <h3>Belum ada riwayat peminjaman</h3>
+            <p>Pengajuan yang kamu buat akan muncul di sini.</p>
+            <a href="<?= e(url('peminjaman/index.php')) ?>" class="btn btn-neon">Ajukan Peminjaman</a>
+        </div>
+<?php else: ?>
+        <div class="table-responsive">
+            <table class="table">
                 <thead>
                     <tr>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Kode / Alat</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tgl Pinjam</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tgl Kembali</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Jumlah</th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th scope="col">Kode Transaksi</th>
+                        <th scope="col">Alat / Ruang</th>
+                        <th scope="col">Tgl Pinjam</th>
+                        <th scope="col">Rencana Kembali</th>
+                        <th scope="col">Jumlah</th>
+                        <th scope="col">Keperluan</th>
+                        <th scope="col">Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (count($riwayats) > 0) : ?>
-                        <?php foreach ($riwayats as $row) : ?>
-                            <tr>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900 font-bold"><?= e($row['kode']) ?></p>
-                                    <p class="text-gray-500 text-xs"><?= e($row['nama_alat']) ?></p>
-                                </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900"><?= e(date('d M Y', strtotime($row['tanggal_pinjam']))) ?></p>
-                                </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900"><?= e(date('d M Y', strtotime($row['tanggal_kembali_rencana']))) ?></p>
-                                </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <p class="text-gray-900"><?= e($row['jumlah']) ?> unit</p>
-                                </td>
-                                <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                    <?php 
-                                        // Badge warna otomatis berdasarkan status Padel
-                                        $status = $row['status'];
-                                        $badgeClass = "bg-gray-200 text-gray-800"; // default
-                                        if ($status === 'menunggu') $badgeClass = "bg-yellow-100 text-yellow-800";
-                                        elseif ($status === 'disetujui') $badgeClass = "bg-blue-100 text-blue-800";
-                                        elseif ($status === 'ditolak') $badgeClass = "bg-red-100 text-red-800";
-                                        elseif ($status === 'dikembalikan') $badgeClass = "bg-green-100 text-green-800";
-                                    ?>
-                                    <span class="relative inline-block px-3 py-1 font-semibold leading-tight rounded-full <?= $badgeClass ?>">
-                                        <span class="relative"><?= e(ucfirst($status)) ?></span>
-                                    </span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else : ?>
-                        <tr>
-                            <td colspan="5" class="px-5 py-8 border-b border-gray-200 bg-white text-sm text-center text-gray-500">
-                                Belum ada riwayat peminjaman.
-                            </td>
-                        </tr>
-                    <?php endif; ?>
+<?php foreach ($riwayats as $row): ?>
+                    <tr>
+                        <td class="nowrap"><strong><?= e($row['kode']) ?></strong></td>
+                        <td>
+                            <strong><?= e($row['nama_alat']) ?></strong>
+                            <span class="riwayat-alat">Kode alat: <?= e($row['kode_alat']) ?></span>
+                        </td>
+                        <td class="nowrap"><?= e(format_tanggal($row['tanggal_pinjam'])) ?></td>
+                        <td class="nowrap"><?= e(format_tanggal($row['tanggal_kembali_rencana'])) ?></td>
+                        <td class="nowrap"><?= (int) $row['jumlah'] ?> unit</td>
+                        <td class="riwayat-keperluan"><?= e($row['keperluan']) ?></td>
+                        <td><?= status_badge($row['status']) ?></td>
+                    </tr>
+<?php endforeach; ?>
                 </tbody>
             </table>
         </div>
+<?php endif; ?>
     </div>
-</div>
+</section>
 
-<?php include '../includes/footer.php'; ?>
+<?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -54,7 +54,7 @@ CREATE TABLE `tips` (
 
 -- Insert Admin awal (password bawaan contoh: admin123)
 INSERT INTO `admins` (`username`, `password`) VALUES
-('admin', 'admin123');
+('admin', '$2y$10$U3qIi.kxvak7kTXhswAgn.Rb4Grz1xZeLL0O1vxTc3cK2hpm3/6ya');
 
 -- Insert Kategori Artikel
 INSERT INTO `categories` (`name`, `description`) VALUES

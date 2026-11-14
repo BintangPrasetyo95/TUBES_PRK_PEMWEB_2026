@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Admin | FEBMart</title>
+    <title>Login Akun | FEBMart</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -150,7 +150,6 @@
             border-color: #5142a5;
         }
 
-        /* Tombol login */
         .btn-login {
             width: 100%;
             padding: 12px;
@@ -175,7 +174,6 @@
             margin-top: 30px;
         }
 
-        /* Tampilan mobile */
         @media (max-width: 768px) {
             .login-container {
                 max-width: 430px;
@@ -227,10 +225,10 @@
 
     <div class="form-section">
 
-        <h2>Login Admin</h2>
+        <h2>Login Akun</h2>
 
         <p class="form-description">
-            Silakan masuk menggunakan akun admin Anda.
+            Silakan masuk menggunakan akun Anda.
         </p>
 
         <?php if (isset($_GET['error'])): ?>

@@ -91,7 +91,12 @@ Tujuan pengembangan FEBMart adalah:
 - Menghitung total omzet.
 - Menampilkan nota atau struk pembayaran.
 - Mencetak struk transaksi.
-- Mengekspor laporan ke format Excel.
+- Mengekspor laporan penjualan ke CSV berformat UTF-8 yang dapat dibuka di Microsoft Excel.
+
+Halaman riwayat tersedia di `riwayat/index.php`. Detail transaksi dapat dibuka melalui
+modal atau struk; halaman struk menyediakan tombol cetak dengan tata letak khusus
+untuk kertas cetak. Laporan tersedia di `laporan/index.php`, menggunakan rentang
+tanggal inklusif, dan dapat diekspor melalui tombol **Ekspor Excel**.
 
 ### E. UI/UX & Layout Website
 - Menggunakan template AdminLTE dan Bootstrap.
@@ -167,23 +172,23 @@ cd kelompok/kelompok_23
 2. Klik tombol **Start All**.
 3. Pastikan service **Apache** dan **MySQL** sudah berstatus *Running*.
 
-### Langkah 5 – Buat Database
-1. Buka **phpMyAdmin** melalui browser (`http://localhost/phpmyadmin`).
-2. Buat database baru bernama `febmart`.
-3. Impor file `database/schema.sql` ke dalam database `febmart`.
-
-### Langkah 6 – Konfigurasi Database
-Sesuaikan konfigurasi koneksi database pada file:
-```text
-config/database.php
-```
-Pastikan host, username, password, dan nama database sesuai dengan konfigurasi MySQL lokal Anda.
-
-### Langkah 7 – Jalankan Website
+### Langkah 5 – Jalankan Website
 Buka browser dan akses alamat berikut:
 ```text
 http://localhost/TUBES_PRK_PEMWEB_2026/kelompok/kelompok_23/
 ```
+
+### Langkah 6 – Instalasi Database Otomatis
+Database dibuat **secara otomatis** dan tidak perlu diimpor manual melalui phpMyAdmin.
+
+- Jika MySQL memakai pengaturan default (host `localhost`, user `root`, tanpa password — umumnya Laragon/XAMPP), sistem langsung membuat database `febmart`, seluruh tabel, dan data contoh sendiri saat pertama kali dibuka.
+- Jika kredensial MySQL berbeda, sistem akan mengalihkan ke halaman **`install.php`**. Isi form host, username, password, dan nama database (sekali saja), lalu klik **Instal / Perbaiki Database**. Sistem akan:
+  1. Menguji koneksi MySQL.
+  2. Membuat database otomatis (jika belum ada).
+  3. Membuat seluruh tabel dan data contoh dari `database/febmart.sql`.
+  4. Menyimpan kredensial ke `config/database.local.php` (khusus komputer ini, tidak ikut tersimpan di git).
+
+> Catatan: jika tabel inti hilang atau rusak, sistem juga memperbaikinya secara otomatis saat halaman dibuka. Akun awal yang dibuat: `adminfebmart` (admin) dan `kasir01` (kasir).
 
 ---
 

@@ -1,11 +1,8 @@
-
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../auth/login.php");
-    exit;
-}
+require_once __DIR__ . '/../includes/role_guard.php';
+requireRole(['Admin']);
 
 require_once __DIR__ . '/../config/database.php';
 
@@ -35,6 +32,8 @@ if (isset($_POST['simpan'])) {
         } else {
             $error = "Gagal menyimpan kategori: " . $conn->error;
         }
+
+        $stmt->close();
     }
 }
 
@@ -107,10 +106,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                     <div class="d-flex justify-content-between flex-wrap gap-2">
 
-                        <a href="index.php" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>
-                            Kembali
-                        </a>
+                        <a href="index.php" class="btn btn-secondary">Kembali</a>
 
                         <button type="submit" name="simpan" class="btn btn-primary">
                             <i class="bi bi-save me-1"></i>

@@ -5,7 +5,7 @@ require_once __DIR__ . '/database.php';
 
 function start_app_session(): void
 {
-    if (session_status() === PHP_SESSION_ACTIVE) {
+    if (PHP_SAPI === 'cli' || session_status() === PHP_SESSION_ACTIVE) {
         return;
     }
 
@@ -21,17 +21,62 @@ function start_app_session(): void
     ]);
     session_start();
 
-    header('X-Content-Type-Options: nosniff');
-    header('X-Frame-Options: DENY');
-    header('Referrer-Policy: strict-origin-when-cross-origin');
-    header("Content-Security-Policy: default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
+    if (!headers_sent()) {
+        header('X-Content-Type-Options: nosniff');
+        header('X-Frame-Options: DENY');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+        header("Content-Security-Policy: default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob: *; style-src 'self' https: 'unsafe-inline'; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; font-src 'self' https: data:; frame-ancestors 'none';");
+    }
 }
 
 function app_url(string $path = ''): string
 {
-    $base = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/'));
-    $base = $base === '/' || $base === '.' ? '' : rtrim($base, '/');
-    return $base . '/' . ltrim($path, '/');
+    static $baseUrl = null;
+    if ($baseUrl === null) {
+        if (PHP_SAPI === 'cli') {
+            $baseUrl = '';
+        } else {
+            $appRoot = rtrim(str_replace('\\', '/', dirname(__DIR__)), '/');
+            $docRoot = rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+            $scriptFilename = rtrim(str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME'] ?? ''), '/');
+            $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+
+            $detected = null;
+
+            // 1. Cek terhadap DOCUMENT_ROOT (misal Laragon / XAMPP standar)
+            if (!empty($docRoot) && stripos($appRoot, $docRoot) === 0) {
+                $detected = substr($appRoot, strlen($docRoot));
+            }
+
+            // 2. Jika DOCUMENT_ROOT berbeda (VirtualHost, alias, symlink, port forwarding)
+            if ($detected === null && !empty($scriptFilename) && !empty($scriptName)) {
+                $lenFilename = strlen($scriptFilename);
+                $lenScript = strlen($scriptName);
+                if ($lenFilename >= $lenScript && substr_compare($scriptFilename, $scriptName, -$lenScript, $lenScript, true) === 0) {
+                    $deducedDocRoot = rtrim(substr($scriptFilename, 0, $lenFilename - $lenScript), '/');
+                    if (stripos($appRoot, $deducedDocRoot) === 0) {
+                        $detected = substr($appRoot, strlen($deducedDocRoot));
+                    }
+                }
+            }
+
+            // 3. Fallback jika masih belum terdeteksi
+            if ($detected === null) {
+                $dir = dirname($scriptName);
+                $detected = ($dir === '/' || $dir === '.' || $dir === '\\') ? '' : $dir;
+            }
+
+            $clean = trim(str_replace('\\', '/', $detected), '/');
+            $baseUrl = $clean === '' ? '' : '/' . $clean;
+        }
+    }
+
+    $trimmedPath = ltrim($path, '/');
+    if ($trimmedPath === '') {
+        return $baseUrl === '' ? '/' : $baseUrl . '/';
+    }
+
+    return ($baseUrl === '' ? '' : $baseUrl) . '/' . $trimmedPath;
 }
 
 function redirect(string $path): never
@@ -77,9 +122,19 @@ function take_flash(): ?array
 function current_user(): ?array
 {
     $user = $_SESSION['user'] ?? null;
-    return is_array($user) && user_has_role($user, ['admin', 'cashier'])
+    return is_array($user) && user_has_role($user, ['admin', 'cashier', 'customer'])
         ? $user
         : null;
+}
+
+function user_role_label(?array $user): string
+{
+    return match($user['role'] ?? null) {
+        'admin' => 'Administrator',
+        'cashier' => 'Kasir',
+        'customer' => 'Pembeli',
+        default => 'Pengguna',
+    };
 }
 
 function user_has_role(?array $user, string|array $roles): bool
